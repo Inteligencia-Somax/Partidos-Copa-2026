@@ -861,14 +861,17 @@ function buildMatches(){
 }
 
 function selW(i,side){
-  picks[i].winner=side;
-  ['home','away'].forEach(s=>{
-    const b=document.getElementById(`btn-${s}-${i}`);
-    if(b)b.className='pick-btn'+(side===s?` sel-${s}`:'');
-  });
-  const d=document.getElementById(`btn-draw-${i}`);
-  if(d)d.className='draw-btn'+(side==='draw'?' sel-draw':'');
-  // Remove error state
+  picks[i].winner = side;
+
+  // Reset all three buttons first
+  const bHome = document.getElementById(`btn-home-${i}`);
+  const bAway = document.getElementById(`btn-away-${i}`);
+  const bDraw = document.getElementById(`btn-draw-${i}`);
+  if(bHome) bHome.className = 'pick-btn' + (side==='home' ? ' sel-home' : '');
+  if(bAway) bAway.className = 'pick-btn' + (side==='away' ? ' sel-away' : '');
+  if(bDraw) bDraw.className = 'draw-btn' + (side==='draw' ? ' sel-draw' : '');
+
+  // Remove error state on this card
   document.getElementById(`mc-${i}`).classList.remove('missing');
   document.getElementById(`miss-${i}`).style.display='none';
   closeBanner();
@@ -919,7 +922,7 @@ function submitPrediction(){
       document.getElementById(`miss-${i}`).style.display='inline-flex';
     });
     const names=missing.map(i=>`Partido ${i+1}`).join(', ');
-    showBanner('error','⚽',`Falta elegir resultado en: ${names}. ¡Hacé tu elección en cada partido!`);
+    showBanner('error','⚽',`Elegí Local, Visita o Empate en: ${names}.`);
     // Scroll to first missing
     document.getElementById(`mc-${missing[0]}`).scrollIntoView({behavior:'smooth',block:'center'});
     return;
