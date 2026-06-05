@@ -808,16 +808,23 @@ function save(a){localStorage.setItem('somax26v3',JSON.stringify(a));}
 
 // ── Build form ──
 function buildMatches(){
-  const c=document.getElementById('matches-container');c.innerHTML='';
-  MATCHES.forEach((m,i)=>{
-    c.innerHTML+=`
-    <div class="match-card ${m.c}${m.py?' py-match':''}" id="mc-${i}" data-n="${m.num}">
+  const container = document.getElementById('matches-container');
+  container.innerHTML = '';
+
+  MATCHES.forEach((m, i) => {
+    // Create card element
+    const card = document.createElement('div');
+    card.className = 'match-card ' + m.c + (m.py ? ' py-match' : '');
+    card.id = 'mc-' + i;
+    card.setAttribute('data-n', m.num);
+
+    card.innerHTML = `
       <div class="match-header">
         <span class="match-num">Partido ${m.num}</span>
         <div class="mh-space"></div>
         <span class="match-date">${m.date}</span>&nbsp;
         <span class="match-group">${m.group}</span>
-        ${m.py?'<span class="py-tag">🇵🇾 ¡Paraguay!</span>':''}
+        ${m.py ? '<span class="py-tag">🇵🇾 ¡Paraguay!</span>' : ''}
         <span class="missing-tag" id="miss-${i}" style="display:none">⚠ Falta seleccionar</span>
       </div>
       <div class="teams-row">
@@ -825,38 +832,52 @@ function buildMatches(){
           <div class="team-flag-em">${m.homeFlag}</div>
           <div class="team-code">${m.homeCode}</div>
           <div class="team-name">${m.home}</div>
-          <button class="pick-btn" id="btn-home-${i}" onclick="selW(${i},'home')">⚽ Local</button>
+          <button class="pick-btn" id="btn-home-${i}">⚽ Local</button>
         </div>
         <div class="vs-orb">VS</div>
         <div class="team-pick">
           <div class="team-flag-em">${m.awayFlag}</div>
           <div class="team-code">${m.awayCode}</div>
           <div class="team-name">${m.away}</div>
-          <button class="pick-btn" id="btn-away-${i}" onclick="selW(${i},'away')">⚽ Visita</button>
+          <button class="pick-btn" id="btn-away-${i}">⚽ Visita</button>
         </div>
       </div>
       <div class="draw-row">
-        <button class="draw-btn" id="btn-draw-${i}" onclick="selW(${i},'draw')">🤝 Empate</button>
+        <button class="draw-btn" id="btn-draw-${i}">🤝 Empate (opcional)</button>
       </div>
       <div class="goals-row">
         <div class="goals-field">
           <label>${m.homeCode} Goles ${m.home}</label>
           <div class="goals-input">
-            <button onclick="chg(${i},'home',-1)">−</button>
+            <button class="goals-dec" data-idx="${i}" data-side="home">−</button>
             <span id="gh-${i}">0</span>
-            <button onclick="chg(${i},'home',1)">+</button>
+            <button class="goals-inc" data-idx="${i}" data-side="home">+</button>
           </div>
         </div>
         <div class="goals-field">
           <label>${m.awayCode} Goles ${m.away}</label>
           <div class="goals-input">
-            <button onclick="chg(${i},'away',-1)">−</button>
+            <button class="goals-dec" data-idx="${i}" data-side="away">−</button>
             <span id="ga-${i}">0</span>
-            <button onclick="chg(${i},'away',1)">+</button>
+            <button class="goals-inc" data-idx="${i}" data-side="away">+</button>
           </div>
         </div>
       </div>
-    </div>`;
+    `;
+
+    container.appendChild(card);
+
+    // Attach events AFTER appending (safe references)
+    document.getElementById('btn-home-' + i).addEventListener('click', () => selW(i, 'home'));
+    document.getElementById('btn-away-' + i).addEventListener('click', () => selW(i, 'away'));
+    document.getElementById('btn-draw-' + i).addEventListener('click', () => selW(i, 'draw'));
+
+    card.querySelectorAll('.goals-dec').forEach(btn => {
+      btn.addEventListener('click', () => chg(parseInt(btn.dataset.idx), btn.dataset.side, -1));
+    });
+    card.querySelectorAll('.goals-inc').forEach(btn => {
+      btn.addEventListener('click', () => chg(parseInt(btn.dataset.idx), btn.dataset.side, 1));
+    });
   });
 }
 
