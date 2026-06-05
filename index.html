@@ -249,11 +249,6 @@ body{
 
 /* PY highlight */
 .match-card.py-game .mc-name.py{color:var(--red);font-weight:800;}
-.match-card.locked-card{
-  opacity:.65;background:#F9F9FA!important;
-  border-left:3px solid #D1D5DB!important;
-}
-.mc-status.locked{background:rgba(107,114,128,.1);color:#6B7280;}
 
 /* ══ NUMPAD MODAL ══ */
 .modal-overlay{
@@ -618,59 +613,6 @@ body{
   <button class="nav-btn" id="nav-rules" onclick="switchTab('rules',document.getElementById('tab-rules'))">
     <span class="nav-icon">📋</span>Regras
   </button>
-  <button class="nav-btn" id="nav-admin" onclick="openAdminLogin()">
-    <span class="nav-icon">🔐</span>Admin
-  </button>
-</div>
-
-<!-- ADMIN LOGIN MODAL -->
-<div class="modal-overlay" id="admin-modal" style="display:none" onclick="closeAdminOutside(event)">
-  <div class="modal" id="admin-box" style="border-radius:24px 24px 0 0;max-width:420px;">
-    <div class="modal-header" style="background:#1E293B;">
-      <span class="modal-match-label">🔐 Área Administrativa</span>
-      <button class="modal-close" onclick="closeAdminModal()">✕</button>
-    </div>
-    <div style="padding:24px 20px 32px;">
-      <p style="font-size:13px;color:var(--sub);margin-bottom:18px;font-weight:500;">
-        Acceso restringido. Solo usuarios autorizados pueden descargar el informe completo.
-      </p>
-      <div style="margin-bottom:12px;">
-        <label style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sub);display:block;margin-bottom:6px;">Email</label>
-        <input type="email" id="admin-email" class="name-input" placeholder="usuario@somaxagro.com" style="width:100%;">
-      </div>
-      <div style="margin-bottom:18px;">
-        <label style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sub);display:block;margin-bottom:6px;">Contraseña</label>
-        <input type="password" id="admin-pass" class="name-input" placeholder="••••••••" style="width:100%;">
-      </div>
-      <div id="admin-error" style="display:none;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;color:#DC2626;margin-bottom:14px;">
-        ❌ Credenciales incorrectas
-      </div>
-      <button onclick="doAdminLogin()" style="width:100%;background:#1E293B;color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s;">
-        Ingresar
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ADMIN DASHBOARD MODAL -->
-<div class="modal-overlay" id="admin-dash-modal" style="display:none" onclick="closeAdminDashOutside(event)">
-  <div class="modal" id="admin-dash-box" style="border-radius:24px 24px 0 0;max-width:480px;max-height:90vh;overflow-y:auto;">
-    <div class="modal-header" style="background:#1E293B;position:sticky;top:0;z-index:10;">
-      <span class="modal-match-label">📊 Panel Administrativo</span>
-      <button class="modal-close" onclick="closeAdminDash()">✕</button>
-    </div>
-    <div style="padding:20px;">
-      <div id="admin-stats-wrap" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;"></div>
-      <button onclick="downloadCSV()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
-        ⬇ Descargar Informe Completo (CSV)
-      </button>
-      <button onclick="downloadSummaryHTML()" style="width:100%;background:#1E293B;color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:8px;">
-        📄 Descargar Resumen (HTML imprimible)
-      </button>
-      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sub);margin-bottom:10px;">Participantes</div>
-      <div id="admin-participants-list"></div>
-    </div>
-  </div>
 </div>
 
 <style>
@@ -694,6 +636,7 @@ const MATCHES = [
   {id:4,  date:'Vie, 12 de Jun.',time:'20:00',phase:'Grupo D',home:'EE.UU.',      hf:'🇺🇸',hc:'US',away:'Paraguay',       af:'🇵🇾',ac:'PY',py:true},
   {id:5,  date:'Sáb, 13 de Jun.',time:'14:00',phase:'Grupo B',home:'Qatar',       hf:'🇶🇦',hc:'QA',away:'Suiza',          af:'🇨🇭',ac:'SUI'},
   {id:6,  date:'Sáb, 13 de Jun.',time:'17:00',phase:'Grupo C',home:'Brasil',      hf:'🇧🇷',hc:'BR',away:'Marruecos',      af:'🇲🇦',ac:'MAR'},
+  {id:7,  date:'Sáb, 13 de Jun.',time:'20:00',phase:'Grupo C',home:'Haití',       hf:'🇭🇹',hc:'HAI',away:'Escocia',       af:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',ac:'SCO'},
   {id:8,  date:'Dom, 14 de Jun.',time:'00:00',phase:'Grupo D',home:'Australia',   hf:'🇦🇺',hc:'AUS',away:'Turquía',        af:'🇹🇷',ac:'TUR'},
   {id:9,  date:'Dom, 14 de Jun.',time:'12:00',phase:'Grupo E',home:'Alemania',    hf:'🇩🇪',hc:'GER',away:'Curazao',        af:'🇨🇼',ac:'CUR'},
   {id:10, date:'Dom, 14 de Jun.',time:'15:00',phase:'Grupo F',home:'Países Bajos',hf:'🇳🇱',hc:'NED',away:'Japón',          af:'🇯🇵',ac:'JPN'},
@@ -708,6 +651,7 @@ const MATCHES = [
   {id:19, date:'Mar, 16 de Jun.',time:'20:00',phase:'Grupo J',home:'Argentina',   hf:'🇦🇷',hc:'ARG',away:'Argelia',        af:'🇩🇿',ac:'ALG'},
   {id:20, date:'Mar, 16 de Jun.',time:'23:00',phase:'Grupo J',home:'Austria',     hf:'🇦🇹',hc:'AUT',away:'Jordania',       af:'🇯🇴',ac:'JOR'},
   {id:21, date:'Mié, 17 de Jun.',time:'12:00',phase:'Grupo K',home:'Portugal',    hf:'🇵🇹',hc:'POR',away:'RD Congo',       af:'🇨🇩',ac:'COD'},
+  {id:22, date:'Mié, 17 de Jun.',time:'15:00',phase:'Grupo L',home:'Inglaterra',  hf:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',hc:'ENG',away:'Croacia',       af:'🇭🇷',ac:'CRO'},
   {id:23, date:'Mié, 17 de Jun.',time:'18:00',phase:'Grupo L',home:'Ghana',       hf:'🇬🇭',hc:'GHA',away:'Panamá',         af:'🇵🇦',ac:'PAN'},
   {id:24, date:'Mié, 17 de Jun.',time:'21:00',phase:'Grupo K',home:'Uzbekistán',  hf:'🇺🇿',hc:'UZB',away:'Colombia',       af:'🇨🇴',ac:'COL'},
   // ── FECHA 2 ──
@@ -716,6 +660,7 @@ const MATCHES = [
   {id:27, date:'Jue, 18 de Jun.',time:'17:00',phase:'Grupo B',home:'Canadá',      hf:'🇨🇦',hc:'CA',away:'Qatar',           af:'🇶🇦',ac:'QA'},
   {id:28, date:'Jue, 18 de Jun.',time:'20:00',phase:'Grupo A',home:'México',      hf:'🇲🇽',hc:'MX',away:'Corea del Sur',   af:'🇰🇷',ac:'COR'},
   {id:29, date:'Vie, 19 de Jun.',time:'14:00',phase:'Grupo D',home:'EE.UU.',      hf:'🇺🇸',hc:'US',away:'Australia',       af:'🇦🇺',ac:'AUS'},
+  {id:30, date:'Vie, 19 de Jun.',time:'17:00',phase:'Grupo C',home:'Escocia',     hf:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',hc:'SCO',away:'Marruecos',     af:'🇲🇦',ac:'MAR'},
   {id:31, date:'Vie, 19 de Jun.',time:'19:30',phase:'Grupo C',home:'Brasil',      hf:'🇧🇷',hc:'BR',away:'Haití',            af:'🇭🇹',ac:'HAI'},
   {id:32, date:'Vie, 19 de Jun.',time:'22:00',phase:'Grupo D',home:'Turquía',     hf:'🇹🇷',hc:'TUR',away:'Paraguay',       af:'🇵🇾',ac:'PY',py:true},
   {id:33, date:'Sáb, 20 de Jun.',time:'12:00',phase:'Grupo F',home:'Países Bajos',hf:'🇳🇱',hc:'NED',away:'Suecia',         af:'🇸🇪',ac:'SWE'},
@@ -731,6 +676,7 @@ const MATCHES = [
   {id:43, date:'Lun, 22 de Jun.',time:'19:00',phase:'Grupo I',home:'Noruega',     hf:'🇳🇴',hc:'NOR',away:'Senegal',         af:'🇸🇳',ac:'SEN'},
   {id:44, date:'Lun, 22 de Jun.',time:'22:00',phase:'Grupo J',home:'Jordania',    hf:'🇯🇴',hc:'JOR',away:'Argelia',         af:'🇩🇿',ac:'ALG'},
   {id:45, date:'Mar, 23 de Jun.',time:'12:00',phase:'Grupo K',home:'Portugal',    hf:'🇵🇹',hc:'POR',away:'Uzbekistán',      af:'🇺🇿',ac:'UZB'},
+  {id:46, date:'Mar, 23 de Jun.',time:'15:00',phase:'Grupo L',home:'Inglaterra',  hf:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',hc:'ENG',away:'Ghana',         af:'🇬🇭',ac:'GHA'},
   {id:47, date:'Mar, 23 de Jun.',time:'18:00',phase:'Grupo L',home:'Panamá',      hf:'🇵🇦',hc:'PAN',away:'Croacia',         af:'🇭🇷',ac:'CRO'},
   {id:48, date:'Mar, 23 de Jun.',time:'21:00',phase:'Grupo K',home:'Colombia',    hf:'🇨🇴',hc:'COL',away:'RD Congo',        af:'🇨🇩',ac:'COD'},
   // ── FECHA 3 ──
@@ -739,6 +685,7 @@ const MATCHES = [
   {id:51, date:'Mié, 24 de Jun.',time:'20:00',phase:'Grupo A',home:'Sudáfrica',   hf:'🇿🇦',hc:'SA',away:'Corea del Sur',   af:'🇰🇷',ac:'COR'},
   {id:52, date:'Mié, 24 de Jun.',time:'20:00',phase:'Grupo A',home:'México',      hf:'🇲🇽',hc:'MX',away:'Rep. Checa',      af:'🇨🇿',ac:'TCH'},
   {id:53, date:'Jue, 25 de Jun.',time:'16:00',phase:'Grupo C',home:'Marruecos',   hf:'🇲🇦',hc:'MAR',away:'Haití',           af:'🇭🇹',ac:'HAI'},
+  {id:54, date:'Jue, 25 de Jun.',time:'16:00',phase:'Grupo C',home:'Escocia',     hf:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',hc:'SCO',away:'Brasil',       af:'🇧🇷',ac:'BR'},
   {id:55, date:'Jue, 25 de Jun.',time:'20:00',phase:'Grupo D',home:'Paraguay',    hf:'🇵🇾',hc:'PY',away:'EE.UU.',           af:'🇺🇸',ac:'US',py:true},
   {id:56, date:'Jue, 25 de Jun.',time:'20:00',phase:'Grupo D',home:'Turquía',     hf:'🇹🇷',hc:'TUR',away:'Australia',       af:'🇦🇺',ac:'AUS'},
   {id:57, date:'Vie, 26 de Jun.',time:'16:00',phase:'Grupo E',home:'Curazao',     hf:'🇨🇼',hc:'CUR',away:'Alemania',        af:'🇩🇪',ac:'GER'},
@@ -755,6 +702,7 @@ const MATCHES = [
   {id:68, date:'Dom, 28 de Jun.',time:'20:00',phase:'Grupo J',home:'Jordania',    hf:'🇯🇴',hc:'JOR',away:'Austria',         af:'🇦🇹',ac:'AUT'},
   {id:69, date:'Lun, 29 de Jun.',time:'16:00',phase:'Grupo K',home:'RD Congo',    hf:'🇨🇩',hc:'COD',away:'Portugal',        af:'🇵🇹',ac:'POR'},
   {id:70, date:'Lun, 29 de Jun.',time:'16:00',phase:'Grupo K',home:'Colombia',    hf:'🇨🇴',hc:'COL',away:'Uzbekistán',      af:'🇺🇿',ac:'UZB'},
+  {id:71, date:'Lun, 29 de Jun.',time:'20:00',phase:'Grupo L',home:'Croacia',     hf:'🇭🇷',hc:'CRO',away:'Inglaterra',      af:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',ac:'ENG'},
   {id:72, date:'Lun, 29 de Jun.',time:'20:00',phase:'Grupo L',home:'Panamá',      hf:'🇵🇦',hc:'PAN',away:'Ghana',           af:'🇬🇭',ac:'GHA'},
   // ── 1/16 ──
   {id:73, date:'Mar, 30 de Jun.',time:'14:00',phase:'1/16',home:'2º Gr. A',      hf:'⚽',hc:'',away:'2º Gr. B',           af:'⚽',ac:''},
@@ -898,8 +846,7 @@ function renderMatches(filter){
       const pick = userPicks[m.id];
       const hasPick = pick !== undefined;
       const card = document.createElement('div');
-      const locked = isMatchLocked(m);
-      card.className = `match-card ${locked?'locked-card':hasPick?'done':'pending'} ${m.py?'py-game':''}`;
+      card.className = `match-card ${hasPick?'done':'pending'} ${m.py?'py-game':''}`;
       const hScore = hasPick ? pick.home : '–';
       const aScore = hasPick ? pick.away : '–';
       const filledCls = hasPick ? 'filled' : '';
@@ -912,8 +859,8 @@ function renderMatches(filter){
           ${x2badge}
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
-          <span class="mc-status ${isMatchLocked(m)?'locked':hasPick?'done':'pending'}">
-            ${isMatchLocked(m) ? '🔒 Bloqueado' : hasPick ? '✓ Palpite feito' : '⏳ Pendente'}
+          <span class="mc-status ${hasPick?'done':'pending'}">
+            ${hasPick ? '✓ Palpite feito' : '⏳ Pendente'}
           </span>
         </div>
         <div class="mc-teams">
@@ -931,80 +878,17 @@ function renderMatches(filter){
             <span class="mc-flag">${m.af}</span>
           </div>
         </div>`;
-      if(!locked){
-        card.addEventListener('click', ()=>openModal(m.id));
-      } else {
-        card.addEventListener('click', ()=>showToastLocked(m));
-        card.style.cursor='not-allowed';
-      }
+      card.addEventListener('click', ()=>openModal(m.id));
       group.appendChild(card);
     });
     container.appendChild(group);
   });
 }
 
-// ══ TIME LOCK ══
-// Match dates mapped to real ISO dates (Paraguay UTC-4)
-const MATCH_DATES = {
-  'Jue, 11 de Jun.':'2026-06-11','Vie, 12 de Jun.':'2026-06-12',
-  'Sáb, 13 de Jun.':'2026-06-13','Dom, 14 de Jun.':'2026-06-14',
-  'Lun, 15 de Jun.':'2026-06-15','Mar, 16 de Jun.':'2026-06-16',
-  'Mié, 17 de Jun.':'2026-06-17','Jue, 18 de Jun.':'2026-06-18',
-  'Vie, 19 de Jun.':'2026-06-19','Sáb, 20 de Jun.':'2026-06-20',
-  'Dom, 21 de Jun.':'2026-06-21','Lun, 22 de Jun.':'2026-06-22',
-  'Mar, 23 de Jun.':'2026-06-23','Mié, 24 de Jun.':'2026-06-24',
-  'Jue, 25 de Jun.':'2026-06-25','Vie, 26 de Jun.':'2026-06-26',
-  'Sáb, 27 de Jun.':'2026-06-27','Dom, 28 de Jun.':'2026-06-28',
-  'Lun, 29 de Jun.':'2026-06-29','Mar, 30 de Jun.':'2026-06-30',
-  'Mié, 1 de Jul.' :'2026-07-01','Jue, 2 de Jul.' :'2026-07-02',
-  'Vie, 3 de Jul.' :'2026-07-03','Sáb, 4 de Jul.' :'2026-07-04',
-  'Dom, 5 de Jul.' :'2026-07-05','Lun, 7 de Jul.' :'2026-07-07',
-  'Mar, 8 de Jul.' :'2026-07-08','Mié, 9 de Jul.' :'2026-07-09',
-  'Jue, 10 de Jul.':'2026-07-10','Sáb, 12 de Jul.':'2026-07-12',
-  'Dom, 13 de Jul.':'2026-07-13','Mar, 15 de Jul.':'2026-07-15',
-  'Mié, 16 de Jul.':'2026-07-16','Sáb, 18 de Jul.':'2026-07-18',
-  'Dom, 19 de Jul.':'2026-07-19',
-};
-
-function getMatchKickoff(m){
-  const dateStr = MATCH_DATES[m.date];
-  if(!dateStr) return null;
-  // Time is Paraguay local (UTC-4)
-  const [h,min] = m.time.split(':').map(Number);
-  // Create UTC date: Paraguay UTC-4 means UTC = local + 4h
-  return new Date(`${dateStr}T${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}:00-04:00`);
-}
-
-function isMatchLocked(m){
-  const kickoff = getMatchKickoff(m);
-  if(!kickoff) return false;
-  const lockTime = new Date(kickoff.getTime() - 30 * 60 * 1000); // -30 min
-  return new Date() >= lockTime;
-}
-
-function getTimeUntilLock(m){
-  const kickoff = getMatchKickoff(m);
-  if(!kickoff) return null;
-  const lockTime = new Date(kickoff.getTime() - 30 * 60 * 1000);
-  const diff = lockTime - new Date();
-  if(diff <= 0) return null;
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const mins = Math.floor((diff % 3600000) / 60000);
-  if(days > 0) return `${days}d ${hours}h`;
-  if(hours > 0) return `${hours}h ${mins}min`;
-  return `${mins}min`;
-}
-
 // ══ MODAL ══
 function openModal(matchId){
   const m = MATCHES.find(x=>x.id===matchId);
   if(!m) return;
-  
-  if(isMatchLocked(m)){
-    showToastLocked(m);
-    return;
-  }
   activeMatchId = matchId;
   activeTeam = 'home';
 
@@ -1075,7 +959,7 @@ function savePick(){
   }
 
   const userPicks = loadUserPicks();
-  userPicks[activeMatchId] = { home: parseInt(hVal), away: parseInt(aVal), ts: new Date().toLocaleString('es-PY') };
+  userPicks[activeMatchId] = { home: parseInt(hVal), away: parseInt(aVal) };
   saveUserPicks(userPicks);
 
   closeModal();
@@ -1157,167 +1041,10 @@ function switchTab(tab, btn){
 }
 
 // ══ TOAST ══
-function showToastLocked(m){
-  const until = getTimeUntilLock(m);
-  if(until){
-    showSaveBanner(\`⏳ Partido abre en \${until}\`);
-  } else {
-    showSaveBanner('🔒 Plazo cerrado — el partido ya comenzó');
-  }
-  document.getElementById('save-banner').style.background='#DC2626';
-  setTimeout(()=>{ document.getElementById('save-banner').style.background=''; },2600);
-}
-
 function showSaveBanner(msg){
   const b=document.getElementById('save-banner');
   b.textContent=msg;b.classList.add('show');
   setTimeout(()=>b.classList.remove('show'),2500);
-}
-
-// ══ ADMIN ══
-const ADMIN_EMAIL = 'jeferson.simon@somaxagro.com';
-const ADMIN_PASS  = 'Som145Crm';
-
-function openAdminLogin(){
-  document.getElementById('admin-modal').style.display='flex';
-  document.body.style.overflow='hidden';
-  document.getElementById('admin-error').style.display='none';
-  document.getElementById('admin-email').value='';
-  document.getElementById('admin-pass').value='';
-}
-function closeAdminModal(){
-  document.getElementById('admin-modal').style.display='none';
-  document.body.style.overflow='';
-}
-function closeAdminOutside(e){
-  if(e.target===document.getElementById('admin-modal')) closeAdminModal();
-}
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('admin-pass')?.addEventListener('keydown',e=>{if(e.key==='Enter')doAdminLogin();});
-});
-
-function doAdminLogin(){
-  const email = document.getElementById('admin-email').value.trim().toLowerCase();
-  const pass  = document.getElementById('admin-pass').value;
-  if(email===ADMIN_EMAIL && pass===ADMIN_PASS){
-    closeAdminModal();
-    openAdminDash();
-  } else {
-    document.getElementById('admin-error').style.display='block';
-    document.getElementById('admin-pass').value='';
-  }
-}
-
-function openAdminDash(){
-  const all = loadAllPicks();
-  const users = Object.keys(all);
-  const totalPicks = users.reduce((s,u)=>s+Object.keys(all[u]).length,0);
-
-  // Stats
-  document.getElementById('admin-stats-wrap').innerHTML = `
-    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:14px;text-align:center;">
-      <div style="font-size:28px;font-weight:900;color:var(--green);">${users.length}</div>
-      <div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-top:3px;">Participantes</div>
-    </div>
-    <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:14px;text-align:center;">
-      <div style="font-size:28px;font-weight:900;color:#1D4ED8;">${totalPicks}</div>
-      <div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-top:3px;">Total Palpites</div>
-    </div>
-    <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:14px;text-align:center;">
-      <div style="font-size:28px;font-weight:900;color:#D97706;">${MATCHES.length}</div>
-      <div style="font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:1px;margin-top:3px;">Partidos</div>
-    </div>`;
-
-  // Participants list
-  let pHTML = '';
-  users.forEach(u=>{
-    const cnt = Object.keys(all[u]).length;
-    const pct = Math.round(cnt/MATCHES.length*100);
-    pHTML += `<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
-      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--blue));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;">${u.charAt(0).toUpperCase()}</div>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:700;">${u}</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:2px;">${cnt} palpites (${pct}%)</div>
-        <div style="background:var(--border);border-radius:4px;height:4px;margin-top:6px;overflow:hidden;">
-          <div style="background:var(--green);width:${pct}%;height:100%;border-radius:4px;transition:width .5s;"></div>
-        </div>
-      </div>
-      <div style="font-size:18px;font-weight:900;color:var(--green);">${cnt}</div>
-    </div>`;
-  });
-  document.getElementById('admin-participants-list').innerHTML = pHTML || '<p style="color:var(--sub);font-size:13px;">Sin participantes aún.</p>';
-
-  document.getElementById('admin-dash-modal').style.display='flex';
-  document.body.style.overflow='hidden';
-}
-
-function closeAdminDash(){
-  document.getElementById('admin-dash-modal').style.display='none';
-  document.body.style.overflow='';
-}
-function closeAdminDashOutside(e){
-  if(e.target===document.getElementById('admin-dash-modal')) closeAdminDash();
-}
-
-function downloadCSV(){
-  const all = loadAllPicks();
-  let csv = 'Nombre,Partido N°,Fase,Local,Visitante,Goles Local,Goles Visitante,Registrado\n';
-  Object.entries(all).forEach(([user, picks])=>{
-    Object.entries(picks).forEach(([mid, p])=>{
-      const m = MATCHES.find(x=>x.id===parseInt(mid));
-      if(!m) return;
-      csv += `"${user}","${m.id}","${m.phase}","${m.home}","${m.away}","${p.home}","${p.away}","${p.ts||'—'}"\n`;
-    });
-  });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  a.download = `somax-mundial2026-palpites-${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-  showSaveBanner('✓ CSV descargado!');
-}
-
-function downloadSummaryHTML(){
-  const all = loadAllPicks();
-  const users = Object.keys(all);
-  let rows = '';
-  users.forEach(u=>{
-    const picks = all[u];
-    MATCHES.forEach(m=>{
-      const p = picks[m.id];
-      rows += `<tr>
-        <td>${u}</td><td>${m.id}</td><td>${m.phase}</td>
-        <td>${m.date} ${m.time}</td>
-        <td>${m.home}</td><td>${m.away}</td>
-        <td style="text-align:center;font-weight:700;">${p?p.home:'—'}</td>
-        <td style="text-align:center;font-weight:700;">${p?p.away:'—'}</td>
-        <td style="text-align:center;">${p?'✅':'⏳'}</td>
-      </tr>`;
-    });
-  });
-  const html2 = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Somax Agro — Palpites Mundial 2026</title>
-  <style>body{font-family:Arial,sans-serif;font-size:12px;padding:20px;}
-  h1{color:#009B54;margin-bottom:4px;}
-  .sub{color:#6B7280;font-size:11px;margin-bottom:20px;}
-  table{border-collapse:collapse;width:100%;}
-  th{background:#1E293B;color:#fff;padding:8px 10px;text-align:left;font-size:11px;letter-spacing:1px;}
-  td{padding:7px 10px;border-bottom:1px solid #E5E7EB;}
-  tr:nth-child(even)td{background:#F9FAFB;}
-  @media print{button{display:none;}}
-  </style></head><body>
-  <h1>⚽ Somax Agro — Bolão Mundial 2026</h1>
-  <div class="sub">Generado: ${new Date().toLocaleString('es-PY')} · ${users.length} participantes · ${Object.values(all).reduce((s,p)=>s+Object.keys(p).length,0)} palpites</div>
-  <button onclick="window.print()" style="margin-bottom:16px;padding:8px 18px;background:#009B54;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">🖨 Imprimir</button>
-  <table><thead><tr>
-    <th>Nombre</th><th>P#</th><th>Fase</th><th>Fecha/Hora</th>
-    <th>Local</th><th>Visitante</th><th>Goles L</th><th>Goles V</th><th>Estado</th>
-  </tr></thead><tbody>${rows}</tbody></table>
-  </body></html>`;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html2],{type:'text/html;charset=utf-8;'}));
-  a.download = `somax-mundial2026-resumen-${new Date().toISOString().split('T')[0]}.html`;
-  a.click();
-  showSaveBanner('✓ Resumen HTML descargado!');
 }
 </script>
 </body>
