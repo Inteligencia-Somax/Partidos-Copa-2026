@@ -499,20 +499,12 @@ body{
   </div>
 </div>
 
-<!-- HERO -->
-<div class="py-stripe"></div>
-<div class="hero-banner">
-  <div class="hero-banner-inner">
-    <div class="hero-left">
-      <div class="hero-somax">SOMAX</div>
-      <span class="hero-mundial">MUNDIAL 2026</span>
-      <div class="hero-flags">🇵🇾 🇺🇸 🇲🇽 🇨🇦</div>
-    </div>
-    <div class="hero-right">
-      <div class="hero-trophy">🏆</div>
-      <div class="hero-pts">104 partidos</div>
-    </div>
-  </div>
+<div class="hero-banner-custom">
+    <img
+        src="./img/banner-somax-mundial-2026.jpg"
+        alt="Somax Mundial 2026"
+        class="hero-banner-img"
+    >
 </div>
 <div class="py-stripe" style="background:linear-gradient(90deg,var(--blue) 33%,#fff 33%,#fff 67%,var(--red) 67%)"></div>
 
@@ -4708,7 +4700,19 @@ body{
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
 .admin-copy-btn{background:#F8D45C;color:#173F1F;min-width:140px;}
 .admin-export-note{font-size:12px!important;margin-top:10px;color:var(--sub)!important;}
+.hero-banner-custom{
+    width:100%;
+    overflow:hidden;
+    margin:0;
+    padding:0;
+}
 
+.hero-banner-img{
+    width:100%;
+    display:block;
+    height:auto;
+    object-fit:cover;
+}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
