@@ -4803,6 +4803,32 @@ const MATCHES = [
   {id:104,date:'Dom, 19 de Jul.',time:'16:00',phase:'⭐ FINAL', home:'G. P101',   hf:'🏆',hc:'',away:'G. P102',           af:'🏆',ac:'',x2:true},
 ];
 
+// ══ GOOGLE SHEETS CONNECTION ══
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzjMtUNCncWhnNt_jcjN605qoW1x-ic7hd2oFBtjAJQsu6fgeT85EFYecA8GsGaPoV_/exec';
+
+async function sendPickToGoogleSheets(match, pick){
+  if(!GOOGLE_SCRIPT_URL) return;
+  const payload = {
+    nombre: currentUser,
+    partido: `${match.home} vs ${match.away}`,
+    local: match.home,
+    visitante: match.away,
+    golesLocal: pick.home,
+    golesVisitante: pick.away
+  };
+
+  try{
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+  }catch(err){
+    console.warn('No se pudo enviar el palpite a Google Sheets:', err);
+  }
+}
+
 // ══ STATE ══
 let currentUser = ''; // Se solicita el nombre en cada acceso para evitar mostrar usuarios anteriores
 let allPicks = {}; // { usuario: { matchId: {home:N, away:N} } }
@@ -5069,8 +5095,10 @@ function savePick(){
   }
 
   const userPicks = loadUserPicks();
-  userPicks[activeMatchId] = { home: parseInt(hVal), away: parseInt(aVal) };
+  const savedPick = { home: parseInt(hVal), away: parseInt(aVal) };
+  userPicks[activeMatchId] = savedPick;
   saveUserPicks(userPicks);
+  sendPickToGoogleSheets(match, savedPick);
 
   closeModal();
   renderMatches(currentFilter);
