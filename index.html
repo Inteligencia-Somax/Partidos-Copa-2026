@@ -4749,12 +4749,12 @@ body{
 .ko-round-head-sub{font-size:9px;font-weight:800;color:#6B7280;letter-spacing:.2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ko-round-status{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;border:1px solid transparent;box-shadow:0 2px 6px rgba(0,0,0,.06);}
 .ko-round-status.pending{background:#FFF7E2;color:#D97706;border-color:rgba(217,119,6,.18);}
-.ko-round-status.live{background:#EEF6FF;color:#2563EB;border-color:rgba(37,99,235,.14);}
+.ko-round-status.live{background:#E9F8EF;color:var(--green);border-color:rgba(0,155,84,.18);}
 .ko-round-status.done{background:#E9F8EF;color:var(--green);border-color:rgba(0,155,84,.16);}
 .ko-round-status.champion{background:#FFF3D2;color:#B7791F;border-color:rgba(183,121,31,.18);}
 .ko-round-head-meta{font-size:9.5px;font-weight:900;color:#374151;background:#FFFFFF;border:1px solid rgba(17,17,20,.08);border-radius:999px;padding:4px 7px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.03);}
 .ko-round-head-meta.pending{color:#B45309;background:#FFF9EC;border-color:rgba(217,119,6,.18);}
-.ko-round-head-meta.live{color:#1D4ED8;background:#EFF6FF;border-color:rgba(37,99,235,.16);}
+.ko-round-head-meta.live{color:var(--green);background:#F2FBF6;border-color:rgba(0,155,84,.16);}
 .ko-round-head-meta.done{color:var(--green);background:#F2FBF6;border-color:rgba(0,155,84,.16);}
 .ko-round-head-meta.champion{color:#92400E;background:#FFF7E2;border-color:rgba(183,121,31,.16);}
 .ko-round-toggle{width:24px;height:24px;border-radius:50%;background:#111114;border:1px solid rgba(17,17,20,.08);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0;font-weight:900;flex-shrink:0;transition:transform .22s ease,background .22s ease,box-shadow .22s ease;}
@@ -4795,19 +4795,17 @@ body{
 .ko-score{font-size:11px;font-weight:950;color:var(--green);background:#fff;border:1px solid rgba(0,155,84,.18);border-radius:999px;padding:4px 7px;min-width:auto;text-align:right;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.035);}
 .ko-placeholder{color:var(--sub);font-style:italic;font-weight:850;}
 .ko-empty{background:var(--white);border:1px dashed var(--border);border-radius:14px;padding:16px;text-align:center;color:var(--sub);font-size:13px;font-weight:600;line-height:1.5;}
-.ko-games-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#FFFFFF;border:1px solid rgba(17,17,20,.08);border-radius:13px;padding:9px 10px;margin:0 0 10px;box-shadow:0 2px 8px rgba(0,0,0,.035);font-family:'Inter',sans-serif;cursor:pointer;text-align:left;}
-.ko-games-btn-left{display:flex;align-items:center;gap:8px;min-width:0;}
-.ko-games-btn-icon{width:22px;height:22px;border-radius:50%;background:#FFF7E2;color:#D97706;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:950;flex-shrink:0;}
-.ko-games-btn-title{font-size:10.5px;font-weight:950;color:#374151;text-transform:uppercase;letter-spacing:.55px;line-height:1.2;}
-.ko-games-btn-sub{font-size:9.5px;font-weight:800;color:#6B7280;margin-top:2px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ko-games-btn-action{font-size:10px;font-weight:950;color:var(--green);background:#F2FBF6;border:1px solid rgba(0,155,84,.16);border-radius:999px;padding:4px 8px;white-space:nowrap;flex-shrink:0;}
-.ko-games-modal{position:fixed;inset:0;background:rgba(17,17,20,.48);z-index:9998;display:flex;align-items:flex-end;justify-content:center;padding:18px 12px;animation:fadeIn .18s ease;}
-.ko-games-modal-card{width:100%;max-width:520px;background:#FFFFFF;border-radius:22px;box-shadow:0 18px 48px rgba(0,0,0,.24);overflow:hidden;animation:slideUp .22s ease;}
+.ko-round-head-copy{display:flex;flex-direction:column;min-width:0;gap:2px;}
+.ko-round-head-subrow{display:flex;align-items:center;gap:6px;min-width:0;}
+.ko-head-info-btn{width:18px;height:18px;border-radius:50%;border:1px solid rgba(0,155,84,.16);background:#F2FBF6;color:var(--green);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:950;cursor:pointer;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.ko-head-info-btn:hover{background:#E8F5EE;}
+.ko-games-modal{position:fixed;inset:0;background:rgba(17,17,20,.48);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .18s ease;}
+.ko-games-modal-card{width:100%;max-width:520px;background:#FFFFFF;border-radius:22px;box-shadow:0 18px 48px rgba(0,0,0,.24);overflow:hidden;animation:fadeUp .22s ease;max-height:min(78vh,680px);display:flex;flex-direction:column;}
 .ko-games-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 16px 12px;background:linear-gradient(135deg,#FFFFFF,#F7FAF8);border-bottom:1px solid var(--border);}
 .ko-games-modal-title{font-size:14px;font-weight:950;color:var(--text);line-height:1.25;}
 .ko-games-modal-sub{font-size:12px;font-weight:700;color:var(--sub);line-height:1.45;margin-top:3px;}
-.ko-games-close{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:#F4F5F7;color:#111114;font-size:17px;font-weight:900;cursor:pointer;flex-shrink:0;}
-.ko-games-modal-body{padding:12px 14px 16px;max-height:min(65vh,520px);overflow:auto;}
+.ko-games-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:#F4F5F7;color:#111114;font-size:18px;font-weight:900;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.ko-games-modal-body{padding:12px 14px 16px;max-height:none;overflow:auto;}
 .ko-games-source{font-size:12px;color:var(--sub);line-height:1.45;margin:0 0 10px;background:#FFF8E1;border:1px solid #F0C14B;border-radius:12px;padding:9px 10px;font-weight:700;}
 .ko-games-list{display:flex;flex-direction:column;gap:7px;}
 .ko-game-line{display:flex;align-items:center;gap:8px;background:#F7F8FA;border:1px solid #EEF0F3;border-radius:11px;padding:8px 9px;min-width:0;}
@@ -4818,7 +4816,7 @@ body{
 .ko-player.leading .ko-seed{background:#F59E0B;border-color:#F59E0B;color:#111114;box-shadow:0 3px 10px rgba(245,158,11,.20);}
 .ko-player.leading .ko-name{color:#92400E;}
 .ko-player.leading::after{content:'▲';width:19px;height:19px;border-radius:50%;background:#F59E0B;color:#111114;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:950;box-shadow:0 3px 9px rgba(245,158,11,.20);flex-shrink:0;}
-@media(max-width:430px){.ko-games-btn-title{font-size:10px;}.ko-games-btn-sub{font-size:9px;}.ko-games-btn-action{display:none;}.ko-games-modal{padding:10px;}.ko-games-modal-title{font-size:13px;}.ko-games-modal-body{max-height:68vh;}.ko-game-line{padding:7px 8px;gap:6px;}.ko-game-date{font-size:9.5px;}.ko-game-teams{font-size:11.5px;}}
+@media(max-width:430px){.ko-round-head-subrow{gap:5px;}.ko-head-info-btn{width:17px;height:17px;font-size:10px;}.ko-games-modal{padding:10px;}.ko-games-modal-title{font-size:13px;}.ko-games-modal-card{max-height:80vh;border-radius:18px;}.ko-games-modal-body{padding:11px 11px 14px;}.ko-game-line{padding:7px 8px;gap:6px;}.ko-game-date{font-size:9.5px;}.ko-game-teams{font-size:11.5px;}}
 
 @media(min-width:620px){.ko-round-grid{grid-template-columns:repeat(2,1fr);} .ko-summary{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:430px){.ko-summary{grid-template-columns:1fr;} .knockout-page-head{flex-direction:column;} .ko-bracket-shell::before{left:10px;} .ko-round::before{left:10px;width:11px;} .ko-round-head{padding-left:9px;} .ko-round-status{width:20px;height:20px;font-size:10px;} .ko-round-head-meta{display:none;} .ko-round-grid{padding-left:2px;} .ko-pair{padding:8px 9px 9px;border-radius:15px;} .ko-name{font-size:11.8px;} .ko-player{padding:7px 8px;gap:7px;min-height:36px;} .ko-seed{width:24px;height:24px;font-size:9.5px;} .ko-score{font-size:10.5px;padding:3px 6px;} .ko-pair-title{margin-bottom:6px;} .ko-duel{gap:6px;}}
@@ -5796,21 +5794,8 @@ function renderKoPlayer(player, score, winner, leading){
 
   return `<div class="ko-player ${stateClass}"><span class="ko-seed">${escapeHTML(seed)}</span><span class="ko-name ${player.placeholder?'ko-placeholder':''}">${escapeHTML(player.name)}</span>${scoreHTML}</div>`;
 }
-function renderKoGamesButton(phaseKey){
-  const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
-  const games = MATCHES.filter(m=>phase.phases.includes(m.phase));
-  const total = games.length;
-
-  return `<button type="button" class="ko-games-btn" onclick="openKoGamesModal('${phaseKey}')">
-    <div class="ko-games-btn-left">
-      <span class="ko-games-btn-icon">⏳</span>
-      <div style="min-width:0;">
-        <div class="ko-games-btn-title">Juegos considerados para la puntuación</div>
-        <div class="ko-games-btn-sub">${escapeHTML(phase.sourceLabel)} · ${total} juego(s)</div>
-      </div>
-    </div>
-    <span class="ko-games-btn-action">Ver juegos</span>
-  </button>`;
+function renderKoInfoButton(phaseKey){
+  return `<button type="button" class="ko-head-info-btn" onclick="event.preventDefault(); event.stopPropagation(); openKoGamesModal('${phaseKey}')" aria-label="Ver juegos considerados">i</button>`;
 }
 
 function openKoGamesModal(phaseKey){
@@ -5826,6 +5811,7 @@ function openKoGamesModal(phaseKey){
       `).join('')
     : '<div class="ko-game-empty">Todavía no hay juegos cargados para esta fase.</div>';
 
+  closeKoGamesModal();
   const modal = document.createElement('div');
   modal.className = 'ko-games-modal';
   modal.id = 'ko-games-modal';
@@ -5836,7 +5822,7 @@ function openKoGamesModal(phaseKey){
           <div class="ko-games-modal-title">Juegos considerados para la puntuación</div>
           <div class="ko-games-modal-sub">${escapeHTML(phase.sourceLabel)}</div>
         </div>
-        <button type="button" class="ko-games-close" onclick="closeKoGamesModal()">×</button>
+        <button type="button" class="ko-games-close" onclick="closeKoGamesModal()" aria-label="Cerrar">×</button>
       </div>
       <div class="ko-games-modal-body">
         <div class="ko-games-source">Estos partidos de la Copa suman puntos automáticamente en esta fase del mata mata cuando el administrador carga los resultados.</div>
@@ -5856,17 +5842,39 @@ function closeKoGamesModal(){
   document.body.style.overflow = '';
 }
 
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeKoGamesModal(); });
+
+function isPreviousKoRoundComplete(phaseKey){
+  const order = ['r16','qf','sf','fn'];
+  const index = order.indexOf(phaseKey);
+
+  if(index <= 0) return hasKnockoutOfficiallyStarted();
+
+  const prevKey = order[index - 1];
+  const prevPhase = ADMIN_KNOCKOUT_PHASES[prevKey];
+  const prevTotal = getPhaseTotalCount(prevPhase.phases);
+  const prevFinished = getPhaseFinishedCount(prevPhase.phases);
+
+  return prevTotal > 0 && prevFinished >= prevTotal;
+}
+
 function getKoRoundStatus(phaseKey, items){
   const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
   const decided = items.filter(p=>p.winner).length;
   const totalMatches = getPhaseTotalCount(phase.phases);
   const finishedMatches = getPhaseFinishedCount(phase.phases);
-  if(decided === items.length && items.length > 0){
+  const phaseComplete = totalMatches > 0 && finishedMatches >= totalMatches;
+
+  if(phaseComplete && decided === items.length && items.length > 0){
     return {icon:'✓', state:'done', meta:`${decided}/${items.length} definido(s)`, sub:phase.sourceLabel};
   }
-  if(finishedMatches > 0){
-    return {icon:'◔', state:'live', meta:'En curso', sub:phase.sourceLabel};
+
+  const isCurrentPhase = isPreviousKoRoundComplete(phaseKey);
+
+  if(isCurrentPhase){
+    return {icon:'●', state:'live', meta:'Fase actual', sub:phase.sourceLabel};
   }
+
   return {icon:'⏳', state:'pending', meta:'Pendiente', sub:phase.sourceLabel};
 }
 
@@ -5876,21 +5884,23 @@ function renderKoRound(title, items, phaseKey, prefix){
   const status = getKoRoundStatus(phaseKey, items);
 
   return `<div class="ko-round${openClass}">
-    <button type="button" class="ko-round-head" onclick="toggleKoRound('${phaseKey}')">
+    <div class="ko-round-head" role="button" tabindex="0" onclick="toggleKoRound('${phaseKey}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleKoRound('${phaseKey}')}">
       <div class="ko-round-head-left">
         <span class="ko-round-status ${status.state}">${status.icon}</span>
         <div class="ko-round-head-copy">
           <span class="ko-round-head-title">${escapeHTML(title)}</span>
-          <span class="ko-round-head-sub">${escapeHTML(status.sub)}</span>
+          <div class="ko-round-head-subrow">
+            <span class="ko-round-head-sub">${escapeHTML(status.sub)}</span>
+            ${renderKoInfoButton(phaseKey)}
+          </div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span class="ko-round-head-meta ${status.state}">${escapeHTML(status.meta)}</span>
         <span class="ko-round-toggle" aria-hidden="true"></span>
       </div>
-    </button>
+    </div>
     <div class="ko-round-grid">
-      <div style="grid-column:1/-1;">${renderKoGamesButton(phaseKey)}</div>
       ${items.map((p,i)=>{
         const leftLeading = !p.complete && p.leftScore !== null && p.rightScore !== null && p.leftScore > p.rightScore;
         const rightLeading = !p.complete && p.leftScore !== null && p.rightScore !== null && p.rightScore > p.leftScore;
@@ -5911,14 +5921,15 @@ function renderKoChampion(finalPair){
   const champion = finalPair && finalPair.winner ? finalPair.winner : null;
   const championScore = champion && finalPair.left && champion.name===finalPair.left.name ? finalPair.leftScore : champion && finalPair.right && champion.name===finalPair.right.name ? finalPair.rightScore : null;
   const hasFinalProgress = getPhaseFinishedCount(ADMIN_KNOCKOUT_PHASES.fn.phases) > 0;
+  const finalReady = isPreviousKoRoundComplete('fn');
   const status = champion
     ? {icon:'🏆', state:'champion', meta:'Campeón definido', sub:'Se definió con semifinales, 3° puesto y final'}
-    : hasFinalProgress
-      ? {icon:'◔', state:'live', meta:'En definición', sub:'Se definirá con semifinales, 3° puesto y final'}
+    : (hasFinalProgress || finalReady)
+      ? {icon:'●', state:'live', meta:'En definición', sub:'Se definirá con semifinales, 3° puesto y final'}
       : {icon:'⏳', state:'pending', meta:'Pendiente', sub:'Se definirá con semifinales, 3° puesto y final'};
 
   return `<div class="ko-round${openClass}">
-    <button type="button" class="ko-round-head" onclick="toggleKoRound('champ')">
+    <div class="ko-round-head" role="button" tabindex="0" onclick="toggleKoRound('champ')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleKoRound('champ')}">
       <div class="ko-round-head-left">
         <span class="ko-round-status ${status.state}">${status.icon}</span>
         <div class="ko-round-head-copy">
@@ -5930,7 +5941,7 @@ function renderKoChampion(finalPair){
         <span class="ko-round-head-meta ${status.state}">${escapeHTML(status.meta)}</span>
         <span class="ko-round-toggle" aria-hidden="true"></span>
       </div>
-    </button>
+    </div>
     <div class="ko-round-grid">
       <div class="ko-pair">
         ${champion ? `
@@ -5985,12 +5996,6 @@ function toggleAdminKnockout(){
   if(adminKnockoutVisible) renderAdminKnockout();
 }
 
-function getKnockoutStartDateText(){
-  const match = getFirstKnockoutMatch();
-  if(!match) return 'al inicio de los 16avos de la Copa';
-  return `${match.date} a las ${match.time}`;
-}
-
 function renderKnockoutPanel(){
   if(currentUserRole !== 'admin') return;
 
@@ -6006,10 +6011,9 @@ function renderKnockoutPanel(){
 
   const data = buildAdminKnockoutData();
   const modeText = data.official ? 'oficial' : 'previa';
-  const startDate = getKnockoutStartDateText();
   const noteText = data.official
     ? 'El mata mata ya empezó oficialmente y la llave quedó congelada con los 16 primeros del ranking antes de los 16avos de la Copa.'
-    : `Si empezara hoy, estos serían los cruces con base en el ranking actual. Los 16 clasificados se definirán el ${startDate}. La llave oficial se congelará al inicio de los 16avos de la Copa o cuando se cargue el primer resultado de esa fase.`;
+    : 'Si empezara hoy, estos serían los cruces con base en el ranking actual. Los 16 clasificados se definirán justo antes del inicio de los 16avos de la Copa. La llave oficial se congelará al inicio de los 16avos de la Copa o cuando se cargue el primer resultado de esa fase.';
 
   container.innerHTML = `
     <div class="ko-summary">
