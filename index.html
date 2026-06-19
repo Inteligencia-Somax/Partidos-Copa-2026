@@ -5985,19 +5985,9 @@ function toggleAdminKnockout(){
   if(adminKnockoutVisible) renderAdminKnockout();
 }
 
-function getLastDefinitionMatch(){
-  const finalGames = MATCHES.filter(m=>m.phase==='⭐ FINAL');
-  if(finalGames.length) return finalGames[finalGames.length-1];
-
-  const definitionGames = MATCHES.filter(m=>ADMIN_KNOCKOUT_PHASES.fn.phases.includes(m.phase));
-  if(!definitionGames.length) return null;
-
-  return definitionGames.slice().sort((a,b)=>getMatchDateTime(a)-getMatchDateTime(b)).pop();
-}
-
-function getDefinitionDateText(){
-  const match = getLastDefinitionMatch();
-  if(!match) return 'al cargarse el resultado de la final de la Copa';
+function getKnockoutStartDateText(){
+  const match = getFirstKnockoutMatch();
+  if(!match) return 'al inicio de los 16avos de la Copa';
   return `${match.date} a las ${match.time}`;
 }
 
@@ -6016,10 +6006,10 @@ function renderKnockoutPanel(){
 
   const data = buildAdminKnockoutData();
   const modeText = data.official ? 'oficial' : 'previa';
-  const definitionDate = getDefinitionDateText();
+  const startDate = getKnockoutStartDateText();
   const noteText = data.official
-    ? `El mata mata ya empezó oficialmente y la llave quedó congelada con los 16 primeros del ranking antes de los 16avos de la Copa. El campeón se definirá el ${definitionDate}.`
-    : `Si empezara hoy, estos serían los cruces con base en el ranking actual. La llave oficial se congelará al inicio de los 16avos de la Copa o cuando se cargue el primer resultado de esa fase. El campeón se definirá el ${definitionDate}.`;
+    ? 'El mata mata ya empezó oficialmente y la llave quedó congelada con los 16 primeros del ranking antes de los 16avos de la Copa.'
+    : `Si empezara hoy, estos serían los cruces con base en el ranking actual. Los 16 clasificados se definirán el ${startDate}. La llave oficial se congelará al inicio de los 16avos de la Copa o cuando se cargue el primer resultado de esa fase.`;
 
   container.innerHTML = `
     <div class="ko-summary">
