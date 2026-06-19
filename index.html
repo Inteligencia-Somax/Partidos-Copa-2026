@@ -4741,12 +4741,22 @@ body{
 .ko-bracket-shell::before{content:'';position:absolute;left:12px;top:14px;bottom:14px;width:2px;background:linear-gradient(180deg,rgba(0,155,84,.45),rgba(0,56,168,.14),rgba(0,155,84,.45));border-radius:999px;opacity:.45;}
 .ko-round{margin-top:10px;position:relative;padding-left:0;}
 .ko-round::before{content:'';position:absolute;left:12px;top:19px;width:13px;height:2px;background:rgba(0,155,84,.30);border-radius:999px;opacity:.65;}
-.ko-round-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px 9px 34px;background:linear-gradient(135deg,#FFFFFF 0%,#F7FAF8 74%,#EEF8F3 100%);border:1px solid rgba(0,155,84,.14);border-radius:14px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.045);font-family:'Inter',sans-serif;text-align:left;position:relative;overflow:hidden;}
-.ko-round-head::after{content:'';position:absolute;right:-45px;top:-45px;width:110px;height:110px;background:radial-gradient(circle,rgba(0,155,84,.11),transparent 65%);pointer-events:none;}
-.ko-round-head-left{display:flex;align-items:center;gap:9px;min-width:0;}
-.ko-round-head-left::before{content:'';position:absolute;left:10px;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green2));box-shadow:0 0 0 4px rgba(0,155,84,.10),0 3px 8px rgba(0,155,84,.18);flex-shrink:0;}
-.ko-round-head-title{font-size:10.5px;font-weight:950;letter-spacing:1px;text-transform:uppercase;color:#374151;line-height:1.25;}
-.ko-round-head-meta{font-size:9.5px;font-weight:900;color:var(--green);background:#FFFFFF;border:1px solid rgba(0,155,84,.16);border-radius:999px;padding:4px 7px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.035);}
+.ko-round-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;background:linear-gradient(135deg,#FFFFFF 0%,#F8FAFB 78%,#F1F5F3 100%);border:1px solid rgba(17,17,20,.08);border-radius:14px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.045);font-family:'Inter',sans-serif;text-align:left;position:relative;overflow:hidden;}
+.ko-round-head::after{content:'';position:absolute;right:-45px;top:-45px;width:110px;height:110px;background:radial-gradient(circle,rgba(17,17,20,.035),transparent 65%);pointer-events:none;}
+.ko-round-head-left{display:flex;align-items:center;gap:9px;min-width:0;flex:1;}
+.ko-round-head-copy{display:flex;flex-direction:column;min-width:0;gap:2px;}
+.ko-round-head-title{font-size:10.5px;font-weight:950;letter-spacing:1px;text-transform:uppercase;color:#374151;line-height:1.2;}
+.ko-round-head-sub{font-size:9px;font-weight:800;color:#6B7280;letter-spacing:.2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ko-round-status{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;border:1px solid transparent;box-shadow:0 2px 6px rgba(0,0,0,.06);}
+.ko-round-status.pending{background:#FFF7E2;color:#D97706;border-color:rgba(217,119,6,.18);}
+.ko-round-status.live{background:#EEF6FF;color:#2563EB;border-color:rgba(37,99,235,.14);}
+.ko-round-status.done{background:#E9F8EF;color:var(--green);border-color:rgba(0,155,84,.16);}
+.ko-round-status.champion{background:#FFF3D2;color:#B7791F;border-color:rgba(183,121,31,.18);}
+.ko-round-head-meta{font-size:9.5px;font-weight:900;color:#374151;background:#FFFFFF;border:1px solid rgba(17,17,20,.08);border-radius:999px;padding:4px 7px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.03);}
+.ko-round-head-meta.pending{color:#B45309;background:#FFF9EC;border-color:rgba(217,119,6,.18);}
+.ko-round-head-meta.live{color:#1D4ED8;background:#EFF6FF;border-color:rgba(37,99,235,.16);}
+.ko-round-head-meta.done{color:var(--green);background:#F2FBF6;border-color:rgba(0,155,84,.16);}
+.ko-round-head-meta.champion{color:#92400E;background:#FFF7E2;border-color:rgba(183,121,31,.16);}
 .ko-round-toggle{width:24px;height:24px;border-radius:50%;background:#111114;border:1px solid rgba(17,17,20,.08);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0;font-weight:900;flex-shrink:0;transition:transform .22s ease,background .22s ease,box-shadow .22s ease;}
 .ko-round-toggle::before{content:'';width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-1px,-1px);transition:transform .22s ease;}
 .ko-round.open .ko-round-toggle{background:var(--green);box-shadow:0 5px 14px rgba(0,155,84,.25);}
@@ -4769,16 +4779,40 @@ body{
 .ko-player.winner .ko-seed{background:#111114;border-color:#111114;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.20);}
 .ko-name{font-size:12.2px;font-weight:950;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.2px;}
 .ko-player.winner .ko-name{color:var(--green2);}
-.ko-player.champion{background:linear-gradient(135deg,#FFF7DB 0%,#FFFFFF 100%);border-color:rgba(245,158,11,.48);box-shadow:inset 0 0 0 1px rgba(245,158,11,.12),0 5px 14px rgba(245,158,11,.13);}
+.ko-champion-card{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFFFF 100%);border:1px solid rgba(245,158,11,.32);border-radius:16px;padding:12px;box-shadow:0 8px 24px rgba(183,121,31,.10);}
+.ko-champion-medal{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#111114,#2A2A2E);color:#FFD76A;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 8px 18px rgba(0,0,0,.16);flex-shrink:0;}
+.ko-champion-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
+.ko-champion-kicker{font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#B7791F;}
+.ko-champion-name{font-size:14px;font-weight:950;color:#92400E;line-height:1.2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ko-champion-sub{font-size:11px;font-weight:700;color:#6B7280;line-height:1.35;}
+.ko-champion-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+.ko-player.champion{display:none;}
 .ko-player.champion .ko-seed{background:var(--gold);border-color:var(--gold);color:#111114;box-shadow:0 4px 12px rgba(245,158,11,.24);}
 .ko-player.champion .ko-name{color:#92400E;}
 .ko-crown{width:22px;height:22px;border-radius:50%;background:#111114;color:#FFD76A;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:950;flex-shrink:0;box-shadow:0 3px 9px rgba(0,0,0,.18);}
+@media(max-width:430px){.ko-champion-card{padding:10px;gap:10px;}.ko-champion-medal{width:36px;height:36px;border-radius:12px;font-size:19px;}.ko-champion-name{font-size:12.5px;}.ko-champion-sub{font-size:10.5px;}}
 
 .ko-score{font-size:11px;font-weight:950;color:var(--green);background:#fff;border:1px solid rgba(0,155,84,.18);border-radius:999px;padding:4px 7px;min-width:auto;text-align:right;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.035);}
 .ko-placeholder{color:var(--sub);font-style:italic;font-weight:850;}
 .ko-empty{background:var(--white);border:1px dashed var(--border);border-radius:14px;padding:16px;text-align:center;color:var(--sub);font-size:13px;font-weight:600;line-height:1.5;}
+.ko-games-info{background:#FFFFFF;border:1px solid rgba(0,155,84,.14);border-radius:14px;margin:0 0 10px;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.035);overflow:hidden;}
+.ko-games-info summary{list-style:none;cursor:pointer;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;font-weight:950;color:#374151;text-transform:uppercase;letter-spacing:.65px;}
+.ko-games-info summary::-webkit-details-marker{display:none;}
+.ko-games-info summary::after{content:'';width:8px;height:8px;border-right:2px solid var(--green);border-bottom:2px solid var(--green);transform:rotate(45deg);transition:transform .2s ease;flex-shrink:0;}
+.ko-games-info[open] summary::after{transform:rotate(225deg);}
+.ko-games-info-title{display:flex;align-items:center;gap:7px;min-width:0;}
+.ko-games-info-title::before{content:'i';width:18px;height:18px;border-radius:50%;background:#E8F5EE;color:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:950;text-transform:none;letter-spacing:0;}
+.ko-games-info-body{padding:0 12px 11px;border-top:1px solid rgba(0,155,84,.10);}
+.ko-games-source{font-size:12px;color:var(--sub);line-height:1.45;margin:9px 0 8px;}
+.ko-games-list{display:flex;flex-direction:column;gap:6px;}
+.ko-game-line{display:flex;align-items:center;gap:8px;background:#F7F8FA;border:1px solid #EEF0F3;border-radius:10px;padding:8px 9px;min-width:0;}
+.ko-game-date{font-size:10px;font-weight:900;color:var(--green);background:#FFFFFF;border:1px solid rgba(0,155,84,.14);border-radius:999px;padding:3px 6px;white-space:nowrap;flex-shrink:0;}
+.ko-game-teams{font-size:12px;font-weight:800;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ko-game-empty{font-size:12px;color:var(--sub);font-weight:700;padding:9px 0;}
+@media(max-width:430px){.ko-games-info summary{font-size:10px;padding:9px 10px;}.ko-games-info-body{padding:0 10px 10px;}.ko-game-line{padding:7px 8px;gap:6px;}.ko-game-date{font-size:9.5px;}.ko-game-teams{font-size:11.5px;}}
+
 @media(min-width:620px){.ko-round-grid{grid-template-columns:repeat(2,1fr);} .ko-summary{grid-template-columns:repeat(2,1fr);}}
-@media(max-width:430px){.ko-summary{grid-template-columns:1fr;} .knockout-page-head{flex-direction:column;} .ko-bracket-shell::before{left:10px;} .ko-round::before{left:10px;width:11px;} .ko-round-head{padding-left:31px;} .ko-round-head-left::before{left:8px;width:12px;height:12px;} .ko-round-head-meta{display:none;} .ko-round-grid{padding-left:2px;} .ko-pair{padding:8px 9px 9px;border-radius:15px;} .ko-name{font-size:11.8px;} .ko-player{padding:7px 8px;gap:7px;min-height:36px;} .ko-seed{width:24px;height:24px;font-size:9.5px;} .ko-score{font-size:10.5px;padding:3px 6px;} .ko-pair-title{margin-bottom:6px;} .ko-duel{gap:6px;}}
+@media(max-width:430px){.ko-summary{grid-template-columns:1fr;} .knockout-page-head{flex-direction:column;} .ko-bracket-shell::before{left:10px;} .ko-round::before{left:10px;width:11px;} .ko-round-head{padding-left:9px;} .ko-round-status{width:20px;height:20px;font-size:10px;} .ko-round-head-meta{display:none;} .ko-round-grid{padding-left:2px;} .ko-pair{padding:8px 9px 9px;border-radius:15px;} .ko-name{font-size:11.8px;} .ko-player{padding:7px 8px;gap:7px;min-height:36px;} .ko-seed{width:24px;height:24px;font-size:9.5px;} .ko-score{font-size:10.5px;padding:3px 6px;} .ko-pair-title{margin-bottom:6px;} .ko-duel{gap:6px;}}
 /* Banner superior personalizado Somax Mundial */
 .hero-banner-custom{
     width:100%;
@@ -5752,22 +5786,65 @@ function renderKoPlayer(player, score, winner){
 
   return `<div class="ko-player ${winner?'winner':''}"><span class="ko-seed">${escapeHTML(seed)}</span><span class="ko-name ${player.placeholder?'ko-placeholder':''}">${escapeHTML(player.name)}</span>${scoreHTML}</div>`;
 }
+function renderKoGamesInfo(phaseKey){
+  const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
+  const games = MATCHES.filter(m=>phase.phases.includes(m.phase));
+
+  const listHTML = games.length
+    ? games.map(m=>`
+        <div class="ko-game-line">
+          <span class="ko-game-date">${escapeHTML(m.date)} ${escapeHTML(m.time)}</span>
+          <span class="ko-game-teams">${escapeHTML(m.home)} x ${escapeHTML(m.away)}</span>
+        </div>
+      `).join('')
+    : '<div class="ko-game-empty">Todavía no hay juegos cargados para esta fase.</div>';
+
+  return `<details class="ko-games-info">
+    <summary><span class="ko-games-info-title">Juegos considerados para la puntuación</span></summary>
+    <div class="ko-games-info-body">
+      <div class="ko-games-source">${escapeHTML(phase.sourceLabel)}. Estos son los partidos de la Copa que suman puntos en esta fase del mata mata.</div>
+      <div class="ko-games-list">${listHTML}</div>
+    </div>
+  </details>`;
+}
+
+
+function getKoRoundStatus(phaseKey, items){
+  const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
+  const decided = items.filter(p=>p.winner).length;
+  const totalMatches = getPhaseTotalCount(phase.phases);
+  const finishedMatches = getPhaseFinishedCount(phase.phases);
+  if(decided === items.length && items.length > 0){
+    return {icon:'✓', state:'done', meta:`${decided}/${items.length} definido(s)`, sub:phase.sourceLabel};
+  }
+  if(finishedMatches > 0){
+    return {icon:'◔', state:'live', meta:'En curso', sub:phase.sourceLabel};
+  }
+  return {icon:'⏳', state:'pending', meta:'Pendiente', sub:phase.sourceLabel};
+}
 
 function renderKoRound(title, items, phaseKey, prefix){
   const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
   const openClass = knockoutRoundOpenState[phaseKey] ? ' open' : '';
-  const decided = items.filter(p=>p.winner).length;
-  const meta = decided > 0 ? `${decided}/${items.length} definido(s)` : phase.sourceLabel;
+  const status = getKoRoundStatus(phaseKey, items);
 
   return `<div class="ko-round${openClass}">
     <button type="button" class="ko-round-head" onclick="toggleKoRound('${phaseKey}')">
-      <div class="ko-round-head-left"><span class="ko-round-head-title">${escapeHTML(title)}</span></div>
+      <div class="ko-round-head-left">
+        <span class="ko-round-status ${status.state}">${status.icon}</span>
+        <div class="ko-round-head-copy">
+          <span class="ko-round-head-title">${escapeHTML(title)}</span>
+          <span class="ko-round-head-sub">${escapeHTML(status.sub)}</span>
+        </div>
+      </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <span class="ko-round-head-meta">${escapeHTML(meta)}</span>
+        <span class="ko-round-head-meta ${status.state}">${escapeHTML(status.meta)}</span>
         <span class="ko-round-toggle" aria-hidden="true"></span>
       </div>
     </button>
-    <div class="ko-round-grid">${items.map((p,i)=>`
+    <div class="ko-round-grid">
+      <div style="grid-column:1/-1;">${renderKoGamesInfo(phaseKey)}</div>
+      ${items.map((p,i)=>`
       <div class="ko-pair">
         <div class="ko-pair-title"><span>${escapeHTML(prefix)}${i+1}</span></div>
         <div class="ko-duel">
@@ -5783,22 +5860,50 @@ function renderKoChampion(finalPair){
   const openClass = knockoutRoundOpenState.champ ? ' open' : '';
   const champion = finalPair && finalPair.winner ? finalPair.winner : null;
   const championScore = champion && finalPair.left && champion.name===finalPair.left.name ? finalPair.leftScore : champion && finalPair.right && champion.name===finalPair.right.name ? finalPair.rightScore : null;
-  const meta = champion ? 'campeón definido' : 'por definir';
+  const hasFinalProgress = getPhaseFinishedCount(ADMIN_KNOCKOUT_PHASES.fn.phases) > 0;
+  const status = champion
+    ? {icon:'🏆', state:'champion', meta:'Campeón definido', sub:'Se definió con semifinales, 3° puesto y final'}
+    : hasFinalProgress
+      ? {icon:'◔', state:'live', meta:'En definición', sub:'Se definirá con semifinales, 3° puesto y final'}
+      : {icon:'⏳', state:'pending', meta:'Pendiente', sub:'Se definirá con semifinales, 3° puesto y final'};
 
   return `<div class="ko-round${openClass}">
     <button type="button" class="ko-round-head" onclick="toggleKoRound('champ')">
-      <div class="ko-round-head-left"><span class="ko-round-head-title">Campeón del mata mata</span></div>
+      <div class="ko-round-head-left">
+        <span class="ko-round-status ${status.state}">${status.icon}</span>
+        <div class="ko-round-head-copy">
+          <span class="ko-round-head-title">Campeón del mata mata</span>
+          <span class="ko-round-head-sub">${escapeHTML(status.sub)}</span>
+        </div>
+      </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <span class="ko-round-head-meta">${escapeHTML(meta)}</span>
+        <span class="ko-round-head-meta ${status.state}">${escapeHTML(status.meta)}</span>
         <span class="ko-round-toggle" aria-hidden="true"></span>
       </div>
     </button>
     <div class="ko-round-grid">
       <div class="ko-pair">
-        <div class="ko-pair-title"><span>🏆</span></div>
-        <div class="ko-duel">
-          ${champion ? `<div class="ko-player champion"><span class="ko-crown">★</span><span class="ko-seed">${escapeHTML(champion.seed || '-')}</span><span class="ko-name">${escapeHTML(champion.name)}</span>${championScore===null || championScore===undefined ? '' : `<span class="ko-score">${championScore} pts</span>`}</div>` : `<div class="ko-player"><span class="ko-crown">★</span><span class="ko-name ko-placeholder">Campeón por definir</span></div>`}
-        </div>
+        ${champion ? `
+          <div class="ko-champion-card">
+            <div class="ko-champion-medal">🏆</div>
+            <div class="ko-champion-info">
+              <div class="ko-champion-kicker">Campeón del mata mata</div>
+              <div class="ko-champion-name">${escapeHTML(champion.name)}</div>
+              <div class="ko-champion-sub">Ganó la llave y será anunciado junto al campeón de la Copa</div>
+            </div>
+            <div class="ko-champion-side">
+              <span class="ko-seed">${escapeHTML(champion.seed || '-')}</span>
+              ${championScore===null || championScore===undefined ? '' : `<span class="ko-score">${championScore} pts</span>`}
+            </div>
+          </div>` : `
+          <div class="ko-champion-card">
+            <div class="ko-champion-medal">⏳</div>
+            <div class="ko-champion-info">
+              <div class="ko-champion-kicker">Campeón del mata mata</div>
+              <div class="ko-champion-name">Por definir</div>
+              <div class="ko-champion-sub">Se definirá con los puntos de semifinales, 3° puesto y final de la Copa</div>
+            </div>
+          </div>`}
       </div>
     </div>
   </div>`;
