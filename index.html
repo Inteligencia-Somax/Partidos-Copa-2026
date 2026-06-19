@@ -3358,12 +3358,18 @@ body{
         </div>
         <p class="admin-export-note">Usá este botón después de cargar o corregir resultados. El archivo descargado ya incluye los resultados reales y los palpites guardados en este navegador.</p>
       </div>
-      <div class="rules-section admin-mata-card" id="admin-mata-mata-card">
-        <div class="admin-mata-tag">🔐 Solo administradores</div>
-        <h3>🏆 Mata-Mata dos 16 Melhores</h3>
-        <p>Área exclusiva para administradores. Use este acesso para abrir a chave mata-mata baseada no ranking do bolão.</p>
-        <button class="admin-mata-btn" onclick="openMataMataAdmin()">🏆 Abrir Mata-Mata</button>
+
+      <div class="rules-section admin-knockout-section" id="admin-knockout-section">
+        <div class="admin-knockout-head">
+          <div>
+            <h3>🏆 Mata-mata Top 16 (teste)</h3>
+            <p>Simulação privada do ADM com os 16 primeiros colocados do ranking atual. Esta área não aparece para usuários comuns.</p>
+          </div>
+          <span class="admin-knockout-badge">ADM</span>
+        </div>
+        <div id="admin-knockout-bracket"></div>
       </div>
+
       <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;">
         <button class="filter-chip active" onclick="filterAdminResults('all',this)">Todos</button>
         <button class="filter-chip" onclick="filterAdminResults('pending',this)">Sin resultado</button>
@@ -4702,13 +4708,33 @@ body{
 .admin-save-btn{background:var(--green);color:#fff;flex:1;} .admin-clear-btn{background:var(--bg);color:var(--sub);border:1px solid var(--border);}
 .admin-export-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
 .admin-download-btn,.admin-copy-btn{border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
-.admin-mata-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;border:none;border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#111114,#0A2A6E);color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(10,42,110,.25);text-decoration:none;}
-.admin-mata-btn:active{transform:scale(.98);}
-.admin-mata-card{border-left:4px solid var(--gold);background:linear-gradient(180deg,#fff,#FFF8E1);}
-.admin-mata-tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:rgba(245,158,11,.14);color:#92400E;padding:5px 10px;font-size:11px;font-weight:900;margin-bottom:8px;}
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
 .admin-copy-btn{background:#F8D45C;color:#173F1F;min-width:140px;}
 .admin-export-note{font-size:12px!important;margin-top:10px;color:var(--sub)!important;}
+.admin-knockout-section{border:1px solid rgba(0,155,84,.25);background:linear-gradient(180deg,#fff 0%,#F4FBF7 100%);}
+.admin-knockout-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.admin-knockout-head h3{margin-bottom:4px;}
+.admin-knockout-badge{background:var(--text);color:#fff;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900;letter-spacing:.5px;flex-shrink:0;}
+.ko-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
+.ko-summary-item{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;}
+.ko-summary-number{display:block;font-size:18px;font-weight:900;color:var(--green);line-height:1;}
+.ko-summary-label{display:block;font-size:10px;font-weight:700;color:var(--sub);margin-top:4px;}
+.ko-note{font-size:12px!important;line-height:1.5;color:var(--sub)!important;margin-bottom:12px!important;}
+.ko-round{margin-top:12px;}
+.ko-round-title{font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--sub);margin:0 0 8px 2px;}
+.ko-round-grid{display:grid;grid-template-columns:1fr;gap:8px;}
+.ko-pair{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.ko-pair-title{font-size:11px;font-weight:800;color:var(--sub);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ko-player{display:flex;align-items:center;gap:8px;border-radius:10px;padding:8px;background:var(--bg);border:1px solid transparent;margin-top:5px;}
+.ko-player.winner{background:#E8F5EE;border-color:rgba(0,155,84,.35);}
+.ko-seed{width:26px;height:26px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--sub);flex-shrink:0;}
+.ko-player.winner .ko-seed{background:var(--green);border-color:var(--green);color:#fff;}
+.ko-name{font-size:13px;font-weight:800;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ko-score{font-size:13px;font-weight:900;color:var(--green);min-width:38px;text-align:right;}
+.ko-placeholder{color:var(--sub);font-style:italic;font-weight:700;}
+.ko-empty{background:var(--white);border:1px dashed var(--border);border-radius:14px;padding:16px;text-align:center;color:var(--sub);font-size:13px;font-weight:600;line-height:1.5;}
+@media(min-width:620px){.ko-round-grid{grid-template-columns:repeat(2,1fr);} .ko-summary{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:430px){.ko-summary{grid-template-columns:1fr;} .admin-knockout-head{flex-direction:column;} .admin-knockout-badge{align-self:flex-start;}}
 /* Banner superior personalizado Somax Mundial */
 .hero-banner-custom{
     width:100%;
@@ -5390,6 +5416,22 @@ function updateCounts(){
 }
 
 // ══ RANKING ══
+function getRankedUsers(){
+  const all = loadAllPicks();
+  const realResults = loadRealResults();
+  return Object.entries(all).map(([name, picks])=>{
+    const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
+    MATCHES.forEach(m=>{
+      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
+      stats.score += calc.pts;
+      if(stats[calc.type]!==undefined) stats[calc.type]++;
+    });
+    return stats;
+  }).sort((a,b)=>
+    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
+  );
+}
+
 function renderRanking(){
   const all = loadAllPicks();
   const realResults = loadRealResults();
@@ -5401,17 +5443,7 @@ function renderRanking(){
     return;
   }
 
-  const users = Object.entries(all).map(([name, picks])=>{
-    const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
-    MATCHES.forEach(m=>{
-      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
-      stats.score += calc.pts;
-      if(stats[calc.type]!==undefined) stats[calc.type]++;
-    });
-    return stats;
-  }).sort((a,b)=>
-    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
-  );
+  const users = getRankedUsers();
 
   container.innerHTML='';
   if(finishedCount===0){
@@ -5439,6 +5471,105 @@ function renderRanking(){
       </div>`;
     container.appendChild(card);
   });
+
+}
+
+// ══ MATA-MATA TOP 16 - TESTE ADM ══
+const ADMIN_KNOCKOUT_SEEDS = [[1,16],[8,9],[4,13],[5,12],[2,15],[7,10],[3,14],[6,11]];
+const ADMIN_KNOCKOUT_PHASES = {
+  r16: {label:'Oitavas do bolão', short:'Oitavas', phases:['Octavos']},
+  qf:  {label:'Quartas do bolão', short:'Quartas', phases:['Cuartos']},
+  sf:  {label:'Semifinal do bolão', short:'Semi', phases:['Semifinal']},
+  fn:  {label:'Final do bolão', short:'Final', phases:['⭐ FINAL']}
+};
+function escapeHTML(value){
+  return String(value ?? '').replace(/[&<>'"]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+function getPhaseFinishedCount(phaseNames){
+  const results = loadRealResults();
+  return MATCHES.filter(m=>phaseNames.includes(m.phase) && results[m.id]).length;
+}
+function getPhaseUserScore(name, phaseNames){
+  const all = loadAllPicks();
+  const picks = all[name] || {};
+  const results = loadRealResults();
+  let score = 0;
+  MATCHES.forEach(m=>{
+    if(!phaseNames.includes(m.phase) || !results[m.id]) return;
+    score += calculatePickPoints(picks[m.id], results[m.id], m).pts;
+  });
+  return score;
+}
+function makeSeedPlayer(user, seed){
+  if(!user) return null;
+  return {seed, name:user.name, total:user.score, exact:user.exact, pickCount:user.pickCount};
+}
+function makePlaceholderPlayer(label){
+  return {seed:'', name:label, placeholder:true};
+}
+function resolveKnockoutPair(left, right, phaseKey){
+  const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
+  const finished = getPhaseFinishedCount(phase.phases);
+  if(!left || !right || left.placeholder || right.placeholder || finished===0){
+    return {left, right, winner:null, leftScore:null, rightScore:null, finished};
+  }
+  const leftScore = getPhaseUserScore(left.name, phase.phases);
+  const rightScore = getPhaseUserScore(right.name, phase.phases);
+  let winner = null;
+  if(leftScore > rightScore) winner = left;
+  else if(rightScore > leftScore) winner = right;
+  else winner = Number(left.seed) < Number(right.seed) ? left : right; // desempate visual: melhor posição no ranking
+  return {left, right, winner, leftScore, rightScore, finished};
+}
+function buildAdminKnockoutData(){
+  const top16 = getRankedUsers().slice(0,16).map((u,i)=>makeSeedPlayer(u, i+1));
+  const r16 = ADMIN_KNOCKOUT_SEEDS.map(([a,b])=>resolveKnockoutPair(top16[a-1] || makePlaceholderPlayer(`${a}º colocado`), top16[b-1] || makePlaceholderPlayer(`${b}º colocado`), 'r16'));
+  const qf = [[0,1],[2,3],[4,5],[6,7]].map(([a,b],i)=>resolveKnockoutPair(r16[a].winner || makePlaceholderPlayer(`Vencedor O${a+1}`), r16[b].winner || makePlaceholderPlayer(`Vencedor O${b+1}`), 'qf'));
+  const sf = [[0,1],[2,3]].map(([a,b],i)=>resolveKnockoutPair(qf[a].winner || makePlaceholderPlayer(`Vencedor Q${a+1}`), qf[b].winner || makePlaceholderPlayer(`Vencedor Q${b+1}`), 'sf'));
+  const fn = [resolveKnockoutPair(sf[0].winner || makePlaceholderPlayer('Vencedor S1'), sf[1].winner || makePlaceholderPlayer('Vencedor S2'), 'fn')];
+  return {top16, r16, qf, sf, fn};
+}
+function renderKoPlayer(player, score, winner){
+  if(!player){
+    return `<div class="ko-player"><span class="ko-seed">-</span><span class="ko-name ko-placeholder">A definir</span></div>`;
+  }
+  const seed = player.seed || '-';
+  const scoreHTML = score===null || score===undefined ? '' : `<span class="ko-score">${score} pts</span>`;
+  return `<div class="ko-player ${winner?'winner':''}"><span class="ko-seed">${escapeHTML(seed)}</span><span class="ko-name ${player.placeholder?'ko-placeholder':''}">${escapeHTML(player.name)}</span>${scoreHTML}</div>`;
+}
+function renderKoRound(title, items, phaseKey, prefix){
+  const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
+  const finished = getPhaseFinishedCount(phase.phases);
+  return `<div class="ko-round"><div class="ko-round-title">${escapeHTML(title)} · ${finished} resultado(s) da fase</div><div class="ko-round-grid">${items.map((p,i)=>`
+    <div class="ko-pair">
+      <div class="ko-pair-title"><span>${escapeHTML(prefix)}${i+1}</span><span>${escapeHTML(phase.short)}</span></div>
+      ${renderKoPlayer(p.left, p.leftScore, p.winner && p.left && p.winner.name===p.left.name)}
+      ${renderKoPlayer(p.right, p.rightScore, p.winner && p.right && p.winner.name===p.right.name)}
+    </div>`).join('')}</div></div>`;
+}
+function renderAdminKnockout(){
+  if(!adminUnlocked || currentUserRole !== 'admin') return;
+  const container = document.getElementById('admin-knockout-bracket');
+  if(!container) return;
+  const allUsers = getRankedUsers();
+  if(allUsers.length === 0){
+    container.innerHTML = '<div class="ko-empty">Ainda não há participantes no ranking para montar o mata-mata.</div>';
+    return;
+  }
+  const data = buildAdminKnockoutData();
+  const missing = Math.max(0, 16 - data.top16.length);
+  container.innerHTML = `
+    <div class="ko-summary">
+      <div class="ko-summary-item"><span class="ko-summary-number">${data.top16.length}</span><span class="ko-summary-label">classificados simulados</span></div>
+      <div class="ko-summary-item"><span class="ko-summary-number">${missing}</span><span class="ko-summary-label">vagas em aberto</span></div>
+      <div class="ko-summary-item"><span class="ko-summary-number">${Object.keys(loadRealResults()).length}</span><span class="ko-summary-label">resultados lançados</span></div>
+    </div>
+    <p class="ko-note">Teste visual: os confrontos são montados pelo ranking atual. Quando houver resultados nas fases da Copa, o vencedor de cada duelo será quem fizer mais pontos naquela fase. Em empate, esta simulação usa a melhor posição inicial no ranking como desempate.</p>
+    ${renderKoRound('Oitavas · Top 16 do ranking', data.r16, 'r16', 'O')}
+    ${renderKoRound('Quartas', data.qf, 'qf', 'Q')}
+    ${renderKoRound('Semifinal', data.sf, 'sf', 'S')}
+    ${renderKoRound('Final', data.fn, 'fn', 'F')}
+  `;
 }
 
 // ══ EXPORTAR HTML ACTUALIZADO ══
@@ -5509,13 +5640,7 @@ function showAdminArea(){
   if(login) login.style.display='none';
   if(area) area.style.display='block';
   renderAdminResults(currentAdminFilter);
-}
-function openMataMataAdmin(){
-  if(currentUserRole !== 'admin' || !adminUnlocked){
-    showSaveBanner('Acesso ao Mata-Mata reservado para administradores');
-    return;
-  }
-  window.location.href = './mata_mata_bolao_2026.html';
+  renderAdminKnockout();
 }
 function filterAdminResults(f, btn){
   currentAdminFilter = f;
@@ -5574,6 +5699,7 @@ async function saveRealResult(matchId){
   renderAdminResults(currentAdminFilter);
   renderMatches(currentFilter);
   renderRanking();
+  renderAdminKnockout();
   updateCounts();
   showSaveBanner('✅ Resultado guardado y ranking recalculado');
 }
@@ -5584,6 +5710,7 @@ function clearRealResult(matchId){
   renderAdminResults(currentAdminFilter);
   renderMatches(currentFilter);
   renderRanking();
+  renderAdminKnockout();
   updateCounts();
   showSaveBanner('Resultado eliminado');
 }
