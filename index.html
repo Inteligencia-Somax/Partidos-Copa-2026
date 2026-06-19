@@ -5600,7 +5600,7 @@ const ADMIN_KNOCKOUT_PHASES = {
     phases:['Semifinal','3° Puesto','⭐ FINAL']
   }
 };
-const knockoutRoundOpenState = {r16:true, qf:false, sf:false, fn:false, champ:false};
+const knockoutRoundOpenState = {r16:true, qf:false, sf:false, fn:false};
 
 function escapeHTML(value){
   return String(value ?? '').replace(/[&<>'"]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
@@ -5917,32 +5917,11 @@ function renderKoRound(title, items, phaseKey, prefix){
 }
 
 function renderKoChampion(finalPair){
-  const openClass = knockoutRoundOpenState.champ ? ' open' : '';
   const champion = finalPair && finalPair.winner ? finalPair.winner : null;
   const championScore = champion && finalPair.left && champion.name===finalPair.left.name ? finalPair.leftScore : champion && finalPair.right && champion.name===finalPair.right.name ? finalPair.rightScore : null;
-  const hasFinalProgress = getPhaseFinishedCount(ADMIN_KNOCKOUT_PHASES.fn.phases) > 0;
-  const finalReady = isPreviousKoRoundComplete('fn');
-  const status = champion
-    ? {icon:'🏆', state:'champion', meta:'Campeón definido', sub:'Se definió con semifinales, 3° puesto y final'}
-    : (hasFinalProgress || finalReady)
-      ? {icon:'●', state:'live', meta:'En definición', sub:'Se definirá con semifinales, 3° puesto y final'}
-      : {icon:'⏳', state:'pending', meta:'Pendiente', sub:'Se definirá con semifinales, 3° puesto y final'};
 
-  return `<div class="ko-round${openClass}">
-    <div class="ko-round-head" role="button" tabindex="0" onclick="toggleKoRound('champ')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleKoRound('champ')}">
-      <div class="ko-round-head-left">
-        <span class="ko-round-status ${status.state}">${status.icon}</span>
-        <div class="ko-round-head-copy">
-          <span class="ko-round-head-title">Campeón del mata mata</span>
-          <span class="ko-round-head-sub">${escapeHTML(status.sub)}</span>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span class="ko-round-head-meta ${status.state}">${escapeHTML(status.meta)}</span>
-        <span class="ko-round-toggle" aria-hidden="true"></span>
-      </div>
-    </div>
-    <div class="ko-round-grid">
+  return `<div class="ko-round open">
+    <div class="ko-round-grid" style="display:grid;">
       <div class="ko-pair">
         ${champion ? `
           <div class="ko-champion-card">
