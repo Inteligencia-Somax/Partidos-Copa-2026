@@ -4732,31 +4732,34 @@ body{
 .ko-toggle-btn{width:100%;border:none;border-radius:14px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;padding:13px 14px;font-family:'Inter',sans-serif;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 9px 24px rgba(0,155,84,.25);transition:transform .15s,box-shadow .15s;position:relative;z-index:1;}
 .ko-toggle-btn:active{transform:scale(.985);box-shadow:0 4px 12px rgba(0,155,84,.24);}
 .ko-body{margin-top:14px;animation:fadeUp .22s ease;position:relative;z-index:1;}
-.ko-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
+.ko-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0;}
 .ko-summary-item{background:rgba(255,255,255,.88);border:1px solid var(--border);border-radius:14px;padding:11px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04);}
 .ko-summary-number{display:block;font-size:20px;font-weight:900;color:var(--green);line-height:1;}
 .ko-summary-label{display:block;font-size:10px;font-weight:800;color:var(--sub);margin-top:4px;text-transform:uppercase;letter-spacing:.45px;}
 .ko-note{font-size:12px!important;line-height:1.55;color:var(--sub)!important;margin-bottom:12px!important;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 12px!important;}
-.ko-round{margin-top:14px;}
-.ko-round-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;color:var(--sub);margin:0 0 8px 2px;}
-.ko-round-title span:last-child{background:rgba(0,155,84,.09);color:var(--green);border:1px solid rgba(0,155,84,.18);border-radius:999px;padding:4px 8px;letter-spacing:.2px;white-space:nowrap;}
-.ko-round-grid{display:grid;grid-template-columns:1fr;gap:9px;}
-.ko-pair{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:11px;box-shadow:0 2px 10px rgba(0,0,0,.055);}
-.ko-pair-title{font-size:11px;font-weight:900;color:var(--sub);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.ko-pair-title span:first-child{background:var(--text);color:#fff;border-radius:999px;padding:3px 8px;}
-.ko-pair-title span:last-child{color:var(--green);}
-.ko-duel{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);align-items:stretch;gap:8px;}
-.ko-player{display:flex;align-items:center;gap:8px;border-radius:13px;padding:10px;background:var(--bg);border:1px solid transparent;min-width:0;}
-.ko-player.winner{background:#E8F5EE;border-color:rgba(0,155,84,.38);box-shadow:inset 0 0 0 1px rgba(0,155,84,.08);}
-.ko-vs{align-self:center;justify-self:center;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--white);border:1px solid var(--border);font-size:12px;font-weight:950;color:var(--sub);box-shadow:0 1px 5px rgba(0,0,0,.05);}
-.ko-seed{width:28px;height:28px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--sub);flex-shrink:0;}
-.ko-player.winner .ko-seed{background:var(--green);border-color:var(--green);color:#fff;}
-.ko-name{font-size:13px;font-weight:850;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.ko-score{font-size:13px;font-weight:900;color:var(--green);min-width:40px;text-align:right;flex-shrink:0;}
-.ko-placeholder{color:var(--sub);font-style:italic;font-weight:700;}
+.ko-round{margin-top:16px;}
+.ko-round-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:900;letter-spacing:1.25px;text-transform:uppercase;color:var(--sub);margin:0 0 9px 2px;}
+.ko-round-title span:first-child{display:flex;align-items:center;gap:6px;}
+.ko-round-title span:first-child::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(0,155,84,.11);}
+.ko-round-title span:last-child{background:#E8F5EE;color:var(--green);border:1px solid rgba(0,155,84,.18);border-radius:999px;padding:4px 9px;letter-spacing:.2px;white-space:nowrap;}
+.ko-round-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+.ko-pair{background:linear-gradient(180deg,#FFFFFF 0%,#FBFCFD 100%);border:1px solid var(--border);border-radius:18px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.055);position:relative;overflow:hidden;}
+.ko-pair::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--green),var(--green2));opacity:.85;}
+.ko-pair-title{font-size:11px;font-weight:900;color:var(--sub);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;z-index:1;}
+.ko-pair-title span:first-child{background:#111114;color:#fff;border-radius:999px;padding:4px 9px;letter-spacing:.4px;box-shadow:0 3px 8px rgba(0,0,0,.12);}
+.ko-pair-title span:last-child{color:var(--green);background:rgba(0,155,84,.08);border:1px solid rgba(0,155,84,.16);border-radius:999px;padding:3px 8px;}
+.ko-duel{display:flex;flex-direction:column;gap:7px;position:relative;z-index:1;}
+.ko-duel-line{height:1px;background:linear-gradient(90deg,transparent,rgba(17,17,20,.14),transparent);margin:0 8px;}
+.ko-player{display:flex;align-items:center;gap:9px;border-radius:14px;padding:10px 11px;background:#F4F5F7;border:1px solid #ECEEF2;min-width:0;min-height:48px;transition:background .2s,border-color .2s,box-shadow .2s,transform .2s;}
+.ko-player.winner{background:#E8F5EE;border-color:rgba(0,155,84,.42);box-shadow:inset 0 0 0 1px rgba(0,155,84,.08),0 4px 12px rgba(0,155,84,.10);}
+.ko-seed{width:30px;height:30px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:950;color:var(--sub);flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.ko-player.winner .ko-seed{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 3px 10px rgba(0,155,84,.25);}
+.ko-name{font-size:13px;font-weight:900;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.15px;}
+.ko-score{font-size:12px;font-weight:950;color:var(--green);background:#fff;border:1px solid rgba(0,155,84,.18);border-radius:999px;padding:4px 8px;min-width:auto;text-align:right;flex-shrink:0;}
+.ko-placeholder{color:var(--sub);font-style:italic;font-weight:800;}
 .ko-empty{background:var(--white);border:1px dashed var(--border);border-radius:14px;padding:16px;text-align:center;color:var(--sub);font-size:13px;font-weight:600;line-height:1.5;}
-@media(min-width:620px){.ko-round-grid{grid-template-columns:repeat(2,1fr);} .ko-summary{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:430px){.ko-summary{grid-template-columns:1fr;} .knockout-page-head{flex-direction:column;} .ko-duel{grid-template-columns:1fr;gap:6px;} .ko-vs{width:auto;height:22px;border-radius:999px;font-size:10px;}}
+@media(min-width:620px){.ko-round-grid{grid-template-columns:repeat(2,1fr);} .ko-summary{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:430px){.ko-summary{grid-template-columns:1fr;} .knockout-page-head{flex-direction:column;} .ko-pair{padding:11px;} .ko-name{font-size:12.5px;} .ko-player{padding:10px 9px;gap:8px;} .ko-seed{width:28px;height:28px;}}
 /* Banner superior personalizado Somax Mundial */
 .hero-banner-custom{
     width:100%;
@@ -5661,7 +5664,7 @@ function renderKoRound(title, items, phaseKey, prefix){
       <div class="ko-pair-title"><span>${escapeHTML(prefix)}${i+1}</span><span>${p.complete ? 'Definido' : escapeHTML(phase.short)}</span></div>
       <div class="ko-duel">
         ${renderKoPlayer(p.left, p.leftScore, p.winner && p.left && p.winner.name===p.left.name)}
-        <div class="ko-vs">×</div>
+        <div class="ko-duel-line" aria-hidden="true"></div>
         ${renderKoPlayer(p.right, p.rightScore, p.winner && p.right && p.winner.name===p.right.name)}
       </div>
     </div>`).join('')}</div></div>`;
@@ -5688,7 +5691,6 @@ function renderKnockoutPanel(){
     return;
   }
   const data = buildAdminKnockoutData();
-  const missing = Math.max(0, 16 - data.top16.length);
   const first = getFirstKnockoutMatch();
   const startText = first ? `${first.date} às ${first.time}` : 'início das oitavas';
   const modeText = data.official ? 'oficial' : 'prévia';
@@ -5698,7 +5700,6 @@ function renderKnockoutPanel(){
   container.innerHTML = `
     <div class="ko-summary">
       <div class="ko-summary-item"><span class="ko-summary-number">${data.top16.length}</span><span class="ko-summary-label">classificados</span></div>
-      <div class="ko-summary-item"><span class="ko-summary-number">${missing}</span><span class="ko-summary-label">vagas em aberto</span></div>
       <div class="ko-summary-item"><span class="ko-summary-number">${modeText}</span><span class="ko-summary-label">status</span></div>
     </div>
     <p class="ko-note"><strong>${data.official ? 'Mata-mata iniciado:' : 'Se começasse hoje:'}</strong> ${noteText}</p>
