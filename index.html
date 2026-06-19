@@ -3300,6 +3300,24 @@ body{
       </div></div></div>
   </div>
 
+  <!-- MATA-MATA PANEL -->
+  <div class="panel" id="panel-knockout">
+    <div class="rules-section knockout-page-section">
+      <div class="knockout-page-head">
+        <div>
+          <h3>🏆 Mata-mata</h3>
+          <p>Acompanha os 16 melhores colocados do bolão. A chave oficial será travada automaticamente no início das oitavas da Copa.</p>
+        </div>
+      </div>
+      <div class="ko-callout">
+        <strong>Consideração:</strong> antes das oitavas, esta tela mostra como ficariam os confrontos se começassem hoje. Ao iniciar as oitavas, a chave oficial será congelada automaticamente.
+      </div>
+      <div class="ko-body" id="knockout-body">
+        <div id="knockout-bracket"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- RULES PANEL -->
   <div class="panel" id="panel-rules">
     <div class="rules-section">
@@ -3359,25 +3377,6 @@ body{
         <p class="admin-export-note">Usá este botón después de cargar o corregir resultados. El archivo descargado ya incluye los resultados reales y los palpites guardados en este navegador.</p>
       </div>
 
-      <div class="rules-section admin-knockout-section" id="admin-knockout-section">
-        <div class="admin-knockout-head">
-          <div>
-            <span class="admin-eyebrow">Área administrativa</span>
-            <h3>🏆 Mata-mata</h3>
-            <p>Chaveamento automático com os 16 primeiros colocados do ranking atual. Esta opção aparece somente após entrar como administrador.</p>
-          </div>
-          <span class="admin-knockout-badge">ADM</span>
-        </div>
-        <div class="ko-callout">
-          <strong>Consideração:</strong> se o mata-mata começasse hoje, os confrontos seriam estes com base no ranking atual.
-        </div>
-        <button class="ko-toggle-btn" id="admin-knockout-toggle" onclick="toggleAdminKnockout()">
-          👀 Ver confrontos do mata-mata
-        </button>
-        <div class="ko-body" id="admin-knockout-body" style="display:none;">
-          <div id="admin-knockout-bracket"></div>
-        </div>
-      </div>
 
       <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;">
         <button class="filter-chip active" onclick="filterAdminResults('all',this)">Todos</button>
@@ -4690,6 +4689,9 @@ body{
   <button class="nav-btn" id="nav-ranking" onclick="switchTab('ranking',document.getElementById('tab-ranking'))">
     <span class="nav-icon">📊</span>Ranking
   </button>
+  <button class="nav-btn" id="nav-knockout" style="display:none;" onclick="switchTab('knockout',this)">
+    <span class="nav-icon">🏆</span>Mata-mata
+  </button>
   <button class="nav-btn" id="nav-rules" onclick="switchTab('rules',document.getElementById('tab-rules'))">
     <span class="nav-icon">📋</span>Regras
   </button>
@@ -4720,12 +4722,11 @@ body{
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
 .admin-copy-btn{background:#F8D45C;color:#173F1F;min-width:140px;}
 .admin-export-note{font-size:12px!important;margin-top:10px;color:var(--sub)!important;}
-.admin-knockout-section{border:1px solid rgba(0,155,84,.25);background:linear-gradient(180deg,#fff 0%,#F1FBF6 58%,#FFFFFF 100%);position:relative;overflow:hidden;}
-.admin-knockout-section::before{content:'';position:absolute;top:-70px;right:-70px;width:180px;height:180px;background:radial-gradient(circle,rgba(0,155,84,.14) 0%,transparent 70%);pointer-events:none;}
-.admin-knockout-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;position:relative;z-index:1;}
-.admin-knockout-head h3{margin-bottom:4px;font-size:20px;}
-.admin-eyebrow{display:inline-block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.6px;color:var(--green);margin-bottom:4px;}
-.admin-knockout-badge{background:var(--text);color:#fff;border-radius:999px;padding:6px 11px;font-size:11px;font-weight:900;letter-spacing:.7px;flex-shrink:0;box-shadow:0 8px 22px rgba(17,17,20,.18);}
+.knockout-page-section{border:1px solid rgba(0,155,84,.25);background:linear-gradient(180deg,#fff 0%,#F1FBF6 58%,#FFFFFF 100%);position:relative;overflow:hidden;}
+.knockout-page-section::before{content:'';position:absolute;top:-70px;right:-70px;width:180px;height:180px;background:radial-gradient(circle,rgba(0,155,84,.14) 0%,transparent 70%);pointer-events:none;}
+.knockout-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;position:relative;z-index:1;}
+.knockout-page-head h3{margin-bottom:4px;font-size:22px;font-weight:900;}
+.knockout-page-head p{font-size:13px!important;line-height:1.55;color:var(--sub)!important;margin:0!important;max-width:540px;}
 .ko-callout{background:#FFF8E1;border:1px solid #F0C14B;border-radius:14px;padding:11px 13px;margin:12px 0;color:#5F4300;font-size:12px;font-weight:600;line-height:1.45;position:relative;z-index:1;}
 .ko-callout strong{color:#92400E;}
 .ko-toggle-btn{width:100%;border:none;border-radius:14px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;padding:13px 14px;font-family:'Inter',sans-serif;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 9px 24px rgba(0,155,84,.25);transition:transform .15s,box-shadow .15s;position:relative;z-index:1;}
@@ -4744,17 +4745,18 @@ body{
 .ko-pair-title{font-size:11px;font-weight:900;color:var(--sub);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .ko-pair-title span:first-child{background:var(--text);color:#fff;border-radius:999px;padding:3px 8px;}
 .ko-pair-title span:last-child{color:var(--green);}
-.ko-player{display:flex;align-items:center;gap:8px;border-radius:12px;padding:9px;background:var(--bg);border:1px solid transparent;margin-top:5px;}
-.ko-player.winner{background:#E8F5EE;border-color:rgba(0,155,84,.35);box-shadow:inset 0 0 0 1px rgba(0,155,84,.08);}
-.ko-vs{text-align:center;font-size:10px;font-weight:900;color:var(--sub);letter-spacing:1.5px;margin:5px 0 0;text-transform:uppercase;}
+.ko-duel{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);align-items:stretch;gap:8px;}
+.ko-player{display:flex;align-items:center;gap:8px;border-radius:13px;padding:10px;background:var(--bg);border:1px solid transparent;min-width:0;}
+.ko-player.winner{background:#E8F5EE;border-color:rgba(0,155,84,.38);box-shadow:inset 0 0 0 1px rgba(0,155,84,.08);}
+.ko-vs{align-self:center;justify-self:center;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--white);border:1px solid var(--border);font-size:12px;font-weight:950;color:var(--sub);box-shadow:0 1px 5px rgba(0,0,0,.05);}
 .ko-seed{width:28px;height:28px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--sub);flex-shrink:0;}
 .ko-player.winner .ko-seed{background:var(--green);border-color:var(--green);color:#fff;}
 .ko-name{font-size:13px;font-weight:850;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.ko-score{font-size:13px;font-weight:900;color:var(--green);min-width:42px;text-align:right;}
+.ko-score{font-size:13px;font-weight:900;color:var(--green);min-width:40px;text-align:right;flex-shrink:0;}
 .ko-placeholder{color:var(--sub);font-style:italic;font-weight:700;}
 .ko-empty{background:var(--white);border:1px dashed var(--border);border-radius:14px;padding:16px;text-align:center;color:var(--sub);font-size:13px;font-weight:600;line-height:1.5;}
 @media(min-width:620px){.ko-round-grid{grid-template-columns:repeat(2,1fr);} .ko-summary{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:430px){.ko-summary{grid-template-columns:1fr;} .admin-knockout-head{flex-direction:column;} .admin-knockout-badge{align-self:flex-start;}}
+@media(max-width:430px){.ko-summary{grid-template-columns:1fr;} .knockout-page-head{flex-direction:column;} .ko-duel{grid-template-columns:1fr;gap:6px;} .ko-vs{width:auto;height:22px;border-radius:999px;font-size:10px;}}
 /* Banner superior personalizado Somax Mundial */
 .hero-banner-custom{
     width:100%;
@@ -4956,6 +4958,15 @@ let activeTeam = 'home'; // which score we're editing
 let adminUnlocked = localStorage.getItem('somax_admin_unlocked') === '1';
 let currentAdminFilter = 'all';
 
+function updateRoleBasedNavigation(){
+  const isAdmin = currentUserRole === 'admin';
+  const navKnockout = document.getElementById('nav-knockout');
+  if(navKnockout) navKnockout.style.display = isAdmin ? 'flex' : 'none';
+  if(!isAdmin && document.getElementById('panel-knockout')?.classList.contains('active')){
+    switchTab('matches', document.getElementById('tab-matches'));
+  }
+}
+
 function loadAllPicks(){
   try{
     const all = JSON.parse(localStorage.getItem('somax_all_picks')||'{}');
@@ -5116,6 +5127,7 @@ async function logoutUser(){
   document.getElementById('main-content').style.display='none';
   document.getElementById('name-setup-wrap').style.display='block';
   document.getElementById('topbar-user').style.display='none';
+  updateRoleBasedNavigation();
   showSaveBanner('Sesión cerrada');
 }
 
@@ -5227,7 +5239,9 @@ function showApp(){
   switchTab('matches', document.getElementById('tab-matches'));
   renderMatches('all');
   renderRanking();
+  renderKnockoutPanel();
   updateCounts();
+  updateRoleBasedNavigation();
   if(adminUnlocked || currentUserRole === 'admin') {
     adminUnlocked = currentUserRole === 'admin';
     if(adminUnlocked) localStorage.setItem('somax_admin_unlocked','1');
@@ -5411,6 +5425,7 @@ async function savePick(){
   renderMatches(currentFilter);
   updateCounts();
   renderRanking();
+  renderKnockoutPanel();
   showSaveBanner('✓ Palpite guardado!');
 }
 
@@ -5494,9 +5509,11 @@ function renderRanking(){
 
 }
 
-// ══ MATA-MATA TOP 16 - ADM ══
+// ══ MATA-MATA TOP 16 ══
 let adminKnockoutVisible = false;
 const ADMIN_KNOCKOUT_SEEDS = [[1,16],[8,9],[4,13],[5,12],[2,15],[7,10],[3,14],[6,11]];
+const KNOCKOUT_STATE_KEY = 'somax_knockout_official_state';
+const KNOCKOUT_PHASE_ORDER = ['Octavos','Cuartos','Semifinal','⭐ FINAL'];
 const ADMIN_KNOCKOUT_PHASES = {
   r16: {label:'Oitavas do bolão', short:'Oitavas', phases:['Octavos']},
   qf:  {label:'Quartas do bolão', short:'Quartas', phases:['Cuartos']},
@@ -5509,6 +5526,71 @@ function escapeHTML(value){
 function getPhaseFinishedCount(phaseNames){
   const results = loadRealResults();
   return MATCHES.filter(m=>phaseNames.includes(m.phase) && results[m.id]).length;
+}
+function getPhaseTotalCount(phaseNames){
+  return MATCHES.filter(m=>phaseNames.includes(m.phase)).length;
+}
+function getFirstKnockoutMatch(){
+  return MATCHES.find(m=>m.phase==='Octavos') || null;
+}
+function hasAnyKnockoutResult(){
+  const results = loadRealResults();
+  return MATCHES.some(m=>m.phase==='Octavos' && results[m.id]);
+}
+function hasKnockoutOfficiallyStarted(){
+  const state = loadKnockoutState();
+  if(state && state.official) return true;
+  const first = getFirstKnockoutMatch();
+  if(first && new Date() >= getMatchDateTime(first)) return true;
+  return hasAnyKnockoutResult();
+}
+function loadKnockoutState(){
+  try{return JSON.parse(localStorage.getItem(KNOCKOUT_STATE_KEY)||'null');}
+  catch{return null;}
+}
+function saveKnockoutState(state){
+  localStorage.setItem(KNOCKOUT_STATE_KEY, JSON.stringify(state));
+}
+function calculateRankedUsersWithFilter(includeMatchFn){
+  const all = loadAllPicks();
+  const realResults = loadRealResults();
+  return Object.entries(all).map(([name, picks])=>{
+    const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
+    MATCHES.forEach(m=>{
+      if(includeMatchFn && !includeMatchFn(m)) return;
+      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
+      stats.score += calc.pts;
+      if(stats[calc.type]!==undefined) stats[calc.type]++;
+    });
+    return stats;
+  }).sort((a,b)=>
+    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
+  );
+}
+function getRankedUsersBeforeKnockout(){
+  return calculateRankedUsersWithFilter(m=>!KNOCKOUT_PHASE_ORDER.includes(m.phase));
+}
+function createOfficialKnockoutStateIfNeeded(){
+  let state = loadKnockoutState();
+  if(state && state.official) return state;
+  if(!hasKnockoutOfficiallyStarted()) return null;
+  const top16 = getRankedUsersBeforeKnockout().slice(0,16).map((u,i)=>({
+    seed:i+1,
+    name:u.name,
+    total:u.score,
+    exact:u.exact,
+    pickCount:u.pickCount
+  }));
+  const first = getFirstKnockoutMatch();
+  state = {
+    official:true,
+    createdAt:new Date().toISOString(),
+    startMatchId:first ? first.id : null,
+    startPhase:'Octavos',
+    top16
+  };
+  saveKnockoutState(state);
+  return state;
 }
 function getPhaseUserScore(name, phaseNames){
   const all = loadAllPicks();
@@ -5523,7 +5605,7 @@ function getPhaseUserScore(name, phaseNames){
 }
 function makeSeedPlayer(user, seed){
   if(!user) return null;
-  return {seed, name:user.name, total:user.score, exact:user.exact, pickCount:user.pickCount};
+  return {seed, name:user.name, total:user.score ?? user.total ?? 0, exact:user.exact ?? 0, pickCount:user.pickCount ?? 0};
 }
 function makePlaceholderPlayer(label){
   return {seed:'', name:label, placeholder:true};
@@ -5531,24 +5613,36 @@ function makePlaceholderPlayer(label){
 function resolveKnockoutPair(left, right, phaseKey){
   const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
   const finished = getPhaseFinishedCount(phase.phases);
+  const total = getPhaseTotalCount(phase.phases);
   if(!left || !right || left.placeholder || right.placeholder || finished===0){
-    return {left, right, winner:null, leftScore:null, rightScore:null, finished};
+    return {left, right, winner:null, leftScore:null, rightScore:null, finished, total, complete:false};
   }
   const leftScore = getPhaseUserScore(left.name, phase.phases);
   const rightScore = getPhaseUserScore(right.name, phase.phases);
+  const complete = total > 0 && finished >= total;
   let winner = null;
-  if(leftScore > rightScore) winner = left;
-  else if(rightScore > leftScore) winner = right;
-  else winner = Number(left.seed) < Number(right.seed) ? left : right; // desempate visual: melhor posição no ranking
-  return {left, right, winner, leftScore, rightScore, finished};
+  if(complete){
+    if(leftScore > rightScore) winner = left;
+    else if(rightScore > leftScore) winner = right;
+    else winner = Number(left.seed) < Number(right.seed) ? left : right; // desempate: melhor posição de entrada no mata-mata
+  }
+  return {left, right, winner, leftScore, rightScore, finished, total, complete};
+}
+function getKnockoutBaseTop16(){
+  const officialState = createOfficialKnockoutStateIfNeeded();
+  if(officialState && officialState.top16 && officialState.top16.length){
+    return {official:true, top16:officialState.top16.map((u,i)=>makeSeedPlayer(u, u.seed || i+1)), state:officialState};
+  }
+  return {official:false, top16:getRankedUsers().slice(0,16).map((u,i)=>makeSeedPlayer(u, i+1)), state:null};
 }
 function buildAdminKnockoutData(){
-  const top16 = getRankedUsers().slice(0,16).map((u,i)=>makeSeedPlayer(u, i+1));
+  const base = getKnockoutBaseTop16();
+  const top16 = base.top16;
   const r16 = ADMIN_KNOCKOUT_SEEDS.map(([a,b])=>resolveKnockoutPair(top16[a-1] || makePlaceholderPlayer(`${a}º colocado`), top16[b-1] || makePlaceholderPlayer(`${b}º colocado`), 'r16'));
   const qf = [[0,1],[2,3],[4,5],[6,7]].map(([a,b],i)=>resolveKnockoutPair(r16[a].winner || makePlaceholderPlayer(`Vencedor O${a+1}`), r16[b].winner || makePlaceholderPlayer(`Vencedor O${b+1}`), 'qf'));
   const sf = [[0,1],[2,3]].map(([a,b],i)=>resolveKnockoutPair(qf[a].winner || makePlaceholderPlayer(`Vencedor Q${a+1}`), qf[b].winner || makePlaceholderPlayer(`Vencedor Q${b+1}`), 'sf'));
   const fn = [resolveKnockoutPair(sf[0].winner || makePlaceholderPlayer('Vencedor S1'), sf[1].winner || makePlaceholderPlayer('Vencedor S2'), 'fn')];
-  return {top16, r16, qf, sf, fn};
+  return {official:base.official, state:base.state, top16, r16, qf, sf, fn};
 }
 function renderKoPlayer(player, score, winner){
   if(!player){
@@ -5561,12 +5655,15 @@ function renderKoPlayer(player, score, winner){
 function renderKoRound(title, items, phaseKey, prefix){
   const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
   const finished = getPhaseFinishedCount(phase.phases);
-  return `<div class="ko-round"><div class="ko-round-title"><span>${escapeHTML(title)}</span><span>${finished} resultado(s) da fase</span></div><div class="ko-round-grid">${items.map((p,i)=>`
+  const total = getPhaseTotalCount(phase.phases);
+  return `<div class="ko-round"><div class="ko-round-title"><span>${escapeHTML(title)}</span><span>${finished}/${total} resultado(s)</span></div><div class="ko-round-grid">${items.map((p,i)=>`
     <div class="ko-pair">
-      <div class="ko-pair-title"><span>${escapeHTML(prefix)}${i+1}</span><span>${escapeHTML(phase.short)}</span></div>
-      ${renderKoPlayer(p.left, p.leftScore, p.winner && p.left && p.winner.name===p.left.name)}
-      <div class="ko-vs">versus</div>
-      ${renderKoPlayer(p.right, p.rightScore, p.winner && p.right && p.winner.name===p.right.name)}
+      <div class="ko-pair-title"><span>${escapeHTML(prefix)}${i+1}</span><span>${p.complete ? 'Definido' : escapeHTML(phase.short)}</span></div>
+      <div class="ko-duel">
+        ${renderKoPlayer(p.left, p.leftScore, p.winner && p.left && p.winner.name===p.left.name)}
+        <div class="ko-vs">×</div>
+        ${renderKoPlayer(p.right, p.rightScore, p.winner && p.right && p.winner.name===p.right.name)}
+      </div>
     </div>`).join('')}</div></div>`;
 }
 function toggleAdminKnockout(){
@@ -5581,9 +5678,9 @@ function toggleAdminKnockout(){
   if(btn) btn.textContent = adminKnockoutVisible ? '🙈 Ocultar confrontos do mata-mata' : '👀 Ver confrontos do mata-mata';
   if(adminKnockoutVisible) renderAdminKnockout();
 }
-function renderAdminKnockout(){
-  if(!adminUnlocked || currentUserRole !== 'admin') return;
-  const container = document.getElementById('admin-knockout-bracket');
+function renderKnockoutPanel(){
+  if(currentUserRole !== 'admin') return;
+  const container = document.getElementById('knockout-bracket');
   if(!container) return;
   const allUsers = getRankedUsers();
   if(allUsers.length === 0){
@@ -5592,18 +5689,27 @@ function renderAdminKnockout(){
   }
   const data = buildAdminKnockoutData();
   const missing = Math.max(0, 16 - data.top16.length);
+  const first = getFirstKnockoutMatch();
+  const startText = first ? `${first.date} às ${first.time}` : 'início das oitavas';
+  const modeText = data.official ? 'oficial' : 'prévia';
+  const noteText = data.official
+    ? 'O mata-mata foi iniciado oficialmente e a chave ficou congelada com os 16 primeiros do ranking antes das oitavas. Agora cada fase da Copa define os vencedores do duelo direto.'
+    : `Se começasse hoje, estes seriam os confrontos com base no ranking atual. A chave oficial será congelada automaticamente em ${startText}, ou quando for lançado o primeiro resultado das oitavas.`;
   container.innerHTML = `
     <div class="ko-summary">
       <div class="ko-summary-item"><span class="ko-summary-number">${data.top16.length}</span><span class="ko-summary-label">classificados</span></div>
       <div class="ko-summary-item"><span class="ko-summary-number">${missing}</span><span class="ko-summary-label">vagas em aberto</span></div>
-      <div class="ko-summary-item"><span class="ko-summary-number">${Object.keys(loadRealResults()).length}</span><span class="ko-summary-label">resultados lançados</span></div>
+      <div class="ko-summary-item"><span class="ko-summary-number">${modeText}</span><span class="ko-summary-label">status</span></div>
     </div>
-    <p class="ko-note"><strong>Se começasse hoje:</strong> o mata-mata seria formado pelos 16 primeiros do ranking atual. A partir das oitavas da Copa, cada fase define os vencedores do duelo direto: avança quem somar mais pontos naquela rodada. Em caso de empate nesta visão, prevalece a melhor posição inicial no ranking.</p>
+    <p class="ko-note"><strong>${data.official ? 'Mata-mata iniciado:' : 'Se começasse hoje:'}</strong> ${noteText}</p>
     ${renderKoRound('Oitavas · Top 16 do ranking', data.r16, 'r16', 'O')}
     ${renderKoRound('Quartas de final', data.qf, 'qf', 'Q')}
     ${renderKoRound('Semifinal', data.sf, 'sf', 'S')}
     ${renderKoRound('Final do mata-mata', data.fn, 'fn', 'F')}
   `;
+}
+function renderAdminKnockout(){
+  renderKnockoutPanel();
 }
 
 // ══ EXPORTAR HTML ACTUALIZADO ══
@@ -5737,6 +5843,7 @@ async function saveRealResult(matchId){
   renderAdminResults(currentAdminFilter);
   renderMatches(currentFilter);
   renderRanking();
+  renderKnockoutPanel();
   renderAdminKnockout();
   updateCounts();
   showSaveBanner('✅ Resultado guardado y ranking recalculado');
@@ -5748,6 +5855,7 @@ function clearRealResult(matchId){
   renderAdminResults(currentAdminFilter);
   renderMatches(currentFilter);
   renderRanking();
+  renderKnockoutPanel();
   renderAdminKnockout();
   updateCounts();
   showSaveBanner('Resultado eliminado');
@@ -5755,6 +5863,10 @@ function clearRealResult(matchId){
 
 // ══ TABS ══
 function switchTab(tab, btn){
+  if(tab === 'knockout' && currentUserRole !== 'admin'){
+    showSaveBanner('Acesso reservado');
+    return;
+  }
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -5762,6 +5874,7 @@ function switchTab(tab, btn){
   if(btn) btn.classList.add('active');
   document.getElementById('nav-'+tab)?.classList.add('active');
   if(tab==='ranking') renderRanking();
+  if(tab==='knockout') renderKnockoutPanel();
   if(tab==='admin'){
     if(adminUnlocked) showAdminArea();
     else setTimeout(()=>document.getElementById('admin-pass')?.focus(),100);
