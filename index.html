@@ -3306,11 +3306,8 @@ body{
       <div class="knockout-page-head">
         <div>
           <h3>🏆 Mata mata</h3>
-          <p>Los 16 mejores del ranking disputan una llave eliminatoria paralela a la fase final de la Copa.</p>
+          <p>Los 16 mejores del ranking disputan una llave eliminatoria paralela a la fase final de la&nbsp;Copa.</p>
         </div>
-      </div>
-      <div class="ko-callout">
-        <strong>Consideración:</strong> antes de los 16avos de la Copa, esta pantalla muestra cómo quedarían los cruces si empezara hoy. Al iniciar los 16avos, la llave oficial se congela automáticamente.
       </div>
       <div class="ko-body" id="knockout-body">
         <div id="knockout-bracket"></div>
@@ -4736,7 +4733,7 @@ body{
 .ko-summary-item{background:linear-gradient(180deg,#FFFFFF 0%,#F7FAF8 100%);border:1px solid rgba(0,155,84,.16);border-radius:16px;padding:13px 11px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.055);}
 .ko-summary-number{display:block;font-size:21px;font-weight:950;color:var(--green);line-height:1;text-transform:lowercase;}
 .ko-summary-label{display:block;font-size:10px;font-weight:900;color:var(--sub);margin-top:5px;text-transform:uppercase;letter-spacing:.7px;}
-.ko-note{font-size:12px!important;line-height:1.5;color:var(--sub)!important;margin:6px 0 14px!important;background:#FFFFFF;border:1px solid var(--border);border-radius:14px;padding:10px 12px!important;box-shadow:0 2px 8px rgba(0,0,0,.03);}
+.ko-note{font-size:12px!important;line-height:1.5;color:#5F4300!important;margin:8px 0 14px!important;background:#FFF8E1;border:1px solid #F0C14B;border-radius:14px;padding:11px 13px!important;box-shadow:0 2px 8px rgba(0,0,0,.03);}.ko-note strong{color:#92400E!important;}
 .ko-bracket-shell{position:relative;}
 .ko-bracket-shell::before{content:'';position:absolute;left:12px;top:14px;bottom:14px;width:2px;background:linear-gradient(180deg,rgba(0,155,84,.45),rgba(0,56,168,.14),rgba(0,155,84,.45));border-radius:999px;opacity:.45;}
 .ko-round{margin-top:10px;position:relative;padding-left:0;}
@@ -4779,18 +4776,18 @@ body{
 .ko-player.winner .ko-seed{background:#111114;border-color:#111114;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.20);}
 .ko-name{font-size:12.2px;font-weight:950;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-.2px;}
 .ko-player.winner .ko-name{color:var(--green2);}
-.ko-champion-card{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#FFF8E1 0%,#FFFFFF 100%);border:1px solid rgba(245,158,11,.32);border-radius:16px;padding:12px;box-shadow:0 8px 24px rgba(183,121,31,.10);}
+.ko-champion-card{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;background:linear-gradient(135deg,#FFF8E1 0%,#FFFFFF 100%);border:1px solid rgba(245,158,11,.32);border-radius:16px;padding:12px;box-shadow:0 8px 24px rgba(183,121,31,.10);}
 .ko-champion-medal{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#111114,#2A2A2E);color:#FFD76A;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 8px 18px rgba(0,0,0,.16);flex-shrink:0;}
-.ko-champion-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;}
+.ko-champion-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1;justify-content:center;}
 .ko-champion-kicker{font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#B7791F;}
 .ko-champion-name{font-size:14px;font-weight:950;color:#92400E;line-height:1.2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ko-champion-sub{font-size:11px;font-weight:700;color:#6B7280;line-height:1.35;}
-.ko-champion-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+.ko-champion-side{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:6px;flex-shrink:0;min-width:56px;}
 .ko-player.champion{display:none;}
 .ko-player.champion .ko-seed{background:var(--gold);border-color:var(--gold);color:#111114;box-shadow:0 4px 12px rgba(245,158,11,.24);}
 .ko-player.champion .ko-name{color:#92400E;}
 .ko-crown{width:22px;height:22px;border-radius:50%;background:#111114;color:#FFD76A;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:950;flex-shrink:0;box-shadow:0 3px 9px rgba(0,0,0,.18);}
-@media(max-width:430px){.ko-champion-card{padding:10px;gap:10px;}.ko-champion-medal{width:36px;height:36px;border-radius:12px;font-size:19px;}.ko-champion-name{font-size:12.5px;}.ko-champion-sub{font-size:10.5px;}}
+@media(max-width:430px){.ko-champion-card{padding:10px;gap:10px;align-items:center;}.ko-champion-medal{width:36px;height:36px;border-radius:12px;font-size:19px;}.ko-champion-name{font-size:12.5px;}.ko-champion-sub{font-size:10.5px;}.ko-champion-side{min-width:48px;}}
 
 .ko-score{font-size:11px;font-weight:950;color:var(--green);background:#fff;border:1px solid rgba(0,155,84,.18);border-radius:999px;padding:4px 7px;min-width:auto;text-align:right;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.035);}
 .ko-placeholder{color:var(--sub);font-style:italic;font-weight:850;}
@@ -5990,11 +5987,11 @@ function renderKnockoutPanel(){
 
   const data = buildAdminKnockoutData();
   const noteText = data.official
-    ? 'Llave oficial congelada con los 16 primeros del ranking antes de los 16avos de la Copa.'
-    : 'Vista previa con base en el ranking actual. Los 16 clasificados se congelan justo antes de iniciar los 16avos de la Copa.';
+    ? 'Los 16 clasificados ya fueron definidos y la llave oficial quedó congelada antes de los 16avos de la Copa.'
+    : 'Antes de los 16avos de la Copa, esta pantalla muestra cómo quedarían los cruces si empezara hoy. Los 16 clasificados se definirán justo antes del inicio de los 16avos.';
 
   container.innerHTML = `
-    <p class="ko-note"><strong>${data.official ? 'Estado oficial:' : 'Vista previa:'}</strong> ${noteText}</p>
+    <p class="ko-note"><strong>${data.official ? 'Estado oficial:' : 'Consideración:'}</strong> ${noteText}</p>
     <div class="ko-bracket-shell">
       ${renderKoRound('Octavos del mata mata', data.r16, 'r16', 'O')}
       ${renderKoRound('Cuartos del mata mata', data.qf, 'qf', 'Q')}
