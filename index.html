@@ -4795,21 +4795,30 @@ body{
 .ko-score{font-size:11px;font-weight:950;color:var(--green);background:#fff;border:1px solid rgba(0,155,84,.18);border-radius:999px;padding:4px 7px;min-width:auto;text-align:right;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.035);}
 .ko-placeholder{color:var(--sub);font-style:italic;font-weight:850;}
 .ko-empty{background:var(--white);border:1px dashed var(--border);border-radius:14px;padding:16px;text-align:center;color:var(--sub);font-size:13px;font-weight:600;line-height:1.5;}
-.ko-games-info{background:#FFFFFF;border:1px solid rgba(0,155,84,.14);border-radius:14px;margin:0 0 10px;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.035);overflow:hidden;}
-.ko-games-info summary{list-style:none;cursor:pointer;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;font-weight:950;color:#374151;text-transform:uppercase;letter-spacing:.65px;}
-.ko-games-info summary::-webkit-details-marker{display:none;}
-.ko-games-info summary::after{content:'';width:8px;height:8px;border-right:2px solid var(--green);border-bottom:2px solid var(--green);transform:rotate(45deg);transition:transform .2s ease;flex-shrink:0;}
-.ko-games-info[open] summary::after{transform:rotate(225deg);}
-.ko-games-info-title{display:flex;align-items:center;gap:7px;min-width:0;}
-.ko-games-info-title::before{content:'i';width:18px;height:18px;border-radius:50%;background:#E8F5EE;color:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:950;text-transform:none;letter-spacing:0;}
-.ko-games-info-body{padding:0 12px 11px;border-top:1px solid rgba(0,155,84,.10);}
-.ko-games-source{font-size:12px;color:var(--sub);line-height:1.45;margin:9px 0 8px;}
-.ko-games-list{display:flex;flex-direction:column;gap:6px;}
-.ko-game-line{display:flex;align-items:center;gap:8px;background:#F7F8FA;border:1px solid #EEF0F3;border-radius:10px;padding:8px 9px;min-width:0;}
+.ko-games-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#FFFFFF;border:1px solid rgba(17,17,20,.08);border-radius:13px;padding:9px 10px;margin:0 0 10px;box-shadow:0 2px 8px rgba(0,0,0,.035);font-family:'Inter',sans-serif;cursor:pointer;text-align:left;}
+.ko-games-btn-left{display:flex;align-items:center;gap:8px;min-width:0;}
+.ko-games-btn-icon{width:22px;height:22px;border-radius:50%;background:#FFF7E2;color:#D97706;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:950;flex-shrink:0;}
+.ko-games-btn-title{font-size:10.5px;font-weight:950;color:#374151;text-transform:uppercase;letter-spacing:.55px;line-height:1.2;}
+.ko-games-btn-sub{font-size:9.5px;font-weight:800;color:#6B7280;margin-top:2px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ko-games-btn-action{font-size:10px;font-weight:950;color:var(--green);background:#F2FBF6;border:1px solid rgba(0,155,84,.16);border-radius:999px;padding:4px 8px;white-space:nowrap;flex-shrink:0;}
+.ko-games-modal{position:fixed;inset:0;background:rgba(17,17,20,.48);z-index:9998;display:flex;align-items:flex-end;justify-content:center;padding:18px 12px;animation:fadeIn .18s ease;}
+.ko-games-modal-card{width:100%;max-width:520px;background:#FFFFFF;border-radius:22px;box-shadow:0 18px 48px rgba(0,0,0,.24);overflow:hidden;animation:slideUp .22s ease;}
+.ko-games-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 16px 12px;background:linear-gradient(135deg,#FFFFFF,#F7FAF8);border-bottom:1px solid var(--border);}
+.ko-games-modal-title{font-size:14px;font-weight:950;color:var(--text);line-height:1.25;}
+.ko-games-modal-sub{font-size:12px;font-weight:700;color:var(--sub);line-height:1.45;margin-top:3px;}
+.ko-games-close{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:#F4F5F7;color:#111114;font-size:17px;font-weight:900;cursor:pointer;flex-shrink:0;}
+.ko-games-modal-body{padding:12px 14px 16px;max-height:min(65vh,520px);overflow:auto;}
+.ko-games-source{font-size:12px;color:var(--sub);line-height:1.45;margin:0 0 10px;background:#FFF8E1;border:1px solid #F0C14B;border-radius:12px;padding:9px 10px;font-weight:700;}
+.ko-games-list{display:flex;flex-direction:column;gap:7px;}
+.ko-game-line{display:flex;align-items:center;gap:8px;background:#F7F8FA;border:1px solid #EEF0F3;border-radius:11px;padding:8px 9px;min-width:0;}
 .ko-game-date{font-size:10px;font-weight:900;color:var(--green);background:#FFFFFF;border:1px solid rgba(0,155,84,.14);border-radius:999px;padding:3px 6px;white-space:nowrap;flex-shrink:0;}
-.ko-game-teams{font-size:12px;font-weight:800;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ko-game-teams{font-size:12px;font-weight:850;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ko-game-empty{font-size:12px;color:var(--sub);font-weight:700;padding:9px 0;}
-@media(max-width:430px){.ko-games-info summary{font-size:10px;padding:9px 10px;}.ko-games-info-body{padding:0 10px 10px;}.ko-game-line{padding:7px 8px;gap:6px;}.ko-game-date{font-size:9.5px;}.ko-game-teams{font-size:11.5px;}}
+.ko-player.leading{background:linear-gradient(135deg,#FFF8E1 0%,#FFFFFF 100%);border-color:rgba(245,158,11,.42);box-shadow:inset 0 0 0 1px rgba(245,158,11,.08),0 4px 12px rgba(245,158,11,.10);}
+.ko-player.leading .ko-seed{background:#F59E0B;border-color:#F59E0B;color:#111114;box-shadow:0 3px 10px rgba(245,158,11,.20);}
+.ko-player.leading .ko-name{color:#92400E;}
+.ko-player.leading::after{content:'▲';width:19px;height:19px;border-radius:50%;background:#F59E0B;color:#111114;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:950;box-shadow:0 3px 9px rgba(245,158,11,.20);flex-shrink:0;}
+@media(max-width:430px){.ko-games-btn-title{font-size:10px;}.ko-games-btn-sub{font-size:9px;}.ko-games-btn-action{display:none;}.ko-games-modal{padding:10px;}.ko-games-modal-title{font-size:13px;}.ko-games-modal-body{max-height:68vh;}.ko-game-line{padding:7px 8px;gap:6px;}.ko-game-date{font-size:9.5px;}.ko-game-teams{font-size:11.5px;}}
 
 @media(min-width:620px){.ko-round-grid{grid-template-columns:repeat(2,1fr);} .ko-summary{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:430px){.ko-summary{grid-template-columns:1fr;} .knockout-page-head{flex-direction:column;} .ko-bracket-shell::before{left:10px;} .ko-round::before{left:10px;width:11px;} .ko-round-head{padding-left:9px;} .ko-round-status{width:20px;height:20px;font-size:10px;} .ko-round-head-meta{display:none;} .ko-round-grid{padding-left:2px;} .ko-pair{padding:8px 9px 9px;border-radius:15px;} .ko-name{font-size:11.8px;} .ko-player{padding:7px 8px;gap:7px;min-height:36px;} .ko-seed{width:24px;height:24px;font-size:9.5px;} .ko-score{font-size:10.5px;padding:3px 6px;} .ko-pair-title{margin-bottom:6px;} .ko-duel{gap:6px;}}
@@ -5776,17 +5785,35 @@ function buildAdminKnockoutData(){
   return {official:base.official, state:base.state, top16, r16, qf, sf, fn};
 }
 
-function renderKoPlayer(player, score, winner){
+function renderKoPlayer(player, score, winner, leading){
   if(!player){
     return `<div class="ko-player"><span class="ko-seed">-</span><span class="ko-name ko-placeholder">Por definir</span></div>`;
   }
 
   const seed = player.seed || '-';
   const scoreHTML = score===null || score===undefined ? '' : `<span class="ko-score">${score} pts</span>`;
+  const stateClass = winner ? 'winner' : leading ? 'leading' : '';
 
-  return `<div class="ko-player ${winner?'winner':''}"><span class="ko-seed">${escapeHTML(seed)}</span><span class="ko-name ${player.placeholder?'ko-placeholder':''}">${escapeHTML(player.name)}</span>${scoreHTML}</div>`;
+  return `<div class="ko-player ${stateClass}"><span class="ko-seed">${escapeHTML(seed)}</span><span class="ko-name ${player.placeholder?'ko-placeholder':''}">${escapeHTML(player.name)}</span>${scoreHTML}</div>`;
 }
-function renderKoGamesInfo(phaseKey){
+function renderKoGamesButton(phaseKey){
+  const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
+  const games = MATCHES.filter(m=>phase.phases.includes(m.phase));
+  const total = games.length;
+
+  return `<button type="button" class="ko-games-btn" onclick="openKoGamesModal('${phaseKey}')">
+    <div class="ko-games-btn-left">
+      <span class="ko-games-btn-icon">⏳</span>
+      <div style="min-width:0;">
+        <div class="ko-games-btn-title">Juegos considerados para la puntuación</div>
+        <div class="ko-games-btn-sub">${escapeHTML(phase.sourceLabel)} · ${total} juego(s)</div>
+      </div>
+    </div>
+    <span class="ko-games-btn-action">Ver juegos</span>
+  </button>`;
+}
+
+function openKoGamesModal(phaseKey){
   const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
   const games = MATCHES.filter(m=>phase.phases.includes(m.phase));
 
@@ -5799,15 +5826,35 @@ function renderKoGamesInfo(phaseKey){
       `).join('')
     : '<div class="ko-game-empty">Todavía no hay juegos cargados para esta fase.</div>';
 
-  return `<details class="ko-games-info">
-    <summary><span class="ko-games-info-title">Juegos considerados para la puntuación</span></summary>
-    <div class="ko-games-info-body">
-      <div class="ko-games-source">${escapeHTML(phase.sourceLabel)}. Estos son los partidos de la Copa que suman puntos en esta fase del mata mata.</div>
-      <div class="ko-games-list">${listHTML}</div>
+  const modal = document.createElement('div');
+  modal.className = 'ko-games-modal';
+  modal.id = 'ko-games-modal';
+  modal.innerHTML = `
+    <div class="ko-games-modal-card" onclick="event.stopPropagation()">
+      <div class="ko-games-modal-head">
+        <div>
+          <div class="ko-games-modal-title">Juegos considerados para la puntuación</div>
+          <div class="ko-games-modal-sub">${escapeHTML(phase.sourceLabel)}</div>
+        </div>
+        <button type="button" class="ko-games-close" onclick="closeKoGamesModal()">×</button>
+      </div>
+      <div class="ko-games-modal-body">
+        <div class="ko-games-source">Estos partidos de la Copa suman puntos automáticamente en esta fase del mata mata cuando el administrador carga los resultados.</div>
+        <div class="ko-games-list">${listHTML}</div>
+      </div>
     </div>
-  </details>`;
+  `;
+
+  modal.onclick = closeKoGamesModal;
+  document.body.appendChild(modal);
+  document.body.style.overflow = 'hidden';
 }
 
+function closeKoGamesModal(){
+  const modal = document.getElementById('ko-games-modal');
+  if(modal) modal.remove();
+  document.body.style.overflow = '';
+}
 
 function getKoRoundStatus(phaseKey, items){
   const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
@@ -5843,16 +5890,19 @@ function renderKoRound(title, items, phaseKey, prefix){
       </div>
     </button>
     <div class="ko-round-grid">
-      <div style="grid-column:1/-1;">${renderKoGamesInfo(phaseKey)}</div>
-      ${items.map((p,i)=>`
+      <div style="grid-column:1/-1;">${renderKoGamesButton(phaseKey)}</div>
+      ${items.map((p,i)=>{
+        const leftLeading = !p.complete && p.leftScore !== null && p.rightScore !== null && p.leftScore > p.rightScore;
+        const rightLeading = !p.complete && p.leftScore !== null && p.rightScore !== null && p.rightScore > p.leftScore;
+        return `
       <div class="ko-pair">
         <div class="ko-pair-title"><span>${escapeHTML(prefix)}${i+1}</span></div>
         <div class="ko-duel">
-          ${renderKoPlayer(p.left, p.leftScore, p.winner && p.left && p.winner.name===p.left.name)}
+          ${renderKoPlayer(p.left, p.leftScore, p.winner && p.left && p.winner.name===p.left.name, leftLeading)}
           <div class="ko-duel-line" aria-hidden="true"></div>
-          ${renderKoPlayer(p.right, p.rightScore, p.winner && p.right && p.winner.name===p.right.name)}
+          ${renderKoPlayer(p.right, p.rightScore, p.winner && p.right && p.winner.name===p.right.name, rightLeading)}
         </div>
-      </div>`).join('')}</div>
+      </div>`}).join('')}</div>
   </div>`;
 }
 
@@ -5935,6 +5985,22 @@ function toggleAdminKnockout(){
   if(adminKnockoutVisible) renderAdminKnockout();
 }
 
+function getLastDefinitionMatch(){
+  const finalGames = MATCHES.filter(m=>m.phase==='⭐ FINAL');
+  if(finalGames.length) return finalGames[finalGames.length-1];
+
+  const definitionGames = MATCHES.filter(m=>ADMIN_KNOCKOUT_PHASES.fn.phases.includes(m.phase));
+  if(!definitionGames.length) return null;
+
+  return definitionGames.slice().sort((a,b)=>getMatchDateTime(a)-getMatchDateTime(b)).pop();
+}
+
+function getDefinitionDateText(){
+  const match = getLastDefinitionMatch();
+  if(!match) return 'al cargarse el resultado de la final de la Copa';
+  return `${match.date} a las ${match.time}`;
+}
+
 function renderKnockoutPanel(){
   if(currentUserRole !== 'admin') return;
 
@@ -5950,9 +6016,10 @@ function renderKnockoutPanel(){
 
   const data = buildAdminKnockoutData();
   const modeText = data.official ? 'oficial' : 'previa';
+  const definitionDate = getDefinitionDateText();
   const noteText = data.official
-    ? 'El mata mata ya empezó oficialmente y la llave quedó congelada con los 16 primeros del ranking antes de los 16avos de la Copa. Cada fase de la Copa define los ganadores de cada cruce.'
-    : 'Si empezara hoy, estos serían los cruces con base en el ranking actual. La llave oficial se congelará al inicio de los 16avos de la Copa o cuando se cargue el primer resultado de esa fase.';
+    ? `El mata mata ya empezó oficialmente y la llave quedó congelada con los 16 primeros del ranking antes de los 16avos de la Copa. El campeón se definirá el ${definitionDate}.`
+    : `Si empezara hoy, estos serían los cruces con base en el ranking actual. La llave oficial se congelará al inicio de los 16avos de la Copa o cuando se cargue el primer resultado de esa fase. El campeón se definirá el ${definitionDate}.`;
 
   container.innerHTML = `
     <div class="ko-summary">
