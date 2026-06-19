@@ -3362,12 +3362,21 @@ body{
       <div class="rules-section admin-knockout-section" id="admin-knockout-section">
         <div class="admin-knockout-head">
           <div>
-            <h3>🏆 Mata-mata Top 16 (teste)</h3>
-            <p>Simulação privada do ADM com os 16 primeiros colocados do ranking atual. Esta área não aparece para usuários comuns.</p>
+            <span class="admin-eyebrow">Área administrativa</span>
+            <h3>🏆 Mata-mata</h3>
+            <p>Chaveamento automático com os 16 primeiros colocados do ranking atual. Esta opção aparece somente após entrar como administrador.</p>
           </div>
           <span class="admin-knockout-badge">ADM</span>
         </div>
-        <div id="admin-knockout-bracket"></div>
+        <div class="ko-callout">
+          <strong>Consideração:</strong> se o mata-mata começasse hoje, os confrontos seriam estes com base no ranking atual.
+        </div>
+        <button class="ko-toggle-btn" id="admin-knockout-toggle" onclick="toggleAdminKnockout()">
+          👀 Ver confrontos do mata-mata
+        </button>
+        <div class="ko-body" id="admin-knockout-body" style="display:none;">
+          <div id="admin-knockout-bracket"></div>
+        </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;">
@@ -4711,26 +4720,37 @@ body{
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
 .admin-copy-btn{background:#F8D45C;color:#173F1F;min-width:140px;}
 .admin-export-note{font-size:12px!important;margin-top:10px;color:var(--sub)!important;}
-.admin-knockout-section{border:1px solid rgba(0,155,84,.25);background:linear-gradient(180deg,#fff 0%,#F4FBF7 100%);}
-.admin-knockout-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
-.admin-knockout-head h3{margin-bottom:4px;}
-.admin-knockout-badge{background:var(--text);color:#fff;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900;letter-spacing:.5px;flex-shrink:0;}
+.admin-knockout-section{border:1px solid rgba(0,155,84,.25);background:linear-gradient(180deg,#fff 0%,#F1FBF6 58%,#FFFFFF 100%);position:relative;overflow:hidden;}
+.admin-knockout-section::before{content:'';position:absolute;top:-70px;right:-70px;width:180px;height:180px;background:radial-gradient(circle,rgba(0,155,84,.14) 0%,transparent 70%);pointer-events:none;}
+.admin-knockout-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;position:relative;z-index:1;}
+.admin-knockout-head h3{margin-bottom:4px;font-size:20px;}
+.admin-eyebrow{display:inline-block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:1.6px;color:var(--green);margin-bottom:4px;}
+.admin-knockout-badge{background:var(--text);color:#fff;border-radius:999px;padding:6px 11px;font-size:11px;font-weight:900;letter-spacing:.7px;flex-shrink:0;box-shadow:0 8px 22px rgba(17,17,20,.18);}
+.ko-callout{background:#FFF8E1;border:1px solid #F0C14B;border-radius:14px;padding:11px 13px;margin:12px 0;color:#5F4300;font-size:12px;font-weight:600;line-height:1.45;position:relative;z-index:1;}
+.ko-callout strong{color:#92400E;}
+.ko-toggle-btn{width:100%;border:none;border-radius:14px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;padding:13px 14px;font-family:'Inter',sans-serif;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 9px 24px rgba(0,155,84,.25);transition:transform .15s,box-shadow .15s;position:relative;z-index:1;}
+.ko-toggle-btn:active{transform:scale(.985);box-shadow:0 4px 12px rgba(0,155,84,.24);}
+.ko-body{margin-top:14px;animation:fadeUp .22s ease;position:relative;z-index:1;}
 .ko-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
-.ko-summary-item{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;}
-.ko-summary-number{display:block;font-size:18px;font-weight:900;color:var(--green);line-height:1;}
-.ko-summary-label{display:block;font-size:10px;font-weight:700;color:var(--sub);margin-top:4px;}
-.ko-note{font-size:12px!important;line-height:1.5;color:var(--sub)!important;margin-bottom:12px!important;}
-.ko-round{margin-top:12px;}
-.ko-round-title{font-size:11px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--sub);margin:0 0 8px 2px;}
-.ko-round-grid{display:grid;grid-template-columns:1fr;gap:8px;}
-.ko-pair{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
-.ko-pair-title{font-size:11px;font-weight:800;color:var(--sub);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.ko-player{display:flex;align-items:center;gap:8px;border-radius:10px;padding:8px;background:var(--bg);border:1px solid transparent;margin-top:5px;}
-.ko-player.winner{background:#E8F5EE;border-color:rgba(0,155,84,.35);}
-.ko-seed{width:26px;height:26px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--sub);flex-shrink:0;}
+.ko-summary-item{background:rgba(255,255,255,.88);border:1px solid var(--border);border-radius:14px;padding:11px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.ko-summary-number{display:block;font-size:20px;font-weight:900;color:var(--green);line-height:1;}
+.ko-summary-label{display:block;font-size:10px;font-weight:800;color:var(--sub);margin-top:4px;text-transform:uppercase;letter-spacing:.45px;}
+.ko-note{font-size:12px!important;line-height:1.55;color:var(--sub)!important;margin-bottom:12px!important;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 12px!important;}
+.ko-round{margin-top:14px;}
+.ko-round-title{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;color:var(--sub);margin:0 0 8px 2px;}
+.ko-round-title span:last-child{background:rgba(0,155,84,.09);color:var(--green);border:1px solid rgba(0,155,84,.18);border-radius:999px;padding:4px 8px;letter-spacing:.2px;white-space:nowrap;}
+.ko-round-grid{display:grid;grid-template-columns:1fr;gap:9px;}
+.ko-pair{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:11px;box-shadow:0 2px 10px rgba(0,0,0,.055);}
+.ko-pair-title{font-size:11px;font-weight:900;color:var(--sub);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ko-pair-title span:first-child{background:var(--text);color:#fff;border-radius:999px;padding:3px 8px;}
+.ko-pair-title span:last-child{color:var(--green);}
+.ko-player{display:flex;align-items:center;gap:8px;border-radius:12px;padding:9px;background:var(--bg);border:1px solid transparent;margin-top:5px;}
+.ko-player.winner{background:#E8F5EE;border-color:rgba(0,155,84,.35);box-shadow:inset 0 0 0 1px rgba(0,155,84,.08);}
+.ko-vs{text-align:center;font-size:10px;font-weight:900;color:var(--sub);letter-spacing:1.5px;margin:5px 0 0;text-transform:uppercase;}
+.ko-seed{width:28px;height:28px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--sub);flex-shrink:0;}
 .ko-player.winner .ko-seed{background:var(--green);border-color:var(--green);color:#fff;}
-.ko-name{font-size:13px;font-weight:800;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.ko-score{font-size:13px;font-weight:900;color:var(--green);min-width:38px;text-align:right;}
+.ko-name{font-size:13px;font-weight:850;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ko-score{font-size:13px;font-weight:900;color:var(--green);min-width:42px;text-align:right;}
 .ko-placeholder{color:var(--sub);font-style:italic;font-weight:700;}
 .ko-empty{background:var(--white);border:1px dashed var(--border);border-radius:14px;padding:16px;text-align:center;color:var(--sub);font-size:13px;font-weight:600;line-height:1.5;}
 @media(min-width:620px){.ko-round-grid{grid-template-columns:repeat(2,1fr);} .ko-summary{grid-template-columns:repeat(3,1fr);}}
@@ -5474,7 +5494,8 @@ function renderRanking(){
 
 }
 
-// ══ MATA-MATA TOP 16 - TESTE ADM ══
+// ══ MATA-MATA TOP 16 - ADM ══
+let adminKnockoutVisible = false;
 const ADMIN_KNOCKOUT_SEEDS = [[1,16],[8,9],[4,13],[5,12],[2,15],[7,10],[3,14],[6,11]];
 const ADMIN_KNOCKOUT_PHASES = {
   r16: {label:'Oitavas do bolão', short:'Oitavas', phases:['Octavos']},
@@ -5540,12 +5561,25 @@ function renderKoPlayer(player, score, winner){
 function renderKoRound(title, items, phaseKey, prefix){
   const phase = ADMIN_KNOCKOUT_PHASES[phaseKey];
   const finished = getPhaseFinishedCount(phase.phases);
-  return `<div class="ko-round"><div class="ko-round-title">${escapeHTML(title)} · ${finished} resultado(s) da fase</div><div class="ko-round-grid">${items.map((p,i)=>`
+  return `<div class="ko-round"><div class="ko-round-title"><span>${escapeHTML(title)}</span><span>${finished} resultado(s) da fase</span></div><div class="ko-round-grid">${items.map((p,i)=>`
     <div class="ko-pair">
       <div class="ko-pair-title"><span>${escapeHTML(prefix)}${i+1}</span><span>${escapeHTML(phase.short)}</span></div>
       ${renderKoPlayer(p.left, p.leftScore, p.winner && p.left && p.winner.name===p.left.name)}
+      <div class="ko-vs">versus</div>
       ${renderKoPlayer(p.right, p.rightScore, p.winner && p.right && p.winner.name===p.right.name)}
     </div>`).join('')}</div></div>`;
+}
+function toggleAdminKnockout(){
+  if(currentUserRole !== 'admin' || !adminUnlocked){
+    showSaveBanner('Acceso reservado para administradores');
+    return;
+  }
+  adminKnockoutVisible = !adminKnockoutVisible;
+  const body = document.getElementById('admin-knockout-body');
+  const btn = document.getElementById('admin-knockout-toggle');
+  if(body) body.style.display = adminKnockoutVisible ? 'block' : 'none';
+  if(btn) btn.textContent = adminKnockoutVisible ? '🙈 Ocultar confrontos do mata-mata' : '👀 Ver confrontos do mata-mata';
+  if(adminKnockoutVisible) renderAdminKnockout();
 }
 function renderAdminKnockout(){
   if(!adminUnlocked || currentUserRole !== 'admin') return;
@@ -5560,15 +5594,15 @@ function renderAdminKnockout(){
   const missing = Math.max(0, 16 - data.top16.length);
   container.innerHTML = `
     <div class="ko-summary">
-      <div class="ko-summary-item"><span class="ko-summary-number">${data.top16.length}</span><span class="ko-summary-label">classificados simulados</span></div>
+      <div class="ko-summary-item"><span class="ko-summary-number">${data.top16.length}</span><span class="ko-summary-label">classificados</span></div>
       <div class="ko-summary-item"><span class="ko-summary-number">${missing}</span><span class="ko-summary-label">vagas em aberto</span></div>
       <div class="ko-summary-item"><span class="ko-summary-number">${Object.keys(loadRealResults()).length}</span><span class="ko-summary-label">resultados lançados</span></div>
     </div>
-    <p class="ko-note">Teste visual: os confrontos são montados pelo ranking atual. Quando houver resultados nas fases da Copa, o vencedor de cada duelo será quem fizer mais pontos naquela fase. Em empate, esta simulação usa a melhor posição inicial no ranking como desempate.</p>
+    <p class="ko-note"><strong>Se começasse hoje:</strong> o mata-mata seria formado pelos 16 primeiros do ranking atual. A partir das oitavas da Copa, cada fase define os vencedores do duelo direto: avança quem somar mais pontos naquela rodada. Em caso de empate nesta visão, prevalece a melhor posição inicial no ranking.</p>
     ${renderKoRound('Oitavas · Top 16 do ranking', data.r16, 'r16', 'O')}
-    ${renderKoRound('Quartas', data.qf, 'qf', 'Q')}
+    ${renderKoRound('Quartas de final', data.qf, 'qf', 'Q')}
     ${renderKoRound('Semifinal', data.sf, 'sf', 'S')}
-    ${renderKoRound('Final', data.fn, 'fn', 'F')}
+    ${renderKoRound('Final do mata-mata', data.fn, 'fn', 'F')}
   `;
 }
 
@@ -5640,7 +5674,11 @@ function showAdminArea(){
   if(login) login.style.display='none';
   if(area) area.style.display='block';
   renderAdminResults(currentAdminFilter);
-  renderAdminKnockout();
+  const body = document.getElementById('admin-knockout-body');
+  const btn = document.getElementById('admin-knockout-toggle');
+  if(body) body.style.display = adminKnockoutVisible ? 'block' : 'none';
+  if(btn) btn.textContent = adminKnockoutVisible ? '🙈 Ocultar confrontos do mata-mata' : '👀 Ver confrontos do mata-mata';
+  if(adminKnockoutVisible) renderAdminKnockout();
 }
 function filterAdminResults(f, btn){
   currentAdminFilter = f;
