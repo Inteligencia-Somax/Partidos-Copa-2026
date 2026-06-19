@@ -3358,6 +3358,12 @@ body{
         </div>
         <p class="admin-export-note">Usá este botón después de cargar o corregir resultados. El archivo descargado ya incluye los resultados reales y los palpites guardados en este navegador.</p>
       </div>
+      <div class="rules-section admin-mata-card" id="admin-mata-mata-card">
+        <div class="admin-mata-tag">🔐 Solo administradores</div>
+        <h3>🏆 Mata-Mata dos 16 Melhores</h3>
+        <p>Área exclusiva para administradores. Use este acesso para abrir a chave mata-mata baseada no ranking do bolão.</p>
+        <button class="admin-mata-btn" onclick="openMataMataAdmin()">🏆 Abrir Mata-Mata</button>
+      </div>
       <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;">
         <button class="filter-chip active" onclick="filterAdminResults('all',this)">Todos</button>
         <button class="filter-chip" onclick="filterAdminResults('pending',this)">Sin resultado</button>
@@ -4696,6 +4702,10 @@ body{
 .admin-save-btn{background:var(--green);color:#fff;flex:1;} .admin-clear-btn{background:var(--bg);color:var(--sub);border:1px solid var(--border);}
 .admin-export-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
 .admin-download-btn,.admin-copy-btn{border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
+.admin-mata-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;border:none;border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#111114,#0A2A6E);color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(10,42,110,.25);text-decoration:none;}
+.admin-mata-btn:active{transform:scale(.98);}
+.admin-mata-card{border-left:4px solid var(--gold);background:linear-gradient(180deg,#fff,#FFF8E1);}
+.admin-mata-tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:rgba(245,158,11,.14);color:#92400E;padding:5px 10px;font-size:11px;font-weight:900;margin-bottom:8px;}
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
 .admin-copy-btn{background:#F8D45C;color:#173F1F;min-width:140px;}
 .admin-export-note{font-size:12px!important;margin-top:10px;color:var(--sub)!important;}
@@ -5499,6 +5509,13 @@ function showAdminArea(){
   if(login) login.style.display='none';
   if(area) area.style.display='block';
   renderAdminResults(currentAdminFilter);
+}
+function openMataMataAdmin(){
+  if(currentUserRole !== 'admin' || !adminUnlocked){
+    showSaveBanner('Acesso ao Mata-Mata reservado para administradores');
+    return;
+  }
+  window.location.href = './mata_mata_bolao_2026.html';
 }
 function filterAdminResults(f, btn){
   currentAdminFilter = f;
