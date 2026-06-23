@@ -3300,6 +3300,19 @@ body{
       </div></div></div>
   </div>
 
+  <!-- DECEPCIÓN PANEL (solo admin) -->
+  <div class="panel" id="panel-decepcion">
+    <div class="rules-section decepcion-page-section">
+      <div class="decepcion-page-head">
+        <div>
+          <h3>🥴 Decepción</h3>
+          <p>Los 3 peores puntajes entre quienes palpitaron <strong>todos los partidos ya disputados</strong>. Vista exclusiva del administrador.</p>
+        </div>
+      </div>
+      <div class="dec-body" id="decepcion-body"></div>
+    </div>
+  </div>
+
   <!-- RULES PANEL -->
   <div class="panel" id="panel-rules">
     <div class="rules-section">
@@ -4674,6 +4687,9 @@ body{
   <button class="nav-btn" id="nav-rules" onclick="switchTab('rules',document.getElementById('tab-rules'))">
     <span class="nav-icon">📋</span>Regras
   </button>
+  <button class="nav-btn" id="nav-decepcion" style="display:none;" onclick="switchTab('decepcion',this)">
+    <span class="nav-icon">🥴</span>Decepción
+  </button>
   <button class="nav-btn" id="nav-admin" onclick="switchTab('admin',document.getElementById('tab-admin'))">
     <span class="nav-icon">🔐</span>Admin
   </button>
@@ -4701,6 +4717,24 @@ body{
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
 .admin-copy-btn{background:#F8D45C;color:#173F1F;min-width:140px;}
 .admin-export-note{font-size:12px!important;margin-top:10px;color:var(--sub)!important;}
+.decepcion-page-section{border:1px solid rgba(220,90,60,.28);background:linear-gradient(180deg,#fff 0%,#FFF4F0 58%,#FFFFFF 100%);position:relative;overflow:hidden;}
+.decepcion-page-section::before{content:'';position:absolute;top:-70px;right:-70px;width:180px;height:180px;background:radial-gradient(circle,rgba(220,90,60,.14) 0%,transparent 70%);pointer-events:none;}
+.decepcion-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;position:relative;z-index:1;}
+.decepcion-page-head h3{margin-bottom:4px;font-size:22px;font-weight:900;}
+.decepcion-page-head p{font-size:13px!important;line-height:1.55;color:var(--sub)!important;margin:0!important;max-width:540px;}
+.dec-body{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;}
+.dec-card{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:12px 14px;}
+.dec-card.d1{border-color:rgba(220,90,60,.45);box-shadow:0 4px 14px rgba(220,90,60,.10);}
+.dec-pos{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;background:var(--bg);color:var(--sub);flex-shrink:0;}
+.dec-pos.d1{background:#FBE3DC;color:#B23B22;}
+.dec-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#DC5A3C,#E8895F);flex-shrink:0;}
+.dec-info{flex:1;min-width:0;}
+.dec-name{font-size:15px;font-weight:800;color:var(--text);}
+.dec-detail{font-size:12px;color:var(--sub);margin-top:2px;}
+.dec-pts{font-size:20px;font-weight:900;color:#B23B22;line-height:1;text-align:right;}
+.dec-pts-label{font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;text-align:right;margin-top:2px;}
+.dec-empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:14px;font-weight:600;line-height:1.5;}
+.dec-meta{font-size:12px;color:var(--sub);margin-top:6px;padding-top:10px;border-top:1px dashed var(--border);}
 /* Banner superior personalizado Somax Mundial */
 .hero-banner-custom{
     width:100%;
@@ -4903,7 +4937,12 @@ let adminUnlocked = localStorage.getItem('somax_admin_unlocked') === '1';
 let currentAdminFilter = 'all';
 
 function updateRoleBasedNavigation(){
-  // Navegação por papel: sem ajustes específicos no momento.
+  const isAdmin = currentUserRole === 'admin';
+  const navDec = document.getElementById('nav-decepcion');
+  if(navDec) navDec.style.display = isAdmin ? 'flex' : 'none';
+  if(!isAdmin && document.getElementById('panel-decepcion')?.classList.contains('active')){
+    switchTab('matches', document.getElementById('tab-matches'));
+  }
 }
 
 function loadAllPicks(){
@@ -5446,6 +5485,59 @@ function renderRanking(){
 
 }
 
+// ══ DECEPCIÓN (solo admin) ══
+function renderDecepcion(){
+  const container = document.getElementById('decepcion-body');
+  if(!container) return;
+
+  const allPicksData = loadAllPicks();
+  const realResults = loadRealResults();
+  // "Partidos disputados" = los que ya tienen resultado cargado por el admin.
+  const playedIds = Object.keys(realResults);
+  const playedCount = playedIds.length;
+
+  if(playedCount === 0){
+    container.innerHTML = '<div class="dec-empty">Aún no hay partidos disputados.<br>La lista aparecerá cuando se cargue el primer resultado.</div>';
+    return;
+  }
+
+  // Califican solo quienes registraron palpite en TODOS los partidos disputados.
+  const ranked = getRankedUsers(); // ya ordenado de mejor a peor
+  const qualified = ranked.filter(u=>{
+    const picks = allPicksData[u.name] || {};
+    return playedIds.every(id => picks[id] !== undefined && picks[id] !== null);
+  });
+
+  if(qualified.length === 0){
+    container.innerHTML = `<div class="dec-empty">Ningún participante palpitó los ${playedCount} partidos disputados.<br>Por eso aún no hay candidatos a la decepción.</div>`;
+    return;
+  }
+
+  // Los 3 peores: tomar el final del ranking (peor primero).
+  const worst = qualified.slice(-3).reverse();
+  const medals = ['🥴','😬','😴'];
+
+  let html = '';
+  worst.forEach((u,i)=>{
+    const d1 = i===0 ? ' d1' : '';
+    html += `
+      <div class="dec-card${d1}">
+        <div class="dec-pos${d1}">${medals[i] || (i+1)}</div>
+        <div class="dec-avatar">${u.name.charAt(0).toUpperCase()}</div>
+        <div class="dec-info">
+          <div class="dec-name">${u.name}</div>
+          <div class="dec-detail">${u.pickCount}/${MATCHES.length} palpites · exactos: ${u.exact}</div>
+        </div>
+        <div>
+          <div class="dec-pts">${u.score}</div>
+          <div class="dec-pts-label">puntos</div>
+        </div>
+      </div>`;
+  });
+  html += `<div class="dec-meta">Califican ${qualified.length} participante(s) con palpite en los ${playedCount} partidos disputados.</div>`;
+  container.innerHTML = html;
+}
+
 // ══ EXPORTAR HTML ACTUALIZADO ══
 
 function getSomaxExportSnapshot(){
@@ -5572,6 +5664,7 @@ async function saveRealResult(matchId){
   renderAdminResults(currentAdminFilter);
   renderMatches(currentFilter);
   renderRanking();
+  renderDecepcion();
   updateCounts();
   showSaveBanner('✅ Resultado guardado y ranking recalculado');
 }
@@ -5582,12 +5675,17 @@ function clearRealResult(matchId){
   renderAdminResults(currentAdminFilter);
   renderMatches(currentFilter);
   renderRanking();
+  renderDecepcion();
   updateCounts();
   showSaveBanner('Resultado eliminado');
 }
 
 // ══ TABS ══
 function switchTab(tab, btn){
+  if(tab === 'decepcion' && currentUserRole !== 'admin'){
+    showSaveBanner('Acceso reservado');
+    return;
+  }
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -5595,6 +5693,7 @@ function switchTab(tab, btn){
   if(btn) btn.classList.add('active');
   document.getElementById('nav-'+tab)?.classList.add('active');
   if(tab==='ranking') renderRanking();
+  if(tab==='decepcion') renderDecepcion();
   if(tab==='admin'){
     if(adminUnlocked) showAdminArea();
     else setTimeout(()=>document.getElementById('admin-pass')?.focus(),100);
