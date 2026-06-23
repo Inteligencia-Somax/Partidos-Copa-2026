@@ -314,6 +314,24 @@ body{
   transition:background .2s;
 }
 .modal-close:hover{background:rgba(255,255,255,.35);}
+.ud-summary{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.ud-summary-name{font-size:15px;font-weight:800;color:var(--text);}
+.ud-summary-sub{font-size:12px;color:var(--sub);margin-top:2px;}
+.ud-summary-pts{font-size:22px;font-weight:900;color:var(--green);text-align:right;line-height:1;}
+.ud-summary-pts-label{font-size:10px;font-weight:600;color:var(--text);text-align:right;}
+.ud-body{max-height:58vh;overflow-y:auto;padding:8px 14px 16px;}
+.ud-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-bottom:1px solid var(--border);}
+.ud-row:last-child{border-bottom:none;}
+.ud-match{flex:1;min-width:0;}
+.ud-teams{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ud-meta{font-size:11px;color:var(--sub);margin-top:2px;}
+.ud-scores{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+.ud-real{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap;}
+.ud-pick{font-size:12px;color:var(--text);font-weight:700;white-space:nowrap;}
+.ud-pts{flex-shrink:0;min-width:48px;text-align:right;font-size:15px;font-weight:900;}
+.ud-pts.win{color:var(--green);}
+.ud-pts.zero{color:var(--red);}
+.ud-empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:14px;font-weight:600;line-height:1.5;}
 
 .modal-time{
   text-align:center;font-size:12px;color:var(--sub);
@@ -4683,6 +4701,18 @@ body{
   </div>
 </div>
 
+<!-- USER DETAIL MODAL (palpites + puntos por partido) -->
+<div class="modal-overlay" id="user-detail-modal" style="display:none" onclick="closeUserDetailOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-match-label" id="ud-title">Detalle</span>
+      <button class="modal-close" onclick="closeUserDetail()">✕</button>
+    </div>
+    <div class="ud-summary" id="ud-summary"></div>
+    <div class="ud-body" id="ud-body"></div>
+  </div>
+</div>
+
 <!-- SAVE BANNER -->
 <div class="save-banner" id="save-banner">🔓 Acceso administrador habilitado</div>
 
@@ -5505,6 +5535,8 @@ function renderRanking(){
     const isMe = u.name===currentUser;
     const card = document.createElement('div');
     card.className='rank-card';
+    card.style.cursor='pointer';
+    card.addEventListener('click', ()=>openUserDetail(u.name));
     if(isMe) card.style.border='2px solid var(--green)';
     const posClass = i===0?'p1':i===1?'p2':i===2?'p3':'';
     card.innerHTML=`
@@ -5521,6 +5553,64 @@ function renderRanking(){
     container.appendChild(card);
   });
 
+}
+
+// ══ DETALLE DE UN JUGADOR (palpites + puntos por partido) ══
+function openUserDetail(name){
+  const allPicks = loadAllPicks();
+  const realResults = loadRealResults();
+  const picks = allPicks[name] || {};
+  const now = new Date();
+  // Solo partidos que YA empezaron (horario de inicio pasado) y tienen resultado cargado.
+  // Un resultado cargado antes de que el partido ocurra NO aparece acá.
+  const playedMatches = MATCHES.filter(m => realResults[m.id] && getMatchDateTime(m) <= now);
+
+  let total = 0;
+  let rows = '';
+  playedMatches.forEach(m => {
+    const pick = picks[m.id];
+    const real = realResults[m.id];
+    const pts = calculatePickPoints(pick, real, m).pts;
+    total += pts;
+    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
+    const ptsCls = pts > 0 ? 'win' : 'zero';
+    rows += `
+      <div class="ud-row">
+        <div class="ud-match">
+          <div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
+          <div class="ud-meta">${m.date} · ${m.phase}</div>
+        </div>
+        <div class="ud-scores">
+          <span class="ud-real">Result: ${real.home}:${real.away}</span>
+          <span class="ud-pick">Palpite: ${pickStr}</span>
+        </div>
+        <div class="ud-pts ${ptsCls}">${pts > 0 ? '+' : ''}${pts}</div>
+      </div>`;
+  });
+
+  document.getElementById('ud-title').textContent = 'Palpites y puntos';
+  document.getElementById('ud-summary').innerHTML = `
+    <div>
+      <div class="ud-summary-name">${name}</div>
+      <div class="ud-summary-sub">${playedMatches.length} partidos disputados</div>
+    </div>
+    <div>
+      <div class="ud-summary-pts">${total}</div>
+      <div class="ud-summary-pts-label">puntos</div>
+    </div>`;
+  document.getElementById('ud-body').innerHTML = playedMatches.length
+    ? rows
+    : '<div class="ud-empty">Aún no hay partidos disputados.<br>Los detalles aparecerán cuando se carguen resultados.</div>';
+
+  document.getElementById('user-detail-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeUserDetail(){
+  document.getElementById('user-detail-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function closeUserDetailOutside(e){
+  if(e.target === document.getElementById('user-detail-modal')) closeUserDetail();
 }
 
 // ══ DECEPCIÓN (solo admin) ══
