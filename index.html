@@ -231,8 +231,6 @@ body{
 .match-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.12);border-color:rgba(0,155,84,.3);}
 .match-card.done{border-left:3px solid var(--green);}
 .match-card.pending{border-left:3px solid var(--pending);}
-.match-card.miss{background:#FDEDED;border-left:3px solid var(--red);}
-.match-card.miss:hover{border-color:rgba(206,17,38,.35);}
 
 .mc-top{
   display:flex;align-items:center;justify-content:space-between;
@@ -253,6 +251,7 @@ body{
 }
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
+.mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
 
 .mc-teams{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -5292,9 +5291,9 @@ function renderMatches(filter){
       const real = realResults[m.id];
       const hasPick = pick !== undefined;
       const points = calculatePickPoints(pick, real, m).pts;
-      const isMiss = hasPick && real && points === 0;
+      const isZero = real && points === 0;
       const card = document.createElement('div');
-      card.className = `match-card ${hasPick?'done':'pending'} ${isMiss?'miss':''} ${m.py?'py-game':''}`;
+      card.className = `match-card ${hasPick?'done':'pending'} ${m.py?'py-game':''}`;
       const hScore = hasPick ? pick.home : '–';
       const aScore = hasPick ? pick.away : '–';
       const filledCls = hasPick ? 'filled' : '';
@@ -5308,7 +5307,7 @@ function renderMatches(filter){
           ${x2badge}
           <div style="flex:1"></div>
           <span class="mc-badge">${real ? 'Resultado '+resultLabel(real) : '2026'}</span>
-          <span class="mc-status ${hasPick?'done':'pending'}">
+          <span class="mc-status ${hasPick?'done':'pending'} ${isZero?'zero':''}">
             ${real ? `🏁 ${points} pts` : (hasPick ? (locked?'🔒 Palpite cerrado':'✓ Palpite feito') : (locked?'🔒 Cerrado':'⏳ Pendente'))}
           </span>
         </div>
