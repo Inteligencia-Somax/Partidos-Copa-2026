@@ -55,8 +55,8 @@ body{
 .topbar-right{
   display:none;align-items:center;gap:10px;flex-shrink:0;
 }
-.topbar-pts{font-size:14px;font-weight:900;color:var(--green);white-space:nowrap;}
-.topbar-pos{color:var(--sub);font-weight:800;}
+.topbar-pts{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap;}
+.topbar-pos{color:var(--text);font-weight:700;font-size:13px;}
 .topbar-avatar{
   width:32px;height:32px;border-radius:50%;
   background:linear-gradient(135deg,var(--red),var(--blue));
@@ -64,7 +64,7 @@ body{
   font-size:13px;font-weight:800;color:#fff;
   flex-shrink:0;
 }
-.topbar-name{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.topbar-name{font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 /* ══ HERO BANNER ══ */
 .hero-banner{
@@ -231,6 +231,8 @@ body{
 .match-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.12);border-color:rgba(0,155,84,.3);}
 .match-card.done{border-left:3px solid var(--green);}
 .match-card.pending{border-left:3px solid var(--pending);}
+.match-card.miss{background:#FDEDED;border-left:3px solid var(--red);}
+.match-card.miss:hover{border-color:rgba(206,17,38,.35);}
 
 .mc-top{
   display:flex;align-items:center;justify-content:space-between;
@@ -381,7 +383,7 @@ body{
   box-shadow:var(--shadow);
 }
 .rank-pos{
-  font-size:18px;font-weight:900;color:var(--sub);
+  font-size:18px;font-weight:900;color:var(--text);
   min-width:28px;text-align:center;
 }
 .rank-pos.p1{color:#F59E0B;}
@@ -400,7 +402,7 @@ body{
   font-size:22px;font-weight:900;color:var(--green);
   text-align:right;
 }
-.rank-pts-label{font-size:10px;font-weight:600;color:var(--sub);text-align:right;}
+.rank-pts-label{font-size:10px;font-weight:600;color:var(--text);text-align:right;}
 
 .empty-rank{
   text-align:center;padding:60px 20px;color:var(--sub);
@@ -467,7 +469,7 @@ body{
 .auth-help{font-size:12px;color:var(--sub);line-height:1.45;margin-top:10px;}
 .auth-error{font-size:12px;color:var(--red);font-weight:700;min-height:18px;margin-top:6px;}
 .auth-secondary-btn{background:transparent;color:var(--green);border:none;font-size:12px;font-weight:800;margin-top:8px;cursor:pointer;}
-.topbar-logout{border:1px solid var(--border);background:var(--bg);border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800;color:var(--sub);cursor:pointer;}
+.topbar-logout{border:1px solid var(--border);background:var(--bg);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;}
 
 /* Ajustes mobile para evitar que la barra inferior tape el formulario */
 #name-setup-wrap{padding-bottom:150px;}
@@ -475,7 +477,7 @@ body{
   body{padding-bottom:96px;}
   .topbar-inner{height:52px;}
   .topbar-logo img{height:26px;}
-  .topbar-name{font-size:14px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .topbar-name{font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .topbar-avatar{width:38px;height:38px;font-size:16px;}
   .name-setup{margin-top:12px;padding:18px;}
   .name-row{flex-direction:column;}
@@ -5289,13 +5291,14 @@ function renderMatches(filter){
       const pick = userPicks[m.id];
       const real = realResults[m.id];
       const hasPick = pick !== undefined;
+      const points = calculatePickPoints(pick, real, m).pts;
+      const isMiss = hasPick && real && points === 0;
       const card = document.createElement('div');
-      card.className = `match-card ${hasPick?'done':'pending'} ${m.py?'py-game':''}`;
+      card.className = `match-card ${hasPick?'done':'pending'} ${isMiss?'miss':''} ${m.py?'py-game':''}`;
       const hScore = hasPick ? pick.home : '–';
       const aScore = hasPick ? pick.away : '–';
       const filledCls = hasPick ? 'filled' : '';
       const x2badge = m.x2 ? '<span style="font-size:11px;font-weight:800;color:var(--gold);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);padding:2px 8px;border-radius:20px;margin-left:4px;">✕2</span>' : '';
-      const points = calculatePickPoints(pick, real, m).pts;
       const locked = !canEditPick(m);
       card.innerHTML = `
         <div class="mc-top">
