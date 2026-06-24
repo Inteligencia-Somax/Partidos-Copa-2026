@@ -425,6 +425,9 @@ body{
 .ud-best{margin:14px;padding:12px 14px;background:rgba(0,155,84,.08);border-radius:14px;font-size:13px;font-weight:600;color:var(--text);text-align:center;}
 .ud-best strong{color:var(--green);font-weight:800;}
 .ud-round-nav{position:sticky;top:0;z-index:2;}
+.ud-sort-row{display:flex;justify-content:flex-end;padding:6px 4px 2px;}
+.ud-sort{background:none;border:none;color:var(--sub);font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;padding:2px 4px;opacity:.8;}
+.ud-sort:hover{opacity:1;color:var(--text);}
 
 .modal-time{
   text-align:center;font-size:12px;color:var(--sub);
@@ -5656,6 +5659,24 @@ function getRankedUsersExcludingRound(excludeRound){
   );
 }
 
+// Mismo ranking pero excluyendo un día (fecha del calendario) — para el "subió/bajó" del último día.
+function getRankedUsersExcludingDate(excludeDate){
+  const all = loadAllPicks();
+  const realResults = loadRealResults();
+  return Object.entries(all).map(([name, picks])=>{
+    const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
+    MATCHES.forEach(m=>{
+      if(m.date===excludeDate) return;
+      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
+      stats.score += calc.pts;
+      if(stats[calc.type]!==undefined) stats[calc.type]++;
+    });
+    return stats;
+  }).sort((a,b)=>
+    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
+  );
+}
+
 function updateTopbarPoints(){
   const ptsEl = document.getElementById('user-pts-display');
   if(!ptsEl) return;
@@ -5764,19 +5785,20 @@ function openUserDetail(name){
 
   let posDelta = null;
   const lastRound = rounds[0] || null;
-  if(lastRound && viewedIdx >= 0){
-    const before = getRankedUsersExcludingRound(lastRound);
+  const lastDate = playedMatches.length ? playedMatches[0].date : null; // día más reciente disputado
+  if(lastDate && viewedIdx >= 0){
+    const before = getRankedUsersExcludingDate(lastDate);
     const prevIdx = before.findIndex(u => u.name === name);
     if(prevIdx >= 0) posDelta = (prevIdx + 1) - (viewedIdx + 1);
   }
 
   udState = {
-    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, tab:'resumen',
+    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, tab:'resumen', sortAsc:false,
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
       aprov, exact: typeCounts.exact, media, typeCounts,
-      bestRound, worstRound, form, posDelta, lastRound, best
+      bestRound, worstRound, form, posDelta, lastRound, lastDate, best
     }
   };
 
@@ -5840,10 +5862,10 @@ function renderUdResumen(){
     html += `<div class="ud-cmp ${cls}"><div class="ud-cmp-main">${txt}</div><div class="ud-cmp-sub">Vos ${s.myScore} · ${udState.name.split(' ')[0]} ${s.viewedScore}</div></div>`;
   }
 
-  if(s.posDelta !== null && s.lastRound){
+  if(s.posDelta !== null && s.lastDate){
     const t = s.posDelta > 0 ? `▲ Subió ${s.posDelta} puesto${s.posDelta>1?'s':''}` : (s.posDelta < 0 ? `▼ Bajó ${-s.posDelta} puesto${-s.posDelta>1?'s':''}` : 'Se mantuvo');
     const cls = s.posDelta > 0 ? 'up' : (s.posDelta < 0 ? 'down' : 'same');
-    html += `<div class="ud-move ${cls}">${t} <span>en ${s.lastRound}</span></div>`;
+    html += `<div class="ud-move ${cls}">${t} <span>en el último día</span></div>`;
   }
 
   html += `<div class="ud-cards">
@@ -5866,9 +5888,10 @@ function renderUdResumen(){
 }
 
 function renderUdPartidos(){
-  const { matches, rounds, idx, picks, real } = udState;
+  const { matches, rounds, idx, picks, real, sortAsc } = udState;
   const selected = idx === 0 ? null : rounds[idx - 1];
-  const shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches;
+  let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
+  if(sortAsc) shown = shown.slice().reverse(); // matches viene "reciente primero"
 
   let shownTotal = 0, rows = '';
   shown.forEach(m => {
@@ -5887,14 +5910,22 @@ function renderUdPartidos(){
 
   const navLabel = selected ? selected : 'Todas las fechas';
   const navSub = selected ? `${shown.length} partido(s) · ${shownTotal} pts` : `${matches.length} partido(s)`;
+  // flechas invertidas: ‹ avanza por las fechas (Fecha 2, Fecha 1...), › vuelve hacia Todas
   const nav = rounds.length ? `
     <div class="ud-round-nav">
-      <button class="ud-rnav-btn" onclick="changeUdRound(-1)" ${idx === 0 ? 'disabled' : ''}>‹</button>
+      <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>‹</button>
       <div class="ud-rnav-label"><span class="ud-rnav-title">${navLabel}</span><span class="ud-rnav-sub">${navSub}</span></div>
-      <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>
+      <button class="ud-rnav-btn" onclick="changeUdRound(-1)" ${idx === 0 ? 'disabled' : ''}>›</button>
     </div>` : '';
 
-  return nav + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos disputados.</div>');
+  const sortToggle = `<div class="ud-sort-row"><button class="ud-sort" onclick="toggleUdSort()">${sortAsc ? 'Antiguos primero' : 'Recientes primero'} ⇅</button></div>`;
+
+  return nav + sortToggle + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos disputados.</div>');
+}
+
+function toggleUdSort(){
+  udState.sortAsc = !udState.sortAsc;
+  renderUd();
 }
 
 function renderUdAnalisis(){
