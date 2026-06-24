@@ -214,9 +214,15 @@ body{
 
 /* ══ DATE GROUP ══ */
 .date-group{margin-bottom:6px;}
+.date-row{display:flex;align-items:center;gap:10px;padding:14px 4px 8px;}
 .date-label{
   font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:#fff;padding:14px 4px 8px;
+  color:#fff;padding:0;
+}
+.round-badge{
+  font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  color:#fff;background:rgba(255,255,255,.18);
+  padding:3px 10px;border-radius:20px;white-space:nowrap;
 }
 
 /* ══ MATCH CARD ══ */
@@ -229,8 +235,6 @@ body{
   position:relative;overflow:hidden;
 }
 .match-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.12);border-color:rgba(0,155,84,.3);}
-.match-card.done{border-left:3px solid var(--green);}
-.match-card.pending{border-left:3px solid var(--pending);}
 
 .mc-top{
   display:flex;align-items:center;justify-content:space-between;
@@ -245,8 +249,8 @@ body{
   background:rgba(0,0,0,.05);border:1px solid var(--border);
 }
 .mc-status{
-  font-size:11px;font-weight:700;
-  padding:3px 10px;border-radius:20px;
+  font-size:13px;font-weight:800;
+  padding:3px 11px;border-radius:20px;
   display:flex;align-items:center;gap:4px;
 }
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
@@ -323,12 +327,42 @@ body{
 .ud-summary-pts{font-size:22px;font-weight:900;color:var(--green);text-align:right;line-height:1;}
 .ud-summary-pts-label{font-size:10px;font-weight:600;color:var(--text);text-align:right;}
 .ud-body{max-height:58vh;overflow-y:auto;padding:8px 14px 16px;}
+.ud-round-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg);}
+.ud-rnav-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--text);font-size:20px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.ud-rnav-btn:disabled{opacity:.3;cursor:default;}
+.ud-rnav-label{flex:1;text-align:center;min-width:0;}
+.ud-rnav-title{display:block;font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ud-rnav-sub{display:block;font-size:11px;color:var(--sub);margin-top:1px;}
 /* Detalle centrado en pantalla (no pegado abajo) */
 #user-detail-modal, #match-breakdown-modal{align-items:center;padding:16px;}
 #user-detail-modal .modal, #match-breakdown-modal .modal{border-radius:20px;width:100%;max-width:460px;max-height:84vh;display:flex;flex-direction:column;animation:fadeScale .25s ease;padding:0;}
 #user-detail-modal .modal-header, #match-breakdown-modal .modal-header{border-radius:20px 20px 0 0;}
 #user-detail-modal .ud-body, #match-breakdown-modal .ud-body{max-height:none;flex:1;min-height:0;}
 .mb-pos{min-width:40px;text-align:center;font-size:14px;font-weight:900;color:var(--text);flex-shrink:0;}
+.mb-header-actions{display:flex;align-items:center;gap:8px;}
+.mb-toggle{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.mb-toggle.active{background:#fff;color:var(--green);}
+.mb-pie-wrap{position:relative;width:160px;height:160px;margin:18px auto 6px;}
+.mb-pie{width:100%;height:100%;border-radius:50%;}
+.mb-pie-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:88px;height:88px;background:#fff;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 1px 6px rgba(0,0,0,.12);}
+.mb-pie-num{font-size:26px;font-weight:900;color:var(--text);line-height:1;}
+.mb-pie-lbl{font-size:11px;color:var(--sub);font-weight:600;margin-top:2px;}
+.mb-legend-hint{text-align:center;font-size:11px;color:var(--sub);margin:6px 0 10px;}
+.mb-leg-item{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid var(--border);cursor:pointer;}
+.mb-leg-item.open{background:var(--bg);}
+.mb-dot{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
+.mb-leg-info{flex:1;min-width:0;}
+.mb-leg-label{font-size:13px;font-weight:700;color:var(--text);}
+.mb-leg-sub{font-size:11px;color:var(--sub);margin-top:1px;}
+.mb-leg-stat{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;}
+.mb-leg-count{font-size:16px;font-weight:900;color:var(--text);line-height:1;}
+.mb-leg-pct{font-size:11px;color:var(--sub);font-weight:700;}
+.mb-chev{font-size:12px;color:var(--sub);flex-shrink:0;width:14px;text-align:center;}
+.mb-names{background:var(--bg);border-bottom:1px solid var(--border);padding:4px 12px 10px;}
+.mb-name-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 4px;border-bottom:1px dashed var(--border);}
+.mb-name-row:last-child{border-bottom:none;}
+.mb-name-txt{font-size:12px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mb-name-pick{font-size:12px;color:var(--sub);font-weight:700;flex-shrink:0;}
 @keyframes fadeScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 .ud-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-bottom:1px solid var(--border);}
 .ud-row:last-child{border-bottom:none;}
@@ -614,7 +648,7 @@ body{
     <div class="filter-row">
       <button class="filter-chip active" onclick="filterMatches('all',this)">Todos</button>
       <button class="filter-chip" onclick="filterMatches('today',this)">Hoy</button>
-      <button class="filter-chip" onclick="filterMatches('pending',this)">Pendentes</button>
+      <button class="filter-chip" onclick="filterMatches('pending',this)">Pendientes</button>
       <button class="filter-chip" onclick="filterMatches('done',this)">Palpitados</button>
     </div>
     <div id="matches-list"><div class="date-group"><div class="date-label">JUE, 11 DE JUN.</div><div class="match-card pending ">
@@ -626,7 +660,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -652,7 +686,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -678,7 +712,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -704,7 +738,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -730,7 +764,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -756,7 +790,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -782,7 +816,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -808,7 +842,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -834,7 +868,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -860,7 +894,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -886,7 +920,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -912,7 +946,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -938,7 +972,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -964,7 +998,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -990,7 +1024,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1016,7 +1050,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1042,7 +1076,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1068,7 +1102,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1094,7 +1128,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1120,7 +1154,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1146,7 +1180,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1172,7 +1206,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1198,7 +1232,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1224,7 +1258,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1250,7 +1284,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1276,7 +1310,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1302,7 +1336,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1328,7 +1362,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1354,7 +1388,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1380,7 +1414,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1406,7 +1440,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1432,7 +1466,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1458,7 +1492,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1484,7 +1518,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1510,7 +1544,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1536,7 +1570,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1562,7 +1596,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1588,7 +1622,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1614,7 +1648,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1640,7 +1674,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1666,7 +1700,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1692,7 +1726,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1718,7 +1752,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1744,7 +1778,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1770,7 +1804,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1796,7 +1830,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1822,7 +1856,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1848,7 +1882,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1874,7 +1908,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1900,7 +1934,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1926,7 +1960,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1952,7 +1986,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -1978,7 +2012,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2004,7 +2038,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2030,7 +2064,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2056,7 +2090,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status done">
-            ✓ Palpite feito
+            ✓ Palpitado
           </span>
         </div>
         <div class="mc-teams">
@@ -2082,7 +2116,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2108,7 +2142,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2134,7 +2168,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2160,7 +2194,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2186,7 +2220,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2212,7 +2246,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2238,7 +2272,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2264,7 +2298,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2290,7 +2324,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2316,7 +2350,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2342,7 +2376,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2368,7 +2402,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2394,7 +2428,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2420,7 +2454,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2446,7 +2480,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2472,7 +2506,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2498,7 +2532,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2524,7 +2558,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2550,7 +2584,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2576,7 +2610,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2602,7 +2636,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2628,7 +2662,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2654,7 +2688,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2680,7 +2714,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2706,7 +2740,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2732,7 +2766,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2758,7 +2792,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2784,7 +2818,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2810,7 +2844,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2836,7 +2870,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2862,7 +2896,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2888,7 +2922,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2914,7 +2948,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2940,7 +2974,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2966,7 +3000,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -2992,7 +3026,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3018,7 +3052,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3044,7 +3078,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3070,7 +3104,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3096,7 +3130,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3122,7 +3156,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3148,7 +3182,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3174,7 +3208,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3200,7 +3234,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3226,7 +3260,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3252,7 +3286,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3278,7 +3312,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -3304,7 +3338,7 @@ body{
           <div style="flex:1"></div>
           <span class="mc-badge">2026</span>
           <span class="mc-status pending">
-            ⏳ Pendente
+            ⏳ Pendiente
           </span>
         </div>
         <div class="mc-teams">
@@ -4720,6 +4754,7 @@ body{
       <button class="modal-close" onclick="closeUserDetail()">✕</button>
     </div>
     <div class="ud-summary" id="ud-summary"></div>
+    <div class="ud-round-nav" id="ud-round-nav"></div>
     <div class="ud-body" id="ud-body"></div>
   </div>
 </div>
@@ -4729,7 +4764,10 @@ body{
   <div class="modal">
     <div class="modal-header">
       <span class="modal-match-label" id="mb-title">Puntos por participante</span>
-      <button class="modal-close" onclick="closeMatchBreakdown()">✕</button>
+      <div class="mb-header-actions">
+        <button class="mb-toggle" id="mb-toggle" onclick="toggleMbView()" aria-label="Estadísticas"></button>
+        <button class="modal-close" onclick="closeMatchBreakdown()">✕</button>
+      </div>
     </div>
     <div class="ud-summary" id="mb-summary"></div>
     <div class="ud-body" id="mb-body"></div>
@@ -5087,6 +5125,19 @@ function brtDateKey(utcDate){
 function isMatchToday(match){
   return brtDateKey(getMatchDateTime(match)) === brtDateKey(new Date());
 }
+// Rodada (jornada/fase) según el id del partido.
+function getRoundLabel(m){
+  const id = m.id;
+  if(id <= 24) return 'Fecha 1';
+  if(id <= 48) return 'Fecha 2';
+  if(id <= 72) return 'Fecha 3';
+  if(id <= 88) return 'Dieciseisavos';
+  if(id <= 96) return 'Octavos';
+  if(id <= 100) return 'Cuartos';
+  if(id <= 102) return 'Semifinal';
+  if(id === 103) return '3° Puesto';
+  return 'Final';
+}
 
 // ══ FIREBASE AUTH INIT ══
 function setAuthMode(mode){
@@ -5345,7 +5396,7 @@ function renderMatches(filter){
   Object.entries(groups).forEach(([date, matches])=>{
     const group = document.createElement('div');
     group.className = 'date-group';
-    group.innerHTML = `<div class="date-label">${date.toUpperCase()}</div>`;
+    group.innerHTML = `<div class="date-row"><div class="date-label">${date.toUpperCase()}</div><div class="round-badge">${getRoundLabel(matches[0])}</div></div>`;
     matches.forEach(m => {
       const pick = userPicks[m.id];
       const real = realResults[m.id];
@@ -5368,7 +5419,7 @@ function renderMatches(filter){
           <div style="flex:1"></div>
           <span class="mc-badge">${real ? 'Resultado '+resultLabel(real) : '2026'}</span>
           <span class="mc-status ${hasPick?'done':'pending'} ${isZero?'zero':''}">
-            ${real ? `🏁 ${points} pts` : (hasPick ? (locked?'🔒 Palpite cerrado':'✓ Palpite feito') : (locked?'🔒 Cerrado':'⏳ Pendente'))}
+            ${real ? `${points} pts` : (hasPick ? (locked?'🔒 Palpite cerrado':'✓ Palpitado') : (locked?'🔒 Cerrado':'⏳ Pendiente'))}
           </span>
         </div>
         <div class="mc-teams">
@@ -5589,25 +5640,56 @@ function renderRanking(){
 }
 
 // ══ DETALLE DE UN JUGADOR (palpites + puntos por partido) ══
+let udState = { name:'', matches:[], rounds:[], idx:0, picks:{}, real:{} };
+
 function openUserDetail(name){
   const allPicks = loadAllPicks();
   const realResults = loadRealResults();
   const picks = allPicks[name] || {};
   const now = new Date();
   // Solo partidos que YA empezaron (horario de inicio pasado) y tienen resultado cargado.
-  // Un resultado cargado antes de que el partido ocurra NO aparece acá.
   // Orden: el más reciente primero.
   const playedMatches = MATCHES
     .filter(m => realResults[m.id] && getMatchDateTime(m) <= now)
     .sort((a, b) => getMatchDateTime(b) - getMatchDateTime(a));
 
+  // Fechas/rondas presentes, en orden (más reciente primero)
+  const rounds = [];
+  playedMatches.forEach(m => { const r = getRoundLabel(m); if(!rounds.includes(r)) rounds.push(r); });
+
+  udState = { name, matches:playedMatches, rounds, idx:0, picks, real:realResults };
+
+  document.getElementById('ud-title').textContent = 'Palpites y puntos';
+  renderUserDetailBody();
+  document.getElementById('user-detail-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function changeUdRound(delta){
+  let i = udState.idx + delta;
+  if(i < 0) i = 0;
+  if(i > udState.rounds.length) i = udState.rounds.length;
+  udState.idx = i;
+  renderUserDetailBody();
+}
+
+function renderUserDetailBody(){
+  const { name, matches, rounds, idx, picks, real } = udState;
+  const selected = idx === 0 ? null : rounds[idx - 1]; // null = todas
+
+  // total general (todas las fechas)
   let total = 0;
+  matches.forEach(m => { total += calculatePickPoints(picks[m.id], real[m.id], m).pts; });
+
+  // lista filtrada por la fecha seleccionada
+  const shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches;
+  let shownTotal = 0;
   let rows = '';
-  playedMatches.forEach(m => {
+  shown.forEach(m => {
     const pick = picks[m.id];
-    const real = realResults[m.id];
-    const pts = calculatePickPoints(pick, real, m).pts;
-    total += pts;
+    const r = real[m.id];
+    const pts = calculatePickPoints(pick, r, m).pts;
+    shownTotal += pts;
     const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
     const ptsCls = pts > 0 ? 'win' : 'zero';
     rows += `
@@ -5617,29 +5699,36 @@ function openUserDetail(name){
           <div class="ud-meta">${m.date} · ${m.phase}</div>
         </div>
         <div class="ud-scores">
-          <span class="ud-real">Result: ${real.home}:${real.away}</span>
+          <span class="ud-real">Resultado: ${r.home}:${r.away}</span>
           <span class="ud-pick">Palpite: ${pickStr}</span>
         </div>
         <div class="ud-pts ${ptsCls}">${pts > 0 ? '+' : ''}${pts}</div>
       </div>`;
   });
 
-  document.getElementById('ud-title').textContent = 'Palpites y puntos';
   document.getElementById('ud-summary').innerHTML = `
     <div>
       <div class="ud-summary-name">${name}</div>
-      <div class="ud-summary-sub">${playedMatches.length} partidos disputados</div>
+      <div class="ud-summary-sub">${matches.length} partidos disputados</div>
     </div>
     <div>
       <div class="ud-summary-pts">${total}</div>
       <div class="ud-summary-pts-label">puntos</div>
     </div>`;
-  document.getElementById('ud-body').innerHTML = playedMatches.length
+
+  const navLabel = selected ? selected : 'Todas las fechas';
+  const navSub = selected ? `${shown.length} partido(s) · ${shownTotal} pts` : `${matches.length} partido(s)`;
+  document.getElementById('ud-round-nav').innerHTML = rounds.length ? `
+    <button class="ud-rnav-btn" onclick="changeUdRound(-1)" ${idx === 0 ? 'disabled' : ''}>‹</button>
+    <div class="ud-rnav-label">
+      <span class="ud-rnav-title">${navLabel}</span>
+      <span class="ud-rnav-sub">${navSub}</span>
+    </div>
+    <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>` : '';
+
+  document.getElementById('ud-body').innerHTML = shown.length
     ? rows
     : '<div class="ud-empty">Aún no hay partidos disputados.<br>Los detalles aparecerán cuando se carguen resultados.</div>';
-
-  document.getElementById('user-detail-modal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
 }
 function closeUserDetail(){
   document.getElementById('user-detail-modal').style.display = 'none';
@@ -5650,6 +5739,16 @@ function closeUserDetailOutside(e){
 }
 
 // ══ PUNTOS POR PARTICIPANTE EN UN PARTIDO (orden del ranking) ══
+const MB_TYPE_INFO = [
+  { key:'exact',       label:'Marcador exacto',               pts:25, color:'#009B54' },
+  { key:'winnerGoals', label:'Ganador + goles del ganador',   pts:18, color:'#34A853' },
+  { key:'diff',        label:'Ganador + diferencia de goles', pts:15, color:'#7CB342' },
+  { key:'loserGoals',  label:'Ganador + goles del perdedor',  pts:12, color:'#C0CA33' },
+  { key:'winner',      label:'Solo ganador correcto',         pts:7,  color:'#F59E0B' },
+  { key:'wrong',       label:'Resultado incorrecto',          pts:0,  color:'#CE1126' },
+];
+let mbState = { m:null, real:null, parts:[], view:'list', expanded:null };
+
 function openMatchBreakdown(matchId){
   const m = MATCHES.find(x => x.id === matchId);
   const realResults = loadRealResults();
@@ -5657,40 +5756,115 @@ function openMatchBreakdown(matchId){
   if(!m || !real) return;
 
   const allPicks = loadAllPicks();
-  const ranked = getRankedUsers(); // mejor a peor (orden del ranking)
+  const ranked = getRankedUsers(); // orden del ranking (mejor a peor)
 
-  let rows = '';
-  let count = 0;
+  const parts = [];
   ranked.forEach((u, idx) => {
-    const picks = allPicks[u.name] || {};
-    const pick = picks[matchId];
+    const pick = (allPicks[u.name] || {})[matchId];
     if(pick === undefined) return; // solo quienes palpitaron este partido
-    count++;
-    const pts = calculatePickPoints(pick, real, m).pts;
-    const cls = pts > 0 ? 'win' : 'zero';
-    rows += `
-      <div class="ud-row">
-        <span class="mb-pos">${idx + 1}º</span>
-        <div class="ud-match">
-          <div class="ud-teams">${u.name}</div>
-          <div class="ud-meta">Palpite: ${pick.home}:${pick.away}</div>
-        </div>
-        <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
-      </div>`;
+    const calc = calculatePickPoints(pick, real, m);
+    parts.push({ name:u.name, pos:idx + 1, pick, pts:calc.pts, type:calc.type });
   });
 
-  document.getElementById('mb-title').textContent = 'Puntos por participante';
+  mbState = { m, real, parts, view:'list', expanded:null };
+  document.getElementById('match-breakdown-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  renderMatchBreakdown();
+}
+
+function toggleMbView(){
+  mbState.view = mbState.view === 'list' ? 'stats' : 'list';
+  mbState.expanded = null;
+  renderMatchBreakdown();
+}
+function toggleMbType(key){
+  mbState.expanded = mbState.expanded === key ? null : key;
+  renderMatchBreakdown();
+}
+
+function renderMatchBreakdown(){
+  const { m, real, parts, view, expanded } = mbState;
+  const total = parts.length;
+  const mult = m.x2 ? 2 : 1;
+
   document.getElementById('mb-summary').innerHTML = `
     <div>
       <div class="ud-summary-name">${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}</div>
-      <div class="ud-summary-sub">${m.date} · ${m.phase} · ${count} participante(s)</div>
+      <div class="ud-summary-sub">${m.date} · ${m.phase} · ${total} participante(s)</div>
     </div>`;
-  document.getElementById('mb-body').innerHTML = count
-    ? rows
-    : '<div class="ud-empty">Nadie palpitó este partido.</div>';
 
-  document.getElementById('match-breakdown-modal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+  // botón pizza / lista
+  const btn = document.getElementById('mb-toggle');
+  if(btn){
+    btn.classList.toggle('active', view === 'stats');
+    btn.innerHTML = view === 'stats'
+      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>'
+      : '<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 12 L12 3 A9 9 0 0 1 21 12 Z" fill="currentColor"/></svg>';
+    btn.title = view === 'stats' ? 'Ver lista' : 'Ver estadísticas';
+  }
+
+  const body = document.getElementById('mb-body');
+  if(!total){
+    body.innerHTML = '<div class="ud-empty">Nadie palpitó este partido.</div>';
+    return;
+  }
+
+  if(view === 'list'){
+    body.innerHTML = parts.map(p => `
+      <div class="ud-row">
+        <span class="mb-pos">${p.pos}º</span>
+        <div class="ud-match">
+          <div class="ud-teams">${p.name}</div>
+          <div class="ud-meta">Palpite: ${p.pick.home}:${p.pick.away}</div>
+        </div>
+        <div class="ud-pts ${p.pts > 0 ? 'win' : 'zero'}">${p.pts > 0 ? '+' : ''}${p.pts}</div>
+      </div>`).join('');
+    return;
+  }
+
+  // ── vista estadísticas (gráfico de torta) ──
+  const groups = {};
+  MB_TYPE_INFO.forEach(t => { groups[t.key] = parts.filter(p => p.type === t.key); });
+
+  let acc = 0;
+  const segs = [];
+  MB_TYPE_INFO.forEach(t => {
+    const n = groups[t.key].length;
+    if(n === 0) return;
+    const pct = n / total * 100;
+    segs.push(`${t.color} ${acc}% ${acc + pct}%`);
+    acc += pct;
+  });
+  const pie = `<div class="mb-pie" style="background:conic-gradient(${segs.join(',')})"></div>`;
+
+  const legend = MB_TYPE_INFO.map(t => {
+    const list = groups[t.key];
+    const n = list.length;
+    if(n === 0) return '';
+    const pct = (n / total * 100);
+    const isExp = expanded === t.key;
+    const names = isExp ? `<div class="mb-names">${list.map(p =>
+      `<div class="mb-name-row"><span class="mb-name-txt">${p.pos}º · ${p.name}</span><span class="mb-name-pick">${p.pick.home}:${p.pick.away}</span></div>`
+    ).join('')}</div>` : '';
+    return `
+      <div class="mb-leg-item ${isExp ? 'open' : ''}" onclick="toggleMbType('${t.key}')">
+        <span class="mb-dot" style="background:${t.color}"></span>
+        <div class="mb-leg-info">
+          <div class="mb-leg-label">${t.label}</div>
+          <div class="mb-leg-sub">${t.pts * mult} pts</div>
+        </div>
+        <div class="mb-leg-stat"><span class="mb-leg-count">${n}</span><span class="mb-leg-pct">${pct.toFixed(0)}%</span></div>
+        <span class="mb-chev">${isExp ? '▴' : '▾'}</span>
+      </div>${names}`;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="mb-pie-wrap">
+      ${pie}
+      <div class="mb-pie-center"><span class="mb-pie-num">${total}</span><span class="mb-pie-lbl">palpites</span></div>
+    </div>
+    <div class="mb-legend-hint">Tocá una categoría para ver quiénes son</div>
+    ${legend}`;
 }
 function closeMatchBreakdown(){
   document.getElementById('match-breakdown-modal').style.display = 'none';
