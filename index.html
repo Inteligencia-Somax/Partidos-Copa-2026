@@ -383,6 +383,48 @@ body{
 .ud-pts.win{color:var(--green);}
 .ud-pts.zero{color:var(--red);}
 .ud-empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:14px;font-weight:600;line-height:1.5;}
+/* ── Detalle: hero + tabs ── */
+.ud-hero{display:flex;align-items:center;padding:14px 10px;border-bottom:1px solid var(--border);}
+.ud-hero-stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;}
+.ud-hero-num{font-size:20px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:4px;line-height:1;}
+.ud-hero-num.green{color:var(--green);}
+.ud-hero-lbl{font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;}
+.ud-hero-sep{width:1px;height:30px;background:var(--border);}
+.ud-delta{font-size:12px;font-weight:900;}
+.ud-delta.up{color:var(--green);}.ud-delta.down{color:var(--red);}.ud-delta.same{color:var(--sub);}
+.ud-tabs{display:flex;gap:6px;padding:8px 12px;background:var(--bg);border-bottom:1px solid var(--border);}
+.ud-tab{flex:1;padding:8px 6px;border:none;border-radius:50px;background:transparent;color:var(--sub);font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}
+.ud-tab.active{background:var(--green);color:#fff;}
+/* Resumen */
+.ud-cmp{margin:12px 14px 0;border-radius:14px;padding:12px 14px;text-align:center;}
+.ud-cmp.up{background:rgba(0,155,84,.1);}.ud-cmp.down{background:rgba(206,17,38,.08);}.ud-cmp.same{background:var(--bg);}
+.ud-cmp-main{font-size:15px;font-weight:700;color:var(--text);}
+.ud-cmp.up .ud-cmp-main strong{color:var(--green);}.ud-cmp.down .ud-cmp-main strong{color:var(--red);}
+.ud-cmp-sub{font-size:12px;color:var(--sub);margin-top:3px;}
+.ud-move{margin:12px 14px 0;font-size:13px;font-weight:800;}
+.ud-move.up{color:var(--green);}.ud-move.down{color:var(--red);}.ud-move.same{color:var(--sub);}
+.ud-move span{color:var(--sub);font-weight:600;}
+.ud-cards{display:flex;gap:10px;margin:12px 14px 0;}
+.ud-card{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;}
+.ud-card-num{font-size:22px;font-weight:900;color:var(--text);line-height:1;}
+.ud-card-lbl{font-size:11px;color:var(--sub);font-weight:600;margin-top:5px;line-height:1.25;}
+.ud-card.good .ud-card-num{color:var(--green);}.ud-card.bad .ud-card-num{color:var(--red);}
+.ud-form{display:flex;align-items:center;justify-content:space-between;margin:14px 14px 16px;padding:12px 14px;background:var(--bg);border-radius:14px;}
+.ud-form-lbl{font-size:12px;font-weight:700;color:var(--sub);}
+.ud-form-dots{display:flex;gap:6px;}
+.ud-dot{width:14px;height:14px;border-radius:50%;}
+.ud-dot.on{background:var(--green);}.ud-dot.off{background:var(--red);opacity:.5;}
+/* Análisis */
+.ud-an-title{font-size:13px;font-weight:800;color:var(--text);margin:14px 14px 8px;}
+.ud-bar-row{display:flex;align-items:center;gap:8px;margin:0 14px 9px;}
+.ud-bar-label{width:120px;font-size:11px;font-weight:600;color:var(--text);line-height:1.2;flex-shrink:0;}
+.ud-bar-track{flex:1;height:14px;background:var(--bg);border-radius:8px;overflow:hidden;}
+.ud-bar-fill{height:100%;border-radius:8px;min-width:2px;transition:width .3s;}
+.ud-bar-val{width:54px;text-align:right;font-size:12px;font-weight:800;color:var(--text);flex-shrink:0;}
+.ud-bar-val span{color:var(--sub);font-weight:600;font-size:11px;}
+.ud-best{margin:14px;padding:12px 14px;background:rgba(0,155,84,.08);border-radius:14px;font-size:13px;font-weight:600;color:var(--text);text-align:center;}
+.ud-best strong{color:var(--green);font-weight:800;}
+.ud-round-nav{position:sticky;top:0;z-index:2;}
 
 .modal-time{
   text-align:center;font-size:12px;color:var(--sub);
@@ -4760,9 +4802,8 @@ body{
       <span class="modal-match-label" id="ud-title">Detalle</span>
       <button class="modal-close" onclick="closeUserDetail()">✕</button>
     </div>
-    <div class="ud-summary" id="ud-summary"></div>
-    <div class="ud-insights" id="ud-insights"></div>
-    <div class="ud-round-nav" id="ud-round-nav"></div>
+    <div class="ud-hero" id="ud-hero"></div>
+    <div class="ud-tabs" id="ud-tabs"></div>
     <div class="ud-body" id="ud-body"></div>
   </div>
 </div>
@@ -5446,8 +5487,14 @@ function renderMatches(filter){
           </div>
         </div>`;
       card.addEventListener('click', ()=>{
-        if(real && getMatchDateTime(m) <= new Date()) openMatchBreakdown(m.id);
-        else openModal(m.id);
+        if(real && getMatchDateTime(m) <= new Date()){ openMatchBreakdown(m.id); return; }
+        if(locked){
+          showSaveBanner(hasPick
+            ? '🔒 Tu palpite ya está cerrado, no se puede editar.'
+            : '🔒 El partido ya cerró, no se puede palpitar.');
+          return;
+        }
+        openModal(m.id);
       });
       group.appendChild(card);
     });
@@ -5673,50 +5720,76 @@ function openUserDetail(name){
   const realResults = loadRealResults();
   const picks = allPicks[name] || {};
   const now = new Date();
-  // Solo partidos que YA empezaron (horario de inicio pasado) y tienen resultado cargado.
-  // Orden: el más reciente primero.
+  // Solo partidos YA disputados (con resultado y horario pasado). Más reciente primero.
   const playedMatches = MATCHES
     .filter(m => realResults[m.id] && getMatchDateTime(m) <= now)
     .sort((a, b) => getMatchDateTime(b) - getMatchDateTime(a));
 
-  // Fechas/rondas presentes, en orden (más reciente primero)
   const rounds = [];
   playedMatches.forEach(m => { const r = getRoundLabel(m); if(!rounds.includes(r)) rounds.push(r); });
 
-  udState = { name, matches:playedMatches, rounds, idx:0, picks, real:realResults };
-
-  // ── insights: cambio de posición en la última fecha + comparación con vos ──
+  // ── estadísticas ──
   const rankedNow = getRankedUsers();
   const viewedIdx = rankedNow.findIndex(u => u.name === name);
   const myIdx = rankedNow.findIndex(u => u.name === currentUser);
   const viewedScore = viewedIdx >= 0 ? rankedNow[viewedIdx].score : 0;
   const myScore = myIdx >= 0 ? rankedNow[myIdx].score : 0;
-  let insights = '';
 
-  if(rounds.length && viewedIdx >= 0){
-    const lastRound = rounds[0];
+  let total = 0, possible = 0;
+  const typeCounts = { exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0, wrong:0 };
+  const roundPts = {};
+  let best = null;
+  playedMatches.forEach(m => {
+    const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
+    total += calc.pts;
+    possible += 25 * (m.x2 ? 2 : 1);
+    if(typeCounts[calc.type] !== undefined) typeCounts[calc.type]++;
+    const r = getRoundLabel(m);
+    roundPts[r] = (roundPts[r] || 0) + calc.pts;
+    if(!best || calc.pts > best.pts) best = { m, pts: calc.pts };
+  });
+  const aprov = possible ? Math.round(total / possible * 100) : 0;
+  const media = playedMatches.length ? (total / playedMatches.length) : 0;
+
+  let bestRound = null, worstRound = null;
+  Object.entries(roundPts).forEach(([r, p]) => {
+    if(!bestRound || p > bestRound.pts) bestRound = { r, pts:p };
+    if(!worstRound || p < worstRound.pts) worstRound = { r, pts:p };
+  });
+
+  const form = playedMatches.slice(0, 5).map(m => {
+    const pts = calculatePickPoints(picks[m.id], realResults[m.id], m).pts;
+    return { pts, scored: pts > 0 };
+  });
+
+  let posDelta = null;
+  const lastRound = rounds[0] || null;
+  if(lastRound && viewedIdx >= 0){
     const before = getRankedUsersExcludingRound(lastRound);
     const prevIdx = before.findIndex(u => u.name === name);
-    if(prevIdx >= 0){
-      const delta = (prevIdx + 1) - (viewedIdx + 1); // positivo = subió
-      if(delta > 0) insights += `<div class="ud-insight up">▲ Subió ${delta} puesto${delta>1?'s':''} en ${lastRound}</div>`;
-      else if(delta < 0) insights += `<div class="ud-insight down">▼ Bajó ${-delta} puesto${-delta>1?'s':''} en ${lastRound}</div>`;
-      else insights += `<div class="ud-insight same">Se mantuvo en ${lastRound}</div>`;
+    if(prevIdx >= 0) posDelta = (prevIdx + 1) - (viewedIdx + 1);
+  }
+
+  udState = {
+    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, tab:'resumen',
+    stats: {
+      position: viewedIdx >= 0 ? viewedIdx + 1 : null,
+      total, viewedScore, myScore, isMe: name === currentUser,
+      aprov, exact: typeCounts.exact, media, typeCounts,
+      bestRound, worstRound, form, posDelta, lastRound, best
     }
-  }
+  };
 
-  if(name !== currentUser && myIdx >= 0){
-    const d = viewedScore - myScore;
-    const cmp = d > 0 ? `te saca ${d} pts` : (d < 0 ? `le sacás ${-d} pts` : 'están empatados');
-    insights += `<div class="ud-insight cmp">Vos: ${myScore} · ${name.split(' ')[0]}: ${viewedScore} · ${cmp}</div>`;
-  }
-
-  document.getElementById('ud-insights').innerHTML = insights;
-
-  document.getElementById('ud-title').textContent = 'Palpites y puntos';
-  renderUserDetailBody();
+  document.getElementById('ud-title').textContent = name;
+  renderUd();
   document.getElementById('user-detail-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+}
+
+function setUdTab(tab){
+  udState.tab = tab;
+  if(tab !== 'partidos') udState.idx = 0;
+  renderUd();
 }
 
 function changeUdRound(delta){
@@ -5724,71 +5797,137 @@ function changeUdRound(delta){
   if(i < 0) i = 0;
   if(i > udState.rounds.length) i = udState.rounds.length;
   udState.idx = i;
-  renderUserDetailBody();
+  renderUd();
 }
 
-function renderUserDetailBody(){
-  const { name, matches, rounds, idx, picks, real } = udState;
-  const selected = idx === 0 ? null : rounds[idx - 1]; // null = todas
+function renderUd(){
+  const s = udState.stats;
 
-  // total general (todas las fechas) + estadísticas
-  let total = 0, possible = 0, exactCount = 0;
-  matches.forEach(m => {
-    const calc = calculatePickPoints(picks[m.id], real[m.id], m);
-    total += calc.pts;
-    possible += 25 * (m.x2 ? 2 : 1);
-    if(calc.type === 'exact') exactCount++;
-  });
-  const aprov = possible ? Math.round(total / possible * 100) : 0;
+  // ── hero (siempre) ──
+  let delta = '';
+  if(s.posDelta !== null){
+    if(s.posDelta > 0) delta = `<span class="ud-delta up">▲${s.posDelta}</span>`;
+    else if(s.posDelta < 0) delta = `<span class="ud-delta down">▼${-s.posDelta}</span>`;
+    else delta = `<span class="ud-delta same">=</span>`;
+  }
+  document.getElementById('ud-hero').innerHTML = `
+    <div class="ud-hero-stat"><span class="ud-hero-num green">${s.total}</span><span class="ud-hero-lbl">puntos</span></div>
+    <div class="ud-hero-sep"></div>
+    <div class="ud-hero-stat"><span class="ud-hero-num">${s.position ? s.position + 'º' : '–'} ${delta}</span><span class="ud-hero-lbl">posición</span></div>
+    <div class="ud-hero-sep"></div>
+    <div class="ud-hero-stat"><span class="ud-hero-num">${s.aprov}%</span><span class="ud-hero-lbl">aprovecham.</span></div>`;
 
-  // lista filtrada por la fecha seleccionada
+  // ── tabs ──
+  const tabs = [['resumen','Resumen'],['partidos','Partidos'],['analisis','Análisis']];
+  document.getElementById('ud-tabs').innerHTML = tabs.map(([k,l]) =>
+    `<button class="ud-tab ${udState.tab===k?'active':''}" onclick="setUdTab('${k}')">${l}</button>`).join('');
+
+  // ── body ──
+  const body = document.getElementById('ud-body');
+  if(udState.tab === 'resumen') body.innerHTML = renderUdResumen();
+  else if(udState.tab === 'partidos') body.innerHTML = renderUdPartidos();
+  else body.innerHTML = renderUdAnalisis();
+}
+
+function renderUdResumen(){
+  const s = udState.stats;
+  let html = '';
+
+  if(!s.isMe){
+    const d = s.viewedScore - s.myScore;
+    const txt = d > 0 ? `Te saca <strong>${d} pts</strong>` : (d < 0 ? `Le sacás <strong>${-d} pts</strong>` : `Están <strong>empatados</strong>`);
+    const cls = d > 0 ? 'down' : (d < 0 ? 'up' : 'same');
+    html += `<div class="ud-cmp ${cls}"><div class="ud-cmp-main">${txt}</div><div class="ud-cmp-sub">Vos ${s.myScore} · ${udState.name.split(' ')[0]} ${s.viewedScore}</div></div>`;
+  }
+
+  if(s.posDelta !== null && s.lastRound){
+    const t = s.posDelta > 0 ? `▲ Subió ${s.posDelta} puesto${s.posDelta>1?'s':''}` : (s.posDelta < 0 ? `▼ Bajó ${-s.posDelta} puesto${-s.posDelta>1?'s':''}` : 'Se mantuvo');
+    const cls = s.posDelta > 0 ? 'up' : (s.posDelta < 0 ? 'down' : 'same');
+    html += `<div class="ud-move ${cls}">${t} <span>en ${s.lastRound}</span></div>`;
+  }
+
+  html += `<div class="ud-cards">
+    <div class="ud-card"><div class="ud-card-num">${s.exact}</div><div class="ud-card-lbl">Marcadores exactos</div></div>
+    <div class="ud-card"><div class="ud-card-num">${s.media.toFixed(1)}</div><div class="ud-card-lbl">Media por partido</div></div>
+  </div>`;
+
+  if(s.bestRound){
+    html += `<div class="ud-cards">
+      <div class="ud-card good"><div class="ud-card-num">+${s.bestRound.pts}</div><div class="ud-card-lbl">Mejor fecha · ${s.bestRound.r}</div></div>
+      <div class="ud-card bad"><div class="ud-card-num">+${s.worstRound.pts}</div><div class="ud-card-lbl">Peor fecha · ${s.worstRound.r}</div></div>
+    </div>`;
+  }
+
+  if(s.form.length){
+    const dots = s.form.map(f => `<span class="ud-dot ${f.scored?'on':'off'}" title="${f.pts} pts"></span>`).join('');
+    html += `<div class="ud-form"><span class="ud-form-lbl">Forma (últimos ${s.form.length})</span><div class="ud-form-dots">${dots}</div></div>`;
+  }
+  return html;
+}
+
+function renderUdPartidos(){
+  const { matches, rounds, idx, picks, real } = udState;
+  const selected = idx === 0 ? null : rounds[idx - 1];
   const shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches;
-  let shownTotal = 0;
-  let rows = '';
+
+  let shownTotal = 0, rows = '';
   shown.forEach(m => {
-    const pick = picks[m.id];
-    const r = real[m.id];
+    const pick = picks[m.id], r = real[m.id];
     const pts = calculatePickPoints(pick, r, m).pts;
     shownTotal += pts;
     const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
-    const ptsCls = pts > 0 ? 'win' : 'zero';
+    const cls = pts > 0 ? 'win' : 'zero';
     rows += `
       <div class="ud-row">
-        <div class="ud-match">
-          <div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
-        </div>
-        <div class="ud-scores">
-          <span class="ud-real">Resultado: ${r.home}:${r.away}</span>
-          <span class="ud-pick">Palpite: ${pickStr}</span>
-        </div>
-        <div class="ud-pts ${ptsCls}">${pts > 0 ? '+' : ''}${pts}</div>
+        <div class="ud-match"><div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div></div>
+        <div class="ud-scores"><span class="ud-real">Resultado: ${r.home}:${r.away}</span><span class="ud-pick">Palpite: ${pickStr}</span></div>
+        <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
       </div>`;
   });
 
-  document.getElementById('ud-summary').innerHTML = `
-    <div>
-      <div class="ud-summary-name">${name}</div>
-      <div class="ud-summary-sub">${matches.length} partidos · ${exactCount} exactos</div>
-      <div class="ud-summary-sub">Aprovechamiento: ${aprov}%</div>
-    </div>
-    <div>
-      <div class="ud-summary-pts">${total}</div>
-      <div class="ud-summary-pts-label">puntos</div>
-    </div>`;
-
   const navLabel = selected ? selected : 'Todas las fechas';
   const navSub = selected ? `${shown.length} partido(s) · ${shownTotal} pts` : `${matches.length} partido(s)`;
-  document.getElementById('ud-round-nav').innerHTML = rounds.length ? `
-    <button class="ud-rnav-btn" onclick="changeUdRound(-1)" ${idx === 0 ? 'disabled' : ''}>‹</button>
-    <div class="ud-rnav-label">
-      <span class="ud-rnav-title">${navLabel}</span>
-      <span class="ud-rnav-sub">${navSub}</span>
-    </div>
-    <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>` : '';
+  const nav = rounds.length ? `
+    <div class="ud-round-nav">
+      <button class="ud-rnav-btn" onclick="changeUdRound(-1)" ${idx === 0 ? 'disabled' : ''}>‹</button>
+      <div class="ud-rnav-label"><span class="ud-rnav-title">${navLabel}</span><span class="ud-rnav-sub">${navSub}</span></div>
+      <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>
+    </div>` : '';
 
-  document.getElementById('ud-body').innerHTML = shown.length
-    ? rows
-    : '<div class="ud-empty">Aún no hay partidos disputados.<br>Los detalles aparecerán cuando se carguen resultados.</div>';
+  return nav + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos disputados.</div>');
+}
+
+function renderUdAnalisis(){
+  const s = udState.stats;
+  const total = udState.matches.length;
+  const TYPES = [
+    ['exact','Marcador exacto','#009B54'],
+    ['winnerGoals','Ganador + goles del ganador','#34A853'],
+    ['diff','Ganador + diferencia de goles','#7CB342'],
+    ['loserGoals','Ganador + goles del perdedor','#C0CA33'],
+    ['winner','Solo ganador correcto','#F59E0B'],
+    ['wrong','Resultado incorrecto','#CE1126'],
+  ];
+  const maxN = Math.max(1, ...TYPES.map(([k]) => s.typeCounts[k]));
+  const bars = TYPES.map(([k,label,color]) => {
+    const n = s.typeCounts[k];
+    const w = Math.round(n / maxN * 100);
+    const pct = total ? Math.round(n / total * 100) : 0;
+    return `
+      <div class="ud-bar-row">
+        <div class="ud-bar-label">${label}</div>
+        <div class="ud-bar-track"><div class="ud-bar-fill" style="width:${w}%;background:${color}"></div></div>
+        <div class="ud-bar-val">${n}<span> · ${pct}%</span></div>
+      </div>`;
+  }).join('');
+
+  let bestHtml = '';
+  if(s.best && s.best.pts > 0){
+    const m = s.best.m, r = udState.real[m.id];
+    bestHtml = `<div class="ud-best">🎯 Su mejor tacada: <strong>${m.home} ${r.home}:${r.away} ${m.away}</strong> · +${s.best.pts} pts</div>`;
+  }
+
+  return `<div class="ud-an-title">Distribución de aciertos (${total} partidos)</div>${bars}${bestHtml}`;
 }
 function closeUserDetail(){
   document.getElementById('user-detail-modal').style.display = 'none';
