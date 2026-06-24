@@ -409,6 +409,17 @@ body{
 .ud-card-num{font-size:22px;font-weight:900;color:var(--text);line-height:1;}
 .ud-card-lbl{font-size:11px;color:var(--sub);font-weight:600;margin-top:5px;line-height:1.25;}
 .ud-card.good .ud-card-num{color:var(--green);}.ud-card.bad .ud-card-num{color:var(--red);}
+.ud-card.clickable{cursor:pointer;transition:border-color .15s;}
+.ud-card.clickable.sel{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset;}
+.ud-day-detail{margin:10px 14px 0;background:var(--bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.ud-day-head{padding:9px 14px;font-size:12px;font-weight:800;color:var(--text);background:rgba(0,0,0,.03);border-bottom:1px solid var(--border);}
+.ud-day-row{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);}
+.ud-day-row:last-child{border-bottom:none;}
+.ud-day-match{flex:1;font-size:12px;font-weight:700;color:var(--text);min-width:0;}
+.ud-day-sc{font-size:11px;color:var(--sub);font-weight:600;text-align:right;}
+.ud-day-sc span{font-weight:600;}
+.ud-day-pts{min-width:36px;text-align:right;font-size:13px;font-weight:900;}
+.ud-day-pts.win{color:var(--green);}.ud-day-pts.zero{color:var(--red);}
 .ud-form{display:flex;align-items:center;justify-content:space-between;margin:14px 14px 16px;padding:12px 14px;background:var(--bg);border-radius:14px;}
 .ud-form-lbl{font-size:12px;font-weight:700;color:var(--sub);}
 .ud-form-dots{display:flex;gap:6px;}
@@ -5758,24 +5769,23 @@ function openUserDetail(name){
 
   let total = 0, possible = 0;
   const typeCounts = { exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0, wrong:0 };
-  const roundPts = {};
+  const dayPts = {};
   let best = null;
   playedMatches.forEach(m => {
     const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
     total += calc.pts;
     possible += 25 * (m.x2 ? 2 : 1);
     if(typeCounts[calc.type] !== undefined) typeCounts[calc.type]++;
-    const r = getRoundLabel(m);
-    roundPts[r] = (roundPts[r] || 0) + calc.pts;
+    dayPts[m.date] = (dayPts[m.date] || 0) + calc.pts;
     if(!best || calc.pts > best.pts) best = { m, pts: calc.pts };
   });
   const aprov = possible ? Math.round(total / possible * 100) : 0;
   const media = playedMatches.length ? (total / playedMatches.length) : 0;
 
-  let bestRound = null, worstRound = null;
-  Object.entries(roundPts).forEach(([r, p]) => {
-    if(!bestRound || p > bestRound.pts) bestRound = { r, pts:p };
-    if(!worstRound || p < worstRound.pts) worstRound = { r, pts:p };
+  let bestDay = null, worstDay = null;
+  Object.entries(dayPts).forEach(([d, p]) => {
+    if(!bestDay || p > bestDay.pts) bestDay = { date:d, pts:p };
+    if(!worstDay || p < worstDay.pts) worstDay = { date:d, pts:p };
   });
 
   const form = playedMatches.slice(0, 5).map(m => {
@@ -5793,12 +5803,12 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, tab:'resumen', sortAsc:false,
+    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, tab:'resumen', sortAsc:false, expandedDay:null,
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
       aprov, exact: typeCounts.exact, media, typeCounts,
-      bestRound, worstRound, form, posDelta, lastRound, lastDate, best
+      bestDay, worstDay, form, posDelta, lastRound, lastDate, best
     }
   };
 
@@ -5873,11 +5883,19 @@ function renderUdResumen(){
     <div class="ud-card"><div class="ud-card-num">${s.media.toFixed(1)}</div><div class="ud-card-lbl">Media por partido</div></div>
   </div>`;
 
-  if(s.bestRound){
+  if(s.bestDay){
+    const bestDM = s.bestDay.date.replace(/^[^,]+,\s*/, '');
+    const worstDM = s.worstDay.date.replace(/^[^,]+,\s*/, '');
+    const bestOpen = udState.expandedDay === 'best';
+    const worstOpen = udState.expandedDay === 'worst';
     html += `<div class="ud-cards">
-      <div class="ud-card good"><div class="ud-card-num">+${s.bestRound.pts}</div><div class="ud-card-lbl">Mejor fecha · ${s.bestRound.r}</div></div>
-      <div class="ud-card bad"><div class="ud-card-num">+${s.worstRound.pts}</div><div class="ud-card-lbl">Peor fecha · ${s.worstRound.r}</div></div>
+      <div class="ud-card good clickable ${bestOpen?'sel':''}" onclick="toggleUdDay('best')"><div class="ud-card-num">+${s.bestDay.pts}</div><div class="ud-card-lbl">Mejor día · ${bestDM} ▾</div></div>
+      <div class="ud-card bad clickable ${worstOpen?'sel':''}" onclick="toggleUdDay('worst')"><div class="ud-card-num">+${s.worstDay.pts}</div><div class="ud-card-lbl">Peor día · ${worstDM} ▾</div></div>
     </div>`;
+    if(udState.expandedDay){
+      const day = udState.expandedDay === 'best' ? s.bestDay : s.worstDay;
+      html += renderUdDayDetail(day.date);
+    }
   }
 
   if(s.form.length){
@@ -5885,6 +5903,35 @@ function renderUdResumen(){
     html += `<div class="ud-form"><span class="ud-form-lbl">Forma (últimos ${s.form.length})</span><div class="ud-form-dots">${dots}</div></div>`;
   }
   return html;
+}
+
+function toggleUdDay(which){
+  udState.expandedDay = udState.expandedDay === which ? null : which;
+  renderUd();
+}
+
+function renderUdDayDetail(date){
+  const { matches, picks, real } = udState;
+  const dm = date.replace(/^[^,]+,\s*/, '');
+  const dayMatches = matches.filter(m => m.date === date);
+  let dayTotal = 0;
+  const rows = dayMatches.map(m => {
+    const pick = picks[m.id], r = real[m.id];
+    const pts = calculatePickPoints(pick, r, m).pts;
+    dayTotal += pts;
+    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
+    const cls = pts > 0 ? 'win' : 'zero';
+    return `
+      <div class="ud-day-row">
+        <div class="ud-day-match">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
+        <div class="ud-day-sc">${r.home}:${r.away} <span>· ${pickStr}</span></div>
+        <div class="ud-day-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
+      </div>`;
+  }).join('');
+  return `<div class="ud-day-detail">
+    <div class="ud-day-head">${dm} · ${dayMatches.length} partido(s) · ${dayTotal} pts</div>
+    ${rows}
+  </div>`;
 }
 
 function renderUdPartidos(){
@@ -5900,9 +5947,13 @@ function renderUdPartidos(){
     shownTotal += pts;
     const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
+    const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
     rows += `
       <div class="ud-row">
-        <div class="ud-match"><div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div></div>
+        <div class="ud-match">
+          <div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
+          <div class="ud-meta">${dm}</div>
+        </div>
         <div class="ud-scores"><span class="ud-real">Resultado: ${r.home}:${r.away}</span><span class="ud-pick">Palpite: ${pickStr}</span></div>
         <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
       </div>`;
@@ -5952,13 +6003,7 @@ function renderUdAnalisis(){
       </div>`;
   }).join('');
 
-  let bestHtml = '';
-  if(s.best && s.best.pts > 0){
-    const m = s.best.m, r = udState.real[m.id];
-    bestHtml = `<div class="ud-best">🎯 Su mejor tacada: <strong>${m.home} ${r.home}:${r.away} ${m.away}</strong> · +${s.best.pts} pts</div>`;
-  }
-
-  return `<div class="ud-an-title">Distribución de aciertos (${total} partidos)</div>${bars}${bestHtml}`;
+  return `<div class="ud-an-title">Distribución de aciertos (${total} partidos)</div>${bars}`;
 }
 function closeUserDetail(){
   document.getElementById('user-detail-modal').style.display = 'none';
