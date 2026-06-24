@@ -327,6 +327,11 @@ body{
 .ud-summary-pts{font-size:22px;font-weight:900;color:var(--green);text-align:right;line-height:1;}
 .ud-summary-pts-label{font-size:10px;font-weight:600;color:var(--text);text-align:right;}
 .ud-body{max-height:58vh;overflow-y:auto;padding:8px 14px 16px;}
+.ud-insight{padding:8px 18px;font-size:12px;font-weight:700;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+.ud-insight.up{color:var(--green);background:rgba(0,155,84,.06);}
+.ud-insight.down{color:var(--red);background:rgba(206,17,38,.06);}
+.ud-insight.same{color:var(--sub);}
+.ud-insight.cmp{color:var(--text);background:var(--bg);}
 .ud-round-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg);}
 .ud-rnav-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--text);font-size:20px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .ud-rnav-btn:disabled{opacity:.3;cursor:default;}
@@ -4756,6 +4761,7 @@ body{
       <button class="modal-close" onclick="closeUserDetail()">✕</button>
     </div>
     <div class="ud-summary" id="ud-summary"></div>
+    <div class="ud-insights" id="ud-insights"></div>
     <div class="ud-round-nav" id="ud-round-nav"></div>
     <div class="ud-body" id="ud-body"></div>
   </div>
@@ -5585,6 +5591,24 @@ function getRankedUsers(){
   );
 }
 
+// Mismo ranking pero excluyendo una fecha/ronda (para saber la posición anterior).
+function getRankedUsersExcludingRound(excludeRound){
+  const all = loadAllPicks();
+  const realResults = loadRealResults();
+  return Object.entries(all).map(([name, picks])=>{
+    const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
+    MATCHES.forEach(m=>{
+      if(getRoundLabel(m)===excludeRound) return;
+      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
+      stats.score += calc.pts;
+      if(stats[calc.type]!==undefined) stats[calc.type]++;
+    });
+    return stats;
+  }).sort((a,b)=>
+    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
+  );
+}
+
 function updateTopbarPoints(){
   const ptsEl = document.getElementById('user-pts-display');
   if(!ptsEl) return;
@@ -5661,6 +5685,34 @@ function openUserDetail(name){
 
   udState = { name, matches:playedMatches, rounds, idx:0, picks, real:realResults };
 
+  // ── insights: cambio de posición en la última fecha + comparación con vos ──
+  const rankedNow = getRankedUsers();
+  const viewedIdx = rankedNow.findIndex(u => u.name === name);
+  const myIdx = rankedNow.findIndex(u => u.name === currentUser);
+  const viewedScore = viewedIdx >= 0 ? rankedNow[viewedIdx].score : 0;
+  const myScore = myIdx >= 0 ? rankedNow[myIdx].score : 0;
+  let insights = '';
+
+  if(rounds.length && viewedIdx >= 0){
+    const lastRound = rounds[0];
+    const before = getRankedUsersExcludingRound(lastRound);
+    const prevIdx = before.findIndex(u => u.name === name);
+    if(prevIdx >= 0){
+      const delta = (prevIdx + 1) - (viewedIdx + 1); // positivo = subió
+      if(delta > 0) insights += `<div class="ud-insight up">▲ Subió ${delta} puesto${delta>1?'s':''} en ${lastRound}</div>`;
+      else if(delta < 0) insights += `<div class="ud-insight down">▼ Bajó ${-delta} puesto${-delta>1?'s':''} en ${lastRound}</div>`;
+      else insights += `<div class="ud-insight same">Se mantuvo en ${lastRound}</div>`;
+    }
+  }
+
+  if(name !== currentUser && myIdx >= 0){
+    const d = viewedScore - myScore;
+    const cmp = d > 0 ? `te saca ${d} pts` : (d < 0 ? `le sacás ${-d} pts` : 'están empatados');
+    insights += `<div class="ud-insight cmp">Vos: ${myScore} · ${name.split(' ')[0]}: ${viewedScore} · ${cmp}</div>`;
+  }
+
+  document.getElementById('ud-insights').innerHTML = insights;
+
   document.getElementById('ud-title').textContent = 'Palpites y puntos';
   renderUserDetailBody();
   document.getElementById('user-detail-modal').style.display = 'flex';
@@ -5704,7 +5756,6 @@ function renderUserDetailBody(){
       <div class="ud-row">
         <div class="ud-match">
           <div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
-          <div class="ud-meta">${m.date} · ${m.phase}</div>
         </div>
         <div class="ud-scores">
           <span class="ud-real">Resultado: ${r.home}:${r.away}</span>
