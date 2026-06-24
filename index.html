@@ -241,8 +241,8 @@ body{
 .mc-dot{width:3px;height:3px;border-radius:50%;background:var(--sub);flex-shrink:0;}
 .mc-badge{
   font-size:11px;font-weight:700;
-  padding:2px 10px;border-radius:20px;color:var(--green);
-  background:rgba(0,155,84,.1);border:1px solid rgba(0,155,84,.2);
+  padding:2px 10px;border-radius:20px;color:var(--sub);
+  background:rgba(0,0,0,.05);border:1px solid var(--border);
 }
 .mc-status{
   font-size:11px;font-weight:700;
@@ -321,10 +321,11 @@ body{
 .ud-summary-pts-label{font-size:10px;font-weight:600;color:var(--text);text-align:right;}
 .ud-body{max-height:58vh;overflow-y:auto;padding:8px 14px 16px;}
 /* Detalle centrado en pantalla (no pegado abajo) */
-#user-detail-modal{align-items:center;padding:16px;}
-#user-detail-modal .modal{border-radius:20px;width:100%;max-width:460px;max-height:84vh;display:flex;flex-direction:column;animation:fadeScale .25s ease;padding:0;}
-#user-detail-modal .modal-header{border-radius:20px 20px 0 0;}
-#user-detail-modal .ud-body{max-height:none;flex:1;min-height:0;}
+#user-detail-modal, #match-breakdown-modal{align-items:center;padding:16px;}
+#user-detail-modal .modal, #match-breakdown-modal .modal{border-radius:20px;width:100%;max-width:460px;max-height:84vh;display:flex;flex-direction:column;animation:fadeScale .25s ease;padding:0;}
+#user-detail-modal .modal-header, #match-breakdown-modal .modal-header{border-radius:20px 20px 0 0;}
+#user-detail-modal .ud-body, #match-breakdown-modal .ud-body{max-height:none;flex:1;min-height:0;}
+.mb-pos{min-width:40px;text-align:center;font-size:14px;font-weight:900;color:var(--text);flex-shrink:0;}
 @keyframes fadeScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 .ud-row{display:flex;align-items:center;gap:10px;padding:9px 8px;border-bottom:1px solid var(--border);}
 .ud-row:last-child{border-bottom:none;}
@@ -4719,6 +4720,18 @@ body{
   </div>
 </div>
 
+<!-- MATCH BREAKDOWN MODAL (puntos por participante en un partido) -->
+<div class="modal-overlay" id="match-breakdown-modal" style="display:none" onclick="closeMatchBreakdownOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-match-label" id="mb-title">Puntos por participante</span>
+      <button class="modal-close" onclick="closeMatchBreakdown()">✕</button>
+    </div>
+    <div class="ud-summary" id="mb-summary"></div>
+    <div class="ud-body" id="mb-body"></div>
+  </div>
+</div>
+
 <!-- SAVE BANNER -->
 <div class="save-banner" id="save-banner">🔓 Acceso administrador habilitado</div>
 
@@ -5360,7 +5373,10 @@ function renderMatches(filter){
             <span class="mc-flag">${m.af}</span>
           </div>
         </div>`;
-      card.addEventListener('click', ()=>openModal(m.id));
+      card.addEventListener('click', ()=>{
+        if(real && getMatchDateTime(m) <= new Date()) openMatchBreakdown(m.id);
+        else openModal(m.id);
+      });
       group.appendChild(card);
     });
     container.appendChild(group);
@@ -5544,7 +5560,7 @@ function renderRanking(){
     if(isMe) card.style.border='2px solid var(--green)';
     const posClass = i===0?'p1':i===1?'p2':i===2?'p3':'';
     card.innerHTML=`
-      <div class="rank-pos ${posClass}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'º'}</div>
+      <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'º'}</div>
       <div class="rank-avatar">${u.name.charAt(0).toUpperCase()}</div>
       <div class="rank-info">
         <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}</div>
@@ -5618,6 +5634,57 @@ function closeUserDetail(){
 }
 function closeUserDetailOutside(e){
   if(e.target === document.getElementById('user-detail-modal')) closeUserDetail();
+}
+
+// ══ PUNTOS POR PARTICIPANTE EN UN PARTIDO (orden del ranking) ══
+function openMatchBreakdown(matchId){
+  const m = MATCHES.find(x => x.id === matchId);
+  const realResults = loadRealResults();
+  const real = realResults[matchId];
+  if(!m || !real) return;
+
+  const allPicks = loadAllPicks();
+  const ranked = getRankedUsers(); // mejor a peor (orden del ranking)
+
+  let rows = '';
+  let count = 0;
+  ranked.forEach((u, idx) => {
+    const picks = allPicks[u.name] || {};
+    const pick = picks[matchId];
+    if(pick === undefined) return; // solo quienes palpitaron este partido
+    count++;
+    const pts = calculatePickPoints(pick, real, m).pts;
+    const cls = pts > 0 ? 'win' : 'zero';
+    rows += `
+      <div class="ud-row">
+        <span class="mb-pos">${idx + 1}º</span>
+        <div class="ud-match">
+          <div class="ud-teams">${u.name}</div>
+          <div class="ud-meta">Palpite: ${pick.home}:${pick.away}</div>
+        </div>
+        <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
+      </div>`;
+  });
+
+  document.getElementById('mb-title').textContent = 'Puntos por participante';
+  document.getElementById('mb-summary').innerHTML = `
+    <div>
+      <div class="ud-summary-name">${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}</div>
+      <div class="ud-summary-sub">${m.date} · ${m.phase} · ${count} participante(s)</div>
+    </div>`;
+  document.getElementById('mb-body').innerHTML = count
+    ? rows
+    : '<div class="ud-empty">Nadie palpitó este partido.</div>';
+
+  document.getElementById('match-breakdown-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeMatchBreakdown(){
+  document.getElementById('match-breakdown-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function closeMatchBreakdownOutside(e){
+  if(e.target === document.getElementById('match-breakdown-modal')) closeMatchBreakdown();
 }
 
 // ══ DECEPCIÓN (solo admin) ══
