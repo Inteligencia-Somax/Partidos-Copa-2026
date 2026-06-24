@@ -214,6 +214,7 @@ body{
 
 /* ══ DATE GROUP ══ */
 .date-group{margin-bottom:6px;}
+#today-group{scroll-margin-top:72px;}
 .date-row{display:flex;align-items:center;gap:10px;padding:14px 4px 8px;}
 .date-label{
   font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
@@ -254,6 +255,7 @@ body{
   display:flex;align-items:center;gap:4px;
 }
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
+.mc-status.palp{background:rgba(0,0,0,.05);color:var(--sub);}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
 
@@ -416,6 +418,7 @@ body{
 .ud-day-row{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);}
 .ud-day-row:last-child{border-bottom:none;}
 .ud-day-match{flex:1;font-size:12px;font-weight:700;color:var(--text);min-width:0;}
+.ud-day-sub{font-size:10px;color:var(--sub);font-weight:600;margin-top:1px;}
 .ud-day-sc{font-size:11px;color:var(--sub);font-weight:600;text-align:right;}
 .ud-day-sc span{font-weight:600;}
 .ud-day-pts{min-width:36px;text-align:right;font-size:13px;font-weight:900;}
@@ -5413,7 +5416,8 @@ function showApp(){
   document.getElementById('user-name-display').textContent = currentUser;
   document.getElementById('user-avatar').textContent = currentUser.charAt(0).toUpperCase();
   switchTab('matches', document.getElementById('tab-matches'));
-  renderMatches('all');
+  filterMatches('all');
+  requestAnimationFrame(()=>{ document.getElementById('today-group')?.scrollIntoView({block:'start'}); });
   renderRanking();
   updateCounts();
   updateRoleBasedNavigation();
@@ -5429,7 +5433,8 @@ let currentFilter = 'all';
 function filterMatches(f, btn){
   currentFilter = f;
   document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
+  else document.querySelectorAll('.filter-chip').forEach(c=>{ if((c.getAttribute('onclick')||'').includes("'"+f+"'")) c.classList.add('active'); });
   renderMatches(f);
 }
 
@@ -5459,6 +5464,7 @@ function renderMatches(filter){
   Object.entries(groups).forEach(([date, matches])=>{
     const group = document.createElement('div');
     group.className = 'date-group';
+    if(isMatchToday(matches[0])) group.id = 'today-group';
     group.innerHTML = `<div class="date-row"><div class="date-label">${date.toUpperCase()}</div><div class="round-badge">${getRoundLabel(matches[0])}</div></div>`;
     matches.forEach(m => {
       const pick = userPicks[m.id];
@@ -5470,7 +5476,9 @@ function renderMatches(filter){
       card.className = `match-card ${hasPick?'done':'pending'} ${m.py?'py-game':''}`;
       const hScore = hasPick ? pick.home : '–';
       const aScore = hasPick ? pick.away : '–';
-      const filledCls = hasPick ? 'filled' : '';
+      // Palpitado pendiente (sin resultado) = neutro; apurado = verde/rojo según puntos.
+      const statusCls = real ? (isZero ? 'zero' : 'done') : (hasPick ? 'palp' : 'pending');
+      const scoreCls = (hasPick && real) ? (isZero ? 'zero' : 'filled') : '';
       const x2badge = m.x2 ? '<span style="font-size:11px;font-weight:800;color:var(--gold);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);padding:2px 8px;border-radius:20px;margin-left:4px;">✕2</span>' : '';
       const locked = !canEditPick(m);
       card.innerHTML = `
@@ -5481,7 +5489,7 @@ function renderMatches(filter){
           ${x2badge}
           <div style="flex:1"></div>
           <span class="mc-badge">${real ? 'Resultado '+resultLabel(real) : '2026'}</span>
-          <span class="mc-status ${hasPick?'done':'pending'} ${isZero?'zero':''}">
+          <span class="mc-status ${statusCls}">
             ${real ? `${points} pts` : (hasPick ? (locked?'🔒 Palpite cerrado':'✓ Palpitado') : (locked?'🔒 Cerrado':'⏳ Pendiente'))}
           </span>
         </div>
@@ -5491,9 +5499,9 @@ function renderMatches(filter){
             <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${m.home}</span>
           </div>
           <div class="mc-score-wrap">
-            <div class="mc-score ${filledCls} ${(hasPick&&isZero)?'zero':''}">${hScore}</div>
+            <div class="mc-score ${scoreCls}">${hScore}</div>
             <div class="mc-colon">:</div>
-            <div class="mc-score ${filledCls} ${(hasPick&&isZero)?'zero':''}">${aScore}</div>
+            <div class="mc-score ${scoreCls}">${aScore}</div>
           </div>
           <div class="mc-team right">
             <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${m.away}</span>
@@ -5502,10 +5510,12 @@ function renderMatches(filter){
         </div>`;
       card.addEventListener('click', ()=>{
         if(real && getMatchDateTime(m) <= new Date()){ openMatchBreakdown(m.id); return; }
+        if(hasPick){
+          showSaveBanner('🔒 Ya palpitaste este partido, no se puede cambiar.');
+          return;
+        }
         if(locked){
-          showSaveBanner(hasPick
-            ? '🔒 Tu palpite ya está cerrado, no se puede editar.'
-            : '🔒 El partido ya cerró, no se puede palpitar.');
+          showSaveBanner('🔒 El partido ya cerró, no se puede palpitar.');
           return;
         }
         openModal(m.id);
@@ -5725,6 +5735,7 @@ function renderRanking(){
     const card = document.createElement('div');
     card.className='rank-card';
     card.style.cursor='pointer';
+    if(isMe) card.id = 'my-rank-card';
     card.addEventListener('click', ()=>openUserDetail(u.name));
     if(isMe) card.style.border='2px solid var(--green)';
     const posClass = i===0?'p1':i===1?'p2':i===2?'p3':'';
@@ -5782,10 +5793,23 @@ function openUserDetail(name){
   const aprov = possible ? Math.round(total / possible * 100) : 0;
   const media = playedMatches.length ? (total / playedMatches.length) : 0;
 
-  let bestDay = null, worstDay = null;
+  let bestDay = null;
   Object.entries(dayPts).forEach(([d, p]) => {
     if(!bestDay || p > bestDay.pts) bestDay = { date:d, pts:p };
-    if(!worstDay || p < worstDay.pts) worstDay = { date:d, pts:p };
+  });
+
+  // Su fuerte: tipo positivo más frecuente (en empate gana el de mayor valor)
+  const POS_TYPES = [['exact','Exactos'],['winnerGoals','Ganador + goles'],['diff','Por diferencia'],['loserGoals','Goles del perdedor'],['winner','Solo ganador']];
+  let suFuerte = null;
+  POS_TYPES.forEach(([k,lbl]) => { const c = typeCounts[k]; if(c > 0 && (!suFuerte || c > suFuerte.count)) suFuerte = { key:k, label:lbl, count:c }; });
+
+  // Mejor racha: mayor secuencia de partidos seguidos puntuando (orden cronológico)
+  const chrono = playedMatches.slice().reverse();
+  let curStreak = [], bestStreak = [];
+  chrono.forEach(m => {
+    const pts = calculatePickPoints(picks[m.id], realResults[m.id], m).pts;
+    if(pts > 0){ curStreak.push(m); if(curStreak.length > bestStreak.length) bestStreak = curStreak.slice(); }
+    else curStreak = [];
   });
 
   const form = playedMatches.slice(0, 5).map(m => {
@@ -5803,12 +5827,12 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, tab:'resumen', sortAsc:false, expandedDay:null,
+    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, tab:'resumen', sortAsc:false, expanded:null,
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
       aprov, exact: typeCounts.exact, media, typeCounts,
-      bestDay, worstDay, form, posDelta, lastRound, lastDate, best
+      bestDay, suFuerte, bestStreak, form, posDelta, lastRound, lastDate, best
     }
   };
 
@@ -5883,19 +5907,27 @@ function renderUdResumen(){
     <div class="ud-card"><div class="ud-card-num">${s.media.toFixed(1)}</div><div class="ud-card-lbl">Media por partido</div></div>
   </div>`;
 
+  html += `<div class="ud-cards">
+    <div class="ud-card"><div class="ud-card-num">${s.exact}</div><div class="ud-card-lbl">Marcadores exactos</div></div>
+    ${s.suFuerte
+      ? `<div class="ud-card"><div class="ud-card-num">${s.suFuerte.count}</div><div class="ud-card-lbl">Su fuerte · ${s.suFuerte.label}</div></div>`
+      : `<div class="ud-card"><div class="ud-card-num">–</div><div class="ud-card-lbl">Su fuerte</div></div>`}
+  </div>`;
+
   if(s.bestDay){
     const bestDM = s.bestDay.date.replace(/^[^,]+,\s*/, '');
-    const worstDM = s.worstDay.date.replace(/^[^,]+,\s*/, '');
-    const bestOpen = udState.expandedDay === 'best';
-    const worstOpen = udState.expandedDay === 'worst';
+    const rachaLen = s.bestStreak.length;
+    const diaOpen = udState.expanded === 'dia';
+    const rachaOpen = udState.expanded === 'racha';
+    const rachaCard = rachaLen > 0
+      ? `<div class="ud-card good clickable ${rachaOpen?'sel':''}" onclick="toggleUdExp('racha')"><div class="ud-card-num">${rachaLen}</div><div class="ud-card-lbl">Mejor racha ▾</div></div>`
+      : `<div class="ud-card"><div class="ud-card-num">0</div><div class="ud-card-lbl">Mejor racha</div></div>`;
     html += `<div class="ud-cards">
-      <div class="ud-card good clickable ${bestOpen?'sel':''}" onclick="toggleUdDay('best')"><div class="ud-card-num">+${s.bestDay.pts}</div><div class="ud-card-lbl">Mejor día · ${bestDM} ▾</div></div>
-      <div class="ud-card bad clickable ${worstOpen?'sel':''}" onclick="toggleUdDay('worst')"><div class="ud-card-num">+${s.worstDay.pts}</div><div class="ud-card-lbl">Peor día · ${worstDM} ▾</div></div>
+      <div class="ud-card good clickable ${diaOpen?'sel':''}" onclick="toggleUdExp('dia')"><div class="ud-card-num">+${s.bestDay.pts}</div><div class="ud-card-lbl">Mejor día · ${bestDM} ▾</div></div>
+      ${rachaCard}
     </div>`;
-    if(udState.expandedDay){
-      const day = udState.expandedDay === 'best' ? s.bestDay : s.worstDay;
-      html += renderUdDayDetail(day.date);
-    }
+    if(diaOpen) html += renderUdDayDetail(s.bestDay.date);
+    else if(rachaOpen) html += renderUdStreakDetail();
   }
 
   if(s.form.length){
@@ -5905,9 +5937,33 @@ function renderUdResumen(){
   return html;
 }
 
-function toggleUdDay(which){
-  udState.expandedDay = udState.expandedDay === which ? null : which;
+function toggleUdExp(which){
+  udState.expanded = udState.expanded === which ? null : which;
   renderUd();
+}
+
+function renderUdStreakDetail(){
+  const { stats, picks, real } = udState;
+  const streak = stats.bestStreak;
+  if(!streak.length) return '';
+  let tot = 0;
+  const rows = streak.map(m => {
+    const pick = picks[m.id], r = real[m.id];
+    const pts = calculatePickPoints(pick, r, m).pts;
+    tot += pts;
+    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
+    const dm = m.date.replace(/^[^,]+,\s*/, '');
+    return `
+      <div class="ud-day-row">
+        <div class="ud-day-match">${m.hf} ${m.home} × ${m.away} ${m.af}<div class="ud-day-sub">${dm}</div></div>
+        <div class="ud-day-sc">${r.home}:${r.away} <span>· ${pickStr}</span></div>
+        <div class="ud-day-pts win">+${pts}</div>
+      </div>`;
+  }).join('');
+  return `<div class="ud-day-detail">
+    <div class="ud-day-head">Racha de ${streak.length} partidos · ${tot} pts</div>
+    ${rows}
+  </div>`;
 }
 
 function renderUdDayDetail(date){
@@ -6365,7 +6421,10 @@ function switchTab(tab, btn){
   document.getElementById('panel-'+tab).classList.add('active');
   if(btn) btn.classList.add('active');
   document.getElementById('nav-'+tab)?.classList.add('active');
-  if(tab==='ranking') renderRanking();
+  if(tab==='ranking'){
+    renderRanking();
+    requestAnimationFrame(()=>{ document.getElementById('my-rank-card')?.scrollIntoView({block:'center'}); });
+  }
   if(tab==='decepcion') renderDecepcion();
   if(tab==='admin'){
     if(adminUnlocked) showAdminArea();
