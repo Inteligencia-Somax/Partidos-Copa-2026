@@ -348,6 +348,8 @@ body{
 .mb-pie-num{font-size:26px;font-weight:900;color:var(--text);line-height:1;}
 .mb-pie-lbl{font-size:11px;color:var(--sub);font-weight:600;margin-top:2px;}
 .mb-legend-hint{text-align:center;font-size:11px;color:var(--sub);margin:6px 0 10px;}
+.mb-insight{text-align:center;font-size:12px;color:var(--text);font-weight:600;margin:2px 0 4px;}
+.mb-insight strong{color:var(--green);font-weight:900;}
 .mb-leg-item{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid var(--border);cursor:pointer;}
 .mb-leg-item.open{background:var(--bg);}
 .mb-dot{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
@@ -5677,9 +5679,15 @@ function renderUserDetailBody(){
   const { name, matches, rounds, idx, picks, real } = udState;
   const selected = idx === 0 ? null : rounds[idx - 1]; // null = todas
 
-  // total general (todas las fechas)
-  let total = 0;
-  matches.forEach(m => { total += calculatePickPoints(picks[m.id], real[m.id], m).pts; });
+  // total general (todas las fechas) + estadísticas
+  let total = 0, possible = 0, exactCount = 0;
+  matches.forEach(m => {
+    const calc = calculatePickPoints(picks[m.id], real[m.id], m);
+    total += calc.pts;
+    possible += 25 * (m.x2 ? 2 : 1);
+    if(calc.type === 'exact') exactCount++;
+  });
+  const aprov = possible ? Math.round(total / possible * 100) : 0;
 
   // lista filtrada por la fecha seleccionada
   const shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches;
@@ -5709,7 +5717,8 @@ function renderUserDetailBody(){
   document.getElementById('ud-summary').innerHTML = `
     <div>
       <div class="ud-summary-name">${name}</div>
-      <div class="ud-summary-sub">${matches.length} partidos disputados</div>
+      <div class="ud-summary-sub">${matches.length} partidos · ${exactCount} exactos</div>
+      <div class="ud-summary-sub">Aprovechamiento: ${aprov}%</div>
     </div>
     <div>
       <div class="ud-summary-pts">${total}</div>
@@ -5858,11 +5867,20 @@ function renderMatchBreakdown(){
       </div>${names}`;
   }).join('');
 
+  // % que puntuó y marcador más palpitado
+  const pointed = parts.filter(p => p.pts > 0).length;
+  const pointedPct = total ? Math.round(pointed / total * 100) : 0;
+  const scoreTally = {};
+  parts.forEach(p => { const k = `${p.pick.home}:${p.pick.away}`; scoreTally[k] = (scoreTally[k] || 0) + 1; });
+  let topScore = '–', topScoreN = 0;
+  Object.entries(scoreTally).forEach(([k, v]) => { if(v > topScoreN){ topScore = k; topScoreN = v; } });
+
   body.innerHTML = `
     <div class="mb-pie-wrap">
       ${pie}
       <div class="mb-pie-center"><span class="mb-pie-num">${total}</span><span class="mb-pie-lbl">palpites</span></div>
     </div>
+    <div class="mb-insight">${pointedPct}% puntuó · Más palpitado: <strong>${topScore}</strong> (${topScoreN})</div>
     <div class="mb-legend-hint">Tocá una categoría para ver quiénes son</div>
     ${legend}`;
 }
