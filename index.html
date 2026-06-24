@@ -613,6 +613,7 @@ body{
     <!-- Filter row -->
     <div class="filter-row">
       <button class="filter-chip active" onclick="filterMatches('all',this)">Todos</button>
+      <button class="filter-chip" onclick="filterMatches('today',this)">Hoy</button>
       <button class="filter-chip" onclick="filterMatches('pending',this)">Pendentes</button>
       <button class="filter-chip" onclick="filterMatches('done',this)">Palpitados</button>
     </div>
@@ -5078,6 +5079,14 @@ function canEditPick(match){
   const limit = new Date(getMatchDateTime(match).getTime() - 30*60*1000);
   return new Date() < limit;
 }
+// "Hoy" según la fecha oficial del partido (BRT, UTC-3), igual al agrupamiento por fecha.
+function brtDateKey(utcDate){
+  const brt = new Date(utcDate.getTime() - 3*60*60*1000);
+  return brt.getUTCFullYear()+'-'+brt.getUTCMonth()+'-'+brt.getUTCDate();
+}
+function isMatchToday(match){
+  return brtDateKey(getMatchDateTime(match)) === brtDateKey(new Date());
+}
 
 // ══ FIREBASE AUTH INIT ══
 function setAuthMode(mode){
@@ -5323,6 +5332,7 @@ function renderMatches(filter){
     const hasPick = userPicks[m.id] !== undefined;
     if(filter==='pending' && hasPick) return;
     if(filter==='done' && !hasPick) return;
+    if(filter==='today' && !isMatchToday(m)) return;
     if(!groups[m.date]) groups[m.date]=[];
     groups[m.date].push(m);
   });
