@@ -277,6 +277,9 @@ body{
 .mc-score.filled{
   background:#E8F5EE;border-color:var(--green);color:var(--green);
 }
+.mc-score.zero{
+  background:rgba(206,17,38,.07);border-color:var(--red);color:var(--red);
+}
 .mc-colon{font-size:18px;font-weight:800;color:var(--sub);}
 
 /* PY highlight */
@@ -5364,9 +5367,9 @@ function renderMatches(filter){
             <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${m.home}</span>
           </div>
           <div class="mc-score-wrap">
-            <div class="mc-score ${filledCls}">${hScore}</div>
+            <div class="mc-score ${filledCls} ${(hasPick&&isZero)?'zero':''}">${hScore}</div>
             <div class="mc-colon">:</div>
-            <div class="mc-score ${filledCls}">${aScore}</div>
+            <div class="mc-score ${filledCls} ${(hasPick&&isZero)?'zero':''}">${aScore}</div>
           </div>
           <div class="mc-team right">
             <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${m.away}</span>
