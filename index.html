@@ -3434,7 +3434,6 @@ body{
   <div class="panel" id="panel-ranking">
     <div class="ranking-list" id="ranking-list"><div class="rules-section"><h3>⏳ Aguardando resultados reales</h3><p>El ranking ya está listo, pero los puntos aparecerán cuando el administrador cargue el resultado real de cada partido.</p></div><div class="rank-card" style="border: 2px solid var(--green);">
       <div class="rank-pos p1">🥇</div>
-      <div class="rank-avatar">A</div>
       <div class="rank-info">
         <div class="rank-name" style="color:var(--green);">angelica <span style="font-size:11px;color:var(--green);">(Vos)</span></div>
         <div class="rank-detail">1/104 palpites · 0 resultados cargados · exactos: 0</div>
@@ -5750,7 +5749,6 @@ function renderRanking(){
     const posClass = i===0?'p1':i===1?'p2':i===2?'p3':'';
     card.innerHTML=`
       <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'º'}</div>
-      <div class="rank-avatar">${u.name.charAt(0).toUpperCase()}</div>
       <div class="rank-info">
         <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}</div>
         <div class="rank-detail">${u.pickCount}/${MATCHES.length} palpites · ${finishedCount} resultados cargados · exactos: ${u.exact}</div>
@@ -5779,13 +5777,6 @@ function openUserDetail(name){
 
   const rounds = [];
   playedMatches.forEach(m => { const r = getRoundLabel(m); if(!rounds.includes(r)) rounds.push(r); });
-
-  // Para la pestaña Partidos: jugados + próximos que ESTE jugador ya palpitó (recientes/futuros primero).
-  const listMatches = MATCHES
-    .filter(m => realResults[m.id] || picks[m.id] !== undefined)
-    .sort((a, b) => getMatchDateTime(b) - getMatchDateTime(a));
-  const listRounds = [];
-  listMatches.forEach(m => { const r = getRoundLabel(m); if(!listRounds.includes(r)) listRounds.push(r); });
 
   // ── estadísticas ──
   const rankedNow = getRankedUsers();
@@ -5843,7 +5834,7 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:playedMatches, rounds, listMatches, listRounds, idx:0, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'resumen', sortAsc:false, expanded:null,
+    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'resumen', sortAsc:false, expanded:null,
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
@@ -5866,9 +5857,8 @@ function setUdTab(tab){
 
 function changeUdRound(delta){
   let i = udState.idx + delta;
-  const maxIdx = (udState.listRounds || udState.rounds).length;
   if(i < 0) i = 0;
-  if(i > maxIdx) i = maxIdx;
+  if(i > udState.rounds.length) i = udState.rounds.length;
   udState.idx = i;
   renderUd();
 }
@@ -6006,11 +5996,8 @@ function renderUdDayDetail(date){
 }
 
 function renderUdPartidos(){
-  const { listMatches, listRounds, idx, picks, real, sortAsc, stats } = udState;
-  const matches = listMatches, rounds = listRounds;
-  // Mis palpites en vivo (misma fuente que la pestaña Partidas).
-  const myPicks = stats.isMe ? picks : loadUserPicks();
-  // idx 0..rounds.length-1 = fecha (0 = más reciente/próxima). idx === rounds.length = Todas (al final).
+  const { matches, rounds, idx, picks, real, sortAsc, stats } = udState;
+  // idx 0..rounds.length-1 = fecha (0 = última jugada). idx === rounds.length = Todas (al final).
   const selected = idx < rounds.length ? rounds[idx] : null;
   let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
   if(sortAsc) shown = shown.slice().reverse(); // matches viene "reciente primero"
@@ -6018,25 +6005,22 @@ function renderUdPartidos(){
   let shownTotal = 0, rows = '';
   shown.forEach(m => {
     const pick = picks[m.id], r = real[m.id];
-    const played = r !== undefined && r !== null;
-    const pts = played ? calculatePickPoints(pick, r, m).pts : 0;
+    const pts = calculatePickPoints(pick, r, m).pts;
     shownTotal += pts;
-    // El palpite del otro solo aparece si YO también palpité ese partido (o es mi perfil).
-    const iPicked = myPicks[m.id] !== undefined || myPicks[String(m.id)] !== undefined;
-    const canSeePick = stats.isMe || iPicked;
-    const pickStr = pick ? (canSeePick ? `${pick.home}:${pick.away}` : 'Palpitó') : 'Sin palpite';
-    const cls = played ? (pts > 0 ? 'win' : 'zero') : 'pending';
+    // El palpite solo se muestra en tu propio perfil.
+    const pickLine = stats.isMe
+      ? `<span class="ud-pick">Palpite: ${pick ? `${pick.home}:${pick.away}` : 'Sin palpite'}</span>`
+      : '';
+    const cls = pts > 0 ? 'win' : 'zero';
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
-    const resultStr = played ? `Resultado: ${r.home}:${r.away}` : 'Por jugarse';
-    const ptsCell = played ? `${pts > 0 ? '+' : ''}${pts}` : '⏳';
     rows += `
       <div class="ud-row">
         <div class="ud-match">
           <div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
           <div class="ud-meta">${dm}</div>
         </div>
-        <div class="ud-scores"><span class="ud-real">${resultStr}</span><span class="ud-pick">Palpite: ${pickStr}</span></div>
-        <div class="ud-pts ${cls}">${ptsCell}</div>
+        <div class="ud-scores"><span class="ud-real">Resultado: ${r.home}:${r.away}</span>${pickLine}</div>
+        <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
       </div>`;
   });
 
