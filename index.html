@@ -569,7 +569,11 @@ body{
 .rank-info{flex:1;}
 .rank-name{font-size:15px;font-weight:700;}
 .rank-detail{font-size:12px;color:var(--sub);margin-top:2px;}
-.detail-i{width:13px;height:13px;color:var(--sub);opacity:.45;flex-shrink:0;display:inline-block;vertical-align:-2px;margin-left:5px;}
+.detail-i{width:15px;height:15px;color:#AAB2BF;flex-shrink:0;display:inline-block;vertical-align:-3px;margin-left:6px;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.28));}
+.rank-delta{font-weight:800;}
+.rank-delta.up{color:var(--green);}
+.rank-delta.down{color:var(--red);}
+.rank-delta.same{color:var(--sub);}
 .rank-pts{
   font-size:22px;font-weight:900;color:var(--green);
   text-align:right;
@@ -5531,7 +5535,7 @@ function renderMatches(filter){
       const x2badge = m.x2 ? '<span style="font-size:11px;font-weight:800;color:var(--gold);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);padding:2px 8px;border-radius:20px;margin-left:4px;">✕2</span>' : '';
       const locked = !canEditPick(m);
       const hasBreakdown = real && getMatchDateTime(m) <= new Date();
-      const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.7v.2"/></svg>' : '';
+      const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><circle cx="12" cy="8" r="1.5" fill="#fff"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="#fff"/></svg>' : '';
       card.innerHTML = `
         <div class="mc-top">
           <span class="mc-time">${m.time}</span>
@@ -5768,7 +5772,7 @@ function renderRanking(){
   updateTopbarPoints();
 
   if(Object.keys(all).length===0){
-    container.innerHTML=`<div class="empty-rank"><div class="eico">🏆</div><p>Ainda sem jogadores no bolão.<br>¡Sé el primero en palpitar!</p></div>`;
+    container.innerHTML=`<div class="empty-rank"><div class="eico">🏆</div><p>Aún sin jugadores en el bolão.<br>¡Sé el primero en palpitar!</p></div>`;
     return;
   }
 
@@ -5781,6 +5785,23 @@ function renderRanking(){
     info.innerHTML='<h3>⏳ Esperando resultados reales</h3><p>El ranking ya está listo, pero los puntos aparecerán cuando el administrador cargue el resultado real de cada partido.</p>';
     container.appendChild(info);
   }
+
+  // Aprovechamiento (denominador global) y día más reciente disputado.
+  const now = new Date();
+  let possible = 0, lastDate = null, lastDT = -Infinity;
+  MATCHES.forEach(m=>{
+    if(realResults[m.id] && getMatchDateTime(m) <= now){
+      possible += 25 * (m.x2 ? 2 : 1);
+      const dt = getMatchDateTime(m).getTime();
+      if(dt > lastDT){ lastDT = dt; lastDate = m.date; }
+    }
+  });
+  // Posición previa (excluyendo el último día) para la flecha de subió/bajó.
+  const prevIndex = {};
+  if(lastDate){
+    getRankedUsersExcludingDate(lastDate).forEach((u,idx)=>{ prevIndex[u.name] = idx; });
+  }
+
   users.forEach((u,i)=>{
     const isMe = u.name===currentUser;
     const card = document.createElement('div');
@@ -5788,13 +5809,21 @@ function renderRanking(){
     card.style.cursor='pointer';
     if(isMe) card.id = 'my-rank-card';
     card.addEventListener('click', ()=>openUserDetail(u.name));
-    if(isMe) card.style.border='2px solid var(--green)';
+    if(isMe) card.style.border='2px solid var(--gold)';
     const posClass = i===0?'p1':i===1?'p2':i===2?'p3':'';
+    const aprov = possible ? Math.round(u.score / possible * 100) : 0;
+    let deltaHtml = '';
+    if(lastDate && prevIndex[u.name] !== undefined){
+      const d = prevIndex[u.name] - i;
+      if(d > 0) deltaHtml = ` · <span class="rank-delta up">▲${d}</span>`;
+      else if(d < 0) deltaHtml = ` · <span class="rank-delta down">▼${-d}</span>`;
+      else deltaHtml = ` · <span class="rank-delta same">=</span>`;
+    }
     card.innerHTML=`
       <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'º'}</div>
       <div class="rank-info">
-        <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.7v.2"/></svg></div>
-        <div class="rank-detail">${u.pickCount}/${MATCHES.length} palpites · ${finishedCount} resultados cargados · exactos: ${u.exact}</div>
+        <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><circle cx="12" cy="8" r="1.5" fill="#fff"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="#fff"/></svg></div>
+        <div class="rank-detail">${u.exact} exacto${u.exact===1?'':'s'} · ${aprov}% aprovech.${deltaHtml}</div>
       </div>
       <div>
         <div class="rank-pts">${u.score}</div>
