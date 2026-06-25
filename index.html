@@ -226,10 +226,10 @@ body{
   color:#fff;padding:0;
 }
 .round-badge{
-  font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
-  color:#fff;background:rgba(255,255,255,.18);
-  padding:3px 10px;border-radius:20px;white-space:nowrap;
+  font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:#fff;background:none;padding:0;border-radius:0;white-space:nowrap;
 }
+.date-sep{color:#fff;opacity:.65;font-weight:700;}
 
 /* ══ MATCH CARD ══ */
 .match-card{
@@ -5514,7 +5514,7 @@ function renderMatches(filter){
     const group = document.createElement('div');
     group.className = 'date-group';
     if(isMatchToday(matches[0])) group.id = 'today-group';
-    group.innerHTML = `<div class="date-row"><div class="date-label">${date.toUpperCase()}</div><div class="round-badge">${getRoundLabel(matches[0])}</div></div>`;
+    group.innerHTML = `<div class="date-row"><div class="date-label">${date.toUpperCase()}</div><span class="date-sep">·</span><div class="round-badge">${getRoundLabel(matches[0])}</div></div>`;
     matches.forEach(m => {
       const pick = userPicks[m.id];
       const real = realResults[m.id];
