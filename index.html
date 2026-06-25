@@ -251,13 +251,13 @@ body{
   background:rgba(0,0,0,.05);border:1px solid var(--border);
 }
 .mc-status{
-  font-size:12px;font-weight:800;
+  font-size:11px;font-weight:700;
   padding:3px 10px;border-radius:20px;
   display:flex;align-items:center;gap:4px;
 }
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
 .mc-status.palp{background:rgba(0,56,168,.1);color:var(--blue);}
-.mc-badge.center.wait{color:var(--sub);font-style:italic;font-weight:600;}
+.mc-badge.center.wait{color:var(--sub);}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
 .mc-status .mc-pts{font-size:16px;font-weight:900;}
@@ -5530,7 +5530,7 @@ function renderMatches(filter){
           ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge center wait">Esperando partido</span>`}
           <div style="flex:1"></div>
           <span class="mc-status ${statusCls}">
-            ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? '✓ Palpitado' : '⏳ Pendiente'))}
+            ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? 'Palpitado' : 'Pendiente'))}
           </span>${detailI}
         </div>
         <div class="mc-teams">
