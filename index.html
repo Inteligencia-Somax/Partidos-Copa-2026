@@ -188,10 +188,7 @@ body{
 
 /* ══ TABS ══ */
 .tabs-row{
-  display:flex;gap:8px;margin-bottom:16px;
-  background:var(--white);border-radius:50px;
-  padding:4px;border:1px solid var(--border);
-  box-shadow:var(--shadow);
+  display:none;
 }
 .tab{
   flex:1;padding:9px 8px;border:none;border-radius:50px;
@@ -258,6 +255,7 @@ body{
 .mc-status.palp{background:rgba(0,0,0,.05);color:var(--sub);}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
+.mc-status .mc-pts{font-size:16px;font-weight:900;}
 
 .mc-teams{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -655,7 +653,7 @@ body{
 
 
 <!-- SCORING RULES MINI -->
-<div style="max-width:680px;margin:0 auto;padding:0 12px;">
+<div id="scoring-rules-wrap" style="max-width:680px;margin:0 auto;padding:0 12px;">
   <div class="rules-card">
     <div class="rules-title">Sistema de Puntuación</div>
     <div class="rules-grid">
@@ -4819,8 +4817,8 @@ body{
       <span class="modal-match-label" id="ud-title">Detalle</span>
       <button class="modal-close" onclick="closeUserDetail()">✕</button>
     </div>
-    <div class="ud-hero" id="ud-hero"></div>
     <div class="ud-tabs" id="ud-tabs"></div>
+    <div class="ud-hero" id="ud-hero"></div>
     <div class="ud-body" id="ud-body"></div>
   </div>
 </div>
@@ -5461,7 +5459,10 @@ function renderMatches(filter){
     return;
   }
 
-  Object.entries(groups).forEach(([date, matches])=>{
+  Object.entries(groups)
+    .sort((a, b) => getMatchDateTime(a[1][0]) - getMatchDateTime(b[1][0]))
+    .forEach(([date, matches])=>{
+    matches.sort((a, b) => getMatchDateTime(a) - getMatchDateTime(b));
     const group = document.createElement('div');
     group.className = 'date-group';
     if(isMatchToday(matches[0])) group.id = 'today-group';
@@ -5489,8 +5490,9 @@ function renderMatches(filter){
           ${x2badge}
           <div style="flex:1"></div>
           <span class="mc-badge">${real ? 'Resultado '+resultLabel(real) : '2026'}</span>
+          <div style="flex:1"></div>
           <span class="mc-status ${statusCls}">
-            ${real ? `${points} pts` : (hasPick ? (locked?'🔒 Palpite cerrado':'✓ Palpitado') : (locked?'🔒 Cerrado':'⏳ Pendiente'))}
+            ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? '✓ Palpitado' : '⏳ Pendiente'))}
           </span>
         </div>
         <div class="mc-teams">
@@ -5827,7 +5829,7 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, tab:'resumen', sortAsc:false, expanded:null,
+    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'resumen', sortAsc:false, expanded:null,
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
@@ -5907,13 +5909,6 @@ function renderUdResumen(){
     <div class="ud-card"><div class="ud-card-num">${s.media.toFixed(1)}</div><div class="ud-card-lbl">Media por partido</div></div>
   </div>`;
 
-  html += `<div class="ud-cards">
-    <div class="ud-card"><div class="ud-card-num">${s.exact}</div><div class="ud-card-lbl">Marcadores exactos</div></div>
-    ${s.suFuerte
-      ? `<div class="ud-card"><div class="ud-card-num">${s.suFuerte.count}</div><div class="ud-card-lbl">Su fuerte · ${s.suFuerte.label}</div></div>`
-      : `<div class="ud-card"><div class="ud-card-num">–</div><div class="ud-card-lbl">Su fuerte</div></div>`}
-  </div>`;
-
   if(s.bestDay){
     const bestDM = s.bestDay.date.replace(/^[^,]+,\s*/, '');
     const rachaLen = s.bestStreak.length;
@@ -5991,7 +5986,7 @@ function renderUdDayDetail(date){
 }
 
 function renderUdPartidos(){
-  const { matches, rounds, idx, picks, real, sortAsc } = udState;
+  const { matches, rounds, idx, picks, real, sortAsc, viewerPicks, stats } = udState;
   const selected = idx === 0 ? null : rounds[idx - 1];
   let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
   if(sortAsc) shown = shown.slice().reverse(); // matches viene "reciente primero"
@@ -6001,7 +5996,12 @@ function renderUdPartidos(){
     const pick = picks[m.id], r = real[m.id];
     const pts = calculatePickPoints(pick, r, m).pts;
     shownTotal += pts;
-    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
+    // Solo se muestra el palpite del jugador si soy yo, o si yo también palpité ese partido.
+    const iPicked = viewerPicks[m.id] !== undefined;
+    const canSeePick = stats.isMe || iPicked;
+    const pickStr = pick
+      ? (canSeePick ? `${pick.home}:${pick.away}` : 'Palpitó')
+      : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
     rows += `
@@ -6421,6 +6421,9 @@ function switchTab(tab, btn){
   document.getElementById('panel-'+tab).classList.add('active');
   if(btn) btn.classList.add('active');
   document.getElementById('nav-'+tab)?.classList.add('active');
+  // Ocultar el mini "Sistema de Puntuación" en la pestaña Ranking.
+  const scoringWrap = document.getElementById('scoring-rules-wrap');
+  if(scoringWrap) scoringWrap.style.display = (tab === 'ranking') ? 'none' : '';
   if(tab==='ranking'){
     renderRanking();
     requestAnimationFrame(()=>{ document.getElementById('my-rank-card')?.scrollIntoView({block:'center'}); });
