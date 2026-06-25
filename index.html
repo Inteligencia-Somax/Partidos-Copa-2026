@@ -387,6 +387,7 @@ body{
 .ud-pts{flex-shrink:0;min-width:48px;text-align:right;font-size:15px;font-weight:900;}
 .ud-pts.win{color:var(--green);}
 .ud-pts.zero{color:var(--red);}
+.ud-pts.pending{color:var(--sub);font-weight:700;}
 .ud-empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:14px;font-weight:600;line-height:1.5;}
 /* ── Detalle: hero + tabs ── */
 .ud-hero{display:flex;align-items:center;padding:14px 10px;border-bottom:1px solid var(--border);}
@@ -5779,6 +5780,13 @@ function openUserDetail(name){
   const rounds = [];
   playedMatches.forEach(m => { const r = getRoundLabel(m); if(!rounds.includes(r)) rounds.push(r); });
 
+  // Para la pestaña Partidos: jugados + próximos que ESTE jugador ya palpitó (recientes/futuros primero).
+  const listMatches = MATCHES
+    .filter(m => realResults[m.id] || picks[m.id] !== undefined)
+    .sort((a, b) => getMatchDateTime(b) - getMatchDateTime(a));
+  const listRounds = [];
+  listMatches.forEach(m => { const r = getRoundLabel(m); if(!listRounds.includes(r)) listRounds.push(r); });
+
   // ── estadísticas ──
   const rankedNow = getRankedUsers();
   const viewedIdx = rankedNow.findIndex(u => u.name === name);
@@ -5835,7 +5843,7 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'resumen', sortAsc:false, expanded:null,
+    name, matches:playedMatches, rounds, listMatches, listRounds, idx:0, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'resumen', sortAsc:false, expanded:null,
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
@@ -5858,8 +5866,9 @@ function setUdTab(tab){
 
 function changeUdRound(delta){
   let i = udState.idx + delta;
+  const maxIdx = (udState.listRounds || udState.rounds).length;
   if(i < 0) i = 0;
-  if(i > udState.rounds.length) i = udState.rounds.length;
+  if(i > maxIdx) i = maxIdx;
   udState.idx = i;
   renderUd();
 }
@@ -5997,10 +6006,11 @@ function renderUdDayDetail(date){
 }
 
 function renderUdPartidos(){
-  const { matches, rounds, idx, picks, real, sortAsc, viewerPicks, stats } = udState;
+  const { listMatches, listRounds, idx, picks, real, sortAsc, stats } = udState;
+  const matches = listMatches, rounds = listRounds;
   // Mis palpites en vivo (misma fuente que la pestaña Partidas).
   const myPicks = stats.isMe ? picks : loadUserPicks();
-  // idx 0..rounds.length-1 = fecha (0 = última jugada). idx === rounds.length = Todas (al final).
+  // idx 0..rounds.length-1 = fecha (0 = más reciente/próxima). idx === rounds.length = Todas (al final).
   const selected = idx < rounds.length ? rounds[idx] : null;
   let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
   if(sortAsc) shown = shown.slice().reverse(); // matches viene "reciente primero"
@@ -6008,22 +6018,25 @@ function renderUdPartidos(){
   let shownTotal = 0, rows = '';
   shown.forEach(m => {
     const pick = picks[m.id], r = real[m.id];
-    const pts = calculatePickPoints(pick, r, m).pts;
+    const played = r !== undefined && r !== null;
+    const pts = played ? calculatePickPoints(pick, r, m).pts : 0;
     shownTotal += pts;
     // El palpite del otro solo aparece si YO también palpité ese partido (o es mi perfil).
     const iPicked = myPicks[m.id] !== undefined || myPicks[String(m.id)] !== undefined;
     const canSeePick = stats.isMe || iPicked;
     const pickStr = pick ? (canSeePick ? `${pick.home}:${pick.away}` : 'Palpitó') : 'Sin palpite';
-    const cls = pts > 0 ? 'win' : 'zero';
+    const cls = played ? (pts > 0 ? 'win' : 'zero') : 'pending';
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
+    const resultStr = played ? `Resultado: ${r.home}:${r.away}` : 'Por jugarse';
+    const ptsCell = played ? `${pts > 0 ? '+' : ''}${pts}` : '⏳';
     rows += `
       <div class="ud-row">
         <div class="ud-match">
           <div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
           <div class="ud-meta">${dm}</div>
         </div>
-        <div class="ud-scores"><span class="ud-real">Resultado: ${r.home}:${r.away}</span><span class="ud-pick">Palpite: ${pickStr}</span></div>
-        <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
+        <div class="ud-scores"><span class="ud-real">${resultStr}</span><span class="ud-pick">Palpite: ${pickStr}</span></div>
+        <div class="ud-pts ${cls}">${ptsCell}</div>
       </div>`;
   });
 
@@ -6039,7 +6052,7 @@ function renderUdPartidos(){
 
   const sortToggle = `<div class="ud-sort-row"><button class="ud-sort" onclick="toggleUdSort()">${sortAsc ? 'Antiguos primero' : 'Recientes primero'} ⇅</button></div>`;
 
-  return nav + sortToggle + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos disputados.</div>');
+  return nav + sortToggle + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos.</div>');
 }
 
 function toggleUdSort(){
