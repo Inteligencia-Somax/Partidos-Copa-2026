@@ -256,7 +256,8 @@ body{
   display:flex;align-items:center;gap:4px;
 }
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
-.mc-status.palp{background:rgba(0,0,0,.05);color:var(--sub);}
+.mc-status.palp{background:rgba(0,56,168,.1);color:var(--blue);}
+.mc-badge.center.wait{color:var(--sub);font-style:italic;font-weight:600;}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
 .mc-status .mc-pts{font-size:16px;font-weight:900;}
@@ -5523,7 +5524,7 @@ function renderMatches(filter){
           <span class="mc-dot"></span>
           <span class="mc-phase">${m.phase}</span>
           ${x2badge}
-          ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : ''}
+          ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge center wait">Esperando partido</span>`}
           <div style="flex:1"></div>
           <span class="mc-status ${statusCls}">
             ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? '✓ Palpitado' : '⏳ Pendiente'))}
