@@ -6561,9 +6561,9 @@ function switchTab(tab, btn){
   document.getElementById('panel-'+tab).classList.add('active');
   if(btn) btn.classList.add('active');
   document.getElementById('nav-'+tab)?.classList.add('active');
-  // Ocultar el mini "Sistema de Puntuación" en Ranking y Admin.
+  // Ocultar el mini "Sistema de Puntuación" en Ranking, Admin y Decepción.
   const scoringWrap = document.getElementById('scoring-rules-wrap');
-  if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin') ? 'none' : '';
+  if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin' || tab === 'decepcion') ? 'none' : '';
   // Ocultar el aviso "Resultados Oficiales" en Admin.
   const updateNotice = document.querySelector('.update-notice');
   if(updateNotice) updateNotice.style.display = (tab === 'admin') ? 'none' : '';
