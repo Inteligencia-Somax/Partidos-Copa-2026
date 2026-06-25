@@ -3559,7 +3559,7 @@ body{
       </div>
 
 
-      <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;">
+      <div class="filter-row">
         <button class="filter-chip active" onclick="filterAdminResults('all',this)">Todos</button>
         <button class="filter-chip" onclick="filterAdminResults('pending',this)">Sin resultado</button>
         <button class="filter-chip" onclick="filterAdminResults('done',this)">Con resultado</button>
@@ -4927,15 +4927,14 @@ body{
 }
 .filter-row .filter-chip.active{background:var(--green);color:#fff;border-color:var(--green);}
 .admin-result-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;box-shadow:var(--shadow);}
-.admin-result-card.done{border-left:3px solid var(--green);} .admin-result-card.pending{border-left:3px solid var(--pending);}
 .admin-result-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--sub);font-weight:600;}
 .admin-result-teams{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
 .admin-result-name{font-size:14px;font-weight:800;flex:1;} .admin-result-name.right{text-align:right;}
 .real-score-input{width:58px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);padding:9px 8px;text-align:center;font-size:18px;font-weight:900;font-family:'Inter',sans-serif;color:var(--text);}
 .real-score-input:focus{outline:none;border-color:var(--green);}
-.admin-actions{display:flex;gap:8px;}
-.admin-save-btn,.admin-clear-btn{border:none;border-radius:10px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
-.admin-save-btn{background:var(--green);color:#fff;flex:1;} .admin-clear-btn{background:var(--bg);color:var(--sub);border:1px solid var(--border);}
+.admin-actions{display:flex;gap:8px;justify-content:flex-end;}
+.admin-save-btn,.admin-clear-btn{border:none;border-radius:10px;padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;min-width:96px;text-align:center;}
+.admin-save-btn{background:var(--green);color:#fff;} .admin-clear-btn{background:var(--bg);color:var(--sub);border:1px solid var(--border);}
 .admin-export-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
 .admin-download-btn,.admin-copy-btn{border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
@@ -6492,7 +6491,7 @@ function renderAdminResults(filter='all', autoJump=false){
         <div class="admin-result-name right">${m.away} ${m.af}</div>
       </div>
       <div class="admin-actions">
-        <button class="admin-save-btn" onclick="saveRealResult(${m.id})">Guardar resultado y recalcular ranking</button>
+        <button class="admin-save-btn" onclick="saveRealResult(${m.id})">Guardar</button>
         <button class="admin-clear-btn" onclick="clearRealResult(${m.id})">Limpiar</button>
       </div>`;
     container.appendChild(card);
