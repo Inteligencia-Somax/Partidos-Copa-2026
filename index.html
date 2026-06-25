@@ -429,6 +429,9 @@ body{
 .ud-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 6px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .2s,color .2s,border-color .2s;}
 .ud-tab svg{width:17px;height:17px;flex-shrink:0;}
 .ud-tab.active{background:var(--green);color:#fff;border-color:var(--green);}
+.ud-tabs.four{gap:4px;padding:10px 8px;}
+.ud-tabs.four .ud-tab{font-size:11px;padding:7px 2px;gap:3px;}
+.ud-tabs.four .ud-tab svg{width:15px;height:15px;}
 /* Resumen */
 .ud-cmp{margin:12px 14px 0;border-radius:14px;padding:12px 14px;text-align:center;}
 .ud-cmp.up{background:rgba(0,155,84,.1);}.ud-cmp.down{background:rgba(206,17,38,.08);}.ud-cmp.same{background:var(--bg);}
@@ -5880,7 +5883,7 @@ function openUserDetail(name){
 
 function setUdTab(tab){
   udState.tab = tab;
-  if(tab !== 'partidos') udState.idx = 0;
+  if(tab !== 'partidos' && tab !== 'comparar') udState.idx = 0;
   renderUd();
 }
 
@@ -5913,9 +5916,12 @@ function renderUd(){
   const UD_ICONS = {
     resumen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>',
     partidos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.2l4.3 3.1-1.65 5.1H9.35L7.7 10.3z" fill="currentColor" stroke="none"/></svg>',
-    analisis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/></svg>'
+    analisis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/></svg>',
+    comparar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l4 4-4 4"/><path d="M20 7H9"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h11"/></svg>'
   };
   const tabs = [['resumen','Resumen'],['partidos','Partidos'],['analisis','Análisis']];
+  if(!s.isMe) tabs.push(['comparar','Comparar']);
+  document.getElementById('ud-tabs').classList.toggle('four', !s.isMe);
   document.getElementById('ud-tabs').innerHTML = tabs.map(([k,l]) =>
     `<button class="ud-tab ${udState.tab===k?'active':''}" onclick="setUdTab('${k}')" aria-label="${l}">${UD_ICONS[k]}<span>${l}</span></button>`).join('');
 
@@ -5923,7 +5929,9 @@ function renderUd(){
   const body = document.getElementById('ud-body');
   if(udState.tab === 'resumen') body.innerHTML = renderUdResumen();
   else if(udState.tab === 'partidos') body.innerHTML = renderUdPartidos();
-  else body.innerHTML = renderUdAnalisis();
+  else if(udState.tab === 'comparar' && !s.isMe) body.innerHTML = renderUdComparar();
+  else if(udState.tab === 'analisis') body.innerHTML = renderUdAnalisis();
+  else body.innerHTML = renderUdResumen();
 }
 
 function renderUdResumen(){
@@ -6025,70 +6033,33 @@ function renderUdDayDetail(date){
 }
 
 function renderUdPartidos(){
-  const { matches, rounds, idx, picks, real, sortAsc, stats } = udState;
-  const isMe = stats.isMe;
-  const compare = udState.compare && !isMe;
-  const myPicks = loadUserPicks();
-  const shortName = (udState.name || '').split(' ')[0] || 'Él';
+  const { matches, rounds, idx, picks, real, sortAsc } = udState;
   // idx 0..rounds.length-1 = fecha (0 = última jugada). idx === rounds.length = Todas (al final).
   const selected = idx < rounds.length ? rounds[idx] : null;
   let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
   if(sortAsc) shown = shown.slice().reverse(); // matches viene "reciente primero"
 
   let shownTotal = 0, rows = '';
-  let myTotal = 0, theirTotal = 0, myWins = 0, theirWins = 0, ties = 0;
-
   shown.forEach(m => {
     const pick = picks[m.id], r = real[m.id];
     const pts = calculatePickPoints(pick, r, m).pts;
     shownTotal += pts;
+    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
+    const cls = pts > 0 ? 'win' : 'zero';
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
-
-    if(compare){
-      const myPick = myPicks[m.id] || myPicks[String(m.id)];
-      const myPts = calculatePickPoints(myPick, r, m).pts;
-      myTotal += myPts; theirTotal += pts;
-      if(myPts > pts) myWins++; else if(pts > myPts) theirWins++; else ties++;
-      const myStr = myPick ? `${myPick.home}:${myPick.away}` : '—';
-      const thStr = pick ? `${pick.home}:${pick.away}` : '—';
-      const myWin = myPts > pts, thWin = pts > myPts;
-      rows += `
-        <div class="cmp-row">
-          <div class="cmp-head">
-            <span class="cmp-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</span>
-            <span class="cmp-real">Real ${r.home}:${r.away} · ${dm}</span>
-          </div>
-          <div class="cmp-grid">
-            <div class="cmp-cell ${myWin?'win':''}">
-              <div class="cmp-who">Vos</div>
-              <div class="cmp-pick">${myStr}</div>
-              <div class="cmp-pts ${myPts>0?'win':'zero'}">${myPts>0?'+':''}${myPts}</div>
-            </div>
-            <div class="cmp-cell ${thWin?'win':''}">
-              <div class="cmp-who">${shortName}</div>
-              <div class="cmp-pick">${thStr}</div>
-              <div class="cmp-pts ${pts>0?'win':'zero'}">${pts>0?'+':''}${pts}</div>
-            </div>
-          </div>
-        </div>`;
-    } else {
-      const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
-      const cls = pts > 0 ? 'win' : 'zero';
-      rows += `
-        <div class="ud-row">
-          <div class="ud-match">
-            <div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
-            <div class="ud-meta">${dm}</div>
-          </div>
-          <div class="ud-scores"><span class="ud-real">Resultado: ${r.home}:${r.away}</span><span class="ud-pick">Palpite: ${pickStr}</span></div>
-          <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
-        </div>`;
-    }
+    rows += `
+      <div class="ud-row">
+        <div class="ud-match">
+          <div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
+          <div class="ud-meta">${dm}</div>
+        </div>
+        <div class="ud-scores"><span class="ud-real">Resultado: ${r.home}:${r.away}</span><span class="ud-pick">Palpite: ${pickStr}</span></div>
+        <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
+      </div>`;
   });
 
   const navLabel = selected ? selected : 'Todas las fechas';
   const navSub = selected ? `${shown.length} partido(s) · ${shownTotal} pts` : `${matches.length} partido(s)`;
-  // ‹ vuelve hacia fechas más recientes; › avanza hacia fechas más antiguas y termina en "Todas".
   const nav = rounds.length ? `
     <div class="ud-round-nav">
       <button class="ud-rnav-btn" onclick="changeUdRound(-1)" ${idx === 0 ? 'disabled' : ''}>‹</button>
@@ -6096,32 +6067,76 @@ function renderUdPartidos(){
       <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>
     </div>` : '';
 
-  const cmpToggle = isMe ? '' : `<div class="ud-cmp-row"><button class="ud-cmp-toggle ${compare?'active':''}" onclick="toggleUdCompare()">⚔ ${compare?'Ver normal':'Comparar con mis palpites'}</button></div>`;
+  const sortToggle = `<div class="ud-sort-row"><button class="ud-sort" onclick="toggleUdSort()">${sortAsc ? 'Antiguos primero' : 'Recientes primero'} ⇅</button></div>`;
+
+  return nav + sortToggle + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos.</div>');
+}
+
+function renderUdComparar(){
+  const { matches, rounds, idx, picks, real, sortAsc } = udState;
+  const myPicks = loadUserPicks();
+  const shortName = (udState.name || '').split(' ')[0] || 'Él';
+  const selected = idx < rounds.length ? rounds[idx] : null;
+  let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
+  if(sortAsc) shown = shown.slice().reverse();
+
+  let rows = '', myTotal = 0, theirTotal = 0, myWins = 0, theirWins = 0, ties = 0;
+  shown.forEach(m => {
+    const pick = picks[m.id], r = real[m.id];
+    const pts = calculatePickPoints(pick, r, m).pts;
+    const myPick = myPicks[m.id] || myPicks[String(m.id)];
+    const myPts = calculatePickPoints(myPick, r, m).pts;
+    myTotal += myPts; theirTotal += pts;
+    if(myPts > pts) myWins++; else if(pts > myPts) theirWins++; else ties++;
+    const myStr = myPick ? `${myPick.home}:${myPick.away}` : '—';
+    const thStr = pick ? `${pick.home}:${pick.away}` : '—';
+    const myWin = myPts > pts, thWin = pts > myPts;
+    const dm = m.date.replace(/^[^,]+,\s*/, '');
+    rows += `
+      <div class="cmp-row">
+        <div class="cmp-head">
+          <span class="cmp-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</span>
+          <span class="cmp-real">Real ${r.home}:${r.away} · ${dm}</span>
+        </div>
+        <div class="cmp-grid">
+          <div class="cmp-cell ${myWin?'win':''}">
+            <div class="cmp-who">Vos</div>
+            <div class="cmp-pick">${myStr}</div>
+            <div class="cmp-pts ${myPts>0?'win':'zero'}">${myPts>0?'+':''}${myPts}</div>
+          </div>
+          <div class="cmp-cell ${thWin?'win':''}">
+            <div class="cmp-who">${shortName}</div>
+            <div class="cmp-pick">${thStr}</div>
+            <div class="cmp-pts ${pts>0?'win':'zero'}">${pts>0?'+':''}${pts}</div>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  const navLabel = selected ? selected : 'Todas las fechas';
+  const navSub = selected ? `${shown.length} partido(s)` : `${matches.length} partido(s)`;
+  const nav = rounds.length ? `
+    <div class="ud-round-nav">
+      <button class="ud-rnav-btn" onclick="changeUdRound(-1)" ${idx === 0 ? 'disabled' : ''}>‹</button>
+      <div class="ud-rnav-label"><span class="ud-rnav-title">${navLabel}</span><span class="ud-rnav-sub">${navSub}</span></div>
+      <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>
+    </div>` : '';
 
   const sortToggle = `<div class="ud-sort-row"><button class="ud-sort" onclick="toggleUdSort()">${sortAsc ? 'Antiguos primero' : 'Recientes primero'} ⇅</button></div>`;
 
-  let summary = '';
-  if(compare && shown.length){
-    summary = `
-      <div class="cmp-summary">
-        <div class="cmp-sum-cell ${myTotal>=theirTotal?'lead':''}">
-          <div class="cmp-sum-num">${myTotal}</div><div class="cmp-sum-lbl">Vos</div>
-        </div>
-        <div class="cmp-sum-vs">⚔</div>
-        <div class="cmp-sum-cell ${theirTotal>=myTotal?'lead':''}">
-          <div class="cmp-sum-num">${theirTotal}</div><div class="cmp-sum-lbl">${shortName}</div>
-        </div>
+  const summary = shown.length ? `
+    <div class="cmp-summary">
+      <div class="cmp-sum-cell ${myTotal>=theirTotal?'lead':''}">
+        <div class="cmp-sum-num">${myTotal}</div><div class="cmp-sum-lbl">Vos</div>
       </div>
-      <div class="cmp-wins">Mejor palpite: vos <b>${myWins}</b> · ${shortName} <b>${theirWins}</b> · iguales <b>${ties}</b></div>`;
-  }
+      <div class="cmp-sum-vs">⚔</div>
+      <div class="cmp-sum-cell ${theirTotal>=myTotal?'lead':''}">
+        <div class="cmp-sum-num">${theirTotal}</div><div class="cmp-sum-lbl">${shortName}</div>
+      </div>
+    </div>
+    <div class="cmp-wins">Mejor palpite: vos <b>${myWins}</b> · ${shortName} <b>${theirWins}</b> · iguales <b>${ties}</b></div>` : '';
 
-  const emptyMsg = '<div class="ud-empty">Aún no hay partidos.</div>';
-  return nav + cmpToggle + sortToggle + summary + (shown.length ? rows : emptyMsg);
-}
-
-function toggleUdCompare(){
-  udState.compare = !udState.compare;
-  renderUd();
+  return nav + summary + sortToggle + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos.</div>');
 }
 
 function toggleUdSort(){
