@@ -236,7 +236,11 @@ body{
 
 .mc-top{
   display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:10px;gap:8px;
+  margin-bottom:10px;gap:8px;position:relative;
+}
+.mc-badge.center{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  white-space:nowrap;
 }
 .mc-time{font-size:12px;font-weight:600;color:var(--text);}
 .mc-phase{font-size:11px;color:var(--sub);font-weight:500;}
@@ -342,6 +346,7 @@ body{
 #user-detail-modal, #match-breakdown-modal{align-items:center;padding:16px;}
 #user-detail-modal .modal, #match-breakdown-modal .modal{border-radius:20px;width:100%;max-width:460px;max-height:84vh;display:flex;flex-direction:column;animation:fadeScale .25s ease;padding:0;}
 #user-detail-modal .modal-header, #match-breakdown-modal .modal-header{border-radius:20px 20px 0 0;}
+#user-detail-modal .modal-match-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 #user-detail-modal .ud-body, #match-breakdown-modal .ud-body{max-height:none;flex:1;min-height:0;}
 .mb-pos{min-width:40px;text-align:center;font-size:14px;font-weight:900;color:var(--text);flex-shrink:0;}
 .mb-header-actions{display:flex;align-items:center;gap:8px;}
@@ -392,9 +397,10 @@ body{
 .ud-hero-sep{width:1px;height:30px;background:var(--border);}
 .ud-delta{font-size:12px;font-weight:900;}
 .ud-delta.up{color:var(--green);}.ud-delta.down{color:var(--red);}.ud-delta.same{color:var(--sub);}
-.ud-tabs{display:flex;gap:6px;padding:8px 12px;background:var(--bg);border-bottom:1px solid var(--border);}
-.ud-tab{flex:1;padding:8px 6px;border:none;border-radius:50px;background:transparent;color:var(--sub);font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}
-.ud-tab.active{background:var(--green);color:#fff;}
+.ud-header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ud-tabs{display:flex;align-items:center;gap:6px;}
+.ud-tab{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:15px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;flex-shrink:0;transition:background .2s;}
+.ud-tab.active{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);}
 /* Resumen */
 .ud-cmp{margin:12px 14px 0;border-radius:14px;padding:12px 14px;text-align:center;}
 .ud-cmp.up{background:rgba(0,155,84,.1);}.ud-cmp.down{background:rgba(206,17,38,.08);}.ud-cmp.same{background:var(--bg);}
@@ -4815,9 +4821,11 @@ body{
   <div class="modal">
     <div class="modal-header">
       <span class="modal-match-label" id="ud-title">Detalle</span>
-      <button class="modal-close" onclick="closeUserDetail()">✕</button>
+      <div class="ud-header-actions">
+        <div class="ud-tabs" id="ud-tabs"></div>
+        <button class="modal-close" onclick="closeUserDetail()">✕</button>
+      </div>
     </div>
-    <div class="ud-tabs" id="ud-tabs"></div>
     <div class="ud-hero" id="ud-hero"></div>
     <div class="ud-body" id="ud-body"></div>
   </div>
@@ -5488,8 +5496,7 @@ function renderMatches(filter){
           <span class="mc-dot"></span>
           <span class="mc-phase">${m.phase}</span>
           ${x2badge}
-          <div style="flex:1"></div>
-          <span class="mc-badge">${real ? 'Resultado '+resultLabel(real) : '2026'}</span>
+          <span class="mc-badge center">${real ? 'Resultado '+resultLabel(real) : '2026'}</span>
           <div style="flex:1"></div>
           <span class="mc-status ${statusCls}">
             ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? '✓ Palpitado' : '⏳ Pendiente'))}
@@ -5875,10 +5882,10 @@ function renderUd(){
     <div class="ud-hero-sep"></div>
     <div class="ud-hero-stat"><span class="ud-hero-num">${s.aprov}%</span><span class="ud-hero-lbl">aprovecham.</span></div>`;
 
-  // ── tabs ──
-  const tabs = [['resumen','Resumen'],['partidos','Partidos'],['analisis','Análisis']];
-  document.getElementById('ud-tabs').innerHTML = tabs.map(([k,l]) =>
-    `<button class="ud-tab ${udState.tab===k?'active':''}" onclick="setUdTab('${k}')">${l}</button>`).join('');
+  // ── tabs (iconos en el encabezado, al lado del nombre) ──
+  const tabs = [['resumen','📋','Resumen'],['partidos','⚽','Partidos'],['analisis','📊','Análisis']];
+  document.getElementById('ud-tabs').innerHTML = tabs.map(([k,icon,l]) =>
+    `<button class="ud-tab ${udState.tab===k?'active':''}" onclick="setUdTab('${k}')" aria-label="${l}" title="${l}">${icon}</button>`).join('');
 
   // ── body ──
   const body = document.getElementById('ud-body');
@@ -5987,7 +5994,8 @@ function renderUdDayDetail(date){
 
 function renderUdPartidos(){
   const { matches, rounds, idx, picks, real, sortAsc, viewerPicks, stats } = udState;
-  const selected = idx === 0 ? null : rounds[idx - 1];
+  // idx 0..rounds.length-1 = fecha (0 = última jugada). idx === rounds.length = Todas (al final).
+  const selected = idx < rounds.length ? rounds[idx] : null;
   let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
   if(sortAsc) shown = shown.slice().reverse(); // matches viene "reciente primero"
 
@@ -6017,12 +6025,12 @@ function renderUdPartidos(){
 
   const navLabel = selected ? selected : 'Todas las fechas';
   const navSub = selected ? `${shown.length} partido(s) · ${shownTotal} pts` : `${matches.length} partido(s)`;
-  // flechas invertidas: ‹ avanza por las fechas (Fecha 2, Fecha 1...), › vuelve hacia Todas
+  // ‹ vuelve hacia fechas más recientes; › avanza hacia fechas más antiguas y termina en "Todas".
   const nav = rounds.length ? `
     <div class="ud-round-nav">
-      <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>‹</button>
+      <button class="ud-rnav-btn" onclick="changeUdRound(-1)" ${idx === 0 ? 'disabled' : ''}>‹</button>
       <div class="ud-rnav-label"><span class="ud-rnav-title">${navLabel}</span><span class="ud-rnav-sub">${navSub}</span></div>
-      <button class="ud-rnav-btn" onclick="changeUdRound(-1)" ${idx === 0 ? 'disabled' : ''}>›</button>
+      <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>
     </div>` : '';
 
   const sortToggle = `<div class="ud-sort-row"><button class="ud-sort" onclick="toggleUdSort()">${sortAsc ? 'Antiguos primero' : 'Recientes primero'} ⇅</button></div>`;
