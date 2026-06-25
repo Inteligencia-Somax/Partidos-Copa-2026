@@ -400,6 +400,7 @@ body{
 .ud-scores{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
 .ud-real{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap;}
 .ud-pick{font-size:12px;color:var(--text);font-weight:700;white-space:nowrap;}
+.ud-sc-in{display:inline-block;min-width:16px;text-align:center;font-weight:900;color:var(--green);}
 .ud-pts{flex-shrink:0;min-width:48px;text-align:right;font-size:15px;font-weight:900;}
 .ud-pts.win{color:var(--green);}
 .ud-pts.zero{color:var(--red);}
@@ -449,18 +450,18 @@ body{
 .ud-tabs.four .ud-tab{font-size:11px;padding:7px 2px;gap:3px;}
 .ud-tabs.four .ud-tab svg{width:15px;height:15px;}
 /* Resumen */
-.ud-cmp{margin:12px 14px 0;border-radius:14px;padding:12px 14px;text-align:center;}
+.ud-cmp{margin:10px 14px 0;border-radius:14px;padding:9px 14px;text-align:center;}
 .ud-cmp.up{background:rgba(0,155,84,.1);}.ud-cmp.down{background:rgba(206,17,38,.08);}.ud-cmp.same{background:var(--bg);}
 .ud-cmp-main{font-size:15px;font-weight:700;color:var(--text);}
 .ud-cmp.up .ud-cmp-main strong{color:var(--green);}.ud-cmp.down .ud-cmp-main strong{color:var(--red);}
-.ud-cmp-sub{font-size:12px;color:var(--sub);margin-top:3px;}
+.ud-cmp-sub{font-size:12px;color:var(--sub);margin-top:2px;}
 .ud-move{margin:12px 14px 0;font-size:13px;font-weight:800;}
 .ud-move.up{color:var(--green);}.ud-move.down{color:var(--red);}.ud-move.same{color:var(--sub);}
 .ud-move span{color:var(--sub);font-weight:600;}
-.ud-cards{display:flex;gap:10px;margin:12px 14px 0;}
-.ud-card{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px 10px;text-align:center;}
-.ud-card-num{font-size:22px;font-weight:900;color:var(--text);line-height:1;}
-.ud-card-lbl{font-size:11px;color:var(--sub);font-weight:600;margin-top:5px;line-height:1.25;}
+.ud-cards{display:flex;gap:10px;margin:9px 14px 0;}
+.ud-card{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:9px 10px;text-align:center;}
+.ud-card-num{font-size:20px;font-weight:900;color:var(--text);line-height:1;}
+.ud-card-lbl{font-size:11px;color:var(--sub);font-weight:600;margin-top:3px;line-height:1.2;}
 .ud-card.good .ud-card-num{color:var(--green);}.ud-card.bad .ud-card-num{color:var(--red);}
 .ud-card.clickable{cursor:pointer;transition:border-color .15s;}
 .ud-card.clickable.sel{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset;}
@@ -474,16 +475,17 @@ body{
 .ud-day-sc span{font-weight:600;}
 .ud-day-pts{min-width:36px;text-align:right;font-size:13px;font-weight:900;}
 .ud-day-pts.win{color:var(--green);}.ud-day-pts.zero{color:var(--red);}
-.ud-form{display:flex;align-items:center;justify-content:space-between;margin:14px 14px 16px;padding:12px 14px;background:var(--bg);border-radius:14px;}
+.ud-form{display:flex;align-items:center;justify-content:space-between;margin:9px 14px 4px;padding:8px 14px;background:var(--bg);border-radius:14px;}
 .ud-form-lbl{font-size:12px;font-weight:700;color:var(--sub);}
 .ud-form-dots{display:flex;gap:6px;}
 .ud-dot{width:14px;height:14px;border-radius:50%;}
 .ud-dot.on{background:var(--green);}.ud-dot.off{background:var(--red);opacity:.5;}
 /* Análisis */
-.ud-an-title{font-size:13px;font-weight:800;color:var(--text);margin:14px 14px 8px;}
-.ud-bar-row{display:flex;align-items:center;gap:8px;margin:0 14px 9px;}
+.ud-an-title{font-size:13px;font-weight:800;color:var(--text);margin:10px 14px 7px;}
+.ud-bar-row{display:flex;align-items:center;gap:8px;margin:0 14px 6px;}
+.ud-bar-row:last-child{margin-bottom:0;}
 .ud-bar-label{width:120px;font-size:11px;font-weight:600;color:var(--text);line-height:1.2;flex-shrink:0;}
-.ud-bar-track{flex:1;height:14px;background:var(--bg);border-radius:8px;overflow:hidden;}
+.ud-bar-track{flex:1;height:12px;background:var(--bg);border-radius:8px;overflow:hidden;}
 .ud-bar-fill{height:100%;border-radius:8px;min-width:2px;transition:width .3s;}
 .ud-bar-val{width:54px;text-align:right;font-size:12px;font-weight:800;color:var(--text);flex-shrink:0;}
 .ud-bar-val span{color:var(--sub);font-weight:600;font-size:11px;}
@@ -6026,12 +6028,6 @@ function renderUdResumen(){
     html += `<div class="ud-cmp ${cls}"><div class="ud-cmp-main">${txt}</div><div class="ud-cmp-sub">Vos ${s.myScore} · ${udState.name.split(' ')[0]} ${s.viewedScore}</div></div>`;
   }
 
-  if(s.posDelta !== null && s.lastDate){
-    const t = s.posDelta > 0 ? `▲ Subió ${s.posDelta} puesto${s.posDelta>1?'s':''}` : (s.posDelta < 0 ? `▼ Bajó ${-s.posDelta} puesto${-s.posDelta>1?'s':''}` : 'Se mantuvo');
-    const cls = s.posDelta > 0 ? 'up' : (s.posDelta < 0 ? 'down' : 'same');
-    html += `<div class="ud-move ${cls}">${t} <span>en el último día</span></div>`;
-  }
-
   html += `<div class="ud-cards">
     <div class="ud-card"><div class="ud-card-num">${s.exact}</div><div class="ud-card-lbl">Marcadores exactos</div></div>
     <div class="ud-card"><div class="ud-card-num">${s.media.toFixed(1)}</div><div class="ud-card-lbl">Media por partido</div></div>
@@ -6132,10 +6128,10 @@ function renderUdPartidos(){
     rows += `
       <div class="ud-row">
         <div class="ud-match">
-          <div class="ud-teams">${m.hc || m.home} × ${m.ac || m.away}</div>
+          <div class="ud-teams">${m.hf || ''} ${m.hc || m.home} ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} ${m.ac || m.away} ${m.af || ''}</div>
           <div class="ud-meta">${dm}</div>
         </div>
-        <div class="ud-scores"><span class="ud-real">Resultado: ${r.home}:${r.away}</span><span class="ud-pick">${pickLabel}</span></div>
+        <div class="ud-scores"><span class="ud-pick">${pickLabel}</span></div>
         <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
       </div>`;
   });
