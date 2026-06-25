@@ -4908,12 +4908,10 @@ body{
   <div class="modal">
     <div class="modal-header">
       <span class="modal-match-label" id="mb-title">Puntos por participante</span>
-      <div class="mb-header-actions">
-        <button class="mb-toggle" id="mb-toggle" onclick="toggleMbView()" aria-label="Estadísticas"></button>
-        <button class="modal-close" onclick="closeMatchBreakdown()">✕</button>
-      </div>
+      <button class="modal-close" onclick="closeMatchBreakdown()">✕</button>
     </div>
     <div class="ud-summary" id="mb-summary"></div>
+    <div class="ud-tabs" id="mb-tabs"></div>
     <div class="ud-body" id="mb-body"></div>
   </div>
 </div>
@@ -6305,6 +6303,11 @@ function toggleMbType(key){
   mbState.expanded = mbState.expanded === key ? null : key;
   renderMatchBreakdown();
 }
+function setMbView(v){
+  mbState.view = v;
+  mbState.expanded = null;
+  renderMatchBreakdown();
+}
 
 function renderMatchBreakdown(){
   const { m, real, parts, view, expanded } = mbState;
@@ -6317,14 +6320,15 @@ function renderMatchBreakdown(){
       <div class="ud-summary-sub">${m.date} · ${m.phase} · ${total} participante(s)</div>
     </div>`;
 
-  // botón pizza / lista
-  const btn = document.getElementById('mb-toggle');
-  if(btn){
-    btn.classList.toggle('active', view === 'stats');
-    btn.innerHTML = view === 'stats'
-      ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>'
-      : '<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 12 L12 3 A9 9 0 0 1 21 12 Z" fill="currentColor"/></svg>';
-    btn.title = view === 'stats' ? 'Ver lista' : 'Ver estadísticas';
+  // pestañas Lista / Análisis (como en el ranking)
+  const mbTabs = [
+    ['list','Lista','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>'],
+    ['stats','Análisis','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/></svg>']
+  ];
+  const mbTabsEl = document.getElementById('mb-tabs');
+  if(mbTabsEl){
+    mbTabsEl.innerHTML = mbTabs.map(([k,l,ic]) =>
+      `<button class="ud-tab ${view===k?'active':''}" onclick="setMbView('${k}')">${ic}<span>${l}</span></button>`).join('');
   }
 
   const body = document.getElementById('mb-body');
