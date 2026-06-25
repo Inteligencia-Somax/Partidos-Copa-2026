@@ -400,7 +400,7 @@ body{
 .ud-scores{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
 .ud-real{font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap;}
 .ud-pick{font-size:12px;color:var(--text);font-weight:700;white-space:nowrap;}
-.ud-sc-in{display:inline-block;min-width:16px;text-align:center;font-weight:900;color:var(--green);}
+.ud-sc-in{display:inline-block;min-width:16px;text-align:center;font-weight:900;color:var(--text);}
 .ud-pts{flex-shrink:0;min-width:48px;text-align:right;font-size:15px;font-weight:900;}
 .ud-pts.win{color:var(--green);}
 .ud-pts.zero{color:var(--red);}
@@ -564,8 +564,11 @@ body{
 }
 .rank-pos{
   font-size:18px;font-weight:900;color:var(--text);
-  min-width:28px;text-align:center;
+  min-width:30px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
 }
+.rank-pos-delta{font-size:11px;line-height:1;}
+.rank-pos-delta .rank-delta{font-weight:800;}
 .rank-pos.p1{color:#F59E0B;}
 .rank-pos.p2{color:#9CA3AF;}
 .rank-pos.p3{color:#D97706;}
@@ -5850,18 +5853,18 @@ function renderRanking(){
       return `<span class="fd ${pts>0?'win':'miss'}"></span>`;
     }).join('');
     const formHtml = dots ? ` · <span class="form-dots">${dots}</span>` : '';
-    let deltaHtml = '';
+    let posDeltaHtml = '';
     if(lastDate && prevIndex[u.name] !== undefined){
       const d = prevIndex[u.name] - i;
-      if(d > 0) deltaHtml = ` · <span class="rank-delta up">▲${d}</span>`;
-      else if(d < 0) deltaHtml = ` · <span class="rank-delta down">▼${-d}</span>`;
-      else deltaHtml = ` · <span class="rank-delta same">=</span>`;
+      if(d > 0) posDeltaHtml = `<span class="rank-delta up">▲${d}</span>`;
+      else if(d < 0) posDeltaHtml = `<span class="rank-delta down">▼${-d}</span>`;
+      else posDeltaHtml = `<span class="rank-delta same">=</span>`;
     }
     card.innerHTML=`
-      <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${posCell}</div>
+      <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${posCell}${posDeltaHtml?`<span class="rank-pos-delta">${posDeltaHtml}</span>`:''}</div>
       <div class="rank-info">
         <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></div>
-        <div class="rank-detail">${u.exact} exacto${u.exact===1?'':'s'}${formHtml}${deltaHtml}</div>
+        <div class="rank-detail">${u.exact} exacto${u.exact===1?'':'s'}${formHtml}</div>
       </div>
       <div>
         <div class="rank-pts">${u.score}</div>
@@ -6129,7 +6132,6 @@ function renderUdPartidos(){
       <div class="ud-row">
         <div class="ud-match">
           <div class="ud-teams">${m.hf || ''} ${m.hc || m.home} ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} ${m.ac || m.away} ${m.af || ''}</div>
-          <div class="ud-meta">${dm}</div>
         </div>
         <div class="ud-scores"><span class="ud-pick">${pickLabel}</span></div>
         <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
@@ -6173,8 +6175,7 @@ function renderUdComparar(){
     rows += `
       <div class="cmp-row">
         <div class="cmp-head">
-          <span class="cmp-teams">${m.hc || m.home} × ${m.ac || m.away}</span>
-          <span class="cmp-real">Resultado ${r.home}:${r.away}<span class="cmp-real-date"> · ${dm}</span></span>
+          <span class="cmp-teams">${m.hf || ''} ${m.hc || m.home} <span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span> ${m.ac || m.away} ${m.af || ''}</span>
         </div>
         <div class="cmp-grid">
           <div class="cmp-cell ${myWin?'win':''}">
