@@ -337,8 +337,8 @@ body{
 .ud-insight.down{color:var(--red);background:rgba(206,17,38,.06);}
 .ud-insight.same{color:var(--sub);}
 .ud-insight.cmp{color:var(--text);background:var(--bg);}
-.ud-round-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg);}
-.ud-rnav-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--text);font-size:20px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.ud-round-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);background:var(--bg);}
+.ud-rnav-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--text);font-size:17px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .ud-rnav-btn:disabled{opacity:.3;cursor:default;}
 .ud-rnav-label{flex:1;text-align:center;min-width:0;}
 .ud-rnav-title{display:block;font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -405,7 +405,8 @@ body{
 .cmp-row{padding:10px 12px;border-bottom:1px solid var(--border);}
 .cmp-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px;}
 .cmp-teams{font-size:13px;font-weight:700;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cmp-real{font-size:11px;font-weight:700;color:var(--sub);white-space:nowrap;flex-shrink:0;}
+.cmp-real{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;flex-shrink:0;}
+.cmp-real-date{color:var(--sub);font-weight:600;}
 .cmp-grid{display:flex;gap:8px;}
 .cmp-cell{flex:1;border:1px solid var(--border);border-radius:10px;padding:7px 4px;text-align:center;background:#fff;}
 .cmp-cell.win{border-color:rgba(0,155,84,.4);background:rgba(0,155,84,.06);}
@@ -473,7 +474,7 @@ body{
 .ud-bar-val span{color:var(--sub);font-weight:600;font-size:11px;}
 .ud-best{margin:14px;padding:12px 14px;background:rgba(0,155,84,.08);border-radius:14px;font-size:13px;font-weight:600;color:var(--text);text-align:center;}
 .ud-best strong{color:var(--green);font-weight:800;}
-.ud-round-nav{position:sticky;top:0;z-index:2;}
+.ud-round-nav{position:static;}
 .ud-sort-row{display:flex;justify-content:flex-end;padding:6px 4px 2px;}
 .ud-sort{background:none;border:none;color:var(--sub);font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;padding:2px 4px;opacity:.8;}
 .ud-sort:hover{opacity:1;color:var(--text);}
@@ -6096,7 +6097,7 @@ function renderUdComparar(){
       <div class="cmp-row">
         <div class="cmp-head">
           <span class="cmp-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</span>
-          <span class="cmp-real">Real ${r.home}:${r.away} · ${dm}</span>
+          <span class="cmp-real">Resultado ${r.home}:${r.away}<span class="cmp-real-date"> · ${dm}</span></span>
         </div>
         <div class="cmp-grid">
           <div class="cmp-cell ${myWin?'win':''}">
