@@ -569,8 +569,12 @@ body{
 .rank-info{flex:1;}
 .rank-name{font-size:15px;font-weight:700;}
 .rank-detail{font-size:12px;color:var(--sub);margin-top:2px;}
-.detail-i{width:15px;height:15px;color:#AAB2BF;flex-shrink:0;display:inline-block;vertical-align:-3px;margin-left:6px;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.28));}
+.detail-i{width:15px;height:15px;color:#AAB2BF;flex-shrink:0;display:inline-block;vertical-align:-3px;margin-left:6px;}
 .rank-delta{font-weight:800;}
+.form-dots{display:inline-flex;gap:3px;vertical-align:middle;}
+.fd{width:8px;height:8px;border-radius:50%;display:inline-block;}
+.fd.win{background:var(--green);}
+.fd.miss{background:#E59AA1;}
 .rank-delta.up{color:var(--green);}
 .rank-delta.down{color:var(--red);}
 .rank-delta.same{color:var(--sub);}
@@ -5786,21 +5790,17 @@ function renderRanking(){
     container.appendChild(info);
   }
 
-  // Aprovechamiento (denominador global) y día más reciente disputado.
+  // Día más reciente disputado (para la flecha) y forma reciente.
   const now = new Date();
-  let possible = 0, lastDate = null, lastDT = -Infinity;
-  MATCHES.forEach(m=>{
-    if(realResults[m.id] && getMatchDateTime(m) <= now){
-      possible += 25 * (m.x2 ? 2 : 1);
-      const dt = getMatchDateTime(m).getTime();
-      if(dt > lastDT){ lastDT = dt; lastDate = m.date; }
-    }
-  });
+  const playedSorted = MATCHES.filter(m=>realResults[m.id] && getMatchDateTime(m) <= now)
+    .sort((a,b)=>getMatchDateTime(b)-getMatchDateTime(a));
+  const lastDate = playedSorted.length ? playedSorted[0].date : null;
   // Posición previa (excluyendo el último día) para la flecha de subió/bajó.
   const prevIndex = {};
   if(lastDate){
     getRankedUsersExcludingDate(lastDate).forEach((u,idx)=>{ prevIndex[u.name] = idx; });
   }
+  const recent5 = playedSorted.slice(0,5).reverse(); // 5 más recientes, en orden cronológico
 
   users.forEach((u,i)=>{
     const isMe = u.name===currentUser;
@@ -5811,7 +5811,12 @@ function renderRanking(){
     card.addEventListener('click', ()=>openUserDetail(u.name));
     if(isMe) card.style.border='2px solid var(--gold)';
     const posClass = i===0?'p1':i===1?'p2':i===2?'p3':'';
-    const aprov = possible ? Math.round(u.score / possible * 100) : 0;
+    const upicks = all[u.name] || {};
+    const dots = recent5.map(m=>{
+      const pts = calculatePickPoints(upicks[m.id], realResults[m.id], m).pts;
+      return `<span class="fd ${pts>0?'win':'miss'}"></span>`;
+    }).join('');
+    const formHtml = dots ? ` · <span class="form-dots">${dots}</span>` : '';
     let deltaHtml = '';
     if(lastDate && prevIndex[u.name] !== undefined){
       const d = prevIndex[u.name] - i;
@@ -5823,7 +5828,7 @@ function renderRanking(){
       <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'º'}</div>
       <div class="rank-info">
         <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><circle cx="12" cy="8" r="1.5" fill="#fff"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="#fff"/></svg></div>
-        <div class="rank-detail">${u.exact} exacto${u.exact===1?'':'s'} · ${aprov}% aprovech.${deltaHtml}</div>
+        <div class="rank-detail">${u.exact} exacto${u.exact===1?'':'s'}${formHtml}${deltaHtml}</div>
       </div>
       <div>
         <div class="rank-pts">${u.score}</div>
@@ -5906,7 +5911,7 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'resumen', sortAsc:false, compare:false, expanded:null,
+    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'partidos', sortAsc:false, compare:false, expanded:null,
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
@@ -5959,18 +5964,16 @@ function renderUd(){
     analisis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/></svg>',
     comparar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l4 4-4 4"/><path d="M20 7H9"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h11"/></svg>'
   };
-  const tabs = [['resumen','Resumen'],['partidos','Partidos'],['analisis','Análisis']];
+  const tabs = [['partidos','Partidos'],['resumen','Resumen']];
   if(!s.isMe) tabs.push(['comparar','Comparar']);
-  document.getElementById('ud-tabs').classList.toggle('four', !s.isMe);
+  document.getElementById('ud-tabs').classList.toggle('four', tabs.length > 3);
   document.getElementById('ud-tabs').innerHTML = tabs.map(([k,l]) =>
     `<button class="ud-tab ${udState.tab===k?'active':''}" onclick="setUdTab('${k}')" aria-label="${l}">${UD_ICONS[k]}<span>${l}</span></button>`).join('');
 
   // ── body ──
   const body = document.getElementById('ud-body');
-  if(udState.tab === 'resumen') body.innerHTML = renderUdResumen();
-  else if(udState.tab === 'partidos') body.innerHTML = renderUdPartidos();
+  if(udState.tab === 'partidos') body.innerHTML = renderUdPartidos();
   else if(udState.tab === 'comparar' && !s.isMe) body.innerHTML = renderUdComparar();
-  else if(udState.tab === 'analisis') body.innerHTML = renderUdAnalisis();
   else body.innerHTML = renderUdResumen();
 }
 
@@ -6016,6 +6019,7 @@ function renderUdResumen(){
     const dots = s.form.map(f => `<span class="ud-dot ${f.scored?'on':'off'}" title="${f.pts} pts"></span>`).join('');
     html += `<div class="ud-form"><span class="ud-form-lbl">Forma (últimos ${s.form.length})</span><div class="ud-form-dots">${dots}</div></div>`;
   }
+  html += renderUdAnalisis();
   return html;
 }
 
