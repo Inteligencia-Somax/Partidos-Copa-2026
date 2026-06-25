@@ -5998,6 +5998,8 @@ function renderUdDayDetail(date){
 
 function renderUdPartidos(){
   const { matches, rounds, idx, picks, real, sortAsc, viewerPicks, stats } = udState;
+  // Mis palpites en vivo (misma fuente que la pestaña Partidas).
+  const myPicks = stats.isMe ? picks : loadUserPicks();
   // idx 0..rounds.length-1 = fecha (0 = última jugada). idx === rounds.length = Todas (al final).
   const selected = idx < rounds.length ? rounds[idx] : null;
   let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
@@ -6008,8 +6010,10 @@ function renderUdPartidos(){
     const pick = picks[m.id], r = real[m.id];
     const pts = calculatePickPoints(pick, r, m).pts;
     shownTotal += pts;
-    // El detalle solo muestra partidos YA jugados, así que siempre se ve el palpite.
-    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
+    // El palpite del otro solo aparece si YO también palpité ese partido (o es mi perfil).
+    const iPicked = myPicks[m.id] !== undefined || myPicks[String(m.id)] !== undefined;
+    const canSeePick = stats.isMe || iPicked;
+    const pickStr = pick ? (canSeePick ? `${pick.home}:${pick.away}` : 'Palpitó') : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
     rows += `
