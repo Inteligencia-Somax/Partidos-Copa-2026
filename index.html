@@ -531,6 +531,7 @@ body{
 .rank-info{flex:1;}
 .rank-name{font-size:15px;font-weight:700;}
 .rank-detail{font-size:12px;color:var(--sub);margin-top:2px;}
+.detail-i{width:13px;height:13px;color:var(--sub);opacity:.45;flex-shrink:0;display:inline-block;vertical-align:-2px;margin-left:5px;}
 .rank-pts{
   font-size:22px;font-weight:900;color:var(--green);
   text-align:right;
@@ -5489,6 +5490,8 @@ function renderMatches(filter){
       const scoreCls = (hasPick && real) ? (isZero ? 'zero' : 'filled') : '';
       const x2badge = m.x2 ? '<span style="font-size:11px;font-weight:800;color:var(--gold);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);padding:2px 8px;border-radius:20px;margin-left:4px;">✕2</span>' : '';
       const locked = !canEditPick(m);
+      const hasBreakdown = real && getMatchDateTime(m) <= new Date();
+      const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.7v.2"/></svg>' : '';
       card.innerHTML = `
         <div class="mc-top">
           <span class="mc-time">${m.time}</span>
@@ -5499,7 +5502,7 @@ function renderMatches(filter){
           <div style="flex:1"></div>
           <span class="mc-status ${statusCls}">
             ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? '✓ Palpitado' : '⏳ Pendiente'))}
-          </span>
+          </span>${detailI}
         </div>
         <div class="mc-teams">
           <div class="mc-team">
@@ -5750,7 +5753,7 @@ function renderRanking(){
     card.innerHTML=`
       <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'º'}</div>
       <div class="rank-info">
-        <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}</div>
+        <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 7.7v.2"/></svg></div>
         <div class="rank-detail">${u.pickCount}/${MATCHES.length} palpites · ${finishedCount} resultados cargados · exactos: ${u.exact}</div>
       </div>
       <div>
