@@ -122,16 +122,24 @@ body{
   padding:13px 15px;
   box-shadow:var(--shadow);
 }
+.update-notice-head{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:none;border:none;padding:0;cursor:pointer;font-family:inherit;
+}
 .update-notice-title{
   font-size:13px;
   font-weight:800;
   color:#92400E;
-  margin-bottom:4px;
 }
+.update-notice-chev{
+  font-size:13px;color:#92400E;transition:transform .2s;flex-shrink:0;
+}
+.update-notice-chev.open{transform:rotate(180deg);}
 .update-notice-text{
   font-size:12px;
   line-height:1.5;
   color:#5F4300;
+  margin-top:8px;
 }
 
 /* ══ SCORING RULES CARD ══ */
@@ -685,8 +693,11 @@ body{
 <!-- UPDATE NOTICE -->
 <div class="update-notice">
   <div class="update-notice-card">
-    <div class="update-notice-title">📢 Resultados Oficiales</div>
-    <div class="update-notice-text">Los resultados y puntajes del bolão se actualizarán a partir de las <strong>11:00 h del día siguiente</strong> a cada partido. Los partidos disputados durante el fin de semana serán actualizados el <strong>lunes</strong>.</div>
+    <button class="update-notice-head" type="button" onclick="toggleUpdateNotice()">
+      <span class="update-notice-title">📢 Resultados Oficiales</span>
+      <span class="update-notice-chev" id="update-notice-chev">▾</span>
+    </button>
+    <div class="update-notice-text" id="update-notice-text" style="display:none;">Los resultados y puntajes del bolão se actualizarán a partir de las <strong>11:00 h del día siguiente</strong> a cada partido. Los partidos disputados durante el fin de semana serán actualizados el <strong>lunes</strong>.</div>
   </div>
 </div>
 
@@ -5493,7 +5504,7 @@ function renderMatches(filter){
   });
 
   if(Object.keys(groups).length===0){
-    container.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--sub);font-size:14px;font-weight:600;">Nenhum resultado encontrado</div>';
+    container.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--sub);font-size:14px;font-weight:600;">No se encontraron partidos</div>';
     return;
   }
 
@@ -6444,7 +6455,7 @@ function showAdminArea(){
   const area = document.getElementById('admin-area');
   if(login) login.style.display='none';
   if(area) area.style.display='block';
-  renderAdminResults(currentAdminFilter);
+  renderAdminResults(currentAdminFilter, true);
 }
 function filterAdminResults(f, btn){
   currentAdminFilter = f;
@@ -6452,17 +6463,24 @@ function filterAdminResults(f, btn){
   if(btn) btn.classList.add('active');
   renderAdminResults(f);
 }
-function renderAdminResults(filter='all'){
+function renderAdminResults(filter='all', autoJump=false){
   if(!adminUnlocked) return;
   const results = loadRealResults();
   const container = document.getElementById('admin-results-list');
   if(!container) return;
   container.innerHTML='';
-  MATCHES.forEach(m=>{
+  // Orden cronológico: por fecha y horario.
+  const sorted = MATCHES.slice().sort((a,b)=>getMatchDateTime(a)-getMatchDateTime(b));
+  const now = new Date();
+  let jumpId = null;
+  sorted.forEach(m=>{
     const real = results[m.id];
     if(filter==='pending' && real) return;
     if(filter==='done' && !real) return;
+    // Próximo a cargar: el primer partido ya jugado y sin resultado.
+    if(jumpId===null && !real && getMatchDateTime(m) <= now) jumpId = m.id;
     const card=document.createElement('div');
+    card.id=`admin-card-${m.id}`;
     card.className=`admin-result-card ${real?'done':'pending'}`;
     card.innerHTML=`
       <div class="admin-result-top"><span>${m.date}</span><span>·</span><span>${m.time}</span><span>·</span><span>${m.phase}</span><span style="margin-left:auto;font-weight:800;color:${real?'var(--green)':'var(--pending)'}">${real?'Resultado cargado':'Sin resultado'}</span></div>
@@ -6480,7 +6498,20 @@ function renderAdminResults(filter='all'){
     container.appendChild(card);
   });
   if(!container.innerHTML){
-    container.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--sub);font-size:14px;font-weight:600;">Nenhum resultado encontrado</div>';
+    container.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--sub);font-size:14px;font-weight:600;">No se encontraron resultados</div>';
+  }
+  // Si no hay jugados pendientes, saltar al primer pendiente que se muestre.
+  if(autoJump && jumpId===null){
+    const firstPending = sorted.find(m=>!results[m.id] && (filter!=='done'));
+    if(firstPending && (filter!=='done')) jumpId = firstPending.id;
+  }
+  if(autoJump && jumpId!==null){
+    requestAnimationFrame(()=>{
+      const card = document.getElementById(`admin-card-${jumpId}`);
+      const inp = document.getElementById(`real-h-${jumpId}`);
+      if(card) card.scrollIntoView({block:'center', behavior:'smooth'});
+      if(inp) try{ inp.focus({preventScroll:true}); }catch(e){ inp.focus(); }
+    });
   }
 }
 async function saveRealResult(matchId){
@@ -6500,7 +6531,7 @@ async function saveRealResult(matchId){
     return;
   }
   saveRealResults(results);
-  renderAdminResults(currentAdminFilter);
+  renderAdminResults(currentAdminFilter, true);
   renderMatches(currentFilter);
   renderRanking();
   renderDecepcion();
@@ -6531,9 +6562,12 @@ function switchTab(tab, btn){
   document.getElementById('panel-'+tab).classList.add('active');
   if(btn) btn.classList.add('active');
   document.getElementById('nav-'+tab)?.classList.add('active');
-  // Ocultar el mini "Sistema de Puntuación" en la pestaña Ranking.
+  // Ocultar el mini "Sistema de Puntuación" en Ranking y Admin.
   const scoringWrap = document.getElementById('scoring-rules-wrap');
-  if(scoringWrap) scoringWrap.style.display = (tab === 'ranking') ? 'none' : '';
+  if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin') ? 'none' : '';
+  // Ocultar el aviso "Resultados Oficiales" en Admin.
+  const updateNotice = document.querySelector('.update-notice');
+  if(updateNotice) updateNotice.style.display = (tab === 'admin') ? 'none' : '';
   if(tab==='ranking'){
     renderRanking();
     requestAnimationFrame(()=>{ document.getElementById('my-rank-card')?.scrollIntoView({block:'center'}); });
@@ -6546,6 +6580,14 @@ function switchTab(tab, btn){
 }
 
 // ══ TOAST ══
+function toggleUpdateNotice(){
+  const t = document.getElementById('update-notice-text');
+  const c = document.getElementById('update-notice-chev');
+  if(!t) return;
+  const open = t.style.display === 'none';
+  t.style.display = open ? 'block' : 'none';
+  if(c) c.classList.toggle('open', open);
+}
 function showSaveBanner(msg){
   const b=document.getElementById('save-banner');
   b.textContent=msg;b.classList.add('show');
