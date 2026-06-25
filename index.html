@@ -127,10 +127,12 @@ body{
   background:none;border:none;padding:0;cursor:pointer;font-family:inherit;
 }
 .update-notice-title{
+  display:inline-flex;align-items:center;gap:7px;
   font-size:13px;
   font-weight:800;
   color:#92400E;
 }
+.update-notice-ico{width:16px;height:16px;color:#92400E;flex-shrink:0;}
 .update-notice-chev{
   font-size:13px;color:#92400E;transition:transform .2s;flex-shrink:0;
 }
@@ -565,8 +567,11 @@ body{
 .rank-card.top2{background:linear-gradient(180deg,#F6F7FA,#fff);border-color:#DEE1E7;}
 .rank-card.top3{background:linear-gradient(180deg,#FCF4EB,#fff);border-color:#EBD4BE;}
 .rank-search-wrap{max-width:680px;margin:0 auto 10px;padding:0 12px;}
-.rank-search{width:100%;padding:11px 16px;border:1px solid var(--border);border-radius:50px;font-family:inherit;font-size:14px;background:#fff;box-shadow:var(--shadow);outline:none;box-sizing:border-box;}
+.rank-search-box{position:relative;}
+.rank-search-ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--sub);pointer-events:none;}
+.rank-search{width:100%;padding:11px 16px 11px 42px;border:1px solid var(--border);border-radius:50px;font-family:inherit;font-size:14px;background:#fff;box-shadow:var(--shadow);outline:none;box-sizing:border-box;}
 .rank-search:focus{border-color:var(--green);}
+.rank-search:focus + .rank-search-ico,.rank-search-box:focus-within .rank-search-ico{color:var(--green);}
 .rank-avatar{
   width:40px;height:40px;border-radius:50%;
   background:linear-gradient(135deg,var(--red),var(--blue));
@@ -709,7 +714,7 @@ body{
 <div class="update-notice">
   <div class="update-notice-card">
     <button class="update-notice-head" type="button" onclick="toggleUpdateNotice()">
-      <span class="update-notice-title">📢 Resultados Oficiales</span>
+      <span class="update-notice-title"><svg class="update-notice-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>Resultados Oficiales</span>
       <span class="update-notice-chev" id="update-notice-chev">▾</span>
     </button>
     <div class="update-notice-text" id="update-notice-text" style="display:none;">Los resultados y puntajes del bolão se actualizarán a partir de las <strong>11:00 h del día siguiente</strong> a cada partido. Los partidos disputados durante el fin de semana serán actualizados el <strong>lunes</strong>.</div>
@@ -3490,7 +3495,10 @@ body{
   <!-- RANKING PANEL -->
   <div class="panel" id="panel-ranking">
     <div class="rank-search-wrap">
-      <input id="rank-search" class="rank-search" type="text" placeholder="🔍 Buscar un adversario..." oninput="filterRanking(this.value)">
+      <div class="rank-search-box">
+        <svg class="rank-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <input id="rank-search" class="rank-search" type="text" placeholder="Buscar un adversario..." oninput="filterRanking(this.value)">
+      </div>
     </div>
     <div class="ranking-list" id="ranking-list"><div class="rules-section"><h3>⏳ Esperando resultados reales</h3><p>El ranking ya está listo, pero los puntos aparecerán cuando el administrador cargue el resultado real de cada partido.</p></div><div class="rank-card" style="border: 2px solid var(--green);">
       <div class="rank-pos p1">🥇</div>
@@ -5549,7 +5557,7 @@ function renderMatches(filter){
       const x2badge = m.x2 ? '<span style="font-size:11px;font-weight:800;color:var(--gold);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);padding:2px 8px;border-radius:20px;margin-left:4px;">✕2</span>' : '';
       const locked = !canEditPick(m);
       const hasBreakdown = real && getMatchDateTime(m) <= new Date();
-      const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><circle cx="12" cy="8" r="1.5" fill="#fff"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="#fff"/></svg>' : '';
+      const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg>' : '';
       card.innerHTML = `
         <div class="mc-top">
           <span class="mc-time">${m.time}</span>
@@ -5847,7 +5855,7 @@ function renderRanking(){
     card.innerHTML=`
       <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${posCell}</div>
       <div class="rank-info">
-        <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="currentColor"/><circle cx="12" cy="8" r="1.5" fill="#fff"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="#fff"/></svg></div>
+        <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></div>
         <div class="rank-detail">${u.exact} exacto${u.exact===1?'':'s'}${formHtml}${deltaHtml}</div>
       </div>
       <div>
