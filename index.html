@@ -251,8 +251,8 @@ body{
   background:rgba(0,0,0,.05);border:1px solid var(--border);
 }
 .mc-status{
-  font-size:13px;font-weight:800;
-  padding:3px 11px;border-radius:20px;
+  font-size:12px;font-weight:800;
+  padding:3px 10px;border-radius:20px;
   display:flex;align-items:center;gap:4px;
 }
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
@@ -398,9 +398,10 @@ body{
 .ud-delta{font-size:12px;font-weight:900;}
 .ud-delta.up{color:var(--green);}.ud-delta.down{color:var(--red);}.ud-delta.same{color:var(--sub);}
 .ud-header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.ud-tabs{display:flex;align-items:center;gap:6px;}
-.ud-tab{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:15px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;flex-shrink:0;transition:background .2s;}
-.ud-tab.active{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);}
+.ud-tabs{display:flex;gap:6px;padding:10px 12px;background:var(--bg);border-bottom:1px solid var(--border);}
+.ud-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 6px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;transition:background .2s,color .2s,border-color .2s;}
+.ud-tab svg{width:17px;height:17px;flex-shrink:0;}
+.ud-tab.active{background:var(--green);color:#fff;border-color:var(--green);}
 /* Resumen */
 .ud-cmp{margin:12px 14px 0;border-radius:14px;padding:12px 14px;text-align:center;}
 .ud-cmp.up{background:rgba(0,155,84,.1);}.ud-cmp.down{background:rgba(206,17,38,.08);}.ud-cmp.same{background:var(--bg);}
@@ -4821,12 +4822,10 @@ body{
   <div class="modal">
     <div class="modal-header">
       <span class="modal-match-label" id="ud-title">Detalle</span>
-      <div class="ud-header-actions">
-        <div class="ud-tabs" id="ud-tabs"></div>
-        <button class="modal-close" onclick="closeUserDetail()">✕</button>
-      </div>
+      <button class="modal-close" onclick="closeUserDetail()">✕</button>
     </div>
     <div class="ud-hero" id="ud-hero"></div>
+    <div class="ud-tabs" id="ud-tabs"></div>
     <div class="ud-body" id="ud-body"></div>
   </div>
 </div>
@@ -5496,7 +5495,7 @@ function renderMatches(filter){
           <span class="mc-dot"></span>
           <span class="mc-phase">${m.phase}</span>
           ${x2badge}
-          <span class="mc-badge center">${real ? 'Resultado '+resultLabel(real) : '2026'}</span>
+          ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : ''}
           <div style="flex:1"></div>
           <span class="mc-status ${statusCls}">
             ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? '✓ Palpitado' : '⏳ Pendiente'))}
@@ -5882,10 +5881,15 @@ function renderUd(){
     <div class="ud-hero-sep"></div>
     <div class="ud-hero-stat"><span class="ud-hero-num">${s.aprov}%</span><span class="ud-hero-lbl">aprovecham.</span></div>`;
 
-  // ── tabs (iconos en el encabezado, al lado del nombre) ──
-  const tabs = [['resumen','📋','Resumen'],['partidos','⚽','Partidos'],['analisis','📊','Análisis']];
-  document.getElementById('ud-tabs').innerHTML = tabs.map(([k,icon,l]) =>
-    `<button class="ud-tab ${udState.tab===k?'active':''}" onclick="setUdTab('${k}')" aria-label="${l}" title="${l}">${icon}</button>`).join('');
+  // ── tabs (íconos monocromáticos + texto, en el cuerpo) ──
+  const UD_ICONS = {
+    resumen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>',
+    partidos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.2l4.3 3.1-1.65 5.1H9.35L7.7 10.3z" fill="currentColor" stroke="none"/></svg>',
+    analisis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/></svg>'
+  };
+  const tabs = [['resumen','Resumen'],['partidos','Partidos'],['analisis','Análisis']];
+  document.getElementById('ud-tabs').innerHTML = tabs.map(([k,l]) =>
+    `<button class="ud-tab ${udState.tab===k?'active':''}" onclick="setUdTab('${k}')" aria-label="${l}">${UD_ICONS[k]}<span>${l}</span></button>`).join('');
 
   // ── body ──
   const body = document.getElementById('ud-body');
@@ -6004,12 +6008,8 @@ function renderUdPartidos(){
     const pick = picks[m.id], r = real[m.id];
     const pts = calculatePickPoints(pick, r, m).pts;
     shownTotal += pts;
-    // Solo se muestra el palpite del jugador si soy yo, o si yo también palpité ese partido.
-    const iPicked = viewerPicks[m.id] !== undefined;
-    const canSeePick = stats.isMe || iPicked;
-    const pickStr = pick
-      ? (canSeePick ? `${pick.home}:${pick.away}` : 'Palpitó')
-      : 'Sin palpite';
+    // El detalle solo muestra partidos YA jugados, así que siempre se ve el palpite.
+    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
     rows += `
