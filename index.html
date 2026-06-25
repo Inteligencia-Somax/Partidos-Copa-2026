@@ -671,7 +671,7 @@ body{
       <div class="rule-item"><span class="rule-pts">15</span><span class="rule-label">Ganador + diferencia de goles</span></div>
       <div class="rule-item"><span class="rule-pts">12</span><span class="rule-label">Ganador + goles del perdedor</span></div>
       <div class="rule-item"><span class="rule-pts">7</span><span class="rule-label">Solo ganador correcto</span></div>
-      <div class="rule-item"><span class="rule-pts">0</span><span class="rule-label">Palpite errado</span></div>
+      <div class="rule-item"><span class="rule-pts">0</span><span class="rule-label">Palpite incorrecto</span></div>
     </div>
   </div>
 </div>
@@ -711,7 +711,7 @@ body{
     <button class="tab" id="tab-ranking" onclick="switchTab('ranking',this)">
       Ranking <span class="tab-count" id="cnt-rank">1</span>
     </button>
-    <button class="tab" id="tab-rules" onclick="switchTab('rules',this)">Regras</button>
+    <button class="tab" id="tab-rules" onclick="switchTab('rules',this)">Reglas</button>
     <button class="tab" id="tab-admin" onclick="switchTab('admin',this)">Admin</button>
   </div>
 
@@ -3433,7 +3433,7 @@ body{
 
   <!-- RANKING PANEL -->
   <div class="panel" id="panel-ranking">
-    <div class="ranking-list" id="ranking-list"><div class="rules-section"><h3>⏳ Aguardando resultados reales</h3><p>El ranking ya está listo, pero los puntos aparecerán cuando el administrador cargue el resultado real de cada partido.</p></div><div class="rank-card" style="border: 2px solid var(--green);">
+    <div class="ranking-list" id="ranking-list"><div class="rules-section"><h3>⏳ Esperando resultados reales</h3><p>El ranking ya está listo, pero los puntos aparecerán cuando el administrador cargue el resultado real de cada partido.</p></div><div class="rank-card" style="border: 2px solid var(--green);">
       <div class="rank-pos p1">🥇</div>
       <div class="rank-info">
         <div class="rank-name" style="color:var(--green);">angelica <span style="font-size:11px;color:var(--green);">(Vos)</span></div>
@@ -3469,14 +3469,14 @@ body{
       <p>El bolão es de uso exclusivo para colaboradores de Somax Agro S.A. Cada participante debe registrarse con su cuenta y será responsable por los palpites cargados en su usuario.</p>
     </div>
     <div class="rules-section">
-      <h3>🏆 Pontuação</h3>
+      <h3>🏆 Puntuación</h3>
       <div class="score-table">
         <div class="score-row highlight"><span class="score-desc">Marcador exacto</span><span class="score-pts">25 pts</span></div>
         <div class="score-row"><span class="score-desc">Ganador + goles del ganador</span><span class="score-pts">18 pts</span></div>
         <div class="score-row"><span class="score-desc">Ganador + diferencia de goles</span><span class="score-pts">15 pts</span></div>
         <div class="score-row"><span class="score-desc">Ganador + goles del perdedor</span><span class="score-pts">12 pts</span></div>
         <div class="score-row"><span class="score-desc">Solo ganador correcto</span><span class="score-pts">7 pts</span></div>
-        <div class="score-row"><span class="score-desc">Palpite errado</span><span class="score-pts">0 pts</span></div>
+        <div class="score-row"><span class="score-desc">Palpite incorrecto</span><span class="score-pts">0 pts</span></div>
       </div>
     </div>
     <div class="rules-section">
@@ -4811,9 +4811,9 @@ body{
       <button class="np-btn" onclick="numpadPress(7)">7</button>
       <button class="np-btn" onclick="numpadPress(8)">8</button>
       <button class="np-btn" onclick="numpadPress(9)">9</button>
-      <button class="np-btn np-clear" onclick="numpadClear()">Limpar</button>
+      <button class="np-btn np-clear" onclick="numpadClear()">Limpiar</button>
       <button class="np-btn" onclick="numpadPress(0)">0</button>
-      <button class="np-btn np-save" onclick="savePick()">Salvar</button>
+      <button class="np-btn np-save" onclick="savePick()">Guardar</button>
     </div>
   </div>
 </div>
@@ -4858,7 +4858,7 @@ body{
     <span class="nav-icon">📊</span>Ranking
   </button>
   <button class="nav-btn" id="nav-rules" onclick="switchTab('rules',document.getElementById('tab-rules'))">
-    <span class="nav-icon">📋</span>Regras
+    <span class="nav-icon">📋</span>Reglas
   </button>
   <button class="nav-btn" id="nav-decepcion" style="display:none;" onclick="switchTab('decepcion',this)">
     <span class="nav-icon">🥴</span>Decepción
@@ -5738,7 +5738,7 @@ function renderRanking(){
   if(finishedCount===0){
     const info=document.createElement('div');
     info.className='rules-section';
-    info.innerHTML='<h3>⏳ Aguardando resultados reales</h3><p>El ranking ya está listo, pero los puntos aparecerán cuando el administrador cargue el resultado real de cada partido.</p>';
+    info.innerHTML='<h3>⏳ Esperando resultados reales</h3><p>El ranking ya está listo, pero los puntos aparecerán cuando el administrador cargue el resultado real de cada partido.</p>';
     container.appendChild(info);
   }
   users.forEach((u,i)=>{
@@ -6010,10 +6010,7 @@ function renderUdPartidos(){
     const pick = picks[m.id], r = real[m.id];
     const pts = calculatePickPoints(pick, r, m).pts;
     shownTotal += pts;
-    // El palpite solo se muestra en tu propio perfil.
-    const pickLine = stats.isMe
-      ? `<span class="ud-pick">Palpite: ${pick ? `${pick.home}:${pick.away}` : 'Sin palpite'}</span>`
-      : '';
+    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
     rows += `
@@ -6022,7 +6019,7 @@ function renderUdPartidos(){
           <div class="ud-teams">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
           <div class="ud-meta">${dm}</div>
         </div>
-        <div class="ud-scores"><span class="ud-real">Resultado: ${r.home}:${r.away}</span>${pickLine}</div>
+        <div class="ud-scores"><span class="ud-real">Resultado: ${r.home}:${r.away}</span><span class="ud-pick">Palpite: ${pickStr}</span></div>
         <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
       </div>`;
   });
