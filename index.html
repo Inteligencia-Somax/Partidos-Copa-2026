@@ -3639,6 +3639,7 @@ body{
         <button class="filter-chip" onclick="filterAdminResults('pending',this)">Sin resultado</button>
         <button class="filter-chip" onclick="filterAdminResults('done',this)">Con resultado</button>
       </div>
+      <div id="admin-thirds-panel" class="admin-thirds-panel"></div>
       <div id="admin-results-list"><div class="admin-result-card pending">
       <div class="admin-result-top"><span>Jue, 11 de Jun.</span><span>·</span><span>16:00</span><span>·</span><span>Grupo A</span><span style="margin-left:auto;font-weight:800;color:var(--pending)">Sin resultado</span></div>
       <div class="admin-result-teams">
@@ -4982,6 +4983,13 @@ body{
       <button class="np-btn" onclick="adminNumpadPress(0)">0</button>
       <button class="np-btn np-save" onclick="adminSaveResult()">Guardar</button>
     </div>
+    <div class="admin-adv" id="admin-adv" style="display:none">
+      <div class="admin-adv-title">🏅 ¿Quién avanzó? <span>(si se definió por penales)</span></div>
+      <div class="admin-adv-btns">
+        <button class="admin-adv-btn" id="admin-adv-home" onclick="setAdminAdv('home')"></button>
+        <button class="admin-adv-btn" id="admin-adv-away" onclick="setAdminAdv('away')"></button>
+      </div>
+    </div>
     <button class="admin-remove-link" id="admin-remove-link" onclick="adminRemoveResult()" style="display:none">Quitar resultado</button>
   </div>
 </div>
@@ -5073,6 +5081,26 @@ body{
   display:block;width:100%;margin-top:10px;background:none;border:none;
   color:var(--red);font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;padding:8px;
 }
+/* Panel de terceros (Admin) */
+.admin-thirds-panel{margin-bottom:14px;}
+.admin-thirds-panel:empty{display:none;}
+.admin-thirds-panel .thirds-head{font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.admin-thirds-panel .thirds-note{font-size:12.5px;font-weight:600;color:var(--sub);margin:8px 0 10px;line-height:1.4;}
+.admin-thirds-panel .thirds-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.third-chip{font-size:12px;font-weight:700;color:var(--green2);background:#E8F5EE;border:1px solid var(--green);border-radius:20px;padding:4px 10px;}
+.third-row{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.third-slot{font-size:13px;font-weight:700;color:var(--text);}
+.third-select{font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:var(--text);background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;min-width:120px;}
+.thirds-save{width:100%;margin-top:12px;background:var(--green);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Inter',sans-serif;font-size:14px;font-weight:800;cursor:pointer;}
+.thirds-save:active{background:var(--green2);}
+/* Selector "¿Quién avanzó?" en el modal admin */
+.admin-adv{margin-top:14px;border:1.5px solid var(--border);border-radius:14px;padding:12px;transition:border-color .2s;}
+.admin-adv-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px;text-align:center;}
+.admin-adv-title span{font-weight:600;color:var(--sub);font-size:11.5px;}
+.admin-adv-btns{display:flex;gap:8px;}
+.admin-adv-btn{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;font-family:'Inter',sans-serif;font-size:14px;font-weight:800;color:var(--text);cursor:pointer;transition:all .15s;}
+.admin-adv-btn:active{transform:scale(.97);}
+.admin-adv-btn.sel{background:#E8F5EE;border-color:var(--green);color:var(--green2);box-shadow:0 0 0 3px rgba(0,155,84,.15);}
 .admin-export-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
 .admin-download-btn,.admin-copy-btn{border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
@@ -5554,9 +5582,14 @@ async function loadFirebaseState(){
     const results = {};
     resSnap.forEach(doc=>{
       const d = doc.data();
-      results[doc.id] = {home:Number(d.golesLocal), away:Number(d.golesVisitante), savedAt:d.savedAt || ''};
+      results[doc.id] = {home:Number(d.golesLocal), away:Number(d.golesVisitante), savedAt:d.savedAt || '', adv:d.avanza || null};
     });
     saveRealResults(results);
+
+    try{
+      const cfg = await fbDb.collection('config').doc('terceros').get();
+      if(cfg.exists && cfg.data().asignacion) saveThirdAssign(cfg.data().asignacion);
+    }catch(e){ /* sin asignación aún */ }
   }catch(err){
     console.warn('No fue posible sincronizar Firebase:', err);
     showSaveBanner('⚠ Revisá las reglas de Firebase');
@@ -5581,12 +5614,13 @@ async function savePickToFirebase(match, pick){
   }, {merge:true});
 }
 
-async function saveResultToFirebase(matchId, h, a){
+async function saveResultToFirebase(matchId, h, a, adv){
   if(currentUserRole !== 'admin') throw new Error('Solo administradores');
   await fbDb.collection('resultados').doc(String(matchId)).set({
     partidoId: String(matchId),
     golesLocal: Number(h),
     golesVisitante: Number(a),
+    avanza: adv || null,
     savedAt: new Date().toISOString(),
     savedBy: currentUserEmail
   }, {merge:true});
@@ -5623,9 +5657,170 @@ function filterMatches(f, btn){
 }
 
 // ══ RENDER MATCHES ══
+// ══ ENGINE DE RESOLUCIÓN DE EQUIPOS (clasificación de grupos + llaves) ══
+// Construye {grupo: {nombre: {name,flag,code}}} desde los partidos de fase de grupos.
+function buildTeamRegistry(){
+  const byGroup = {};
+  MATCHES.forEach(m=>{
+    if(!m.phase || m.phase.indexOf('Grupo ')!==0) return;
+    const g = m.phase.split(' ')[1];
+    byGroup[g] = byGroup[g] || {};
+    byGroup[g][m.home] = {name:m.home, flag:m.hf, code:m.hc};
+    byGroup[g][m.away] = {name:m.away, flag:m.af, code:m.ac};
+  });
+  return byGroup;
+}
+
+// Tabla de cada grupo a partir de los resultados reales cargados.
+// Orden: Pts, luego Dif. de gol, luego Goles a favor, luego código (desempate determinista).
+function computeStandings(real){
+  const byGroup = buildTeamRegistry();
+  const out = {};
+  Object.keys(byGroup).forEach(g=>{
+    const teams = {};
+    Object.values(byGroup[g]).forEach(t=>teams[t.name]={name:t.name,flag:t.flag,code:t.code,pts:0,gf:0,ga:0,gd:0,pj:0});
+    let played=0, total=0;
+    MATCHES.forEach(m=>{
+      if(m.phase!=='Grupo '+g) return;
+      total++;
+      const r = real[m.id];
+      if(!r || teams[m.home]===undefined || teams[m.away]===undefined) return;
+      played++;
+      const h=teams[m.home], a=teams[m.away];
+      h.gf+=r.home; h.ga+=r.away; a.gf+=r.away; a.ga+=r.home; h.pj++; a.pj++;
+      if(r.home>r.away) h.pts+=3;
+      else if(r.home<r.away) a.pts+=3;
+      else { h.pts++; a.pts++; }
+    });
+    Object.values(teams).forEach(t=>t.gd=t.gf-t.ga);
+    const table = Object.values(teams).sort((x,y)=> y.pts-x.pts || y.gd-x.gd || y.gf-x.gf || (x.code||'').localeCompare(y.code||''));
+    out[g] = { complete: total>0 && played===total, played, total, table };
+  });
+  return out;
+}
+
+// Resuelve una etiqueta de equipo ("1º Gr. A", "2º Gr. B", "G. P74", "Perd. P101") a {name,flag,code} o null.
+function resolveTeamLabel(label, real, standings, depth){
+  depth = depth || 0;
+  if(depth>12 || !label) return null;
+  label = (''+label).trim();
+  let m;
+  if(m=label.match(/^1º Gr\. ([A-L])$/)){ const s=standings[m[1]]; return (s&&s.complete)? s.table[0] : null; }
+  if(m=label.match(/^2º Gr\. ([A-L])$/)){ const s=standings[m[1]]; return (s&&s.complete)? s.table[1] : null; }
+  if(/^3º Gr\./.test(label)){ return resolveThirdSlot(label, real, standings); } // Fase B (Anexo C FIFA)
+  if((m=label.match(/^G\. P(\d+)$/)) || (m=label.match(/^Perd\. P(\d+)$/))){
+    const pid=+m[1], match=MATCHES.find(x=>x.id===pid), r=real[pid];
+    if(!match || !r) return null;
+    const hT=resolveTeamLabel(match.home, real, standings, depth+1);
+    const aT=resolveTeamLabel(match.away, real, standings, depth+1);
+    if(!hT || !aT) return null;
+    let homeWon;
+    if(r.home===r.away){
+      if(!r.adv) return null; // empate sin "quién avanzó" cargado
+      homeWon = r.adv==='home';
+    } else {
+      homeWon = r.home>r.away;
+    }
+    const wantWinner = label.indexOf('G.')===0;
+    return (homeWon===wantWinner) ? hT : aT;
+  }
+  return null;
+}
+
+// Fase B (opción 2): el app rankea los 8 mejores terceros; el admin asigna cada uno a su llave.
+function loadThirdAssign(){ try{return JSON.parse(localStorage.getItem('somax_third_assign')||'{}');}catch{return {};} }
+function saveThirdAssign(a){ localStorage.setItem('somax_third_assign', JSON.stringify(a)); }
+async function saveThirdAssignToFirebase(a){
+  if(currentUserRole!=='admin') throw new Error('Solo administradores');
+  await fbDb.collection('config').doc('terceros').set({ asignacion:a, savedAt:new Date().toISOString(), savedBy:currentUserEmail });
+}
+
+// Rankea los 12 terceros (Pts, Dif, GF, código). Devuelve ranking + si los 12 grupos terminaron.
+function computeThirdRanking(standings){
+  const groups = Object.keys(standings);
+  const allComplete = groups.length===12 && groups.every(g=>standings[g].complete);
+  const thirds = [];
+  groups.forEach(g=>{ const s=standings[g]; if(s.complete && s.table[2]){ const t=s.table[2]; thirds.push({group:g, team:t, pts:t.pts, gd:t.gd, gf:t.gf, code:t.code}); } });
+  thirds.sort((a,b)=> b.pts-a.pts || b.gd-a.gd || b.gf-a.gf || (a.code||'').localeCompare(b.code||''));
+  return { complete: allComplete, ranking: thirds, qualifiedGroups: thirds.slice(0,8).map(t=>t.group) };
+}
+
+// Resuelve "3º Gr. X/Y/Z" usando la asignación que cargó el admin.
+function resolveThirdSlot(label, real, standings){
+  const assign = loadThirdAssign();
+  const match = MATCHES.find(x=>x.phase==='1/16' && x.away===label);
+  if(!match) return null;
+  const g = assign[match.id];
+  if(!g) return null;
+  const s = standings[g];
+  if(!s || !s.complete || !s.table[2]) return null;
+  return s.table[2];
+}
+
+// Panel del Admin para asignar terceros.
+function renderThirdsPanel(){
+  const el = document.getElementById('admin-thirds-panel');
+  if(!el) return;
+  const real = loadRealResults();
+  const standings = computeStandings(real);
+  const tr = computeThirdRanking(standings);
+  if(!tr.complete){
+    const done = Object.keys(standings).filter(g=>standings[g].complete).length;
+    el.innerHTML = `<div class="thirds-head">🥉 Mejores terceros</div>
+      <div class="thirds-note">Disponible cuando terminen los 12 grupos. Completos: <b>${done}/12</b>.</div>`;
+    return;
+  }
+  const assign = loadThirdAssign();
+  const qualified = tr.ranking.slice(0,8);
+  const qSet = qualified.map(t=>t.group);
+  const chips = qualified.map((t,i)=>`<span class="third-chip">${i+1}º · 3º ${t.group} ${t.team.flag} ${t.team.code} <b>${t.pts}pts ${t.gd>=0?'+':''}${t.gd}</b></span>`).join('');
+  const slots = MATCHES.filter(m=>m.phase==='1/16' && /^3º Gr\./.test(m.away));
+  const rows = slots.map(m=>{
+    const letters = m.away.replace('3º Gr. ','').split('/');
+    const opts = letters.filter(L=>qSet.includes(L));
+    const cur = assign[m.id]||'';
+    const sel = `<select class="third-select" data-mid="${m.id}">
+      <option value="">— elegir —</option>
+      ${opts.map(L=>{const t=standings[L].table[2];return `<option value="${L}" ${cur===L?'selected':''}>3º ${L} · ${t.flag} ${t.code}</option>`;}).join('')}
+    </select>`;
+    return `<div class="third-row"><span class="third-slot">P${m.id}: ${m.home} vs 3º ${letters.join('/')}</span>${sel}</div>`;
+  }).join('');
+  el.innerHTML = `<div class="thirds-head">🥉 Mejores terceros clasificados</div>
+    <div class="thirds-chips">${chips}</div>
+    <div class="thirds-note">Asigná cada tercero a su llave (mirá el bracket oficial de FIFA). Cada grupo se usa una sola vez:</div>
+    ${rows}
+    <button class="thirds-save" onclick="saveThirdsAssignment()">Guardar asignación de terceros</button>`;
+}
+
+async function saveThirdsAssignment(){
+  const assign={};
+  document.querySelectorAll('#admin-thirds-panel .third-select').forEach(s=>{ const v=s.value; if(v) assign[s.getAttribute('data-mid')]=v; });
+  const used={}; let dup=false;
+  Object.values(assign).forEach(g=>{ if(used[g]) dup=true; used[g]=1; });
+  if(dup){ showSaveBanner('⚠ Un mismo tercero está asignado a dos llaves'); return; }
+  saveThirdAssign(assign);
+  try{ await saveThirdAssignToFirebase(assign); }
+  catch(e){ console.error(e); showSaveBanner('Solo administradores pueden guardar la asignación'); return; }
+  renderThirdsPanel();
+  renderMatches(currentFilter);
+  renderRanking();
+  showSaveBanner('✅ Terceros asignados y bracket actualizado');
+}
+
+// Datos de visualización de un partido: equipos resueltos si se puede, si no la etiqueta original.
+function matchDisplay(m, real, standings){
+  const d = {hf:m.hf, home:m.home, hc:m.hc, af:m.af, away:m.away, ac:m.ac, hResolved:false, aResolved:false};
+  const hT = resolveTeamLabel(m.home, real, standings);
+  const aT = resolveTeamLabel(m.away, real, standings);
+  if(hT){ d.hf=hT.flag; d.home=hT.name; d.hc=hT.code; d.hResolved=true; }
+  if(aT){ d.af=aT.flag; d.away=aT.name; d.ac=aT.code; d.aResolved=true; }
+  return d;
+}
+
 function renderMatches(filter){
   const userPicks = loadUserPicks();
   const realResults = loadRealResults();
+  const standings = computeStandings(realResults);
   const container = document.getElementById('matches-list');
   container.innerHTML = '';
 
@@ -5670,6 +5865,7 @@ function renderMatches(filter){
       const locked = !canEditPick(m);
       const hasBreakdown = locked; // cerrado o finalizado → se pueden ver los palpites de todos
       const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg>' : '';
+      const disp = matchDisplay(m, realResults, standings);
       card.innerHTML = `
         <div class="mc-top">
           <span class="mc-time">${m.time}</span>
@@ -5684,8 +5880,8 @@ function renderMatches(filter){
         </div>
         <div class="mc-teams">
           <div class="mc-team">
-            <span class="mc-flag">${m.hf}</span>
-            <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${m.home}</span>
+            <span class="mc-flag">${disp.hf}</span>
+            <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${disp.home}</span>
           </div>
           <div class="mc-score-wrap">
             <div class="mc-score ${scoreCls}">${hScore}</div>
@@ -5693,8 +5889,8 @@ function renderMatches(filter){
             <div class="mc-score ${scoreCls}">${aScore}</div>
           </div>
           <div class="mc-team right">
-            <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${m.away}</span>
-            <span class="mc-flag">${m.af}</span>
+            <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${disp.away}</span>
+            <span class="mc-flag">${disp.af}</span>
           </div>
         </div>`;
       card.addEventListener('click', ()=>{
@@ -5724,15 +5920,16 @@ function openModal(matchId){
 
   const userPicks = loadUserPicks();
   const pick = userPicks[matchId] || {};
+  const disp = matchDisplay(m, loadRealResults(), computeStandings(loadRealResults()));
 
-  document.getElementById('modal-match-label').textContent = `${m.home} vs ${m.away}`;
+  document.getElementById('modal-match-label').textContent = `${disp.home} vs ${disp.away}`;
   document.getElementById('modal-time').textContent = `${m.date.replace('.,','.')} · ${m.time}hs`;
-  document.getElementById('modal-home-flag').textContent = m.hf;
-  document.getElementById('modal-home-code').textContent = m.hc||m.home.substring(0,3).toUpperCase();
-  document.getElementById('modal-away-flag').textContent = m.af;
-  document.getElementById('modal-away-code').textContent = m.ac||m.away.substring(0,3).toUpperCase();
-  document.getElementById('tab-home-name').textContent = m.home;
-  document.getElementById('tab-away-name').textContent = m.away;
+  document.getElementById('modal-home-flag').textContent = disp.hf;
+  document.getElementById('modal-home-code').textContent = disp.hc||disp.home.substring(0,3).toUpperCase();
+  document.getElementById('modal-away-flag').textContent = disp.af;
+  document.getElementById('modal-away-code').textContent = disp.ac||disp.away.substring(0,3).toUpperCase();
+  document.getElementById('tab-home-name').textContent = disp.home;
+  document.getElementById('tab-away-name').textContent = disp.away;
 
   document.getElementById('modal-score-home').textContent = pick.home !== undefined ? pick.home : '–';
   document.getElementById('modal-score-away').textContent = pick.away !== undefined ? pick.away : '–';
@@ -5796,12 +5993,13 @@ function savePick(){
   // Paso de confirmación: el palpite no se puede editar luego de guardar.
   const mcf = document.getElementById('mcf-score');
   if(mcf && match){
-    const hc = match.hc || match.home.substring(0,3).toUpperCase();
-    const ac = match.ac || match.away.substring(0,3).toUpperCase();
+    const disp = matchDisplay(match, loadRealResults(), computeStandings(loadRealResults()));
+    const hc = disp.hc || disp.home.substring(0,3).toUpperCase();
+    const ac = disp.ac || disp.away.substring(0,3).toUpperCase();
     mcf.innerHTML =
-      `<span class="mcf-flag">${match.hf}</span><span class="mcf-code">${hc}</span>`+
+      `<span class="mcf-flag">${disp.hf}</span><span class="mcf-code">${hc}</span>`+
       `<span class="mcf-num">${parseInt(hVal)}</span><span class="mcf-colon">:</span><span class="mcf-num">${parseInt(aVal)}</span>`+
-      `<span class="mcf-code">${ac}</span><span class="mcf-flag">${match.af}</span>`;
+      `<span class="mcf-code">${ac}</span><span class="mcf-flag">${disp.af}</span>`;
   }
   document.getElementById('modal-numpad').style.display = 'none';
   const tt = document.querySelector('#modal-box .modal-team-tabs'); if(tt) tt.style.display = 'none';
@@ -6473,9 +6671,10 @@ function renderMatchBreakdown(){
   const total = parts.length;
   const mult = m.x2 ? 2 : 1;
 
+  const _disp = matchDisplay(m, loadRealResults(), computeStandings(loadRealResults()));
   const nameLine = pending
-    ? `${m.hf} ${m.home} × ${m.away} ${m.af}`
-    : `${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}`;
+    ? `${_disp.hf} ${_disp.home} × ${_disp.away} ${_disp.af}`
+    : `${_disp.hf} ${_disp.home} ${real.home}:${real.away} ${_disp.away} ${_disp.af}`;
   document.getElementById('mb-summary').innerHTML = `
     <div>
       <div class="ud-summary-name">${nameLine}</div>
@@ -6703,12 +6902,14 @@ function filterAdminResults(f, btn){
 }
 function renderAdminResults(filter='all', autoJump=false){
   if(!adminUnlocked) return;
+  renderThirdsPanel();
   const results = loadRealResults();
   const container = document.getElementById('admin-results-list');
   if(!container) return;
   container.innerHTML='';
   // Orden cronológico: por fecha y horario.
   const sorted = MATCHES.slice().sort((a,b)=>getMatchDateTime(a)-getMatchDateTime(b));
+  const standings = computeStandings(results);
   const now = new Date();
   let jumpId = null;
   sorted.forEach(m=>{
@@ -6717,17 +6918,18 @@ function renderAdminResults(filter='all', autoJump=false){
     if(filter==='done' && !real) return;
     // Próximo a cargar: el primer partido ya jugado y sin resultado.
     if(jumpId===null && !real && getMatchDateTime(m) <= now) jumpId = m.id;
+    const disp = matchDisplay(m, results, standings);
     const card=document.createElement('div');
     card.id=`admin-card-${m.id}`;
     card.className=`admin-result-card ${real?'done':'pending'}`;
     card.innerHTML=`
       <div class="admin-result-top"><span>${m.date}</span><span>·</span><span>${m.time}</span><span>·</span><span>${m.phase}</span><span style="margin-left:auto;font-weight:800;color:${real?'var(--green)':'var(--pending)'}">${real?'Resultado cargado':'Sin resultado'}</span></div>
       <div class="admin-result-teams" onclick="openAdminResult(${m.id})">
-        <div class="admin-result-name">${m.hf} ${m.home}</div>
+        <div class="admin-result-name">${disp.hf} ${disp.home}</div>
         <div class="real-score-box ${real?'filled':''}" id="real-h-${m.id}">${real?real.home:'–'}</div>
         <span style="font-weight:900;color:var(--sub);">:</span>
         <div class="real-score-box ${real?'filled':''}" id="real-a-${m.id}">${real?real.away:'–'}</div>
-        <div class="admin-result-name right">${m.away} ${m.af}</div>
+        <div class="admin-result-name right">${disp.away} ${disp.af}</div>
       </div>
       <div class="admin-hint">${real?'✓ Tocá para editar o quitar':'Tocá para cargar el resultado'}</div>`;
     container.appendChild(card);
@@ -6784,7 +6986,7 @@ function clearRealResult(matchId){
 }
 
 // ══ ADMIN: carga de resultado con el mismo teclado que Partidas ══
-let adminActiveMatchId = null, adminActiveTeam = 'home';
+let adminActiveMatchId = null, adminActiveTeam = 'home', adminAdvChoice = null, adminIsKO = false;
 
 function openAdminResult(matchId){
   const m = MATCHES.find(x=>x.id===matchId);
@@ -6792,20 +6994,41 @@ function openAdminResult(matchId){
   adminActiveMatchId = matchId;
   adminActiveTeam = 'home';
   const real = loadRealResults()[matchId];
-  document.getElementById('admin-modal-label').textContent = `${m.home} vs ${m.away}`;
+  adminAdvChoice = real && real.adv ? real.adv : null;
+  adminIsKO = !!m.phase && m.phase.indexOf('Grupo ')!==0; // eliminatoria
+  const disp = matchDisplay(m, loadRealResults(), computeStandings(loadRealResults()));
+  document.getElementById('admin-modal-label').textContent = `${disp.home} vs ${disp.away}`;
   document.getElementById('admin-modal-time').textContent = `${m.date.replace('.,','.')} · ${m.time}hs · ${m.phase}`;
-  document.getElementById('admin-home-flag').textContent = m.hf;
-  document.getElementById('admin-home-code').textContent = m.hc || m.home.substring(0,3).toUpperCase();
-  document.getElementById('admin-away-flag').textContent = m.af;
-  document.getElementById('admin-away-code').textContent = m.ac || m.away.substring(0,3).toUpperCase();
-  document.getElementById('admin-tab-home-name').textContent = m.home;
-  document.getElementById('admin-tab-away-name').textContent = m.away;
+  document.getElementById('admin-home-flag').textContent = disp.hf;
+  document.getElementById('admin-home-code').textContent = disp.hc || disp.home.substring(0,3).toUpperCase();
+  document.getElementById('admin-away-flag').textContent = disp.af;
+  document.getElementById('admin-away-code').textContent = disp.ac || disp.away.substring(0,3).toUpperCase();
+  document.getElementById('admin-tab-home-name').textContent = disp.home;
+  document.getElementById('admin-tab-away-name').textContent = disp.away;
   document.getElementById('admin-score-home').textContent = real ? real.home : '–';
   document.getElementById('admin-score-away').textContent = real ? real.away : '–';
   document.getElementById('admin-remove-link').style.display = real ? '' : 'none';
+  // Selector "¿Quién avanzó?" solo para eliminatorias
+  const advBox = document.getElementById('admin-adv');
+  if(adminIsKO){
+    document.getElementById('admin-adv-home').textContent = `${disp.hf} ${disp.hc||disp.home}`;
+    document.getElementById('admin-adv-away').textContent = `${disp.af} ${disp.ac||disp.away}`;
+    advBox.style.display = '';
+    renderAdminAdv();
+  } else {
+    advBox.style.display = 'none';
+  }
   setAdminTeam('home');
   document.getElementById('admin-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+}
+
+function setAdminAdv(side){ adminAdvChoice = side; renderAdminAdv(); }
+function renderAdminAdv(){
+  const h=document.getElementById('admin-adv-home'), a=document.getElementById('admin-adv-away');
+  if(!h||!a) return;
+  h.classList.toggle('sel', adminAdvChoice==='home');
+  a.classList.toggle('sel', adminAdvChoice==='away');
 }
 
 function setAdminTeam(side){
@@ -6843,10 +7066,20 @@ async function adminSaveResult(){
     showSaveBanner('Cargá los goles de ambos equipos');
     return;
   }
+  const isDraw = parseInt(hVal,10)===parseInt(aVal,10);
+  if(adminIsKO && isDraw && !adminAdvChoice){
+    const advBox=document.getElementById('admin-adv');
+    advBox.style.borderColor='var(--red)';
+    setTimeout(()=>{advBox.style.borderColor='';},1500);
+    showSaveBanner('Empate: elegí quién avanzó por penales');
+    return;
+  }
   const results = loadRealResults();
-  results[adminActiveMatchId] = { home:parseInt(hVal,10), away:parseInt(aVal,10), savedAt:new Date().toISOString() };
+  const entry = { home:parseInt(hVal,10), away:parseInt(aVal,10), savedAt:new Date().toISOString() };
+  if(adminIsKO && adminAdvChoice) entry.adv = adminAdvChoice; // quién avanzó (relevante en empates)
+  results[adminActiveMatchId] = entry;
   try{
-    await saveResultToFirebase(adminActiveMatchId, hVal, aVal);
+    await saveResultToFirebase(adminActiveMatchId, hVal, aVal, entry.adv || null);
   }catch(err){
     console.error(err);
     showSaveBanner('Solo administradores pueden guardar resultados');
@@ -6872,6 +7105,8 @@ function closeAdminResult(){
   document.getElementById('admin-modal').style.display = 'none';
   document.body.style.overflow = '';
   adminActiveMatchId = null;
+  adminAdvChoice = null; adminIsKO = false;
+  const advBox=document.getElementById('admin-adv'); if(advBox){ advBox.style.display='none'; advBox.style.borderColor=''; }
 }
 function closeAdminResultOutside(e){
   if(e.target===document.getElementById('admin-modal')) closeAdminResult();
