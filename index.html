@@ -419,7 +419,7 @@ body{
 .cmp-wins{text-align:center;font-size:12px;color:var(--sub);padding:0 12px 8px;}
 .cmp-wins b{color:var(--text);}
 .cmp-row{padding:10px 12px;border-bottom:1px solid var(--border);}
-.cmp-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:7px;}
+.cmp-head{display:flex;justify-content:center;align-items:baseline;gap:8px;margin-bottom:7px;}
 .cmp-teams{font-size:13px;font-weight:700;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .cmp-real{font-size:11px;font-weight:700;color:var(--text);white-space:nowrap;flex-shrink:0;}
 .cmp-real-date{color:var(--sub);font-weight:600;}
@@ -429,7 +429,7 @@ body{
 .cmp-who{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--sub);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cmp-pick{font-size:17px;font-weight:900;color:var(--text);line-height:1.1;}
 .cmp-pickline{display:flex;align-items:baseline;justify-content:center;gap:6px;}
-.cmp-pts{font-size:12px;font-weight:800;margin-top:1px;}
+.cmp-pts{font-size:17px;font-weight:900;margin-top:0;line-height:1.1;}
 .cmp-pts.win{color:var(--green);}
 .cmp-pts.zero{color:var(--red);}
 .ud-empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:14px;font-weight:600;line-height:1.5;}
@@ -6214,7 +6214,7 @@ function renderUdComparar(){
     </div>
     <div class="cmp-wins">Mejor palpite: vos <b>${myWins}</b> · ${shortName} <b>${theirWins}</b> · iguales <b>${ties}</b></div>` : '';
 
-  return nav + summary + sortToggle + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos.</div>');
+  return nav + summary + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos.</div>');
 }
 
 function toggleUdSort(){
