@@ -5896,8 +5896,14 @@ function openUserDetail(name){
     .filter(m => realResults[m.id] && getMatchDateTime(m) <= now)
     .sort((a, b) => getMatchDateTime(b) - getMatchDateTime(a));
 
+  // Partidos "revelados": ya bloqueados (no se puede palpitar) o con resultado cargado.
+  // El palpite se revela al cerrarse (30 min antes del inicio), aunque aún no haya resultado.
+  const revealedMatches = MATCHES
+    .filter(m => !canEditPick(m) || realResults[m.id])
+    .sort((a, b) => getMatchDateTime(b) - getMatchDateTime(a));
+
   const rounds = [];
-  playedMatches.forEach(m => { const r = getRoundLabel(m); if(!rounds.includes(r)) rounds.push(r); });
+  revealedMatches.forEach(m => { const r = getRoundLabel(m); if(!rounds.includes(r)) rounds.push(r); });
 
   // ── estadísticas ──
   const rankedNow = getRankedUsers();
@@ -5946,7 +5952,7 @@ function openUserDetail(name){
   });
 
   let posDelta = null;
-  const lastRound = rounds[0] || null;
+  const lastRound = playedMatches.length ? getRoundLabel(playedMatches[0]) : null;
   const lastDate = playedMatches.length ? playedMatches[0].date : null; // día más reciente disputado
   if(lastDate && viewedIdx >= 0){
     const before = getRankedUsersExcludingDate(lastDate);
@@ -5955,11 +5961,11 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:playedMatches, rounds, idx:rounds.length, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'partidos', sortAsc:false, compare:false, expanded:null,
+    name, matches:revealedMatches, rounds, idx:rounds.length, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'partidos', sortAsc:false, compare:false, expanded:null,
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
-      aprov, exact: typeCounts.exact, media, typeCounts,
+      aprov, exact: typeCounts.exact, media, typeCounts, played: playedMatches.length,
       bestDay, suFuerte, bestStreak, form, posDelta, lastRound, lastDate, best
     }
   };
@@ -6093,7 +6099,7 @@ function renderUdStreakDetail(){
 function renderUdDayDetail(date){
   const { matches, picks, real } = udState;
   const dm = date.replace(/^[^,]+,\s*/, '');
-  const dayMatches = matches.filter(m => m.date === date);
+  const dayMatches = matches.filter(m => m.date === date && real[m.id]);
   let dayTotal = 0;
   const rows = dayMatches.map(m => {
     const pick = picks[m.id], r = real[m.id];
@@ -6124,10 +6130,12 @@ function renderUdPartidos(){
   let shownTotal = 0, rows = '';
   shown.forEach(m => {
     const pick = picks[m.id], r = real[m.id];
+    const pending = !r;
     const pts = calculatePickPoints(pick, r, m).pts;
-    shownTotal += pts;
+    if(!pending) shownTotal += pts;
     const pickLabel = pick ? `Palpite: ${pick.home}:${pick.away}` : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
+    const ptsStr = pending ? '🔒' : `${pts > 0 ? '+' : ''}${pts}`;
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
     rows += `
       <div class="ud-row">
@@ -6135,7 +6143,7 @@ function renderUdPartidos(){
           <div class="ud-teams">${m.hf || ''} ${m.hc || m.home} ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} ${m.ac || m.away} ${m.af || ''}</div>
         </div>
         <div class="ud-scores"><span class="ud-pick">${pickLabel}</span></div>
-        <div class="ud-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
+        <div class="ud-pts ${pending ? 'zero' : cls}">${ptsStr}</div>
       </div>`;
   });
 
@@ -6164,28 +6172,36 @@ function renderUdComparar(){
   let rows = '', myTotal = 0, theirTotal = 0, myWins = 0, theirWins = 0, ties = 0;
   shown.forEach(m => {
     const pick = picks[m.id], r = real[m.id];
+    const pending = !r;
     const pts = calculatePickPoints(pick, r, m).pts;
     const myPick = myPicks[m.id] || myPicks[String(m.id)];
     const myPts = calculatePickPoints(myPick, r, m).pts;
-    myTotal += myPts; theirTotal += pts;
-    if(myPts > pts) myWins++; else if(pts > myPts) theirWins++; else ties++;
+    if(!pending){
+      myTotal += myPts; theirTotal += pts;
+      if(myPts > pts) myWins++; else if(pts > myPts) theirWins++; else ties++;
+    }
     const myStr = myPick ? `${myPick.home}:${myPick.away}` : '—';
     const thStr = pick ? `${pick.home}:${pick.away}` : '—';
-    const myWin = myPts > pts, thWin = pts > myPts;
+    const myWin = !pending && myPts > pts, thWin = !pending && pts > myPts;
+    const scoreCell = pending
+      ? `<span class="ud-sc-in">·</span> × <span class="ud-sc-in">·</span>`
+      : `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>`;
+    const myPtsStr = pending ? '🔒' : `${myPts>0?'+':''}${myPts}`;
+    const thPtsStr = pending ? '🔒' : `${pts>0?'+':''}${pts}`;
     const dm = m.date.replace(/^[^,]+,\s*/, '');
     rows += `
       <div class="cmp-row">
         <div class="cmp-head">
-          <span class="cmp-teams">${m.hf || ''} ${m.hc || m.home} <span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span> ${m.ac || m.away} ${m.af || ''}</span>
+          <span class="cmp-teams">${m.hf || ''} ${m.hc || m.home} ${scoreCell} ${m.ac || m.away} ${m.af || ''}</span>
         </div>
         <div class="cmp-grid">
           <div class="cmp-cell ${myWin?'win':''}">
             <div class="cmp-who">Vos</div>
-            <div class="cmp-pickline"><span class="cmp-pick">${myStr}</span><span class="cmp-pts ${myPts>0?'win':'zero'}">${myPts>0?'+':''}${myPts}</span></div>
+            <div class="cmp-pickline"><span class="cmp-pick">${myStr}</span><span class="cmp-pts ${pending?'zero':(myPts>0?'win':'zero')}">${myPtsStr}</span></div>
           </div>
           <div class="cmp-cell ${thWin?'win':''}">
             <div class="cmp-who">${shortName}</div>
-            <div class="cmp-pickline"><span class="cmp-pick">${thStr}</span><span class="cmp-pts ${pts>0?'win':'zero'}">${pts>0?'+':''}${pts}</span></div>
+            <div class="cmp-pickline"><span class="cmp-pick">${thStr}</span><span class="cmp-pts ${pending?'zero':(pts>0?'win':'zero')}">${thPtsStr}</span></div>
           </div>
         </div>
       </div>`;
@@ -6224,7 +6240,7 @@ function toggleUdSort(){
 
 function renderUdAnalisis(){
   const s = udState.stats;
-  const total = udState.matches.length;
+  const total = s.played;
   const TYPES = [
     ['exact','Marcador exacto','#009B54'],
     ['winnerGoals','Ganador + goles del ganador','#34A853'],
