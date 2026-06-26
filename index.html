@@ -5059,6 +5059,13 @@ body{
   box-shadow:var(--shadow);
 }
 .filter-row .filter-chip.active{background:var(--green);color:#fff;border-color:var(--green);}
+/* Filtro de marcadores (modal "Puntos por participante", partido cerrado) */
+.ud-tabs.mb-score-filter{gap:6px;padding:10px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.ud-tabs.mb-score-filter::-webkit-scrollbar{display:none;}
+.mb-sfchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;}
+.mb-sfchip .mb-sfn{font-size:11px;font-weight:700;opacity:.65;}
+.mb-sfchip.active{background:var(--green);color:#fff;border-color:var(--green);}
+.mb-sfchip.active .mb-sfn{opacity:.85;}
 .admin-result-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;box-shadow:var(--shadow);}
 .admin-result-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--sub);font-weight:600;}
 .admin-result-teams{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
@@ -6621,7 +6628,7 @@ const MB_TYPE_INFO = [
   { key:'winner',      label:'Solo ganador correcto',         pts:7,  color:'#F59E0B' },
   { key:'wrong',       label:'Resultado incorrecto',          pts:0,  color:'#CE1126' },
 ];
-let mbState = { m:null, real:null, parts:[], view:'list', expanded:null };
+let mbState = { m:null, real:null, parts:[], view:'list', expanded:null, filterScore:null };
 
 function openMatchBreakdown(matchId){
   const m = MATCHES.find(x => x.id === matchId);
@@ -6643,7 +6650,7 @@ function openMatchBreakdown(matchId){
     parts.push({ name:u.name, pos:idx + 1, pick, pts:calc.pts, type:calc.type });
   });
 
-  mbState = { m, real, pending, parts, view:'list', expanded:null };
+  mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null };
   document.getElementById('match-breakdown-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
   renderMatchBreakdown();
@@ -6661,6 +6668,10 @@ function toggleMbType(key){
 function setMbView(v){
   mbState.view = v;
   mbState.expanded = null;
+  renderMatchBreakdown();
+}
+function setMbScoreFilter(score){
+  mbState.filterScore = (mbState.filterScore === score) ? null : score;
   renderMatchBreakdown();
 }
 
@@ -6681,15 +6692,29 @@ function renderMatchBreakdown(){
       <div class="ud-summary-sub">${m.date} · ${m.phase} · ${total} participante(s)${pending ? ' · 🔒 esperando resultado' : ''}</div>
     </div>`;
 
-  // pestañas Lista / Análisis (como en el ranking)
-  const mbTabs = [
-    ['list','Lista','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>'],
-    ['stats','Análisis','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/></svg>']
-  ].filter(t => !pending || t[0] === 'list'); // sin resultado: solo Lista
+  // Partido cerrado (esperando resultado): chips con los 3 marcadores más palpitados + "Todos".
+  // Con resultado: pestañas Lista / Análisis (como en el ranking).
   const mbTabsEl = document.getElementById('mb-tabs');
-  if(mbTabsEl){
-    mbTabsEl.innerHTML = mbTabs.map(([k,l,ic]) =>
-      `<button class="ud-tab ${view===k?'active':''}" onclick="setMbView('${k}')">${ic}<span>${l}</span></button>`).join('');
+  if(pending){
+    const tally = {};
+    parts.forEach(p => { const k = `${p.pick.home}:${p.pick.away}`; tally[k] = (tally[k] || 0) + 1; });
+    const top3 = Object.entries(tally).sort((a,b) => b[1] - a[1]).slice(0, 3);
+    const fs = mbState.filterScore;
+    let chips = `<button class="mb-sfchip ${!fs ? 'active' : ''}" onclick="setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
+    chips += top3.map(([sc, n]) =>
+      `<button class="mb-sfchip ${fs === sc ? 'active' : ''}" onclick="setMbScoreFilter('${sc}')">${sc} <span class="mb-sfn">${n}</span></button>`
+    ).join('');
+    if(mbTabsEl){ mbTabsEl.className = 'ud-tabs mb-score-filter'; mbTabsEl.innerHTML = chips; }
+  } else {
+    const mbTabs = [
+      ['list','Lista','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>'],
+      ['stats','Análisis','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/></svg>']
+    ];
+    if(mbTabsEl){
+      mbTabsEl.className = 'ud-tabs';
+      mbTabsEl.innerHTML = mbTabs.map(([k,l,ic]) =>
+        `<button class="ud-tab ${view===k?'active':''}" onclick="setMbView('${k}')">${ic}<span>${l}</span></button>`).join('');
+    }
   }
 
   const body = document.getElementById('mb-body');
@@ -6699,7 +6724,15 @@ function renderMatchBreakdown(){
   }
 
   if(view === 'list'){
-    body.innerHTML = parts.map(p => `
+    let rows = parts;
+    if(pending && mbState.filterScore){
+      rows = parts.filter(p => `${p.pick.home}:${p.pick.away}` === mbState.filterScore);
+    }
+    if(!rows.length){
+      body.innerHTML = '<div class="ud-empty">Nadie palpitó este marcador.</div>';
+      return;
+    }
+    body.innerHTML = rows.map(p => `
       <div class="ud-row">
         <span class="mb-pos">${p.pos}º</span>
         <div class="ud-match">
