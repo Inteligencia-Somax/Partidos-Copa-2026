@@ -428,6 +428,7 @@ body{
 .cmp-cell.win{border-color:rgba(0,155,84,.4);background:rgba(0,155,84,.06);}
 .cmp-who{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--sub);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cmp-pick{font-size:17px;font-weight:900;color:var(--text);line-height:1.1;}
+.cmp-pickline{display:flex;align-items:baseline;justify-content:center;gap:6px;}
 .cmp-pts{font-size:12px;font-weight:800;margin-top:1px;}
 .cmp-pts.win{color:var(--green);}
 .cmp-pts.zero{color:var(--red);}
@@ -564,8 +565,8 @@ body{
 }
 .rank-pos{
   font-size:18px;font-weight:900;color:var(--text);
-  min-width:30px;text-align:center;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  min-width:46px;text-align:center;
+  display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;
 }
 .rank-pos-delta{font-size:11px;line-height:1;}
 .rank-pos-delta .rank-delta{font-weight:800;}
@@ -5954,7 +5955,7 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:playedMatches, rounds, idx:0, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'partidos', sortAsc:false, compare:false, expanded:null,
+    name, matches:playedMatches, rounds, idx:rounds.length, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'partidos', sortAsc:false, compare:false, expanded:null,
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
@@ -6180,13 +6181,11 @@ function renderUdComparar(){
         <div class="cmp-grid">
           <div class="cmp-cell ${myWin?'win':''}">
             <div class="cmp-who">Vos</div>
-            <div class="cmp-pick">${myStr}</div>
-            <div class="cmp-pts ${myPts>0?'win':'zero'}">${myPts>0?'+':''}${myPts}</div>
+            <div class="cmp-pickline"><span class="cmp-pick">${myStr}</span><span class="cmp-pts ${myPts>0?'win':'zero'}">${myPts>0?'+':''}${myPts}</span></div>
           </div>
           <div class="cmp-cell ${thWin?'win':''}">
             <div class="cmp-who">${shortName}</div>
-            <div class="cmp-pick">${thStr}</div>
-            <div class="cmp-pts ${pts>0?'win':'zero'}">${pts>0?'+':''}${pts}</div>
+            <div class="cmp-pickline"><span class="cmp-pick">${thStr}</span><span class="cmp-pts ${pts>0?'win':'zero'}">${pts>0?'+':''}${pts}</span></div>
           </div>
         </div>
       </div>`;
