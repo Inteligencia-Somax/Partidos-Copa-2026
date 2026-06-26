@@ -5565,7 +5565,7 @@ function renderMatches(filter){
       const scoreCls = (hasPick && real) ? (isZero ? 'zero' : 'filled') : '';
       const x2badge = m.x2 ? '<span style="font-size:11px;font-weight:800;color:var(--gold);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);padding:2px 8px;border-radius:20px;margin-left:4px;">✕2</span>' : '';
       const locked = !canEditPick(m);
-      const hasBreakdown = real && getMatchDateTime(m) <= new Date();
+      const hasBreakdown = locked; // cerrado o finalizado → se pueden ver los palpites de todos
       const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg>' : '';
       card.innerHTML = `
         <div class="mc-top">
@@ -5595,13 +5595,9 @@ function renderMatches(filter){
           </div>
         </div>`;
       card.addEventListener('click', ()=>{
-        if(real && getMatchDateTime(m) <= new Date()){ openMatchBreakdown(m.id); return; }
+        if(locked){ openMatchBreakdown(m.id); return; } // cerrado o finalizado: ver palpites de todos en orden de ranking
         if(hasPick){
           showSaveBanner('🔒 Ya palpitaste este partido, no se puede cambiar.');
-          return;
-        }
-        if(locked){
-          showSaveBanner('🔒 El partido ya cerró, no se puede palpitar.');
           return;
         }
         openModal(m.id);
@@ -6285,9 +6281,12 @@ let mbState = { m:null, real:null, parts:[], view:'list', expanded:null };
 
 function openMatchBreakdown(matchId){
   const m = MATCHES.find(x => x.id === matchId);
+  if(!m) return;
   const realResults = loadRealResults();
-  const real = realResults[matchId];
-  if(!m || !real) return;
+  const real = realResults[matchId] || null;
+  // Se abre con resultado (finalizado) o sin resultado si el partido ya está cerrado (palpites revelados).
+  if(!real && canEditPick(m)) return;
+  const pending = !real;
 
   const allPicks = loadAllPicks();
   const ranked = getRankedUsers(); // orden del ranking (mejor a peor)
@@ -6300,7 +6299,7 @@ function openMatchBreakdown(matchId){
     parts.push({ name:u.name, pos:idx + 1, pick, pts:calc.pts, type:calc.type });
   });
 
-  mbState = { m, real, parts, view:'list', expanded:null };
+  mbState = { m, real, pending, parts, view:'list', expanded:null };
   document.getElementById('match-breakdown-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
   renderMatchBreakdown();
@@ -6322,21 +6321,26 @@ function setMbView(v){
 }
 
 function renderMatchBreakdown(){
-  const { m, real, parts, view, expanded } = mbState;
+  const { m, real, pending, parts, expanded } = mbState;
+  let { view } = mbState;
+  if(pending) view = 'list'; // sin resultado no hay análisis de puntos
   const total = parts.length;
   const mult = m.x2 ? 2 : 1;
 
+  const nameLine = pending
+    ? `${m.hf} ${m.home} × ${m.away} ${m.af}`
+    : `${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}`;
   document.getElementById('mb-summary').innerHTML = `
     <div>
-      <div class="ud-summary-name">${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}</div>
-      <div class="ud-summary-sub">${m.date} · ${m.phase} · ${total} participante(s)</div>
+      <div class="ud-summary-name">${nameLine}</div>
+      <div class="ud-summary-sub">${m.date} · ${m.phase} · ${total} participante(s)${pending ? ' · 🔒 esperando resultado' : ''}</div>
     </div>`;
 
   // pestañas Lista / Análisis (como en el ranking)
   const mbTabs = [
     ['list','Lista','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>'],
     ['stats','Análisis','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="9"/><line x1="18" y1="20" x2="18" y2="4"/></svg>']
-  ];
+  ].filter(t => !pending || t[0] === 'list'); // sin resultado: solo Lista
   const mbTabsEl = document.getElementById('mb-tabs');
   if(mbTabsEl){
     mbTabsEl.innerHTML = mbTabs.map(([k,l,ic]) =>
@@ -6357,7 +6361,7 @@ function renderMatchBreakdown(){
           <div class="ud-teams">${p.name}</div>
           <div class="ud-meta">Palpite: ${p.pick.home}:${p.pick.away}</div>
         </div>
-        <div class="ud-pts ${p.pts > 0 ? 'win' : 'zero'}">${p.pts > 0 ? '+' : ''}${p.pts}</div>
+        <div class="ud-pts ${pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero')}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
       </div>`).join('');
     return;
   }
