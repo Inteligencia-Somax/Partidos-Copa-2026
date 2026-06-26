@@ -550,10 +550,48 @@ body{
 .np-btn:active{transform:scale(.94);background:#e0e0e5;}
 .np-btn.np-clear{font-size:13px;font-weight:700;color:var(--sub);}
 .np-btn.np-save{
-  background:var(--text);color:#fff;border-color:var(--text);
-  font-size:14px;font-weight:700;
+  background:var(--green);color:#fff;border-color:var(--green);
+  font-size:14px;font-weight:800;
 }
-.np-btn.np-save:active{background:#333;}
+.np-btn.np-save:active{background:var(--green2);border-color:var(--green2);}
+
+/* Confirmación de palpite (paso irreversible) */
+.modal-confirm{padding:4px 2px 2px;animation:cfFade .18s ease;}
+@keyframes cfFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.mcf-title{text-align:center;font-size:15px;font-weight:800;color:var(--text);margin:2px 0 12px;}
+.mcf-score{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:26px;font-weight:900;color:var(--text);
+  background:#E8F5EE;border:2px solid var(--green);border-radius:16px;
+  padding:16px 12px;margin-bottom:12px;
+}
+.mcf-score .mcf-num{
+  min-width:46px;text-align:center;color:var(--green);
+  font-size:34px;font-weight:900;line-height:1;
+}
+.mcf-score .mcf-flag{font-size:24px;}
+.mcf-score .mcf-code{font-size:15px;font-weight:800;color:var(--sub);}
+.mcf-score .mcf-colon{color:var(--sub);font-weight:900;}
+.mcf-warn{
+  text-align:center;font-size:13px;font-weight:600;color:#92400E;
+  background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);
+  border-radius:12px;padding:10px 12px;margin-bottom:14px;line-height:1.35;
+}
+.mcf-warn b{color:#92400E;}
+.mcf-actions{display:flex;gap:10px;}
+.mcf-btn{
+  flex:1;border-radius:14px;padding:15px 10px;font-family:'Inter',sans-serif;
+  font-size:15px;font-weight:800;cursor:pointer;transition:all .15s;border:1px solid var(--border);
+}
+.mcf-btn:active{transform:scale(.97);}
+.mcf-btn.mcf-back{background:var(--bg);color:var(--sub);}
+.mcf-btn.mcf-go{background:var(--green);color:#fff;border-color:var(--green);flex:1.4;}
+.mcf-btn.mcf-go:active{background:var(--green2);border-color:var(--green2);}
+.modal-num.confirming{
+  animation:cfPulse 1s ease infinite;
+  border-color:var(--green);background:#E8F5EE;color:var(--green);
+}
+@keyframes cfPulse{0%,100%{box-shadow:0 0 0 3px rgba(0,155,84,.15);}50%{box-shadow:0 0 0 7px rgba(0,155,84,.28);}}
 
 /* ══ RANKING PANEL ══ */
 .ranking-list{display:flex;flex-direction:column;gap:8px;}
@@ -4879,7 +4917,7 @@ body{
       <button class="modal-team-tab active" id="tab-home-team" onclick="setActiveTeam('home')"><span id="tab-home-name">México</span></button>
       <button class="modal-team-tab" id="tab-away-team" onclick="setActiveTeam('away')"><span id="tab-away-name">Sudáfrica</span></button>
     </div>
-    <div class="numpad">
+    <div class="numpad" id="modal-numpad">
       <button class="np-btn" onclick="numpadPress(1)">1</button>
       <button class="np-btn" onclick="numpadPress(2)">2</button>
       <button class="np-btn" onclick="numpadPress(3)">3</button>
@@ -4893,6 +4931,58 @@ body{
       <button class="np-btn" onclick="numpadPress(0)">0</button>
       <button class="np-btn np-save" onclick="savePick()">Guardar</button>
     </div>
+    <div class="modal-confirm" id="modal-confirm" style="display:none">
+      <div class="mcf-title">¿Confirmás tu palpite?</div>
+      <div class="mcf-score" id="mcf-score"></div>
+      <div class="mcf-warn">⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.</div>
+      <div class="mcf-actions">
+        <button class="mcf-btn mcf-back" onclick="cancelConfirmPick()">‹ Revisar</button>
+        <button class="mcf-btn mcf-go" onclick="commitPick()">Confirmar y guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN RESULT NUMPAD MODAL (cargar resultado real, mismo teclado que Partidas) -->
+<div class="modal-overlay" id="admin-modal" style="display:none" onclick="closeAdminResultOutside(event)">
+  <div class="modal" id="admin-modal-box">
+    <div class="modal-header">
+      <span class="modal-match-label" id="admin-modal-label">Resultado</span>
+      <button class="modal-close" onclick="closeAdminResult()">✕</button>
+    </div>
+    <div class="modal-time" id="admin-modal-time"></div>
+    <div class="modal-score-display">
+      <div class="modal-team">
+        <span class="modal-flag" id="admin-home-flag"></span>
+        <span class="modal-code" id="admin-home-code"></span>
+      </div>
+      <div class="modal-num" id="admin-score-home" onclick="setAdminTeam('home')">–</div>
+      <div class="modal-colon">:</div>
+      <div class="modal-num" id="admin-score-away" onclick="setAdminTeam('away')">–</div>
+      <div class="modal-team">
+        <span class="modal-code" id="admin-away-code"></span>
+        <span class="modal-flag" id="admin-away-flag"></span>
+      </div>
+    </div>
+    <div class="modal-team-tabs">
+      <button class="modal-team-tab active" id="admin-tab-home" onclick="setAdminTeam('home')"><span id="admin-tab-home-name"></span></button>
+      <button class="modal-team-tab" id="admin-tab-away" onclick="setAdminTeam('away')"><span id="admin-tab-away-name"></span></button>
+    </div>
+    <div class="numpad">
+      <button class="np-btn" onclick="adminNumpadPress(1)">1</button>
+      <button class="np-btn" onclick="adminNumpadPress(2)">2</button>
+      <button class="np-btn" onclick="adminNumpadPress(3)">3</button>
+      <button class="np-btn" onclick="adminNumpadPress(4)">4</button>
+      <button class="np-btn" onclick="adminNumpadPress(5)">5</button>
+      <button class="np-btn" onclick="adminNumpadPress(6)">6</button>
+      <button class="np-btn" onclick="adminNumpadPress(7)">7</button>
+      <button class="np-btn" onclick="adminNumpadPress(8)">8</button>
+      <button class="np-btn" onclick="adminNumpadPress(9)">9</button>
+      <button class="np-btn np-clear" onclick="adminNumpadClear()">Limpiar</button>
+      <button class="np-btn" onclick="adminNumpadPress(0)">0</button>
+      <button class="np-btn np-save" onclick="adminSaveResult()">Guardar</button>
+    </div>
+    <button class="admin-remove-link" id="admin-remove-link" onclick="adminRemoveResult()" style="display:none">Quitar resultado</button>
   </div>
 </div>
 
@@ -4970,6 +5060,19 @@ body{
 .admin-actions{display:flex;gap:8px;justify-content:flex-end;}
 .admin-save-btn,.admin-clear-btn{border:none;border-radius:10px;padding:10px 18px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;min-width:96px;text-align:center;}
 .admin-save-btn{background:var(--green);color:#fff;} .admin-clear-btn{background:var(--bg);color:var(--sub);border:1px solid var(--border);}
+/* Entrada de resultado estilo Partidas (toca para abrir el teclado) */
+.admin-result-teams{cursor:pointer;}
+.real-score-box{
+  width:58px;min-height:46px;border:1.5px solid var(--border);border-radius:10px;
+  background:var(--bg);display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:900;color:var(--text);cursor:pointer;transition:all .15s;
+}
+.real-score-box.filled{border-color:var(--green);background:#E8F5EE;color:var(--green);}
+.admin-hint{text-align:center;font-size:12px;font-weight:700;color:var(--sub);margin-top:2px;}
+.admin-remove-link{
+  display:block;width:100%;margin-top:10px;background:none;border:none;
+  color:var(--red);font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;padding:8px;
+}
 .admin-export-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
 .admin-download-btn,.admin-copy-btn{border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
@@ -5614,6 +5717,10 @@ function openModal(matchId){
   if(!m) return;
   activeMatchId = matchId;
   activeTeam = 'home';
+  // estado limpio: numpad visible, confirmación oculta
+  const cf=document.getElementById('modal-confirm'); if(cf) cf.style.display='none';
+  const np=document.getElementById('modal-numpad'); if(np) np.style.display='';
+  const tt=document.querySelector('#modal-box .modal-team-tabs'); if(tt) tt.style.display='';
 
   const userPicks = loadUserPicks();
   const pick = userPicks[matchId] || {};
@@ -5665,7 +5772,7 @@ function numpadClear(){
   el.className = 'modal-num';
 }
 
-async function savePick(){
+function savePick(){
   const match = MATCHES.find(x=>x.id===activeMatchId);
   if(match && !canEditPick(match)){
     showSaveBanner('🔒 Palpite cerrado: faltan menos de 30 minutos o el partido ya inició');
@@ -5685,6 +5792,40 @@ async function savePick(){
     setTimeout(()=>{hEl.style.borderColor='';aEl.style.borderColor='';},1200);
     return;
   }
+
+  // Paso de confirmación: el palpite no se puede editar luego de guardar.
+  const mcf = document.getElementById('mcf-score');
+  if(mcf && match){
+    const hc = match.hc || match.home.substring(0,3).toUpperCase();
+    const ac = match.ac || match.away.substring(0,3).toUpperCase();
+    mcf.innerHTML =
+      `<span class="mcf-flag">${match.hf}</span><span class="mcf-code">${hc}</span>`+
+      `<span class="mcf-num">${parseInt(hVal)}</span><span class="mcf-colon">:</span><span class="mcf-num">${parseInt(aVal)}</span>`+
+      `<span class="mcf-code">${ac}</span><span class="mcf-flag">${match.af}</span>`;
+  }
+  document.getElementById('modal-numpad').style.display = 'none';
+  const tt = document.querySelector('#modal-box .modal-team-tabs'); if(tt) tt.style.display = 'none';
+  document.getElementById('modal-confirm').style.display = 'block';
+  hEl.classList.add('confirming');
+  aEl.classList.add('confirming');
+}
+
+function cancelConfirmPick(){
+  document.getElementById('modal-confirm').style.display = 'none';
+  document.getElementById('modal-numpad').style.display = '';
+  const tt = document.querySelector('#modal-box .modal-team-tabs'); if(tt) tt.style.display = '';
+  setActiveTeam(activeTeam); // limpia la clase "confirming" y restaura el resaltado
+}
+
+async function commitPick(){
+  const match = MATCHES.find(x=>x.id===activeMatchId);
+  if(match && !canEditPick(match)){
+    showSaveBanner('🔒 Palpite cerrado: faltan menos de 30 minutos o el partido ya inició');
+    return;
+  }
+  const hVal = document.getElementById('modal-score-home').textContent;
+  const aVal = document.getElementById('modal-score-away').textContent;
+  if(hVal==='–'||aVal==='–') return;
 
   const userPicks = loadUserPicks();
   const savedPick = { home: parseInt(hVal), away: parseInt(aVal) };
@@ -5709,6 +5850,11 @@ async function savePick(){
 function closeModal(){
   document.getElementById('modal').style.display='none';
   document.body.style.overflow='';
+  const cf=document.getElementById('modal-confirm'); if(cf) cf.style.display='none';
+  const np=document.getElementById('modal-numpad'); if(np) np.style.display='';
+  const tt=document.querySelector('#modal-box .modal-team-tabs'); if(tt) tt.style.display='';
+  document.getElementById('modal-score-home').classList.remove('confirming');
+  document.getElementById('modal-score-away').classList.remove('confirming');
   activeMatchId = null;
 }
 function closeModalOutside(e){
@@ -6576,17 +6722,14 @@ function renderAdminResults(filter='all', autoJump=false){
     card.className=`admin-result-card ${real?'done':'pending'}`;
     card.innerHTML=`
       <div class="admin-result-top"><span>${m.date}</span><span>·</span><span>${m.time}</span><span>·</span><span>${m.phase}</span><span style="margin-left:auto;font-weight:800;color:${real?'var(--green)':'var(--pending)'}">${real?'Resultado cargado':'Sin resultado'}</span></div>
-      <div class="admin-result-teams">
+      <div class="admin-result-teams" onclick="openAdminResult(${m.id})">
         <div class="admin-result-name">${m.hf} ${m.home}</div>
-        <input class="real-score-input" id="real-h-${m.id}" type="number" min="0" max="99" value="${real?real.home:''}" placeholder="-">
+        <div class="real-score-box ${real?'filled':''}" id="real-h-${m.id}">${real?real.home:'–'}</div>
         <span style="font-weight:900;color:var(--sub);">:</span>
-        <input class="real-score-input" id="real-a-${m.id}" type="number" min="0" max="99" value="${real?real.away:''}" placeholder="-">
+        <div class="real-score-box ${real?'filled':''}" id="real-a-${m.id}">${real?real.away:'–'}</div>
         <div class="admin-result-name right">${m.away} ${m.af}</div>
       </div>
-      <div class="admin-actions">
-        <button class="admin-save-btn" onclick="saveRealResult(${m.id})">Guardar</button>
-        <button class="admin-clear-btn" onclick="clearRealResult(${m.id})">Limpiar</button>
-      </div>`;
+      <div class="admin-hint">${real?'✓ Tocá para editar o quitar':'Tocá para cargar el resultado'}</div>`;
     container.appendChild(card);
   });
   if(!container.innerHTML){
@@ -6600,9 +6743,7 @@ function renderAdminResults(filter='all', autoJump=false){
   if(autoJump && jumpId!==null){
     requestAnimationFrame(()=>{
       const card = document.getElementById(`admin-card-${jumpId}`);
-      const inp = document.getElementById(`real-h-${jumpId}`);
       if(card) card.scrollIntoView({block:'center', behavior:'smooth'});
-      if(inp) try{ inp.focus({preventScroll:true}); }catch(e){ inp.focus(); }
     });
   }
 }
@@ -6640,6 +6781,100 @@ function clearRealResult(matchId){
   renderDecepcion();
   updateCounts();
   showSaveBanner('Resultado eliminado');
+}
+
+// ══ ADMIN: carga de resultado con el mismo teclado que Partidas ══
+let adminActiveMatchId = null, adminActiveTeam = 'home';
+
+function openAdminResult(matchId){
+  const m = MATCHES.find(x=>x.id===matchId);
+  if(!m) return;
+  adminActiveMatchId = matchId;
+  adminActiveTeam = 'home';
+  const real = loadRealResults()[matchId];
+  document.getElementById('admin-modal-label').textContent = `${m.home} vs ${m.away}`;
+  document.getElementById('admin-modal-time').textContent = `${m.date.replace('.,','.')} · ${m.time}hs · ${m.phase}`;
+  document.getElementById('admin-home-flag').textContent = m.hf;
+  document.getElementById('admin-home-code').textContent = m.hc || m.home.substring(0,3).toUpperCase();
+  document.getElementById('admin-away-flag').textContent = m.af;
+  document.getElementById('admin-away-code').textContent = m.ac || m.away.substring(0,3).toUpperCase();
+  document.getElementById('admin-tab-home-name').textContent = m.home;
+  document.getElementById('admin-tab-away-name').textContent = m.away;
+  document.getElementById('admin-score-home').textContent = real ? real.home : '–';
+  document.getElementById('admin-score-away').textContent = real ? real.away : '–';
+  document.getElementById('admin-remove-link').style.display = real ? '' : 'none';
+  setAdminTeam('home');
+  document.getElementById('admin-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function setAdminTeam(side){
+  adminActiveTeam = side;
+  document.getElementById('admin-tab-home').classList.toggle('active', side==='home');
+  document.getElementById('admin-tab-away').classList.toggle('active', side==='away');
+  document.getElementById('admin-score-home').className = 'modal-num'+(side==='home'?' active':'');
+  document.getElementById('admin-score-away').className = 'modal-num'+(side==='away'?' active':'');
+}
+
+function adminNumpadPress(n){
+  const el = document.getElementById(adminActiveTeam==='home'?'admin-score-home':'admin-score-away');
+  const cur = el.textContent;
+  const num = (cur==='–'||cur==='') ? String(n) : cur+String(n);
+  el.textContent = parseInt(num) > 99 ? '99' : num;
+  el.className = 'modal-num active';
+  if(adminActiveTeam==='home') setAdminTeam('away'); // auto-salta al visitante
+}
+
+function adminNumpadClear(){
+  const el = document.getElementById(adminActiveTeam==='home'?'admin-score-home':'admin-score-away');
+  el.textContent = '–';
+  el.className = 'modal-num';
+}
+
+async function adminSaveResult(){
+  const hEl = document.getElementById('admin-score-home');
+  const aEl = document.getElementById('admin-score-away');
+  const hVal = hEl.textContent, aVal = aEl.textContent;
+  if(hVal==='–' || aVal==='–'){
+    if(hVal==='–') setAdminTeam('home'); else setAdminTeam('away');
+    hEl.style.borderColor = hVal==='–'?'var(--red)':'';
+    aEl.style.borderColor = aVal==='–'?'var(--red)':'';
+    setTimeout(()=>{hEl.style.borderColor='';aEl.style.borderColor='';},1200);
+    showSaveBanner('Cargá los goles de ambos equipos');
+    return;
+  }
+  const results = loadRealResults();
+  results[adminActiveMatchId] = { home:parseInt(hVal,10), away:parseInt(aVal,10), savedAt:new Date().toISOString() };
+  try{
+    await saveResultToFirebase(adminActiveMatchId, hVal, aVal);
+  }catch(err){
+    console.error(err);
+    showSaveBanner('Solo administradores pueden guardar resultados');
+    return;
+  }
+  saveRealResults(results);
+  closeAdminResult();
+  renderAdminResults(currentAdminFilter);
+  renderMatches(currentFilter);
+  renderRanking();
+  renderDecepcion();
+  updateCounts();
+  showSaveBanner('✅ Resultado guardado y ranking recalculado');
+}
+
+function adminRemoveResult(){
+  if(adminActiveMatchId==null) return;
+  clearRealResult(adminActiveMatchId); // ya recalcula y re-renderiza todo
+  closeAdminResult();
+}
+
+function closeAdminResult(){
+  document.getElementById('admin-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  adminActiveMatchId = null;
+}
+function closeAdminResultOutside(e){
+  if(e.target===document.getElementById('admin-modal')) closeAdminResult();
 }
 
 // ══ TABS ══
