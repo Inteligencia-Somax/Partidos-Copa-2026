@@ -410,12 +410,14 @@ body{
 .ud-cmp-toggle{width:100%;padding:9px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--text);font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;}
 .ud-cmp-toggle.active{background:var(--green);color:#fff;border-color:var(--green);}
 .cmp-summary{display:flex;align-items:center;gap:8px;padding:10px 12px 4px;}
-.cmp-sum-cell{flex:1;text-align:center;border-radius:12px;padding:10px 6px;background:var(--bg);border:1px solid var(--border);}
+.cmp-sum-cell{flex:1;text-align:center;border-radius:10px;padding:7px 4px;background:var(--bg);border:1px solid var(--border);}
 .cmp-sum-cell.lead{background:rgba(0,155,84,.1);border-color:rgba(0,155,84,.35);}
-.cmp-sum-num{font-size:22px;font-weight:900;color:var(--text);line-height:1;}
-.cmp-sum-cell.lead .cmp-sum-num{color:var(--green);}
-.cmp-sum-lbl{font-size:10px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cmp-sum-vs{font-size:15px;flex-shrink:0;}
+.cmp-sum-lbl{font-size:10px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cmp-sum-line{display:flex;align-items:baseline;justify-content:center;gap:3px;}
+.cmp-sum-num{font-size:17px;font-weight:900;color:var(--text);line-height:1.1;}
+.cmp-sum-unit{font-size:10px;font-weight:800;color:var(--sub);}
+.cmp-sum-cell.lead .cmp-sum-num,.cmp-sum-cell.lead .cmp-sum-unit{color:var(--green);}
+.cmp-sum-vs{font-size:14px;flex-shrink:0;}
 .cmp-wins{text-align:center;font-size:12px;color:var(--sub);padding:0 12px 8px;}
 .cmp-wins b{color:var(--text);}
 .cmp-row{padding:10px 12px;border-bottom:1px solid var(--border);}
@@ -432,6 +434,8 @@ body{
 .cmp-pts{font-size:17px;font-weight:900;margin-top:0;line-height:1.1;}
 .cmp-pts.win{color:var(--green);}
 .cmp-pts.zero{color:var(--red);}
+.cmp-dot{font-size:13px;font-weight:900;color:var(--sub);opacity:.55;line-height:1.1;}
+.cmp-pts-unit{font-size:10px;font-weight:800;opacity:.8;margin-left:1px;}
 .ud-empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:14px;font-weight:600;line-height:1.5;}
 /* ── Detalle: hero + tabs ── */
 .ud-hero{display:flex;align-items:center;padding:14px 10px;border-bottom:1px solid var(--border);}
@@ -5066,6 +5070,14 @@ body{
 .mb-sfchip .mb-sfn{font-size:11px;font-weight:700;opacity:.65;}
 .mb-sfchip.active{background:var(--green);color:#fff;border-color:var(--green);}
 .mb-sfchip.active .mb-sfn{opacity:.85;}
+/* Misma fila de chips, pero dentro del cuerpo (lista con resultado) */
+.ud-tabs.mb-score-filter-body{background:transparent;border-bottom:none;padding:2px 0 10px;margin-bottom:2px;}
+/* Tarjetas de estadística (Análisis: más palpitado / puntuó) */
+.mb-stat-cards{display:flex;gap:8px;margin:4px 0 12px;}
+.mb-stat-card{flex:1;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;box-shadow:var(--shadow);}
+.mb-stat-card-lbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--sub);margin-bottom:3px;}
+.mb-stat-card-val{font-size:22px;font-weight:900;color:var(--green);line-height:1;}
+.mb-stat-card-sub{font-size:11px;font-weight:700;color:var(--sub);margin-top:3px;}
 .admin-result-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;box-shadow:var(--shadow);}
 .admin-result-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--sub);font-weight:600;}
 .admin-result-teams{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
@@ -6533,8 +6545,8 @@ function renderUdComparar(){
     const scoreCell = pending
       ? `<span class="ud-sc-in">·</span> × <span class="ud-sc-in">·</span>`
       : `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>`;
-    const myPtsStr = pending ? '🔒' : `${myPts>0?'+':''}${myPts}`;
-    const thPtsStr = pending ? '🔒' : `${pts>0?'+':''}${pts}`;
+    const myPtsStr = pending ? '🔒' : `${myPts>0?'+':''}${myPts}<span class="cmp-pts-unit">pts</span>`;
+    const thPtsStr = pending ? '🔒' : `${pts>0?'+':''}${pts}<span class="cmp-pts-unit">pts</span>`;
     const dm = m.date.replace(/^[^,]+,\s*/, '');
     rows += `
       <div class="cmp-row">
@@ -6544,11 +6556,11 @@ function renderUdComparar(){
         <div class="cmp-grid">
           <div class="cmp-cell ${myWin?'win':''}">
             <div class="cmp-who">Vos</div>
-            <div class="cmp-pickline"><span class="cmp-pick">${myStr}</span><span class="cmp-pts ${pending?'zero':(myPts>0?'win':'zero')}">${myPtsStr}</span></div>
+            <div class="cmp-pickline"><span class="cmp-pick">${myStr}</span><span class="cmp-dot">•</span><span class="cmp-pts ${pending?'zero':(myPts>0?'win':'zero')}">${myPtsStr}</span></div>
           </div>
           <div class="cmp-cell ${thWin?'win':''}">
             <div class="cmp-who">${shortName}</div>
-            <div class="cmp-pickline"><span class="cmp-pick">${thStr}</span><span class="cmp-pts ${pending?'zero':(pts>0?'win':'zero')}">${thPtsStr}</span></div>
+            <div class="cmp-pickline"><span class="cmp-pick">${thStr}</span><span class="cmp-dot">•</span><span class="cmp-pts ${pending?'zero':(pts>0?'win':'zero')}">${thPtsStr}</span></div>
           </div>
         </div>
       </div>`;
@@ -6568,11 +6580,13 @@ function renderUdComparar(){
   const summary = shown.length ? `
     <div class="cmp-summary">
       <div class="cmp-sum-cell ${myTotal>=theirTotal?'lead':''}">
-        <div class="cmp-sum-num">${myTotal}</div><div class="cmp-sum-lbl">Vos</div>
+        <div class="cmp-sum-lbl">Vos</div>
+        <div class="cmp-sum-line"><span class="cmp-sum-num">${myTotal}</span><span class="cmp-sum-unit">pts</span></div>
       </div>
       <div class="cmp-sum-vs">⚔</div>
       <div class="cmp-sum-cell ${theirTotal>=myTotal?'lead':''}">
-        <div class="cmp-sum-num">${theirTotal}</div><div class="cmp-sum-lbl">${shortName}</div>
+        <div class="cmp-sum-lbl">${shortName}</div>
+        <div class="cmp-sum-line"><span class="cmp-sum-num">${theirTotal}</span><span class="cmp-sum-unit">pts</span></div>
       </div>
     </div>
     <div class="cmp-wins">Mejor palpite: vos <b>${myWins}</b> · ${shortName} <b>${theirWins}</b> · iguales <b>${ties}</b></div>` : '';
@@ -6668,11 +6682,26 @@ function toggleMbType(key){
 function setMbView(v){
   mbState.view = v;
   mbState.expanded = null;
+  mbState.filterScore = null;
   renderMatchBreakdown();
 }
 function setMbScoreFilter(score){
   mbState.filterScore = (mbState.filterScore === score) ? null : score;
   renderMatchBreakdown();
+}
+
+function buildMbScoreChips(){
+  const parts = mbState.parts || [];
+  const total = parts.length;
+  const tally = {};
+  parts.forEach(p => { const k = `${p.pick.home}:${p.pick.away}`; tally[k] = (tally[k] || 0) + 1; });
+  const top3 = Object.entries(tally).sort((a,b) => b[1] - a[1]).slice(0, 3);
+  const fs = mbState.filterScore;
+  let chips = `<button class="mb-sfchip ${!fs ? 'active' : ''}" onclick="setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
+  chips += top3.map(([sc, n]) =>
+    `<button class="mb-sfchip ${fs === sc ? 'active' : ''}" onclick="setMbScoreFilter('${sc}')">${sc} <span class="mb-sfn">${n}</span></button>`
+  ).join('');
+  return chips;
 }
 
 function renderMatchBreakdown(){
@@ -6696,15 +6725,7 @@ function renderMatchBreakdown(){
   // Con resultado: pestañas Lista / Análisis (como en el ranking).
   const mbTabsEl = document.getElementById('mb-tabs');
   if(pending){
-    const tally = {};
-    parts.forEach(p => { const k = `${p.pick.home}:${p.pick.away}`; tally[k] = (tally[k] || 0) + 1; });
-    const top3 = Object.entries(tally).sort((a,b) => b[1] - a[1]).slice(0, 3);
-    const fs = mbState.filterScore;
-    let chips = `<button class="mb-sfchip ${!fs ? 'active' : ''}" onclick="setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
-    chips += top3.map(([sc, n]) =>
-      `<button class="mb-sfchip ${fs === sc ? 'active' : ''}" onclick="setMbScoreFilter('${sc}')">${sc} <span class="mb-sfn">${n}</span></button>`
-    ).join('');
-    if(mbTabsEl){ mbTabsEl.className = 'ud-tabs mb-score-filter'; mbTabsEl.innerHTML = chips; }
+    if(mbTabsEl){ mbTabsEl.className = 'ud-tabs mb-score-filter'; mbTabsEl.innerHTML = buildMbScoreChips(); }
   } else {
     const mbTabs = [
       ['list','Lista','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>'],
@@ -6725,22 +6746,23 @@ function renderMatchBreakdown(){
 
   if(view === 'list'){
     let rows = parts;
-    if(pending && mbState.filterScore){
+    if(mbState.filterScore){
       rows = parts.filter(p => `${p.pick.home}:${p.pick.away}` === mbState.filterScore);
     }
-    if(!rows.length){
-      body.innerHTML = '<div class="ud-empty">Nadie palpitó este marcador.</div>';
-      return;
-    }
-    body.innerHTML = rows.map(p => `
-      <div class="ud-row">
-        <span class="mb-pos">${p.pos}º</span>
-        <div class="ud-match">
-          <div class="ud-teams">${p.name}</div>
-          <div class="ud-meta">Palpite: ${p.pick.home}:${p.pick.away}</div>
-        </div>
-        <div class="ud-pts ${pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero')}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
-      </div>`).join('');
+    // En modo finalizado los chips van dentro del cuerpo (las pestañas Lista/Análisis ya ocupan mb-tabs).
+    const chipBar = pending ? '' : `<div class="ud-tabs mb-score-filter mb-score-filter-body">${buildMbScoreChips()}</div>`;
+    const rowsHtml = rows.length
+      ? rows.map(p => `
+        <div class="ud-row">
+          <span class="mb-pos">${p.pos}º</span>
+          <div class="ud-match">
+            <div class="ud-teams">${p.name}</div>
+            <div class="ud-meta">Palpite: ${p.pick.home}:${p.pick.away}</div>
+          </div>
+          <div class="ud-pts ${pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero')}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
+        </div>`).join('')
+      : '<div class="ud-empty">Nadie palpitó este marcador.</div>';
+    body.innerHTML = chipBar + rowsHtml;
     return;
   }
 
@@ -6787,13 +6809,25 @@ function renderMatchBreakdown(){
   parts.forEach(p => { const k = `${p.pick.home}:${p.pick.away}`; scoreTally[k] = (scoreTally[k] || 0) + 1; });
   let topScore = '–', topScoreN = 0;
   Object.entries(scoreTally).forEach(([k, v]) => { if(v > topScoreN){ topScore = k; topScoreN = v; } });
+  const topScorePct = total ? Math.round(topScoreN / total * 100) : 0;
 
   body.innerHTML = `
     <div class="mb-pie-wrap">
       ${pie}
       <div class="mb-pie-center"><span class="mb-pie-num">${total}</span><span class="mb-pie-lbl">palpites</span></div>
     </div>
-    <div class="mb-insight">${pointedPct}% puntuó · Más palpitado: <strong>${topScore}</strong> (${topScoreN})</div>
+    <div class="mb-stat-cards">
+      <div class="mb-stat-card">
+        <div class="mb-stat-card-lbl">Más palpitado</div>
+        <div class="mb-stat-card-val">${topScore}</div>
+        <div class="mb-stat-card-sub">${topScoreN} ${topScoreN === 1 ? 'palpite' : 'palpites'} · ${topScorePct}%</div>
+      </div>
+      <div class="mb-stat-card">
+        <div class="mb-stat-card-lbl">Puntuó</div>
+        <div class="mb-stat-card-val">${pointedPct}%</div>
+        <div class="mb-stat-card-sub">${pointed} de ${total}</div>
+      </div>
+    </div>
     <div class="mb-legend-hint">Tocá una categoría para ver quiénes son</div>
     ${legend}`;
 }
