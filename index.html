@@ -814,7 +814,7 @@ body{
 .rank-context strong{color:#fff;font-weight:900;}
 .rank-context .rank-context-label{display:inline-block;background:#fff;color:var(--green);font-weight:900;border-radius:999px;padding:2px 8px;margin-right:4px;}
 .rank-context .muted{color:rgba(255,255,255,.82);font-weight:700;}
-.rank-general-pos{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:2px 7px;border-radius:999px;background:#F3F4F6;color:var(--sub);font-size:10px;font-weight:900;vertical-align:1px;}
+.rank-general-pos{display:inline-flex;align-items:center;gap:3px;margin-left:0;padding:3px 8px;border-radius:999px;background:#F3F4F6;color:var(--sub);font-size:10px;font-weight:900;vertical-align:middle;white-space:nowrap;}
 .rank-general-pos b{color:var(--text);font-weight:900;}
 .rank-card.round-mode{background:#fff;border-color:var(--border)!important;}
 .rank-card.round-mode.top1,.rank-card.round-mode.top2,.rank-card.round-mode.top3{background:#fff;border-color:var(--border);}
@@ -849,12 +849,12 @@ body{
 .rank-card.round-mode .rank-pos.round-top1::before,
 .rank-card.round-mode .rank-pos.round-top2::before,
 .rank-card.round-mode .rank-pos.round-top3::before{content:none!important;}
-.rank-general-pos.general-top1{background:#7F1D1D;color:#fff;box-shadow:0 1px 6px rgba(127,29,29,.25);}
-.rank-general-pos.general-top2{background:#991B1B;color:#fff;box-shadow:0 1px 6px rgba(153,27,27,.22);}
-.rank-general-pos.general-top3{background:#B45309;color:#fff;box-shadow:0 1px 6px rgba(180,83,9,.18);}
-.rank-general-pos.general-top1 b,
-.rank-general-pos.general-top2 b,
-.rank-general-pos.general-top3 b{color:#fff;}
+.rank-general-pos.general-top1{background:#FFF4D6;color:#A76200;border:1px solid #F2C45B;box-shadow:0 1px 6px rgba(245,158,11,.18);}
+.rank-general-pos.general-top2{background:#F3F4F6;color:#4B5563;border:1px solid #D1D5DB;box-shadow:0 1px 6px rgba(107,114,128,.14);}
+.rank-general-pos.general-top3{background:#FFF0E2;color:#9A4A12;border:1px solid #E4A56D;box-shadow:0 1px 6px rgba(217,119,6,.14);}
+.rank-general-pos.general-top1 b{color:#A76200;}
+.rank-general-pos.general-top2 b{color:#4B5563;}
+.rank-general-pos.general-top3 b{color:#9A4A12;}
 
 @media(max-width:430px){.rank-filter-btn{min-width:96px;padding:0 10px;font-size:12px}.rank-search{font-size:13px}}
 .rank-avatar{
@@ -867,7 +867,7 @@ body{
 .rank-name{font-size:15px;font-weight:700;display:flex;align-items:center;gap:5px;min-width:0;white-space:nowrap;}
 .rank-name-txt{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rank-name .vos-tag{font-size:11px;color:var(--green);font-weight:800;flex-shrink:0;}
-.rank-detail{font-size:12px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rank-detail{font-size:12px;color:var(--sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;min-width:0;}
 .detail-i{width:15px;height:15px;color:#AAB2BF;flex-shrink:0;display:inline-block;vertical-align:-3px;margin-left:6px;}
 .rank-delta{font-weight:800;}
 .form-dots{display:inline-flex;gap:3px;vertical-align:middle;}
@@ -882,6 +882,8 @@ body{
   text-align:right;
 }
 .rank-pts-label{font-size:10px;font-weight:600;color:var(--text);text-align:right;}
+.rank-score-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.rank-score-info{width:16px;height:16px;color:#AAB2BF;flex-shrink:0;display:block;}
 
 .empty-rank{
   text-align:center;padding:60px 20px;color:var(--sub);
@@ -7024,14 +7026,14 @@ function renderRanking(){
       const pts = calculatePickPoints(upicks[m.id], realResults[m.id], m).pts;
       return `<span class="fd ${pts>0?'win':'miss'}"></span>`;
     }).join('');
-    const formHtml = dots ? ` · <span class="form-dots">${dots}</span>` : '';
+    const formHtml = dots ? `<span class="rank-sep">•</span><span class="form-dots">${dots}</span>` : '';
     const generalHtml = (isRoundRanking && generalRankMap[u.name]) ? (()=>{
       const gp = generalRankMap[u.name];
       const gcls = gp===1 ? ' general-top1' : gp===2 ? ' general-top2' : gp===3 ? ' general-top3' : '';
       return `<span class="rank-general-pos${gcls}">General <b>${gp}º</b></span>`;
     })() : '';
     const exactHtml = `<span class="rank-exact-badge">${u.exact} exacto${u.exact===1?'':'s'}</span>`;
-    const detailHtml = isRoundRanking ? `${generalHtml}${generalHtml?' · ':''}${exactHtml}${formHtml}` : `${exactHtml}${formHtml}`;
+    const detailHtml = isRoundRanking ? `${generalHtml}${generalHtml?'<span class="rank-sep">•</span>':''}${exactHtml}${formHtml}` : `${exactHtml}${formHtml}`;
     let posDeltaHtml = '';
     if(!isRoundRanking && lastDate && prevIndex[u.name] !== undefined){
       const d = prevIndex[u.name] - i;
@@ -7042,12 +7044,15 @@ function renderRanking(){
     card.innerHTML=`
       <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${posCell}${posDeltaHtml?`<span class="rank-pos-delta">${posDeltaHtml}</span>`:''}</div>
       <div class="rank-info">
-        <div class="rank-name"${isMe?' style="color:var(--green);"':''}><span class="rank-name-txt">${u.name}</span>${isMe?' <span class="vos-tag">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></div>
+        <div class="rank-name"${isMe?' style="color:var(--green);"':''}><span class="rank-name-txt">${u.name}</span>${isMe?' <span class="vos-tag">(Vos)</span>':''}</div>
         <div class="rank-detail">${detailHtml}</div>
       </div>
-      <div>
-        <div class="rank-pts">${u.score}</div>
-        <div class="rank-pts-label">puntos</div>
+      <div class="rank-score-wrap">
+        <svg class="rank-score-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg>
+        <div>
+          <div class="rank-pts">${u.score}</div>
+          <div class="rank-pts-label">puntos</div>
+        </div>
       </div>`;
     container.appendChild(card);
   });
@@ -8684,6 +8689,7 @@ function showSaveBanner(msg){
   vertical-align:middle;
   white-space:nowrap;
 }
+.rank-sep{color:var(--sub);font-weight:900;opacity:.75;flex-shrink:0;}
 .rank-detail .rank-exact-badge + .form-dots{margin-left:2px;}
 </style>
 </body></html>
