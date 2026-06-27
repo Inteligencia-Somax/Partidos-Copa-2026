@@ -372,6 +372,8 @@ body{
 }
 .modal-close:hover{background:rgba(255,255,255,.35);}
 .ud-summary{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+#match-breakdown-modal #mb-summary{justify-content:center;text-align:center;}
+#match-breakdown-modal #mb-summary > div{width:100%;}
 .ud-summary-name{font-size:15px;font-weight:800;color:var(--text);}
 .ud-summary-sub{font-size:12px;color:var(--sub);margin-top:2px;}
 .ud-summary-pts{font-size:22px;font-weight:900;color:var(--green);text-align:right;line-height:1;}
@@ -6824,7 +6826,7 @@ function renderMatchBreakdown(){
   document.getElementById('mb-summary').innerHTML = `
     <div>
       <div class="ud-summary-name">${nameLine}</div>
-      <div class="ud-summary-sub">${m.date} · ${m.phase} · ${total} participante(s)${pending ? ' · 🔒 esperando resultado' : ''}</div>
+      <div class="ud-summary-sub">${m.date} · ${m.phase}${pending ? ' · 🔒 esperando resultado' : ''}</div>
     </div>`;
 
   // Partido cerrado (esperando resultado): chips con los 3 marcadores más palpitados + "Todos".
