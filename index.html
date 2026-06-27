@@ -6187,12 +6187,10 @@ function recentSummaryHtml({compact=false, share=false}={}){
   const shareBtn = share ? `<button class="rs-share-btn" onclick="shareRecentSummaryImage()" aria-label="Compartir resumen" title="Compartir resumen">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.8 15.4 6.2"></path><path d="M8.6 13.2l6.8 4.6"></path></svg>
   </button>` : '';
-  const deltaHtml = data.rankDelta === null ? '' : (data.rankDelta > 0 ? `<span class="rs-summary-delta up">▲${data.rankDelta}</span>` : (data.rankDelta < 0 ? `<span class="rs-summary-delta down">▼${Math.abs(data.rankDelta)}</span>` : `<span class="rs-summary-delta same">=</span>`));
-  const posHtml = data.myPos ? `<span class="rs-dot">•</span><span class="rs-pos-main">${data.myPos}º</span>` : '';
   return `<div class="recent-summary-card" id="recent-summary-card">
     <div class="rs-head">
       <div class="rs-head-main">
-        <div class="rs-titleline"><span class="rs-title">Últimas 3 partidas</span>${posHtml}${deltaHtml}<span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span></div>
+        <div class="rs-titleline"><span class="rs-title">Últimas 3 partidas</span><span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span></div>
         ${shareBtn}
       </div>
       <div class="rs-msg ${data.cls}"><span class="rs-msg-text">${data.msg}</span></div>
@@ -6260,17 +6258,8 @@ async function shareRecentSummaryImage(){
   ctx.fillStyle = '#FFFFFF'; roundRect(ctx, 88, 158, 724, 422, 24); ctx.fill();
   ctx.strokeStyle = 'rgba(0,155,84,.22)'; ctx.lineWidth = 2; roundRect(ctx, 88, 158, 724, 422, 24); ctx.stroke();
 
-  const deltaTxt = data.rankDelta === null ? '' : (data.rankDelta > 0 ? ` ▲${data.rankDelta}` : (data.rankDelta < 0 ? ` ▼${Math.abs(data.rankDelta)}` : ' ='));
-  const deltaColor = data.rankDelta > 0 ? '#009B54' : (data.rankDelta < 0 ? '#CE1126' : '#6B7280');
   ctx.fillStyle = '#6B7280'; ctx.font = '900 25px Inter, Arial'; ctx.fillText('ÚLTIMAS 3 PARTIDAS', 124, 214);
   let afterTitleX = 124 + ctx.measureText('ÚLTIMAS 3 PARTIDAS').width + 18;
-  if(data.myPos){
-    ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', afterTitleX, 214);
-    afterTitleX += 26;
-    ctx.fillStyle = '#111114'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myPos}º`, afterTitleX, 216);
-    afterTitleX += ctx.measureText(`${data.myPos}º`).width + 14;
-  }
-  if(deltaTxt){ ctx.fillStyle = deltaColor; ctx.font = '900 24px Inter, Arial'; ctx.fillText(deltaTxt, afterTitleX, 214); afterTitleX += ctx.measureText(deltaTxt).width + 18; }
   ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', afterTitleX, 214);
   afterTitleX += 26;
   ctx.fillStyle = '#111114'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, afterTitleX, 216);
@@ -8966,6 +8955,14 @@ function showSaveBanner(msg){
   .rs-game{height:56px!important;min-height:56px!important;}
 }
 </style>
+
+<style id="final-summary-only-points-20260627">
+/* Resumen: mostrar solo la puntuación de las últimas 3 partidas */
+.recent-summary-card .rs-pos-main,
+.recent-summary-card .rs-summary-delta{display:none!important;}
+.recent-summary-card .rs-kpi-main{color:var(--text)!important;}
+.recent-summary-card .rs-titleline{white-space:nowrap!important;flex-wrap:nowrap!important;}
+</style>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
@@ -9022,5 +9019,19 @@ function showSaveBanner(msg){
   .rs-pos-main{font-size:22px!important;}
   #scoring-rules-wrap .rules-card{margin-bottom:4px!important;}
   #recent-summary-wrap .recent-summary-card{margin-top:4px!important;}
+}
+</style>
+
+<style id="final-tight-score-summary-gap-20260627">
+/* Menor respiro entre Sistema de puntuación e Últimas 3 partidas */
+#scoring-rules-wrap .rules-card{
+  margin-bottom:6px!important;
+}
+#recent-summary-wrap .recent-summary-card{
+  margin-top:0!important;
+}
+@media(max-width:430px){
+  #scoring-rules-wrap .rules-card{margin-bottom:6px!important;}
+  #recent-summary-wrap .recent-summary-card{margin-top:0!important;}
 }
 </style>
