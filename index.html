@@ -8091,7 +8091,7 @@ function renderUdPartidos(){
     }
 
     rows += `
-      <div class="ud-row ${isExact ? 'exact' : ''}">
+      <div class="ud-row ${isExact ? 'exact' : ''}" onclick="openMatchInfoFromUserDetail(${m.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMatchInfoFromUserDetail(${m.id})}">
         <div class="ud-match">
           <div class="ud-line-main">
             <span class="ud-teams"><span class="ud-team-name home">${m.hf || ''} ${m.home}</span> ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} <span class="ud-team-name away">${m.away} ${m.af || ''}</span></span>
@@ -8112,6 +8112,18 @@ function renderUdPartidos(){
     </div>` : '';
 
   return nav + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos.</div>');
+}
+
+
+function openMatchInfoFromUserDetail(matchId){
+  const m = MATCHES.find(x => x.id === matchId);
+  if(!m) return;
+  closeUserDetail();
+  setTimeout(() => {
+    const real = loadRealResults()[matchId] || null;
+    if(real || !canEditPick(m)) openMatchBreakdown(matchId);
+    else openModal(matchId);
+  }, 0);
 }
 
 function renderUdComparar(){
@@ -10426,6 +10438,27 @@ function showSaveBanner(msg){
   #user-detail-modal .ud-rnav-sub{
     margin-left:0!important;
     margin-right:0!important;
+  }
+</style>
+
+
+<!-- AJUSTE FINAL: detalhes participante - linhas de partidas clicáveis e abas inativas pretas -->
+<style id="final-user-detail-match-click-and-inactive-tabs-20260627">
+  #user-detail-modal .ud-body .ud-row{
+    cursor:pointer;
+  }
+  #user-detail-modal .ud-body .ud-row:focus{
+    outline:2px solid rgba(0,155,84,.35);
+    outline-offset:-2px;
+  }
+  #user-detail-modal .ud-tab:not(.active),
+  #match-breakdown-modal .ud-tab:not(.active){
+    color:#000!important;
+  }
+  #user-detail-modal .ud-tab:not(.active) svg,
+  #match-breakdown-modal .ud-tab:not(.active) svg{
+    color:#000!important;
+    stroke:currentColor!important;
   }
 </style>
 
@@ -13307,5 +13340,127 @@ function showSaveBanner(msg){
   #user-detail-modal .ud-tab:not(.active) svg{
     color:#000 !important;
     stroke:currentColor !important;
+  }
+</style>
+
+<!-- AJUSTE FINAL: Puntos por participante - filtros de palpites mais compactos e sem corte -->
+<style id="final-mb-score-filter-compact-20260627">
+  #match-breakdown-modal .ud-tabs.mb-score-filter{
+    display:flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    padding:6px 12px!important;
+    background:#fff!important;
+    border-bottom:1px solid rgba(0,0,0,.08)!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    scrollbar-width:none!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter::-webkit-scrollbar{
+    display:none!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sflabel{
+    flex:0 0 auto!important;
+    height:36px!important;
+    min-height:36px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:0 6px 0 0!important;
+    font-size:13px!important;
+    line-height:1!important;
+    font-weight:850!important;
+    color:var(--sub)!important;
+    background:#fff!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip{
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-width:max-content!important;
+    height:36px!important;
+    min-height:36px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:5px!important;
+    padding:0 13px!important;
+    border-radius:999px!important;
+    font-size:13px!important;
+    line-height:1!important;
+    font-weight:850!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
+    font-size:12px!important;
+    line-height:1!important;
+    font-weight:800!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    opacity:.72!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip.active .mb-sfn{
+    opacity:.9!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill{
+    gap:6px!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
+    flex:0 0 auto!important;
+    min-width:max-content!important;
+    padding-left:13px!important;
+    padding-right:13px!important;
+  }
+</style>
+
+<!-- AJUSTE FINAL: modal detalhes participante - faixa Fecha com mesma altura visual das abas -->
+<style id="final-user-detail-round-nav-same-height-tabs-20260627">
+  #user-detail-modal .ud-round-nav{
+    height:58px!important;
+    min-height:58px!important;
+    padding:0 12px!important;
+    display:grid!important;
+    grid-template-columns:34px minmax(0,1fr) 34px!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+
+  #user-detail-modal .ud-rnav-label{
+    height:58px!important;
+    min-height:0!important;
+    padding:0!important;
+    margin:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    line-height:1.12!important;
+  }
+
+  #user-detail-modal .ud-rnav-title,
+  #user-detail-modal .ud-rnav-sub{
+    margin:0!important;
+  }
+
+  #user-detail-modal .ud-rnav-sub{
+    margin-top:3px!important;
+  }
+
+  #user-detail-modal .ud-rnav-btn{
+    align-self:center!important;
+    justify-self:center!important;
   }
 </style>
