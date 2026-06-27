@@ -973,6 +973,44 @@ body{
 .rs-tag.bad{background:transparent!important;color:var(--red)!important;border-color:transparent!important;padding-left:4px;padding-right:0;}
 .rs-pts.exact{background:rgba(0,155,84,.12)!important;color:var(--green)!important;border-color:rgba(0,155,84,.25)!important;}
 
+
+
+/* Ajustes finales: resumen reciente */
+.recent-summary-card{
+  background:var(--white);
+  border:1px solid rgba(0,155,84,.18);
+  border-radius:24px;
+  padding:16px 18px;
+  box-shadow:var(--shadow);
+  margin:16px 0 14px;
+}
+.rs-head{display:flex;flex-direction:column;align-items:stretch;gap:7px;margin-bottom:10px;}
+.rs-head-main{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px;width:100%;}
+.rs-titleline{display:flex;align-items:baseline;gap:7px;min-width:0;flex-wrap:wrap;}
+.rs-title{font-size:13px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;color:var(--sub);line-height:1;}
+.rs-dot{font-size:13px;font-weight:900;color:var(--sub);opacity:.65;}
+.rs-kpi-main{font-size:21px;font-weight:950;color:var(--green);line-height:1;}
+.rs-kpi,.rs-kpi-sub{display:none!important;}
+.rs-msg{font-size:12px;font-weight:850;line-height:1.35;max-width:none!important;text-align:center!important;margin:0 auto;color:var(--green);}
+.rs-msg.warn{color:#92400E}.rs-msg.hot{color:var(--gold)}.rs-msg.bad{color:var(--red)}.rs-msg.good{color:var(--green)}
+.rs-share-btn{width:34px!important;height:34px!important;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--sub);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.08);}
+.rs-share-btn svg{width:17px!important;height:17px!important;stroke:currentColor;}
+.rs-game{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--border);border-radius:13px;padding:8px 10px;}
+.rs-tag.exact{background:rgba(0,155,84,.12)!important;color:var(--green)!important;border:1px solid rgba(0,155,84,.25)!important;padding:2px 7px!important;}
+.rs-tag.good{background:transparent!important;color:var(--green)!important;border-color:transparent!important;padding-left:4px!important;padding-right:0!important;}
+.rs-tag.bad{background:transparent!important;color:var(--red)!important;border-color:transparent!important;padding-left:4px!important;padding-right:0!important;}
+.rs-pts{background:transparent!important;color:var(--green)!important;border-color:transparent!important;}
+.rs-pts.zero{background:transparent!important;color:var(--red)!important;border-color:transparent!important;}
+.rs-pts.exact{background:rgba(0,155,84,.12)!important;color:var(--green)!important;border-color:rgba(0,155,84,.25)!important;}
+#summary-modal .summary-modal-box{max-width:460px;border-radius:24px;overflow:hidden;}
+#summary-modal .summary-modal-body{padding:14px 16px 10px;background:#fff;}
+#summary-modal .recent-summary-card{margin:0;box-shadow:none;border-radius:18px;}
+.summary-modal-footer{grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px;background:#fff;}
+.summary-footer-btn{height:52px;border-radius:16px;border:1px solid var(--border);background:var(--bg);color:var(--sub);font-family:inherit;font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;}
+.summary-footer-btn.primary{background:var(--green);border-color:var(--green);color:#fff;}
+.summary-footer-btn svg{width:18px;height:18px;}
+@media(max-width:430px){.recent-summary-card{padding:14px 16px}.rs-title{font-size:12px}.rs-kpi-main{font-size:20px}.rs-msg{font-size:11.5px}.rs-game{padding:7px 9px}.summary-footer-btn{height:50px;font-size:14px}}
+
 </style>
 </head>
 <body><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
@@ -1083,9 +1121,6 @@ body{
   <div class="modal summary-modal-box">
     <div class="modal-header announce-header summary-header">
       <span class="modal-match-label">Resumen reciente</span>
-      <div class="summary-header-actions">
-        <button class="modal-close" onclick="closeRecentSummaryModal()">×</button>
-      </div>
     </div>
     <div class="summary-modal-body" id="summary-modal-body"></div>
     <div class="summary-modal-footer">
@@ -6122,7 +6157,10 @@ function recentSummaryHtml({compact=false, share=false}={}){
   </button>` : '';
   return `<div class="recent-summary-card" id="recent-summary-card">
     <div class="rs-head">
-      <div class="rs-head-main"><div><div class="rs-title">Tu momento</div><div class="rs-kpi"><span class="rs-kpi-main">${data.myTotal} pts</span><span class="rs-kpi-sub">${data.exacts} exacto${data.exacts===1?'':'s'} · ${data.scored}/${data.games.length} puntuados</span></div></div>${shareBtn}</div>
+      <div class="rs-head-main">
+        <div class="rs-titleline"><span class="rs-title">Tu momento</span><span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span></div>
+        ${shareBtn}
+      </div>
       <div class="rs-msg ${data.cls}">${data.msg}</div>
     </div>
     <div class="rs-games">${rows}</div>
