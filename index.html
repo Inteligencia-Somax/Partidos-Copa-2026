@@ -9433,3 +9433,325 @@ function showSaveBanner(msg){
   #summary-modal .recent-summary-card .rs-msg{margin-bottom:7px!important;}
 }
 </style>
+
+<style id="final-polish-summary-and-breakdown-20260627">
+/* Modal "Puntos por participante": expansão alinhada até o lado direito */
+#match-breakdown-modal .mb-names{
+  width:100%!important;
+  margin:0!important;
+  padding:6px 12px 10px 32px!important;
+  box-sizing:border-box!important;
+  border-radius:0 0 14px 14px!important;
+}
+#match-breakdown-modal .mb-name-row{
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  box-sizing:border-box!important;
+  padding:6px 0!important;
+}
+#match-breakdown-modal .mb-name-txt{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+#match-breakdown-modal .mb-name-pick{
+  justify-self:end!important;
+  min-width:44px!important;
+  text-align:right!important;
+}
+
+/* Usuário atual no modal: texto verde; fundo verde somente quando for exato */
+#match-breakdown-modal .ud-row.mine:not(.exact){
+  background:transparent!important;
+}
+#match-breakdown-modal .ud-row.mine:not(.exact) .mb-pos,
+#match-breakdown-modal .ud-row.mine:not(.exact) .ud-teams,
+#match-breakdown-modal .ud-row.mine:not(.exact) .ud-name,
+#match-breakdown-modal .ud-row.mine:not(.exact) .ud-player-name{
+  color:var(--green)!important;
+  font-weight:900!important;
+}
+#match-breakdown-modal .ud-row.mine.exact{
+  background:rgba(0,155,84,.08)!important;
+}
+
+/* Resumo: card da tela e modal com o mesmo alinhamento e respiro visual */
+#panel-matches #recent-summary-wrap,
+#scoring-rules-wrap{
+  max-width:680px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  padding-left:12px!important;
+  padding-right:12px!important;
+  box-sizing:border-box!important;
+}
+#panel-matches #recent-summary-wrap .recent-summary-card,
+#recent-summary-wrap .recent-summary-card{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box!important;
+}
+#panel-matches #recent-summary-wrap .recent-summary-card{
+  margin-top:6px!important;
+}
+
+.recent-summary-card .rs-head,
+#summary-modal .recent-summary-card .rs-head,
+.share-summary-card .rs-head,
+.share-card .rs-head{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:2px!important;
+  margin-bottom:12px!important;
+}
+.recent-summary-card .rs-head-main,
+#summary-modal .recent-summary-card .rs-head-main,
+.share-summary-card .rs-head-main,
+.share-card .rs-head-main{
+  min-height:auto!important;
+  align-items:center!important;
+}
+.recent-summary-card .rs-titleline,
+#summary-modal .recent-summary-card .rs-titleline,
+.share-summary-card .rs-titleline,
+.share-card .rs-titleline{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:7px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  line-height:1.05!important;
+}
+.recent-summary-card .rs-title,
+#summary-modal .recent-summary-card .rs-title,
+.share-summary-card .rs-title,
+.share-card .rs-title{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  letter-spacing:1.8px!important;
+}
+.recent-summary-card .rs-msg,
+#summary-modal .recent-summary-card .rs-msg,
+.share-summary-card .rs-msg,
+.share-card .rs-msg{
+  margin:0!important;
+  color:#6B7280!important;
+  font-weight:800!important;
+  line-height:1.18!important;
+  text-align:left!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+#summary-modal .recent-summary-card .rs-games,
+.recent-summary-card .rs-games,
+.share-summary-card .rs-games,
+.share-card .rs-games{
+  margin-top:0!important;
+}
+</style>
+
+<style id="final-grid-polish-20260627-last">
+/* Ajuste final solicitado: apenas CSS/layout para deixar Sistema de Puntuación e Últimas 3 partidas com grid consistente */
+#scoring-rules-wrap,
+#panel-matches #recent-summary-wrap{
+  width:100%!important;
+  max-width:680px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  padding-left:12px!important;
+  padding-right:12px!important;
+  box-sizing:border-box!important;
+}
+#scoring-rules-wrap .rules-card,
+#panel-matches #recent-summary-wrap .recent-summary-card{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+#scoring-rules-wrap .rules-card{
+  margin-bottom:8px!important;
+}
+#panel-matches #recent-summary-wrap .recent-summary-card{
+  margin-top:8px!important;
+}
+.rules-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+  align-items:stretch!important;
+}
+.rule-item{
+  width:100%!important;
+  min-width:0!important;
+  height:112px!important;
+  padding:10px 8px!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+}
+.rule-pts{
+  width:100%!important;
+  text-align:center!important;
+  display:block!important;
+  line-height:1!important;
+}
+.rule-label{
+  display:-webkit-box!important;
+  -webkit-line-clamp:2!important;
+  -webkit-box-orient:vertical!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  min-height:28px!important;
+  line-height:1.18!important;
+  margin-top:6px!important;
+  width:100%!important;
+  text-align:center!important;
+}
+.recent-summary-card{
+  display:flex!important;
+  flex-direction:column!important;
+  box-sizing:border-box!important;
+}
+.recent-summary-card .rs-head,
+#summary-modal .recent-summary-card .rs-head,
+.share-card .rs-head,
+.share-summary-card .rs-head{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 38px!important;
+  grid-template-areas:"title share" "msg share"!important;
+  column-gap:10px!important;
+  row-gap:4px!important;
+  margin-bottom:12px!important;
+  align-items:center!important;
+}
+.recent-summary-card .rs-head-main,
+#summary-modal .recent-summary-card .rs-head-main,
+.share-card .rs-head-main,
+.share-summary-card .rs-head-main{
+  grid-area:title!important;
+  min-width:0!important;
+  width:100%!important;
+}
+.recent-summary-card .rs-titleline,
+#summary-modal .recent-summary-card .rs-titleline,
+.share-card .rs-titleline,
+.share-summary-card .rs-titleline{
+  min-width:0!important;
+  max-width:100%!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.recent-summary-card .rs-msg,
+#summary-modal .recent-summary-card .rs-msg,
+.share-card .rs-msg,
+.share-summary-card .rs-msg{
+  grid-area:msg!important;
+  margin:0!important;
+  padding:0!important;
+  color:#6B7280!important;
+  text-align:left!important;
+  max-width:100%!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.recent-summary-card .rs-share-btn,
+#summary-modal .recent-summary-card .rs-share-btn,
+.share-card .rs-share-btn,
+.share-summary-card .rs-share-btn{
+  grid-area:share!important;
+  align-self:start!important;
+  justify-self:end!important;
+  width:38px!important;
+  height:38px!important;
+  margin:0!important;
+}
+.recent-summary-card .rs-games,
+#summary-modal .recent-summary-card .rs-games,
+.share-card .rs-games,
+.share-summary-card .rs-games{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+  margin-top:0!important;
+}
+.rs-game{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  min-height:68px!important;
+  height:68px!important;
+  gap:10px!important;
+  padding:9px 12px!important;
+  box-sizing:border-box!important;
+}
+.rs-game-main{min-width:0!important;overflow:hidden!important;}
+.rs-game-title,
+.rs-game-sub{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  max-width:100%!important;
+}
+.rs-game-title{line-height:1.15!important;}
+.rs-game-sub{line-height:1.2!important;margin-top:4px!important;}
+.rs-pts{
+  min-width:42px!important;
+  justify-self:end!important;
+  text-align:center!important;
+  line-height:1!important;
+}
+/* Modal/expansão: linhas ocupam a largura completa e alinham o lado direito */
+#match-breakdown-modal .ud-list,
+#match-breakdown-modal .mb-list,
+#match-breakdown-modal .ud-body{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+#match-breakdown-modal .ud-row,
+#match-breakdown-modal .mb-row{
+  width:100%!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box!important;
+}
+#match-breakdown-modal .ud-row.exact,
+#match-breakdown-modal .ud-row.mine.exact{
+  width:100%!important;
+  border-radius:12px!important;
+}
+#match-breakdown-modal .ud-pts,
+#match-breakdown-modal .mb-points{
+  margin-left:auto!important;
+  justify-self:end!important;
+  text-align:right!important;
+}
+@media(max-width:430px){
+  .rules-grid{gap:8px!important;}
+  .rule-item{height:104px!important;padding:9px 6px!important;border-radius:12px!important;}
+  .rule-pts{font-size:20px!important;}
+  .rule-label{font-size:9.5px!important;line-height:1.16!important;min-height:24px!important;}
+  .recent-summary-card .rs-head,
+  #summary-modal .recent-summary-card .rs-head{grid-template-columns:minmax(0,1fr) 36px!important;column-gap:8px!important;row-gap:3px!important;margin-bottom:10px!important;}
+  .recent-summary-card .rs-share-btn,
+  #summary-modal .recent-summary-card .rs-share-btn{width:36px!important;height:36px!important;}
+  .rs-game{height:64px!important;min-height:64px!important;padding:8px 10px!important;}
+}
+</style>
