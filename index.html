@@ -9330,3 +9330,84 @@ function showSaveBanner(msg){
 #user-detail-modal .ud-pts,
 #match-breakdown-modal .ud-pts{margin-left:auto!important;text-align:right!important;}
 </style>
+
+<style id="final-summary-align-and-tight-20260627-user2">
+/* Último ajuste: resumen con el mismo ancho visual del Sistema de Puntuación */
+#panel-matches #recent-summary-wrap{
+  max-width:680px!important;
+  margin:0 auto!important;
+  padding:0 12px!important;
+  box-sizing:border-box!important;
+}
+#scoring-rules-wrap{
+  max-width:680px!important;
+  margin:0 auto!important;
+  padding:0 12px!important;
+  box-sizing:border-box!important;
+}
+#panel-matches #recent-summary-wrap .recent-summary-card,
+#recent-summary-wrap .recent-summary-card{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  box-sizing:border-box!important;
+}
+/* Distancia del título/frase en todos los resúmenes: card, modal y compartir */
+.recent-summary-card .rs-head,
+#summary-modal .recent-summary-card .rs-head,
+.share-card .rs-head,
+.share-summary-card .rs-head{
+  margin-bottom:4px!important;
+  gap:2px!important;
+}
+.recent-summary-card .rs-head-main,
+#summary-modal .recent-summary-card .rs-head-main,
+.share-card .rs-head-main,
+.share-summary-card .rs-head-main{
+  min-height:22px!important;
+  align-items:center!important;
+}
+.recent-summary-card .rs-msg,
+#summary-modal .recent-summary-card .rs-msg,
+.share-card .rs-msg,
+.share-summary-card .rs-msg{
+  margin-top:0!important;
+  margin-bottom:8px!important;
+  color:#6B7280!important;
+  text-align:left!important;
+  line-height:1.15!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  max-width:100%!important;
+}
+/* Mantém título e pontuação do resumo compactos e sem desalinhamento */
+.recent-summary-card .rs-titleline,
+#summary-modal .recent-summary-card .rs-titleline,
+.share-card .rs-titleline,
+.share-summary-card .rs-titleline{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:7px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+}
+.recent-summary-card .rs-title,
+#summary-modal .recent-summary-card .rs-title,
+.share-card .rs-title,
+.share-summary-card .rs-title{
+  white-space:nowrap!important;
+  flex:0 1 auto!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+@media(max-width:430px){
+  #panel-matches #recent-summary-wrap,
+  #scoring-rules-wrap{padding:0 12px!important;}
+  .recent-summary-card .rs-head,
+  #summary-modal .recent-summary-card .rs-head{margin-bottom:3px!important;}
+  .recent-summary-card .rs-msg,
+  #summary-modal .recent-summary-card .rs-msg{margin-bottom:7px!important;}
+}
+</style>
