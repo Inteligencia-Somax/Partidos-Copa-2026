@@ -6264,23 +6264,21 @@ async function shareRecentSummaryImage(){
   const deltaColor = data.rankDelta > 0 ? '#009B54' : (data.rankDelta < 0 ? '#CE1126' : '#6B7280');
   ctx.fillStyle = '#6B7280'; ctx.font = '900 25px Inter, Arial'; ctx.fillText('TU MOMENTO', 124, 214);
   ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', 294, 214);
-  ctx.fillStyle = '#009B54'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, 322, 216);
+  ctx.fillStyle = '#111114'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, 322, 216);
   let afterPtsX = 322 + ctx.measureText(`${data.myTotal} pts`).width + 18;
   if(data.myPos){
     ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', afterPtsX, 214);
     afterPtsX += 26;
-    ctx.fillStyle = '#009B54'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myPos}º`, afterPtsX, 216);
+    ctx.fillStyle = '#111114'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myPos}º`, afterPtsX, 216);
     afterPtsX += ctx.measureText(`${data.myPos}º`).width + 14;
   }
   if(deltaTxt){ ctx.fillStyle = deltaColor; ctx.font = '900 24px Inter, Arial'; ctx.fillText(deltaTxt, afterPtsX, 214); }
 
   ctx.fillStyle = '#374151';
   ctx.font = '850 21px Inter, Arial';
-  ctx.textAlign = 'right';
-  wrapCanvasTextRight(ctx, data.msg, 772, 214, 300, 25);
-  ctx.textAlign = 'left';
+  canvasTextFit(data.msg, 124, 250, 650);
 
-  let y = 296;
+  let y = 316;
   data.games.forEach(g=>{
     ctx.fillStyle = '#F5F5F7'; roundRect(ctx, 124, y-38, 652, 76, 16); ctx.fill();
     ctx.strokeStyle = '#E8E8EC'; ctx.lineWidth = 1; roundRect(ctx, 124, y-38, 652, 76, 16); ctx.stroke();
@@ -8820,6 +8818,137 @@ function showSaveBanner(msg){
   .rank-card:not(.round-mode){padding:13px 15px!important;gap:10px!important;min-height:86px!important;}
   .rank-card:not(.round-mode) .rank-pos{min-width:44px!important;width:44px!important;font-size:18px!important;}
   .rank-card:not(.round-mode) .rank-name{font-size:14.5px!important;}
+}
+</style>
+
+
+<style id="summary-layout-final-fix-20260627c">
+/* Resumo: mesma largura visual do Sistema de Puntuación e espaçamento mais equilibrado */
+#scoring-rules-wrap .rules-card{
+  margin-bottom:6px!important;
+}
+#recent-summary-wrap .recent-summary-card{
+  margin-top:6px!important;
+  margin-bottom:16px!important;
+}
+.recent-summary-card{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+
+/* Cabeçalho do resumo em linha, sem quebra estranha */
+.rs-head{
+  gap:7px!important;
+  margin-bottom:11px!important;
+}
+.rs-head-main{
+  align-items:center!important;
+  min-height:34px!important;
+}
+.rs-titleline{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:8px!important;
+  flex-wrap:nowrap!important;
+  white-space:nowrap!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+.rs-title{
+  flex:0 0 auto!important;
+}
+.rs-dot{
+  flex:0 0 auto!important;
+}
+.rs-kpi-main,
+.rs-pos-main{
+  color:var(--text)!important;
+  font-size:26px!important;
+  font-weight:950!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  flex:0 0 auto!important;
+}
+.rs-summary-delta{
+  flex:0 0 auto!important;
+  font-size:13px!important;
+  font-weight:900!important;
+  line-height:1!important;
+}
+.rs-summary-delta.up{color:var(--green)!important;}
+.rs-summary-delta.down{color:var(--red)!important;}
+.rs-summary-delta.same{color:var(--sub)!important;}
+
+/* Frase sempre neutra, abaixo do título, em uma linha quando couber */
+.rs-msg,
+.rs-msg.warn,
+.rs-msg.hot,
+.rs-msg.bad,
+.rs-msg.good,
+#summary-modal .rs-msg,
+#summary-modal .rs-msg.warn,
+#summary-modal .rs-msg.hot,
+#summary-modal .rs-msg.bad,
+#summary-modal .rs-msg.good{
+  color:#374151!important;
+  align-self:flex-start!important;
+  text-align:left!important;
+  max-width:100%!important;
+  width:100%!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  font-size:12.5px!important;
+  line-height:1.25!important;
+}
+
+/* Cards internos do resumo padronizados */
+.rs-games{gap:8px!important;}
+.rs-game{
+  height:58px!important;
+  min-height:58px!important;
+  padding:9px 12px!important;
+}
+.rs-teams{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+/* Exacto com fundo verde; Sumó sem fundo; erro vermelho */
+.rs-tag.exact{
+  background:rgba(0,155,84,.12)!important;
+  color:var(--green)!important;
+  border:1px solid rgba(0,155,84,.25)!important;
+}
+.rs-tag.good{
+  background:transparent!important;
+  border-color:transparent!important;
+  color:var(--green)!important;
+}
+.rs-tag.bad{
+  background:transparent!important;
+  border-color:transparent!important;
+  color:var(--red)!important;
+}
+.rs-pts.exact{
+  background:rgba(0,155,84,.12)!important;
+  color:var(--green)!important;
+  border:1px solid rgba(0,155,84,.25)!important;
+}
+.rs-pts:not(.exact):not(.zero){
+  background:transparent!important;
+  border-color:transparent!important;
+  color:var(--green)!important;
+}
+
+@media(max-width:430px){
+  #scoring-rules-wrap .rules-card{margin-bottom:5px!important;}
+  #recent-summary-wrap .recent-summary-card{margin-top:5px!important;}
+  .rs-kpi-main,.rs-pos-main{font-size:23px!important;}
+  .rs-title{font-size:11px!important;letter-spacing:1.8px!important;}
+  .rs-msg{font-size:12px!important;}
+  .rs-game{height:56px!important;min-height:56px!important;}
 }
 </style>
 </body></html>
