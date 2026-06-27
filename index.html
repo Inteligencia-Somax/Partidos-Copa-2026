@@ -6193,10 +6193,19 @@ body{
   box-shadow:var(--shadow);
 }
 .filter-row .filter-chip.active{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* Ajuste solicitado: no modal "Puntos por participante", remover a faixa cinza
+   atrás das abas/filtros mantendo espaçamentos, tamanhos e funcionamento. */
+#match-breakdown-modal .ud-tabs{
+  background:#fff;
+}
+#match-breakdown-modal .ud-tabs.mb-score-filter{
+  background:#fff;
+}
 /* Filtro de marcadores (modal "Puntos por participante", partido cerrado) */
-.ud-tabs.mb-score-filter{gap:7px;padding:18px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;}
+.ud-tabs.mb-score-filter{gap:7px;padding:18px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;background:#fff;}
 .ud-tabs.mb-score-filter::-webkit-scrollbar{display:none;}
-.mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;font-size:12px;font-weight:800;color:var(--sub);white-space:nowrap;position:sticky;left:0;background:var(--bg);padding-right:7px;z-index:1;}
+.mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;font-size:12px;font-weight:800;color:var(--sub);white-space:nowrap;position:sticky;left:0;background:#fff;padding-right:7px;z-index:1;}
 .mb-sfchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:10px 15px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;}
 .mb-sfchip .mb-sfn{font-size:12px;font-weight:700;opacity:.65;}
 /* Cerrado: los chips ocupan todo el ancho, sin scroll horizontal */
@@ -8254,6 +8263,25 @@ function openMatchBreakdown(matchId){
   renderMatchBreakdown();
 }
 
+
+function getMbNavigableMatches(){
+  const realResults = loadRealResults();
+  return MATCHES
+    .filter(mx => realResults[mx.id] || !canEditPick(mx))
+    .slice()
+    .sort((a,b) => getMatchDateTime(a) - getMatchDateTime(b));
+}
+function navigateMbMatch(delta){
+  const current = mbState && mbState.m ? mbState.m.id : null;
+  if(!current) return;
+  const matches = getMbNavigableMatches();
+  const idx = matches.findIndex(mx => mx.id === current);
+  if(idx < 0) return;
+  const next = matches[idx + delta];
+  if(!next) return;
+  openMatchBreakdown(next.id);
+}
+
 function toggleMbView(){
   mbState.view = mbState.view === 'list' ? 'stats' : 'list';
   mbState.expanded = null;
@@ -8319,11 +8347,17 @@ function renderMatchBreakdown(){
   const nameLine = pending
     ? `${_disp.hf} ${_disp.home} × ${_disp.away} ${_disp.af}`
     : `${_disp.hf} ${_disp.home} ${real.home}:${real.away} ${_disp.away} ${_disp.af}`;
+  const mbNav = getMbNavigableMatches();
+  const mbNavIdx = mbNav.findIndex(mx => mx.id === m.id);
+  const mbHasPrev = mbNavIdx > 0;
+  const mbHasNext = mbNavIdx >= 0 && mbNavIdx < mbNav.length - 1;
   document.getElementById('mb-summary').innerHTML = `
-    <div>
+    <button class="mb-nav-btn" onclick="navigateMbMatch(-1)" ${mbHasPrev ? '' : 'disabled'} aria-label="Partido anterior">‹</button>
+    <div class="mb-summary-center">
       <div class="ud-summary-name">${nameLine}</div>
       <div class="ud-summary-sub">${m.date} · ${m.phase}${pending ? ' · 🔒 esperando resultado' : ''}</div>
-    </div>`;
+    </div>
+    <button class="mb-nav-btn" onclick="navigateMbMatch(1)" ${mbHasNext ? '' : 'disabled'} aria-label="Próximo partido">›</button>`;
 
   // Partido cerrado (esperando resultado): chips con los 3 marcadores más palpitados + "Todos".
   // Con resultado: pestañas Lista / Análisis (como en el ranking).
@@ -13075,6 +13109,82 @@ function showSaveBanner(msg){
       max-width:48px!important;
       height:27px!important;
       font-size:15.6px!important;
+    }
+  }
+</style>
+
+<!-- AJUSTE FINAL: modal de detalhes do participante - remover fundos cinza das abas e navegação -->
+<style id="final-user-detail-white-sections-20260627">
+  /* Somente modal de detalhes do participante */
+  #user-detail-modal .ud-tabs{
+    background:#fff!important;
+    border-bottom:1px solid rgba(0,0,0,.08)!important;
+  }
+
+  #user-detail-modal .ud-round-nav{
+    background:#fff!important;
+    border-bottom:1px solid rgba(0,0,0,.08)!important;
+  }
+
+  #user-detail-modal .ud-body{
+    background:#fff!important;
+  }
+</style>
+
+
+<!-- AJUSTE FINAL: navegação entre partidas no modal Puntos por participante -->
+<style id="final-match-breakdown-navigation-20260627">
+  #match-breakdown-modal #mb-summary{
+    display:grid!important;
+    grid-template-columns:42px minmax(0,1fr) 42px!important;
+    align-items:center!important;
+    gap:8px!important;
+    background:#fff!important;
+  }
+  #match-breakdown-modal #mb-summary .mb-summary-center{
+    min-width:0!important;
+    text-align:center!important;
+  }
+  #match-breakdown-modal #mb-summary .ud-summary-name,
+  #match-breakdown-modal #mb-summary .ud-summary-sub{
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  #match-breakdown-modal .mb-nav-btn{
+    width:36px!important;
+    height:36px!important;
+    border-radius:999px!important;
+    border:1px solid rgba(17,24,39,.08)!important;
+    background:#fff!important;
+    color:#111827!important;
+    box-shadow:0 2px 8px rgba(17,24,39,.06)!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:28px!important;
+    line-height:1!important;
+    font-weight:900!important;
+    padding:0!important;
+  }
+  #match-breakdown-modal .mb-nav-btn:disabled{
+    opacity:.32!important;
+    color:#9CA3AF!important;
+    box-shadow:none!important;
+  }
+  @media (max-width:420px){
+    #match-breakdown-modal #mb-summary{
+      grid-template-columns:36px minmax(0,1fr) 36px!important;
+      gap:6px!important;
+      padding-left:12px!important;
+      padding-right:12px!important;
+    }
+    #match-breakdown-modal .mb-nav-btn{
+      width:32px!important;
+      height:32px!important;
+      font-size:24px!important;
     }
   }
 </style>
