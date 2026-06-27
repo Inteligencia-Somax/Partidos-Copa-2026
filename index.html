@@ -1802,17 +1802,6 @@ body{
      style="background:linear-gradient(90deg,var(--red) 33%,#fff 33%,#fff 67%,var(--blue) 67%)">
 </div>
 
-<!-- DECISIVE PHASES NOTICE -->
-<div class="update-notice">
-  <div class="update-notice-card">
-    <button class="update-notice-head" type="button" onclick="toggleNotice(this)">
-      <span class="update-notice-title"><svg class="update-notice-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><span id="decisive-notice-title">Fases decisivas — puntos dobles ×2</span></span>
-      <span class="update-notice-chev">▾</span>
-    </button>
-    <div class="update-notice-text" id="decisive-notice-text" style="display:none;">Desde el <strong>domingo 28/6</strong>, en las eliminatorias todos los puntos valen el <strong>doble (×2)</strong>. Se puntúa sobre el <strong>tiempo reglamentario + prórroga</strong>. Los <strong>penales</strong> definen quién clasifica, pero <strong>no</strong> entran en el acierto. Ej.: si termina 2:2 (con prórroga) y se define por penales, el palpite se puntúa sobre <strong>2:2</strong>.</div>
-  </div>
-</div>
-
 
 <!-- SCORING RULES MINI -->
 <div id="scoring-rules-wrap" style="max-width:680px;margin:0 auto;padding:0 12px;">
@@ -4696,14 +4685,6 @@ body{
       </div>
     </div>
     <div class="rules-section">
-      <h3>✖2 Puntos dobles</h3>
-      <p>A partir de los octavos de final, todos los puntos valen el doble. Un marcador exacto puede otorgar hasta <strong>50 puntos</strong>.</p>
-    </div>
-    <div class="rules-section">
-      <h3>🥅 Fases decisivas: prórroga y penales</h3>
-      <p>En las eliminatorias, el resultado que se puntúa es el del <strong>tiempo reglamentario + prórroga</strong>. Los <strong>penales</strong> solo definen quién clasifica y <strong>no</strong> cuentan para el palpite. Ejemplo: si un partido termina 2:2 (con prórroga) y se decide por penales, tu palpite se puntúa sobre el 2:2.</p>
-    </div>
-    <div class="rules-section">
       <h3>⏰ Plazo</h3>
       <p>Los palpites se bloquean 30 minutos antes del horario previsto del partido. ¡Atención a los horarios!</p>
     </div>
@@ -6088,7 +6069,7 @@ body{
       <button class="np-btn np-save" onclick="adminSaveResult()">Guardar</button>
     </div>
     <div class="admin-adv" id="admin-adv" style="display:none">
-      <div class="admin-adv-title">🏅 ¿Quién avanzó? <span>(si se definió por penales)</span></div>
+      <div class="admin-adv-title">🏅 ¿Quién avanzó?</div>
       <div class="admin-adv-btns">
         <button class="admin-adv-btn" id="admin-adv-home" onclick="setAdminAdv('home')"></button>
         <button class="admin-adv-btn" id="admin-adv-away" onclick="setAdminAdv('away')"></button>
@@ -8321,7 +8302,7 @@ function buildMbScoreChips(){
   parts.forEach(p => { const k = `${p.pick.home}:${p.pick.away}`; tally[k] = (tally[k] || 0) + 1; });
   const top3 = Object.entries(tally).sort((a,b) => b[1] - a[1]).slice(0, 3);
   const fs = mbState.filterScore;
-  let chips = `<span class="mb-sflabel">Palpites:</span>`;
+  let chips = ``;
   chips += `<button class="mb-sfchip ${!fs ? 'active' : ''}" onclick="setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
   chips += top3.map(([sc, n]) =>
     `<button class="mb-sfchip ${fs === sc ? 'active' : ''}" onclick="setMbScoreFilter('${sc}')">${sc} <span class="mb-sfn">${n}</span></button>`
@@ -8856,7 +8837,7 @@ function openAdminResult(matchId){
   adminActiveTeam = 'home';
   const real = loadRealResults()[matchId];
   adminAdvChoice = real && real.adv ? real.adv : null;
-  adminIsKO = !!m.phase && m.phase.indexOf('Grupo ')!==0; // eliminatoria
+  adminIsKO = !!m.phase && m.phase.indexOf('Grupo ')!==0;
   const disp = matchDisplay(m, loadRealResults(), computeStandings(loadRealResults()));
   document.getElementById('admin-modal-label').textContent = `${disp.home} vs ${disp.away}`;
   document.getElementById('admin-modal-time').textContent = `${m.date.replace('.,','.')} · ${m.time}hs · ${m.phase}`;
@@ -8869,7 +8850,7 @@ function openAdminResult(matchId){
   document.getElementById('admin-score-home').textContent = real ? real.home : '–';
   document.getElementById('admin-score-away').textContent = real ? real.away : '–';
   document.getElementById('admin-remove-link').style.display = real ? '' : 'none';
-  // Selector "¿Quién avanzó?" solo para eliminatorias
+  // Selector de avance
   const advBox = document.getElementById('admin-adv');
   if(adminIsKO){
     document.getElementById('admin-adv-home').textContent = `${disp.hf} ${disp.hc||disp.home}`;
@@ -8932,7 +8913,7 @@ async function adminSaveResult(){
     const advBox=document.getElementById('admin-adv');
     advBox.style.borderColor='var(--red)';
     setTimeout(()=>{advBox.style.borderColor='';},1500);
-    showSaveBanner('Empate: elegí quién avanzó por penales');
+    showSaveBanner('Empate: elegí quién avanzó');
     return;
   }
   const results = loadRealResults();
@@ -8988,10 +8969,6 @@ function switchTab(tab, btn){
   // Ocultar el mini "Sistema de Puntuación" en Ranking, Admin y Decepción.
   const scoringWrap = document.getElementById('scoring-rules-wrap');
   if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin' || tab === 'decepcion') ? 'none' : '';
-  // Ocultar el aviso de la página principal (Fases decisivas) en Admin.
-  document.querySelectorAll('.update-notice').forEach(n => {
-    n.style.display = (tab === 'admin') ? 'none' : '';
-  });
   if(tab==='ranking'){
     renderRanking();
     requestAnimationFrame(()=>{ document.getElementById('my-rank-card')?.scrollIntoView({block:'center'}); });
@@ -9024,18 +9001,7 @@ function toggleUpdateNotice(){
 }
 
 // ══ COMUNICADO / ANUNCIO DE ENTRADA ══
-// Texto fijo, editable desde el código. Para publicar un nuevo comunicado:
-// cambiá el "id" (para que reaparezca a todos) y el título/contenido.
-const APP_ANNOUNCEMENT = {
-  id: 'fases-decisivas-2026-06-28',
-  title: '📢 ¡Empiezan las fases decisivas!',
-  html: `
-    <p>🔥 <strong>¡Preparate!</strong> El <strong>domingo 28/6</strong> arrancan las eliminatorias y los puntos pasan a valer el <strong>doble (×2)</strong>. Acá se define todo, así que afiná la puntería. 😤</p>
-    <p>⏱️ El resultado que cuenta para tu palpite es el del <strong>tiempo reglamentario + prórroga</strong>.<span class="ann-ex">Ej.: si va 1:1 en los 90' y termina 2:1 en la prórroga, el resultado oficial para puntuar es <strong>2:1</strong>.</span></p>
-    <p>🥅 Los <strong>penales</strong> solo definen quién clasifica: <strong>no</strong> entran en el acierto.<span class="ann-ex">Ej.: si termina 2:2 (con prórroga) y se define por penales, se puntúa sobre <strong>2:2</strong>. Quien gane por penales no cambia tu palpite.</span></p>
-    <p>¿Alguna duda? Consultá antes de palpitar. ¡Mucha suerte! 🍀</p>
-  `
-};
+const APP_ANNOUNCEMENT = null;
 
 function maybeShowAnnouncement(){
   const a = APP_ANNOUNCEMENT;
@@ -10521,6 +10487,157 @@ function showSaveBanner(msg){
   #user-detail-modal .ud-rnav-sub{
     margin-left:0!important;
     margin-right:0!important;
+  }
+</style>
+
+
+
+<!-- AJUSTE FINAL: Puntos por participante - retirar texto "Palpites" e padronizar largura dos filtros -->
+<style id="final-mb-score-filter-no-label-equal-width-20260627b">
+  #match-breakdown-modal .ud-tabs.mb-score-filter{
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:10px 12px!important;
+    background:#fff!important;
+    border-bottom:1px solid rgba(0,0,0,.08)!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    scrollbar-width:none!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter::-webkit-scrollbar{
+    display:none!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sflabel{
+    display:none!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip,
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
+    flex:0 0 132px!important;
+    width:132px!important;
+    min-width:132px!important;
+    max-width:132px!important;
+    height:44px!important;
+    min-height:44px!important;
+    padding:0 10px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:6px!important;
+    border-radius:999px!important;
+    font-size:15px!important;
+    font-weight:850!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
+    font-size:14px!important;
+    font-weight:800!important;
+    line-height:1!important;
+    opacity:.72!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip.active .mb-sfn{
+    opacity:.9!important;
+  }
+
+  @media(max-width:430px){
+    #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip,
+    #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
+      flex-basis:126px!important;
+      width:126px!important;
+      min-width:126px!important;
+      max-width:126px!important;
+      height:42px!important;
+      min-height:42px!important;
+      font-size:14px!important;
+    }
+  }
+</style>
+
+
+<!-- AJUSTE FINAL SOLICITADO: modal Puntos por participante - sem texto Palpites e filtros com largura igual -->
+<style id="final-mb-score-filter-sem-palpite-largura-igual-20260627">
+  #match-breakdown-modal .ud-tabs.mb-score-filter,
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:8px!important;
+    padding:10px 14px!important;
+    background:#fff!important;
+    border-bottom:1px solid var(--border)!important;
+    overflow:visible!important;
+    min-height:64px!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sflabel{
+    display:none!important;
+    width:0!important;
+    min-width:0!important;
+    padding:0!important;
+    margin:0!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip,
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:44px!important;
+    min-height:44px!important;
+    padding:0 6px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:5px!important;
+    border-radius:999px!important;
+    font-size:14px!important;
+    line-height:1!important;
+    font-weight:850!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    box-sizing:border-box!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
+    font-size:13px!important;
+    line-height:1!important;
+    font-weight:800!important;
+    opacity:.72!important;
+    flex:0 0 auto!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip.active .mb-sfn{
+    opacity:.9!important;
+  }
+
+  @media(max-width:380px){
+    #match-breakdown-modal .ud-tabs.mb-score-filter,
+    #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill{
+      gap:6px!important;
+      padding-left:12px!important;
+      padding-right:12px!important;
+    }
+    #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip,
+    #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
+      font-size:13px!important;
+      gap:4px!important;
+      padding-left:4px!important;
+      padding-right:4px!important;
+    }
+    #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
+      font-size:12px!important;
+    }
   }
 </style>
 
