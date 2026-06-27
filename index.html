@@ -6188,10 +6188,11 @@ function recentSummaryHtml({compact=false, share=false}={}){
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.8 15.4 6.2"></path><path d="M8.6 13.2l6.8 4.6"></path></svg>
   </button>` : '';
   const deltaHtml = data.rankDelta === null ? '' : (data.rankDelta > 0 ? `<span class="rs-summary-delta up">▲${data.rankDelta}</span>` : (data.rankDelta < 0 ? `<span class="rs-summary-delta down">▼${Math.abs(data.rankDelta)}</span>` : `<span class="rs-summary-delta same">=</span>`));
+  const posHtml = data.myPos ? `<span class="rs-dot">•</span><span class="rs-pos-main">${data.myPos}º</span>` : '';
   return `<div class="recent-summary-card" id="recent-summary-card">
     <div class="rs-head">
       <div class="rs-head-main">
-        <div class="rs-titleline"><span class="rs-title">Tu momento</span><span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span>${deltaHtml}</div>
+        <div class="rs-titleline"><span class="rs-title">Tu momento</span><span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span>${posHtml}${deltaHtml}</div>
         ${shareBtn}
       </div>
       <div class="rs-msg ${data.cls}">${data.msg}</div>
@@ -6264,9 +6265,16 @@ async function shareRecentSummaryImage(){
   ctx.fillStyle = '#6B7280'; ctx.font = '900 25px Inter, Arial'; ctx.fillText('TU MOMENTO', 124, 214);
   ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', 294, 214);
   ctx.fillStyle = '#009B54'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, 322, 216);
-  if(deltaTxt){ ctx.fillStyle = deltaColor; ctx.font = '900 24px Inter, Arial'; ctx.fillText(deltaTxt, 460, 214); }
+  let afterPtsX = 322 + ctx.measureText(`${data.myTotal} pts`).width + 18;
+  if(data.myPos){
+    ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', afterPtsX, 214);
+    afterPtsX += 26;
+    ctx.fillStyle = '#009B54'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myPos}º`, afterPtsX, 216);
+    afterPtsX += ctx.measureText(`${data.myPos}º`).width + 14;
+  }
+  if(deltaTxt){ ctx.fillStyle = deltaColor; ctx.font = '900 24px Inter, Arial'; ctx.fillText(deltaTxt, afterPtsX, 214); }
 
-  ctx.fillStyle = data.cls === 'good' ? '#009B54' : (data.cls === 'hot' ? '#B45309' : (data.cls === 'bad' ? '#CE1126' : '#92400E'));
+  ctx.fillStyle = '#374151';
   ctx.font = '850 21px Inter, Arial';
   ctx.textAlign = 'right';
   wrapCanvasTextRight(ctx, data.msg, 772, 214, 300, 25);
@@ -8854,5 +8862,21 @@ function showSaveBanner(msg){
   color:var(--red)!important;
   padding-left:4px!important;
   padding-right:0!important;
+}
+</style>
+
+<style id="summary-final-polish-20260627b">
+/* Ajustes finais do resumo: posição do ranking, frase neutra e espaçamento menor */
+#scoring-rules-wrap .rules-card{margin-bottom:4px!important;}
+#recent-summary-wrap .recent-summary-card{margin-top:4px!important;margin-bottom:14px!important;}
+.rs-pos-main{font-size:24px!important;font-weight:950!important;color:var(--green)!important;line-height:1!important;white-space:nowrap!important;}
+.rs-titleline{align-items:baseline!important;}
+.rs-msg{color:#374151!important;text-align:right!important;max-width:58%!important;}
+.rs-msg.warn,.rs-msg.hot,.rs-msg.bad,.rs-msg.good{color:#374151!important;}
+#summary-modal .rs-msg{color:#374151!important;}
+@media(max-width:430px){
+  .rs-pos-main{font-size:22px!important;}
+  #scoring-rules-wrap .rules-card{margin-bottom:4px!important;}
+  #recent-summary-wrap .recent-summary-card{margin-top:4px!important;}
 }
 </style>
