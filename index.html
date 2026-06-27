@@ -7030,7 +7030,7 @@ function renderRanking(){
       const gcls = gp===1 ? ' general-top1' : gp===2 ? ' general-top2' : gp===3 ? ' general-top3' : '';
       return `<span class="rank-general-pos${gcls}">General <b>${gp}º</b></span>`;
     })() : '';
-    const exactHtml = `${u.exact} exacto${u.exact===1?'':'s'}`;
+    const exactHtml = `<span class="rank-exact-badge">${u.exact} exacto${u.exact===1?'':'s'}</span>`;
     const detailHtml = isRoundRanking ? `${generalHtml}${generalHtml?' · ':''}${exactHtml}${formHtml}` : `${exactHtml}${formHtml}`;
     let posDeltaHtml = '';
     if(!isRoundRanking && lastDate && prevIndex[u.name] !== undefined){
@@ -8666,5 +8666,24 @@ function showSaveBanner(msg){
   border-color:transparent!important;
   color:var(--green)!important;
 }
+</style>
+
+<style id="rank-exact-badge-fix-20260627">
+.rank-exact-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:3px 9px;
+  border-radius:999px;
+  background:rgba(0,155,84,.12);
+  border:1px solid rgba(0,155,84,.24);
+  color:var(--green);
+  font-size:12px;
+  font-weight:900;
+  line-height:1;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+.rank-detail .rank-exact-badge + .form-dots{margin-left:2px;}
 </style>
 </body></html>
