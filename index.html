@@ -3685,33 +3685,6 @@ body{
         <p class="admin-export-note">Usá este botón después de cargar o corregir resultados. El archivo descargado ya incluye los resultados reales y los palpites guardados en este navegador.</p>
       </div>
 
-      <div class="rules-section">
-        <h3>📢 Comunicado de entrada</h3>
-        <p>Mensaje que aparece al entrar a la app. Después de guardar, descargá el HTML y publicalo para que llegue a todos.</p>
-        <label class="adm-check"><input type="checkbox" id="adm-ann-enabled"> Mostrar el comunicado</label>
-        <label class="adm-field-label">Título</label>
-        <input class="adm-input" id="adm-ann-title" type="text" placeholder="📢 Título del comunicado">
-        <label class="adm-field-label">Mensaje (acepta &lt;strong&gt;, &lt;p&gt;, emojis)</label>
-        <textarea class="adm-textarea" id="adm-ann-html" rows="7" placeholder="Texto del comunicado..."></textarea>
-        <label class="adm-check"><input type="checkbox" id="adm-ann-reshow"> Mostrar de nuevo a todos (resetea el "ya visto")</label>
-        <div class="admin-export-box">
-          <button class="admin-copy-btn" type="button" onclick="previewAnnounce()">👁 Vista previa</button>
-          <button class="admin-download-btn" type="button" onclick="saveAnnounceCfg()">💾 Guardar comunicado</button>
-        </div>
-      </div>
-
-      <div class="rules-section">
-        <h3>📌 Aviso de la página principal</h3>
-        <p>Es el cartel que abre y recolhe en la pantalla de partidas. Mismo flujo: guardá y publicá el HTML.</p>
-        <label class="adm-field-label">Título</label>
-        <input class="adm-input" id="adm-notice-title" type="text" placeholder="Título del aviso">
-        <label class="adm-field-label">Texto (acepta &lt;strong&gt;, emojis)</label>
-        <textarea class="adm-textarea" id="adm-notice-html" rows="5" placeholder="Texto del aviso..."></textarea>
-        <div class="admin-export-box">
-          <button class="admin-download-btn" type="button" onclick="saveNoticeCfg()">💾 Guardar aviso</button>
-        </div>
-      </div>
-
 
       <div class="filter-row">
         <button class="filter-chip active" onclick="filterAdminResults('all',this)">Todos</button>
@@ -5154,8 +5127,9 @@ body{
 .ud-tabs.mb-score-filter-body .mb-sflabel{background:var(--white);}
 /* Resaltado de filas cuyo palpite coincide con el del usuario */
 .ud-row.mine{background:rgba(0,155,84,.06);border-radius:10px;}
-.ud-mine-tag{display:inline-block;margin-left:7px;padding:1px 8px;border-radius:50px;background:var(--green);color:#fff;font-size:10px;font-weight:800;vertical-align:middle;letter-spacing:.2px;}
-.ud-mine-tag.me{background:var(--text);}
+.ud-mine-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:var(--bg);border:1px solid var(--border);color:var(--sub);font-size:10px;font-weight:800;vertical-align:middle;letter-spacing:.2px;}
+.ud-mine-tag.me{background:var(--text);border-color:var(--text);color:#fff;}
+.ud-exact-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:#FFF8E1;border:1px solid #F0C14B;color:#92400E;font-size:10px;font-weight:900;vertical-align:middle;letter-spacing:.2px;}
 /* Tarjetas de estadística (Análisis: más palpitado / puntuó) */
 .mb-stat-cards{display:flex;gap:8px;margin:4px 0 12px;}
 .mb-stat-card{flex:1;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;box-shadow:var(--shadow);}
@@ -5208,12 +5182,6 @@ body{
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
 .admin-copy-btn{background:#F8D45C;color:#173F1F;min-width:140px;}
 .admin-export-note{font-size:12px!important;margin-top:10px;color:var(--sub)!important;}
-.adm-field-label{display:block;font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 5px;}
-.adm-input,.adm-textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:13px;color:var(--text);background:var(--white);}
-.adm-textarea{resize:vertical;line-height:1.5;}
-.adm-input:focus,.adm-textarea:focus{outline:none;border-color:var(--green);}
-.adm-check{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);margin-top:12px;cursor:pointer;}
-.adm-check input{width:17px;height:17px;accent-color:var(--green);}
 .decepcion-page-section{border:1px solid rgba(220,90,60,.28);background:linear-gradient(180deg,#fff 0%,#FFF4F0 58%,#FFFFFF 100%);position:relative;overflow:hidden;}
 .decepcion-page-section::before{content:'';position:absolute;top:-70px;right:-70px;width:180px;height:180px;background:radial-gradient(circle,rgba(220,90,60,.14) 0%,transparent 70%);pointer-events:none;}
 .decepcion-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;position:relative;z-index:1;}
@@ -5752,7 +5720,6 @@ function showApp(){
     if(adminUnlocked) localStorage.setItem('somax_admin_unlocked','1');
   }
   setTimeout(maybeShowAnnouncement, 600);
-  applyNoticeCfg();
 }
 
 // ══ FILTER STATE ══
@@ -6849,16 +6816,17 @@ function renderMatchBreakdown(){
           const mp = mbState.myPick;
           const isMe = p.name === mbState.myName;
           const sameAsMine = !!mp && p.pick.home === mp.home && p.pick.away === mp.away;
-          const tag = isMe
-            ? '<span class="ud-mine-tag me">Vos</span>'
-            : (sameAsMine ? '<span class="ud-mine-tag">= Vos</span>' : '');
-          const rowCls = (isMe || sameAsMine) ? 'ud-row mine' : 'ud-row';
+          const nameTag = isMe ? '<span class="ud-mine-tag me">Vos</span>' : '';
+          const pickTags = [];
+          if(!isMe && sameAsMine) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
+          if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
+          const rowCls = isMe ? 'ud-row mine' : 'ud-row';
           return `
         <div class="${rowCls}">
           <span class="mb-pos">${p.pos}º</span>
           <div class="ud-match">
-            <div class="ud-teams">${p.name}${tag}</div>
-            <div class="ud-meta">Palpite: ${p.pick.home}:${p.pick.away}</div>
+            <div class="ud-teams">${p.name}${nameTag}</div>
+            <div class="ud-meta">Palpite: ${p.pick.home}:${p.pick.away}${pickTags.join('')}</div>
           </div>
           <div class="ud-pts ${pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero')}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
         </div>`;
@@ -6997,15 +6965,10 @@ function renderDecepcion(){
 // ══ EXPORTAR HTML ACTUALIZADO ══
 
 function getSomaxExportSnapshot(){
-  const snap = {
+  return {
     somax_all_picks: localStorage.getItem('somax_all_picks') || '{}',
     somax_real_results: localStorage.getItem('somax_real_results') || '{}'
   };
-  const annCfg = localStorage.getItem('somax_announce_cfg');
-  const noticeCfg = localStorage.getItem('somax_notice_cfg');
-  if(annCfg) snap.somax_announce_cfg = annCfg;
-  if(noticeCfg) snap.somax_notice_cfg = noticeCfg;
-  return snap;
 }
 function buildUpdatedHTML(){
   const clone = document.documentElement.cloneNode(true);
@@ -7066,7 +7029,6 @@ function showAdminArea(){
   const area = document.getElementById('admin-area');
   if(login) login.style.display='none';
   if(area) area.style.display='block';
-  loadAdminTextEditors();
   renderAdminResults(currentAdminFilter, true);
 }
 function filterAdminResults(f, btn){
@@ -7337,12 +7299,11 @@ function toggleUpdateNotice(){
   if(c) c.classList.toggle('open', open);
 }
 
-// ══ COMUNICADOS / ANUNCIOS + AVISO (editables desde Admin) ══
-// Los textos por defecto viven acá. El admin puede sobrescribirlos desde el panel,
-// y los cambios viajan a todos al exportar el HTML (snapshot).
-const DEFAULT_ANNOUNCEMENT = {
+// ══ COMUNICADO / ANUNCIO DE ENTRADA ══
+// Texto fijo, editable desde el código. Para publicar un nuevo comunicado:
+// cambiá el "id" (para que reaparezca a todos) y el título/contenido.
+const APP_ANNOUNCEMENT = {
   id: 'fases-decisivas-2026-06-28',
-  enabled: true,
   title: '📢 ¡Empiezan las fases decisivas!',
   html: `
     <p>🔥 <strong>¡Preparate!</strong> El <strong>domingo 28/6</strong> arrancan las eliminatorias y los puntos pasan a valer el <strong>doble (×2)</strong>. Acá se define todo, así que afiná la puntería. 😤</p>
@@ -7351,37 +7312,10 @@ const DEFAULT_ANNOUNCEMENT = {
     <p>¿Alguna duda? Consultá antes de palpitar. ¡Mucha suerte! 🍀</p>
   `
 };
-const DEFAULT_NOTICE = {
-  title: 'Fases decisivas — puntos dobles ×2',
-  html: 'Desde el <strong>domingo 28/6</strong>, en las eliminatorias todos los puntos valen el <strong>doble (×2)</strong>. Se puntúa sobre el <strong>tiempo reglamentario + prórroga</strong>. Los <strong>penales</strong> definen quién clasifica, pero <strong>no</strong> entran en el acierto. Ej.: si termina 2:2 (con prórroga) y se define por penales, el palpite se puntúa sobre <strong>2:2</strong>.'
-};
-
-function getAnnouncement(){
-  let cfg = {};
-  try{ cfg = JSON.parse(localStorage.getItem('somax_announce_cfg') || '{}'); }catch{ cfg = {}; }
-  return Object.assign({}, DEFAULT_ANNOUNCEMENT, cfg);
-}
-function getNotice(){
-  let cfg = {};
-  try{ cfg = JSON.parse(localStorage.getItem('somax_notice_cfg') || '{}'); }catch{ cfg = {}; }
-  return Object.assign({}, DEFAULT_NOTICE, cfg);
-}
-
-// Aplica el texto del aviso de la página principal (acordeón "Fases decisivas").
-function applyNoticeCfg(){
-  const n = getNotice();
-  const t = document.getElementById('decisive-notice-title');
-  const b = document.getElementById('decisive-notice-text');
-  if(t) t.textContent = n.title;
-  if(b) b.innerHTML = n.html;
-}
 
 function maybeShowAnnouncement(){
-  const a = getAnnouncement();
-  if(!a || !a.id || a.enabled === false) return;
-  let seen = [];
-  try{ seen = JSON.parse(localStorage.getItem('somax_announce_seen') || '[]'); }catch{ seen = []; }
-  if(seen.includes(a.id)) return;
+  const a = APP_ANNOUNCEMENT;
+  if(!a || !a.id) return;
   const titleEl = document.getElementById('announce-title');
   const bodyEl  = document.getElementById('announce-body');
   const modal   = document.getElementById('announce-modal');
@@ -7392,16 +7326,8 @@ function maybeShowAnnouncement(){
 }
 
 function dismissAnnounce(){
-  const a = getAnnouncement();
   const modal = document.getElementById('announce-modal');
   if(modal) modal.style.display = 'none';
-  try{
-    let seen = JSON.parse(localStorage.getItem('somax_announce_seen') || '[]');
-    if(a && a.id && !seen.includes(a.id)){
-      seen.push(a.id);
-      localStorage.setItem('somax_announce_seen', JSON.stringify(seen));
-    }
-  }catch{ /* noop */ }
 }
 
 function closeAnnounceOutside(e){
@@ -7420,51 +7346,6 @@ function setScoringMode(mode){
   });
   document.getElementById('sm-grupos')?.classList.toggle('active', !x2);
   document.getElementById('sm-decisiva')?.classList.toggle('active', x2);
-}
-
-// ── Admin: editar comunicado y aviso de la página principal ──
-function loadAdminTextEditors(){
-  const a = getAnnouncement();
-  const n = getNotice();
-  const setVal = (id,v)=>{ const el=document.getElementById(id); if(el) el.value = v; };
-  const setChk = (id,v)=>{ const el=document.getElementById(id); if(el) el.checked = !!v; };
-  setChk('adm-ann-enabled', a.enabled !== false);
-  setVal('adm-ann-title', a.title || '');
-  setVal('adm-ann-html', (a.html || '').trim());
-  setVal('adm-notice-title', n.title || '');
-  setVal('adm-notice-html', n.html || '');
-}
-function saveAnnounceCfg(){
-  const enabled = document.getElementById('adm-ann-enabled')?.checked;
-  const title = (document.getElementById('adm-ann-title')?.value || '').trim();
-  const html  = (document.getElementById('adm-ann-html')?.value || '').trim();
-  const reshow = document.getElementById('adm-ann-reshow')?.checked;
-  const prev = getAnnouncement();
-  // Si se marca "mostrar de nuevo a todos", se genera un id nuevo (resetea el "ya visto").
-  const id = reshow ? ('aviso-' + Date.now()) : prev.id;
-  const cfg = { id, enabled: !!enabled, title, html };
-  localStorage.setItem('somax_announce_cfg', JSON.stringify(cfg));
-  const rs = document.getElementById('adm-ann-reshow'); if(rs) rs.checked = false;
-  showSaveBanner('Comunicado guardado ✅');
-}
-function saveNoticeCfg(){
-  const title = (document.getElementById('adm-notice-title')?.value || '').trim();
-  const html  = (document.getElementById('adm-notice-html')?.value || '').trim();
-  localStorage.setItem('somax_notice_cfg', JSON.stringify({ title, html }));
-  applyNoticeCfg();
-  showSaveBanner('Aviso de la página principal guardado ✅');
-}
-function previewAnnounce(){
-  // Vista previa inmediata del comunicado tal cual está en los campos (sin guardar el "ya visto").
-  const title = (document.getElementById('adm-ann-title')?.value || '').trim();
-  const html  = (document.getElementById('adm-ann-html')?.value || '').trim();
-  const titleEl = document.getElementById('announce-title');
-  const bodyEl  = document.getElementById('announce-body');
-  const modal   = document.getElementById('announce-modal');
-  if(!titleEl || !bodyEl || !modal) return;
-  titleEl.textContent = title || '📢 Comunicado';
-  bodyEl.innerHTML = html;
-  modal.style.display = 'flex';
 }
 function showSaveBanner(msg){
   const b=document.getElementById('save-banner');
