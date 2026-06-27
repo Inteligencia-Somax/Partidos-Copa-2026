@@ -57,6 +57,7 @@ body{
 }
 .topbar-pts{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap;display:flex;align-items:center;gap:5px;}
 .topbar-pos{color:var(--text);font-weight:700;font-size:13px;}
+.topbar-points-main{color:var(--text);font-weight:700;}
 .topbar-sep{color:var(--sub);font-weight:800;}
 .topbar-rank-delta{font-size:11px;font-weight:900;line-height:1;}
 .topbar-rank-delta.up{color:var(--green);}
@@ -206,7 +207,7 @@ body{
 .name-btn:hover{background:var(--green2);}
 
 /* ══ MAIN ══ */
-.main{max-width:680px;margin:0 auto;padding:16px 12px 100px;}
+.main{max-width:680px;margin:0 auto;padding:6px 12px 100px;}
 
 /* ══ TABS ══ */
 .tabs-row{
@@ -364,11 +365,14 @@ body{
   font-size:11px;font-weight:700;
   padding:3px 10px;border-radius:20px;
   display:flex;align-items:center;gap:4px;
+  flex-shrink:0;
 }
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
 .mc-status.palp{background:rgba(0,56,168,.1);color:var(--blue);}
 .mc-status.closed{background:rgba(0,56,168,.1);color:var(--blue);}
-.mc-badge.center.wait{color:var(--sub);}
+/* Resultado / esperando resultado: texto rosado con fondo gris */
+.mc-badge.center{color:#B14A5A;}
+.mc-badge.center.wait{color:#B14A5A;background:rgba(0,0,0,.05);border-color:var(--border);}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
 .mc-status .mc-pts{font-size:16px;font-weight:900;}
@@ -789,7 +793,7 @@ body{
 .rank-pos.p1{color:#F59E0B;}
 .rank-pos.p2{color:#9CA3AF;}
 .rank-pos.p3{color:#D97706;}
-.rank-medal{font-size:30px;line-height:1;display:inline-block;}
+.rank-medal{font-size:42px;line-height:1;display:inline-block;transform:translateY(2px);}
 .rank-card.top1{background:linear-gradient(180deg,#FFFBEC,#fff);border-color:#F2D98A;}
 .rank-card.top2{background:linear-gradient(180deg,#F6F7FA,#fff);border-color:#DEE1E7;}
 .rank-card.top3{background:linear-gradient(180deg,#FCF4EB,#fff);border-color:#EBD4BE;}
@@ -868,7 +872,7 @@ body{
 .rank-name-txt{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rank-name .vos-tag{font-size:11px;color:var(--green);font-weight:800;flex-shrink:0;}
 .rank-detail{font-size:12px;color:var(--sub);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;min-width:0;}
-.detail-i{width:15px;height:15px;color:#AAB2BF;flex-shrink:0;display:inline-block;vertical-align:-3px;margin-left:6px;}
+.detail-i{width:15px;height:15px;color:#AAB2BF;flex-shrink:0;display:inline-block;vertical-align:-3px;margin:0 2px 0 0;}
 .rank-delta{font-weight:800;}
 .form-dots{display:inline-flex;gap:3px;vertical-align:middle;}
 .fd{width:8px;height:8px;border-radius:50%;display:inline-block;}
@@ -1003,7 +1007,7 @@ body{
   border-radius:24px;
   padding:16px 18px;
   box-shadow:var(--shadow);
-  margin:16px 0 14px;
+  margin:6px 0 14px;
 }
 .rs-head{display:flex;flex-direction:column;align-items:stretch;gap:7px;margin-bottom:10px;}
 .rs-head-main{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px;width:100%;}
@@ -1034,6 +1038,10 @@ body{
 .summary-footer-btn svg{width:18px;height:18px;}
 @media(max-width:430px){.recent-summary-card{padding:14px 16px}.rs-title{font-size:12px}.rs-kpi-main{font-size:20px}.rs-msg{font-size:11.5px}.rs-game{padding:7px 9px}.summary-footer-btn{height:50px;font-size:14px}}
 
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 </head>
 <body><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
@@ -1046,7 +1054,7 @@ body{
       <div class="topbar-name" id="user-name-display"></div>
     </div>
     <div class="topbar-right" id="topbar-right" style="display:none;">
-      <div class="topbar-pts"><span id="user-pos-display" class="topbar-pos"></span><span class="topbar-sep">•</span><span><span id="user-pts-display">0</span> pts</span><span id="user-rank-delta" class="topbar-rank-delta"></span></div>
+      <div class="topbar-pts"><span id="user-pos-display" class="topbar-pos"></span><span class="topbar-sep">•</span><span class="topbar-points-main"><span id="user-pts-display">0</span> pts</span><span id="user-rank-delta" class="topbar-rank-delta"></span></div>
       <button class="topbar-logout" onclick="logoutUser()">Salir</button>
     </div>
   </div>
@@ -5613,6 +5621,10 @@ body{
 .rs-tag.bad{background:transparent!important;color:var(--red)!important;border-color:transparent!important;padding-left:4px;padding-right:0;}
 .rs-pts.exact{background:rgba(0,155,84,.12)!important;color:var(--green)!important;border-color:rgba(0,155,84,.25)!important;}
 
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -6264,9 +6276,9 @@ async function shareRecentSummaryImage(){
   afterTitleX += 26;
   ctx.fillStyle = '#111114'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, afterTitleX, 216);
 
-  ctx.fillStyle = '#374151';
+  ctx.fillStyle = '#6B7280';
   ctx.font = '850 21px Inter, Arial';
-  canvasTextFit(data.msg, 124, 250, 650);
+  canvasTextFit(data.msg, 124, 246, 650);
 
   let y = 316;
   data.games.forEach(g=>{
@@ -6583,11 +6595,12 @@ function renderMatches(filter){
           <span class="mc-time">${m.time}</span>
           <span class="mc-dot"></span>
           <span class="mc-phase">${m.phase}</span>
-          ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge center wait">Esperando partido</span>`}
+          ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge center wait">Esperando resultado</span>`}
           <div style="flex:1"></div>
+          ${detailI}
           <span class="mc-status ${statusCls}">
             ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? 'Palpitado' : 'Pendiente'))}
-          </span>${detailI}
+          </span>
         </div>
         <div class="mc-teams">
           <div class="mc-team">
@@ -7022,7 +7035,7 @@ function renderRanking(){
       const pts = calculatePickPoints(upicks[m.id], realResults[m.id], m).pts;
       return `<span class="fd ${pts>0?'win':'miss'}"></span>`;
     }).join('');
-    const formHtml = dots ? `<span class="rank-sep">•</span><span class="form-dots">${dots}</span>` : '';
+    const formHtml = dots ? `<span class="form-dots">${dots}</span>` : '';
     const generalHtml = (isRoundRanking && generalRankMap[u.name]) ? (()=>{
       const gp = generalRankMap[u.name];
       const gcls = gp===1 ? ' general-top1' : gp===2 ? ' general-top2' : gp===3 ? ' general-top3' : '';
@@ -8319,6 +8332,10 @@ function showSaveBanner(msg){
 .rs-games{gap:7px!important;}
 .rs-game{border-radius:13px!important;}
 .rs-share-btn{flex-shrink:0!important;}
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 <style id="final-visual-unify-cards-20260627">
@@ -8505,6 +8522,10 @@ function showSaveBanner(msg){
   .rs-kpi-main{font-size:24px!important;}
   .rs-msg{font-size:12.5px!important;}
 }
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 <style id="final-single-line-standard-cards-20260627">
@@ -8618,6 +8639,10 @@ function showSaveBanner(msg){
   .rs-teams{font-size:12.3px!important;}
   .rs-sub,.rs-tag{font-size:10.5px!important;}
 }
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 <style id="final-spacing-summary-exact-20260627">
@@ -8667,6 +8692,10 @@ function showSaveBanner(msg){
   border-color:transparent!important;
   color:var(--green)!important;
 }
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 <style id="rank-exact-badge-fix-20260627">
@@ -8687,6 +8716,10 @@ function showSaveBanner(msg){
 }
 .rank-sep{color:var(--sub);font-weight:900;opacity:.75;flex-shrink:0;}
 .rank-detail .rank-exact-badge + .form-dots{margin-left:2px;}
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 
@@ -8760,6 +8793,10 @@ function showSaveBanner(msg){
   .rank-detail{gap:3px!important;}
   .rank-score-wrap{gap:4px!important;}
 }
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 
@@ -8809,6 +8846,10 @@ function showSaveBanner(msg){
   .rank-card:not(.round-mode) .rank-pos{min-width:44px!important;width:44px!important;font-size:18px!important;}
   .rank-card:not(.round-mode) .rank-name{font-size:14.5px!important;}
 }
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 
@@ -8954,6 +8995,10 @@ function showSaveBanner(msg){
   .rs-msg{font-size:12px!important;}
   .rs-game{height:56px!important;min-height:56px!important;}
 }
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 <style id="final-summary-only-points-20260627">
@@ -8962,6 +9007,10 @@ function showSaveBanner(msg){
 .recent-summary-card .rs-summary-delta{display:none!important;}
 .recent-summary-card .rs-kpi-main{color:var(--text)!important;}
 .recent-summary-card .rs-titleline{white-space:nowrap!important;flex-wrap:nowrap!important;}
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 </body></html>
 
@@ -9004,6 +9053,10 @@ function showSaveBanner(msg){
   padding-left:4px!important;
   padding-right:0!important;
 }
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 <style id="summary-final-polish-20260627b">
@@ -9020,6 +9073,10 @@ function showSaveBanner(msg){
   #scoring-rules-wrap .rules-card{margin-bottom:4px!important;}
   #recent-summary-wrap .recent-summary-card{margin-top:4px!important;}
 }
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 <style id="final-tight-score-summary-gap-20260627">
@@ -9034,6 +9091,10 @@ function showSaveBanner(msg){
   #scoring-rules-wrap .rules-card{margin-bottom:6px!important;}
   #recent-summary-wrap .recent-summary-card{margin-top:0!important;}
 }
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
 </style>
 
 <style id="rank-position-size-final-20260627">
@@ -9066,5 +9127,108 @@ function showSaveBanner(msg){
     min-width:54px!important;
     width:54px!important;
   }
+}
+/* Ajuste de espaciado: sistema de puntuación -> resumen */
+#panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
+#panel-matches{padding-top:0!important;}
+
+</style>
+
+<style id="final-summary-spacing-spanish-20260627">
+/* Resumen: menor distancia entre título/puntos y frase; misma cor neutra do título */
+#recent-summary-wrap .recent-summary-card,
+#summary-modal .recent-summary-card{
+  width:calc(100% - 28px)!important;
+  max-width:100%!important;
+}
+.recent-summary-card .rs-head{
+  gap:3px!important;
+  margin-bottom:10px!important;
+}
+.recent-summary-card .rs-head-main{
+  align-items:flex-start!important;
+  gap:8px!important;
+}
+.recent-summary-card .rs-titleline{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:6px!important;
+  white-space:nowrap!important;
+  flex-wrap:nowrap!important;
+  min-width:0!important;
+}
+.recent-summary-card .rs-title,
+.recent-summary-card .rs-dot{
+  color:#6B7280!important;
+}
+.recent-summary-card .rs-kpi-main{
+  color:#111114!important;
+  margin-left:0!important;
+}
+.recent-summary-card .rs-msg,
+.recent-summary-card .rs-msg.warn,
+.recent-summary-card .rs-msg.hot,
+.recent-summary-card .rs-msg.bad,
+.recent-summary-card .rs-msg.good,
+#summary-modal .recent-summary-card .rs-msg,
+#summary-modal .recent-summary-card .rs-msg.warn,
+#summary-modal .recent-summary-card .rs-msg.hot,
+#summary-modal .recent-summary-card .rs-msg.bad,
+#summary-modal .recent-summary-card .rs-msg.good{
+  color:#6B7280!important;
+  text-align:left!important;
+  max-width:none!important;
+  margin:0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.recent-summary-card .rs-msg-text{
+  color:#6B7280!important;
+}
+/* Espaçamento entre Sistema de puntuación e Últimas 3 partidas igual ao respiro superior */
+#scoring-rules-wrap .rules-card{
+  margin-bottom:4px!important;
+}
+#panel-matches #recent-summary-wrap .recent-summary-card,
+#recent-summary-wrap .recent-summary-card{
+  margin-top:4px!important;
+}
+@media(max-width:430px){
+  .recent-summary-card .rs-title{font-size:11px!important;letter-spacing:1.6px!important;}
+  .recent-summary-card .rs-kpi-main{font-size:22px!important;}
+  .recent-summary-card .rs-msg{font-size:12px!important;}
+  .recent-summary-card .rs-head{gap:2px!important;margin-bottom:9px!important;}
+}
+</style>
+
+<style id="final-ranking-cleanup-20260627-user">
+/* Ajustes finais do ranking */
+.rank-pts{
+  color:var(--text)!important;
+}
+.rank-exact-badge{
+  font-size:10.5px!important;
+  font-weight:750!important;
+  height:20px!important;
+  min-height:20px!important;
+  padding:2px 8px!important;
+}
+.rank-card:not(.round-mode) .rank-exact-badge{
+  font-size:10.5px!important;
+  font-weight:750!important;
+  height:20px!important;
+  min-height:20px!important;
+  padding:2px 8px!important;
+}
+.rank-detail{gap:6px!important;}
+.rank-exact-badge + .form-dots{margin-left:0!important;}
+.rank-sep{display:none!important;}
+.rank-name .vos-tag{
+  color:var(--text)!important;
+  font-weight:800!important;
+}
+.rank-card[style*="var(--gold)"] .rank-name .vos-tag{
+  color:var(--text)!important;
 }
 </style>
