@@ -6202,15 +6202,70 @@ body{
 #match-breakdown-modal .ud-tabs.mb-score-filter{
   background:#fff;
 }
-/* Filtro de marcadores (modal "Puntos por participante", partido cerrado) */
-.ud-tabs.mb-score-filter{gap:8px;padding:10px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;background:#fff;min-height:64px;}
+/* ============================================================
+   Filtro de marcadores (modal "Puntos por participante").
+   FONTE ÚNICA DE VERDADE: mesma linguagem visual da faixa
+   "Lista / Análisis" (.ud-tabs / .ud-tab). Os chips usam o MESMO
+   box dos botões dessa faixa (mesma altura, borda e raio), ocupam
+   toda a largura do modal divididos igualmente, sem rolagem
+   horizontal e sem corte. A fonte é menor só para caber os 4 chips.
+   ============================================================ */
+.ud-tabs.mb-score-filter{
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:center;
+  gap:6px;                 /* igual à faixa Lista/Análisis */
+  padding:10px 12px;       /* igual à faixa Lista/Análisis */
+  width:100%;
+  box-sizing:border-box;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  overflow:hidden;         /* sem rolagem horizontal */
+}
 .ud-tabs.mb-score-filter::-webkit-scrollbar{display:none;}
-.mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;align-self:stretch;font-size:13px;font-weight:800;color:var(--sub);white-space:nowrap;background:#fff;padding-right:8px;z-index:1;}
-.mb-sfchip{flex:0 0 auto;min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;line-height:1;transition:background .2s,color .2s,border-color .2s;}
-.mb-sfchip .mb-sfn{font-size:12px;font-weight:800;opacity:.68;line-height:1;}
-/* Cerrado: los chips ocupan todo el ancho, sin scroll horizontal */
+/* Rótulo "Palpites:" — menor, centralizado verticalmente, sem roubar espaço dos chips */
+.mb-sflabel{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:34px;         /* mesma altura visual dos chips/abas */
+  padding:0 4px 0 0;
+  font-size:11px;
+  font-weight:800;
+  line-height:1;
+  color:var(--sub);
+  white-space:nowrap;
+  background:#fff;
+  text-align:center;
+}
+/* Chips — MESMO box dos botões "Lista / Análisis" (.ud-tab), só com fonte menor */
+.mb-sfchip{
+  flex:1 1 0;              /* divide a largura igualmente */
+  min-width:0;
+  box-sizing:border-box;
+  min-height:34px;         /* mesma altura dos botões Lista/Análisis */
+  display:inline-flex;
+  align-items:center;      /* centraliza verticalmente */
+  justify-content:center;  /* centraliza horizontalmente */
+  gap:4px;
+  padding:0 6px;
+  border:1px solid var(--border);
+  border-radius:50px;
+  background:#fff;
+  color:var(--sub);
+  font-size:11px;
+  font-weight:800;
+  font-family:inherit;
+  line-height:1;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background .2s,color .2s,border-color .2s;
+}
+.mb-sfchip .mb-sfn{flex:0 0 auto;font-size:10px;font-weight:800;opacity:.68;line-height:1;}
+/* Variante "fill": comportamento idêntico (chips dividem toda a largura) */
 .ud-tabs.mb-score-filter-fill{gap:6px;}
-.mb-score-filter-fill .mb-sfchip{flex:1 1 auto;justify-content:center;padding-left:8px;padding-right:8px;}
+.mb-score-filter-fill .mb-sfchip{flex:1 1 0;min-width:0;}
 .mb-sfchip.active{background:var(--green);color:#fff;border-color:var(--green);}
 .mb-sfchip.active .mb-sfn{opacity:.85;}
 /* Misma fila de chips, pero dentro del cuerpo (lista con resultado) */
@@ -13276,62 +13331,6 @@ function showSaveBanner(msg){
   #match-breakdown-modal .ud-row:focus{outline:2px solid rgba(0,155,84,.35);outline-offset:-2px;}
 </style>
 
-<style id="final-match-breakdown-score-filter-size-20260627">
-  /* Modal “Puntos por participante”: filtros de palpites com a mesma linguagem visual das abas Lista/Análisis */
-  #match-breakdown-modal .ud-tabs.mb-score-filter{
-    display:flex!important;
-    align-items:center!important;
-    gap:8px!important;
-    padding:10px 12px!important;
-    background:#fff!important;
-    border-bottom:1px solid rgba(0,0,0,.08)!important;
-  }
-
-  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sflabel{
-    height:42px!important;
-    display:inline-flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    padding:0 8px 0 0!important;
-    font-size:15px!important;
-    line-height:1!important;
-    font-weight:850!important;
-    color:var(--sub)!important;
-    background:#fff!important;
-  }
-
-  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip{
-    height:42px!important;
-    min-height:42px!important;
-    display:inline-flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:7px!important;
-    padding:0 16px!important;
-    border-radius:999px!important;
-    font-size:15px!important;
-    line-height:1!important;
-    font-weight:850!important;
-    white-space:nowrap!important;
-  }
-
-  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
-    font-size:14px!important;
-    line-height:1!important;
-    font-weight:800!important;
-    display:inline-flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-  }
-
-  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
-    flex:1 1 0!important;
-    min-width:0!important;
-    padding-left:10px!important;
-    padding-right:10px!important;
-  }
-</style>
-
 <!-- AJUSTE FINAL: modal detalhes participante - abas inativas com texto preto -->
 <style>
   #user-detail-modal .ud-tab:not(.active){
@@ -13340,91 +13339,6 @@ function showSaveBanner(msg){
   #user-detail-modal .ud-tab:not(.active) svg{
     color:#000 !important;
     stroke:currentColor !important;
-  }
-</style>
-
-<!-- AJUSTE FINAL: Puntos por participante - faixa de filtros idêntica em altura à faixa Lista/Análisis, ocupando toda a largura, sem rolagem horizontal e sem corte -->
-<style id="final-mb-score-filter-compact-20260627">
-  /* Faixa de filtros de palpites: mesma altura da faixa "Lista / Análisis",
-     ocupa toda a largura do modal, distribui os chips proporcionalmente,
-     sem rolagem horizontal e sem texto cortado. */
-  #match-breakdown-modal .ud-tabs.mb-score-filter,
-  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill{
-    display:flex!important;
-    flex-wrap:nowrap!important;
-    align-items:center!important;
-    justify-content:flex-start!important;
-    gap:5px!important;
-    padding:10px 12px!important;
-    width:100%!important;
-    box-sizing:border-box!important;
-    background:#fff!important;
-    border-bottom:1px solid rgba(0,0,0,.08)!important;
-    overflow:hidden!important;
-    min-height:0!important;
-    -webkit-overflow-scrolling:auto!important;
-    scrollbar-width:none!important;
-  }
-
-  #match-breakdown-modal .ud-tabs.mb-score-filter::-webkit-scrollbar{
-    display:none!important;
-  }
-
-  /* Rótulo "Palpites:" — menor, centralizado verticalmente, sem ocupar espaço dos chips */
-  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sflabel{
-    flex:0 0 auto!important;
-    height:34px!important;
-    min-height:34px!important;
-    display:inline-flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    padding:0 5px 0 0!important;
-    margin:0!important;
-    font-size:11px!important;
-    line-height:1!important;
-    font-weight:800!important;
-    color:var(--sub)!important;
-    background:#fff!important;
-    white-space:nowrap!important;
-    text-align:center!important;
-  }
-
-  /* Chips — mesma altura visual dos botões "Lista / Análisis", divididos igualmente */
-  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip,
-  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
-    flex:1 1 0!important;
-    width:auto!important;
-    min-width:0!important;
-    height:34px!important;
-    min-height:34px!important;
-    display:inline-flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:4px!important;
-    padding:0 6px!important;
-    border-radius:999px!important;
-    font-size:11px!important;
-    line-height:1!important;
-    font-weight:800!important;
-    white-space:nowrap!important;
-    overflow:visible!important;
-    text-overflow:clip!important;
-  }
-
-  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
-    flex:0 0 auto!important;
-    font-size:10px!important;
-    line-height:1!important;
-    font-weight:800!important;
-    display:inline-flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    opacity:.72!important;
-    white-space:nowrap!important;
-  }
-
-  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip.active .mb-sfn{
-    opacity:.9!important;
   }
 </style>
 
