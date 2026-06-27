@@ -6192,10 +6192,10 @@ function recentSummaryHtml({compact=false, share=false}={}){
   return `<div class="recent-summary-card" id="recent-summary-card">
     <div class="rs-head">
       <div class="rs-head-main">
-        <div class="rs-titleline"><span class="rs-title">Tu momento</span><span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span>${posHtml}${deltaHtml}</div>
+        <div class="rs-titleline"><span class="rs-title">Últimas 3 partidas</span>${posHtml}${deltaHtml}<span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span></div>
         ${shareBtn}
       </div>
-      <div class="rs-msg ${data.cls}"><span class="rs-period">Últimos 3 partidos</span><span class="rs-msg-sep"> • </span><span class="rs-msg-text">${data.msg}</span></div>
+      <div class="rs-msg ${data.cls}"><span class="rs-msg-text">${data.msg}</span></div>
     </div>
     <div class="rs-games">${rows}</div>
   </div>`;
@@ -6262,21 +6262,22 @@ async function shareRecentSummaryImage(){
 
   const deltaTxt = data.rankDelta === null ? '' : (data.rankDelta > 0 ? ` ▲${data.rankDelta}` : (data.rankDelta < 0 ? ` ▼${Math.abs(data.rankDelta)}` : ' ='));
   const deltaColor = data.rankDelta > 0 ? '#009B54' : (data.rankDelta < 0 ? '#CE1126' : '#6B7280');
-  ctx.fillStyle = '#6B7280'; ctx.font = '900 25px Inter, Arial'; ctx.fillText('TU MOMENTO', 124, 214);
-  ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', 294, 214);
-  ctx.fillStyle = '#111114'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, 322, 216);
-  let afterPtsX = 322 + ctx.measureText(`${data.myTotal} pts`).width + 18;
+  ctx.fillStyle = '#6B7280'; ctx.font = '900 25px Inter, Arial'; ctx.fillText('ÚLTIMAS 3 PARTIDAS', 124, 214);
+  let afterTitleX = 124 + ctx.measureText('ÚLTIMAS 3 PARTIDAS').width + 18;
   if(data.myPos){
-    ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', afterPtsX, 214);
-    afterPtsX += 26;
-    ctx.fillStyle = '#111114'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myPos}º`, afterPtsX, 216);
-    afterPtsX += ctx.measureText(`${data.myPos}º`).width + 14;
+    ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', afterTitleX, 214);
+    afterTitleX += 26;
+    ctx.fillStyle = '#111114'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myPos}º`, afterTitleX, 216);
+    afterTitleX += ctx.measureText(`${data.myPos}º`).width + 14;
   }
-  if(deltaTxt){ ctx.fillStyle = deltaColor; ctx.font = '900 24px Inter, Arial'; ctx.fillText(deltaTxt, afterPtsX, 214); }
+  if(deltaTxt){ ctx.fillStyle = deltaColor; ctx.font = '900 24px Inter, Arial'; ctx.fillText(deltaTxt, afterTitleX, 214); afterTitleX += ctx.measureText(deltaTxt).width + 18; }
+  ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', afterTitleX, 214);
+  afterTitleX += 26;
+  ctx.fillStyle = '#111114'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, afterTitleX, 216);
 
   ctx.fillStyle = '#374151';
   ctx.font = '850 21px Inter, Arial';
-  canvasTextFit('Últimos 3 partidos • ' + data.msg, 124, 250, 650);
+  canvasTextFit(data.msg, 124, 250, 650);
 
   let y = 316;
   data.games.forEach(g=>{
