@@ -5069,6 +5069,9 @@ body{
 .mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;font-size:12px;font-weight:800;color:var(--sub);white-space:nowrap;position:sticky;left:0;background:var(--bg);padding-right:7px;z-index:1;}
 .mb-sfchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:10px 15px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;}
 .mb-sfchip .mb-sfn{font-size:12px;font-weight:700;opacity:.65;}
+/* Cerrado: los chips ocupan todo el ancho, sin scroll horizontal */
+.ud-tabs.mb-score-filter-fill{gap:6px;}
+.mb-score-filter-fill .mb-sfchip{flex:1 1 auto;justify-content:center;padding-left:8px;padding-right:8px;}
 .mb-sfchip.active{background:var(--green);color:#fff;border-color:var(--green);}
 .mb-sfchip.active .mb-sfn{opacity:.85;}
 /* Misma fila de chips, pero dentro del cuerpo (lista con resultado) */
@@ -6733,7 +6736,7 @@ function renderMatchBreakdown(){
   // Con resultado: pestañas Lista / Análisis (como en el ranking).
   const mbTabsEl = document.getElementById('mb-tabs');
   if(pending){
-    if(mbTabsEl){ mbTabsEl.className = 'ud-tabs mb-score-filter'; mbTabsEl.innerHTML = buildMbScoreChips(); }
+    if(mbTabsEl){ mbTabsEl.className = 'ud-tabs mb-score-filter mb-score-filter-fill'; mbTabsEl.innerHTML = buildMbScoreChips(); }
   } else {
     const mbTabs = [
       ['list','Lista','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>'],
