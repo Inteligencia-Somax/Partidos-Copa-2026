@@ -780,11 +780,11 @@ body{
   box-shadow:var(--shadow);
 }
 .rank-pos{
-  font-size:18px;font-weight:900;color:var(--text);
-  min-width:46px;text-align:center;
+  font-size:22px;font-weight:900;color:var(--text);
+  min-width:54px;text-align:center;
   display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;
 }
-.rank-pos-delta{font-size:11px;line-height:1;}
+.rank-pos-delta{font-size:12px;line-height:1;}
 .rank-pos-delta .rank-delta{font-weight:800;}
 .rank-pos.p1{color:#F59E0B;}
 .rank-pos.p2{color:#9CA3AF;}
@@ -836,10 +836,10 @@ body{
 .rank-card.round-mode .rank-pos.round-top1,
 .rank-card.round-mode .rank-pos.round-top2,
 .rank-card.round-mode .rank-pos.round-top3{
-  min-width:46px!important;
+  min-width:54px!important;
   height:auto!important;
   border-radius:0!important;
-  font-size:18px!important;
+  font-size:22px!important;
   font-weight:900!important;
   box-shadow:none!important;
   background:transparent!important;
@@ -8772,7 +8772,7 @@ function showSaveBanner(msg){
   min-height:88px!important;
 }
 .rank-card:not(.round-mode) .rank-pos{
-  min-width:46px!important;
+  min-width:54px!important;
   width:46px!important;
   justify-content:center!important;
   align-items:center!important;
@@ -9033,5 +9033,38 @@ function showSaveBanner(msg){
 @media(max-width:430px){
   #scoring-rules-wrap .rules-card{margin-bottom:6px!important;}
   #recent-summary-wrap .recent-summary-card{margin-top:0!important;}
+}
+</style>
+
+<style id="rank-position-size-final-20260627">
+/* Ranking: colocação com o mesmo peso visual da pontuação */
+.rank-card .rank-pos,
+.rank-card:not(.round-mode) .rank-pos,
+.rank-card.round-mode .rank-pos{
+  font-size:22px!important;
+  font-weight:900!important;
+  min-width:56px!important;
+  width:56px!important;
+  line-height:1!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:4px!important;
+  flex-shrink:0!important;
+}
+.rank-card .rank-pos-delta,
+.rank-card:not(.round-mode) .rank-pos-delta,
+.rank-card.round-mode .rank-pos-delta{
+  font-size:12px!important;
+  line-height:1!important;
+  flex-shrink:0!important;
+}
+@media(max-width:430px){
+  .rank-card .rank-pos,
+  .rank-card:not(.round-mode) .rank-pos,
+  .rank-card.round-mode .rank-pos{
+    font-size:22px!important;
+    min-width:54px!important;
+    width:54px!important;
+  }
 }
 </style>
