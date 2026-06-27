@@ -10518,6 +10518,89 @@ function showSaveBanner(msg){
   }
 </style>
 
+
+
+<!-- AJUSTE DEFINITIVO: Fecha com a mesma altura visual das abas superiores -->
+<style id="final-user-detail-round-nav-same-height-tabs-20260627">
+  /*
+    A faixa da Fecha agora segue a MESMA régua da .ud-tabs:
+    - altura fixa de 54px, equivalente à faixa Partidos / Resumen / Comparar;
+    - padding vertical igual;
+    - conteúdo central e setas alinhados no meio;
+    - sem min-height herdado aumentando a área.
+  */
+  #user-detail-modal .ud-tabs{
+    height:54px!important;
+    min-height:54px!important;
+    padding:10px 12px!important;
+    display:flex!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+
+  #user-detail-modal .ud-round-nav{
+    height:54px!important;
+    min-height:54px!important;
+    max-height:54px!important;
+    padding:10px 12px!important;
+    display:grid!important;
+    grid-template-columns:34px minmax(0,1fr) 34px!important;
+    align-items:center!important;
+    column-gap:10px!important;
+    background:#fff!important;
+    border-top:0!important;
+    border-bottom:1px solid var(--border)!important;
+    box-sizing:border-box!important;
+  }
+
+  #user-detail-modal .ud-rnav-label{
+    height:34px!important;
+    min-height:34px!important;
+    max-height:34px!important;
+    padding:0!important;
+    margin:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    line-height:1!important;
+    overflow:hidden!important;
+  }
+
+  #user-detail-modal .ud-rnav-title{
+    display:block!important;
+    font-size:13px!important;
+    font-weight:800!important;
+    line-height:16px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  #user-detail-modal .ud-rnav-sub{
+    display:block!important;
+    font-size:11px!important;
+    line-height:14px!important;
+    margin:1px 0 0!important;
+    padding:0!important;
+  }
+
+  #user-detail-modal .ud-rnav-btn{
+    width:30px!important;
+    height:30px!important;
+    min-width:30px!important;
+    min-height:30px!important;
+    padding:0!important;
+    margin:0!important;
+    align-self:center!important;
+    justify-self:center!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    line-height:1!important;
+    transform:none!important;
+  }
+</style>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
@@ -13380,5 +13463,71 @@ function showSaveBanner(msg){
   #user-detail-modal .ud-rnav-btn{
     align-self:center!important;
     justify-self:center!important;
+  }
+</style>
+
+<!-- OVERRIDE ABSOLUTO: Fecha igual à faixa de botões superiores -->
+<style id="override-user-detail-round-nav-54px-20260627">
+  #user-detail-modal .ud-tabs{
+    height:54px!important;
+    min-height:54px!important;
+    padding:10px 12px!important;
+    display:flex!important;
+    align-items:center!important;
+    box-sizing:border-box!important;
+  }
+  #user-detail-modal .ud-round-nav{
+    height:54px!important;
+    min-height:54px!important;
+    max-height:54px!important;
+    padding:10px 12px!important;
+    display:grid!important;
+    grid-template-columns:34px minmax(0,1fr) 34px!important;
+    align-items:center!important;
+    column-gap:10px!important;
+    box-sizing:border-box!important;
+    background:#fff!important;
+    border-bottom:1px solid var(--border)!important;
+  }
+  #user-detail-modal .ud-rnav-label{
+    height:34px!important;
+    min-height:34px!important;
+    max-height:34px!important;
+    padding:0!important;
+    margin:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    line-height:1!important;
+    overflow:hidden!important;
+  }
+  #user-detail-modal .ud-rnav-title{
+    font-size:13px!important;
+    line-height:16px!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  #user-detail-modal .ud-rnav-sub{
+    font-size:11px!important;
+    line-height:14px!important;
+    margin:1px 0 0!important;
+    padding:0!important;
+  }
+  #user-detail-modal .ud-rnav-btn{
+    width:30px!important;
+    height:30px!important;
+    min-width:30px!important;
+    min-height:30px!important;
+    padding:0!important;
+    margin:0!important;
+    align-self:center!important;
+    justify-self:center!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    line-height:1!important;
+    transform:none!important;
   }
 </style>
