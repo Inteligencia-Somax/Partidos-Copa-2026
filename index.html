@@ -440,6 +440,15 @@ body{
 .announce-actions{padding:14px 20px 18px;}
 .announce-btn{width:100%;padding:13px;border:none;border-radius:14px;background:var(--green);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
 .announce-btn:active{transform:scale(.98);}
+.announce-actions-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.announce-btn-secondary{background:var(--bg);color:var(--sub);border:1px solid var(--border);}
+.summary-modal-box{border-radius:24px;max-height:86vh;overflow-y:auto;animation:fadeScale .25s ease;box-shadow:0 12px 48px rgba(0,0,0,.28);}
+.summary-modal-body{padding:16px;}
+.summary-modal-body .recent-summary-card{margin:0;box-shadow:none;}
+.rs-share-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--sub);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s;}
+.rs-share-btn:active{transform:scale(.94);}
+.rs-share-btn svg{width:17px;height:17px;stroke:currentColor;}
+.rs-head-main{display:flex;align-items:flex-start;gap:8px;justify-content:space-between;}
 
 .modal-header{
   background:var(--green);border-radius:24px 24px 0 0;
@@ -1038,9 +1047,21 @@ body{
       <span class="modal-match-label" id="announce-title">📢 Comunicado</span>
     </div>
     <div class="announce-body" id="announce-body"></div>
-    <div class="announce-actions">
-      <button class="announce-btn" onclick="dismissAnnounce()">Entendido 👍</button>
+    <div class="announce-actions announce-actions-split">
+      <button class="announce-btn announce-btn-secondary" onclick="dismissAnnounce()">Entendido</button>
+      <button class="announce-btn" onclick="openRecentSummaryModal()">Ver resumen</button>
     </div>
+  </div>
+</div>
+
+<!-- RESUMEN DESTACADO -->
+<div class="modal-overlay" id="summary-modal" style="display:none" onclick="closeSummaryOutside(event)">
+  <div class="modal summary-modal-box">
+    <div class="modal-header announce-header">
+      <span class="modal-match-label">Resumen reciente</span>
+      <button class="modal-close" onclick="closeRecentSummaryModal()">×</button>
+    </div>
+    <div class="summary-modal-body" id="summary-modal-body"></div>
   </div>
 </div>
 
@@ -5298,25 +5319,32 @@ body{
 
 /* Resumen rápido: últimos partidos apurados */
 .recent-summary-card{
-  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--white);border:1px solid rgba(0,155,84,.18);border-radius:var(--radius);
   padding:14px 16px;margin:0 0 16px;box-shadow:var(--shadow);overflow:hidden;
 }
-.rs-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
-.rs-title{font-size:13px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;color:var(--sub);}
-.rs-msg{font-size:12px;font-weight:800;line-height:1.35;color:var(--text);max-width:270px;}
-.rs-msg.good{color:var(--green);} .rs-msg.warn{color:#92400E;} .rs-msg.hot{color:var(--gold);}
+.rs-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.rs-title{font-size:13px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;color:var(--sub);}
+.rs-kpi{margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.rs-kpi-main{font-size:20px;font-weight:950;color:var(--green);line-height:1;}
+.rs-kpi-sub{font-size:11px;font-weight:800;color:var(--sub);}
+.rs-msg{font-size:12px;font-weight:850;line-height:1.35;color:var(--text);max-width:230px;text-align:right;}
+.rs-msg.good{color:var(--green);} .rs-msg.warn{color:#92400E;} .rs-msg.hot{color:var(--gold);} .rs-msg.bad{color:var(--red);}
 .rs-games{display:flex;flex-direction:column;gap:7px;}
 .rs-game{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px 10px;}
 .rs-match{flex:1;min-width:0;}
 .rs-teams{font-size:12px;font-weight:850;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rs-sub{font-size:10px;font-weight:700;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rs-pts{display:flex;align-items:center;gap:5px;flex-shrink:0;}
-.rs-me,.rs-best{min-width:42px;text-align:center;border-radius:999px;padding:4px 7px;font-size:12px;font-weight:900;line-height:1;}
-.rs-me{background:rgba(0,155,84,.12);color:var(--green);border:1px solid rgba(0,155,84,.25);}
-.rs-me.zero{background:rgba(206,17,38,.08);color:var(--red);border-color:rgba(206,17,38,.18);}
-.rs-best{background:rgba(245,158,11,.12);color:#92400E;border:1px solid rgba(245,158,11,.25);}
-.rs-vs{font-size:10px;font-weight:900;color:var(--sub);}
-@media(max-width:430px){.recent-summary-card{padding:12px;margin-bottom:14px}.rs-title{font-size:12px}.rs-msg{font-size:11px;max-width:210px}.rs-game{padding:7px 8px}.rs-me,.rs-best{min-width:37px;font-size:11px;padding:4px 6px}}
+.rs-sub{font-size:10.5px;font-weight:750;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rs-tag{display:inline-flex;align-items:center;border-radius:999px;padding:2px 7px;font-size:10px;font-weight:900;margin-left:4px;border:1px solid transparent;vertical-align:1px;}
+.rs-tag.exact{background:rgba(245,158,11,.13);color:#92400E;border-color:rgba(245,158,11,.28);}
+.rs-tag.good{background:rgba(0,155,84,.10);color:var(--green);border-color:rgba(0,155,84,.22);}
+.rs-tag.bad{background:rgba(206,17,38,.08);color:var(--red);border-color:rgba(206,17,38,.18);}
+.rs-pts{flex-shrink:0;min-width:46px;text-align:center;border-radius:999px;padding:5px 8px;font-size:12px;font-weight:950;line-height:1;background:rgba(0,155,84,.12);color:var(--green);border:1px solid rgba(0,155,84,.25);}
+.rs-pts.zero{background:rgba(206,17,38,.08);color:var(--red);border-color:rgba(206,17,38,.18);}
+.rs-pts.exact{background:rgba(245,158,11,.14);color:#92400E;border-color:rgba(245,158,11,.30);}
+.rs-head-main{display:flex;align-items:flex-start;gap:8px;min-width:0;}
+.rs-share-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--sub);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.rs-share-btn svg{width:16px;height:16px;stroke:currentColor;}
+@media(max-width:430px){.recent-summary-card{padding:12px;margin-bottom:14px}.rs-title{font-size:12px}.rs-msg{font-size:11px;max-width:180px}.rs-kpi-main{font-size:18px}.rs-game{padding:7px 8px}.rs-pts{min-width:40px;font-size:11px;padding:5px 6px}}
 
 .filter-chip{
   background:var(--white);border:1.5px solid var(--border);border-radius:50px;
@@ -5986,54 +6014,145 @@ function showApp(){
 }
 
 
-function renderRecentSummary(){
-  const wrap = document.getElementById('recent-summary-wrap');
-  if(!wrap) return;
-  const all = loadAllPicks();
+function getRecentSummaryLabel(type, pts){
+  if(type === 'exact') return {txt:'Exacto', cls:'exact'};
+  if(pts > 0) return {txt:'Sumó', cls:'good'};
+  return {txt:'Sin puntos', cls:'bad'};
+}
+
+function getRecentSummaryData(){
   const realResults = loadRealResults();
   const myPicks = loadUserPicks();
   const now = new Date();
   const played = MATCHES
-    .filter(m => realResults[m.id] && getMatchDateTime(m) <= now)
+    .filter(m => realResults[m.id] && getMatchDateTime(m) <= now && myPicks[m.id])
     .sort((a,b)=>getMatchDateTime(b)-getMatchDateTime(a))
     .slice(0,3);
-  if(!played.length){ wrap.innerHTML=''; return; }
   const general = getRankedUsers();
   const myIdx = general.findIndex(u=>u.name===currentUser);
   const myPos = myIdx >= 0 ? myIdx + 1 : null;
-  let myTotal = 0, bestTotal = 0;
-  const rows = played.map(m=>{
+  let myTotal = 0, exacts = 0, scored = 0;
+  const games = played.map(m=>{
     const real = realResults[m.id];
-    const myCalc = calculatePickPoints(myPicks[m.id], real, m);
-    const myPts = myCalc.pts || 0;
+    const calc = calculatePickPoints(myPicks[m.id], real, m);
+    const myPts = calc.pts || 0;
     myTotal += myPts;
-    let bestPts = 0, bestNames = [];
-    Object.entries(all).forEach(([name,picks])=>{
-      const pts = calculatePickPoints((picks||{})[m.id], real, m).pts || 0;
-      if(pts > bestPts){ bestPts = pts; bestNames = [name]; }
-      else if(pts === bestPts && pts > 0){ bestNames.push(name); }
-    });
-    bestTotal += bestPts;
-    const bestTxt = bestNames.length ? (bestNames.includes(currentUser) ? 'Vos' : bestNames[0].split(' ')[0]) : '—';
+    if(calc.type === 'exact') exacts++;
+    if(myPts > 0) scored++;
+    return {m, real, myPick:myPicks[m.id], myPts, type:calc.type};
+  });
+  const count = games.length || 1;
+  const ratio = scored / count;
+  let msg = 'Falta precisión. La próxima puede ser recuperación.';
+  let cls = 'bad';
+  if(myPos === 1){ msg = 'Líder: ahora toca cuidar el retrovisor.'; cls = 'hot'; }
+  else if(exacts >= 2){ msg = 'Puntería fina. Buen momento para presumir.'; cls = 'good'; }
+  else if(myTotal >= 45 || scored === games.length){ msg = 'Seguís sumando. La racha está viva.'; cls = 'good'; }
+  else if(ratio >= .5){ msg = 'Hay puntos, falta el golpe exacto.'; cls = 'warn'; }
+  return {played, games, myTotal, exacts, scored, myPos, msg, cls};
+}
+
+function recentSummaryHtml({compact=false, share=false}={}){
+  const data = getRecentSummaryData();
+  if(!data.played.length) return '';
+  const rows = data.games.map(g=>{
+    const m = g.m, real = g.real;
+    const pickTxt = g.myPick ? `${g.myPick.home}:${g.myPick.away}` : 'sin palpite';
+    const lab = getRecentSummaryLabel(g.type, g.myPts);
     return `<div class="rs-game">
       <div class="rs-match">
         <div class="rs-teams">${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}</div>
-        <div class="rs-sub">Vos ${myPicks[m.id] ? `${myPicks[m.id].home}:${myPicks[m.id].away}` : 'sin palpite'} · mejor ${bestTxt}</div>
+        <div class="rs-sub">Tu palpite: ${pickTxt}<span class="rs-tag ${lab.cls}">${lab.txt}</span></div>
       </div>
-      <div class="rs-pts"><span class="rs-me ${myPts===0?'zero':''}">${myPts}</span><span class="rs-vs">vs</span><span class="rs-best">${bestPts}</span></div>
+      <div class="rs-pts ${g.myPts===0?'zero':''} ${g.type==='exact'?'exact':''}">+${g.myPts}</div>
     </div>`;
   }).join('');
-  const ratio = bestTotal ? myTotal / bestTotal : 0;
-  let msg = 'Vamos a reaccionar: los próximos puntos pueden cambiar la historia.';
-  let cls = 'warn';
-  if(myPos === 1){ msg = 'Líder no sube más: ahora es cuidar el retrovisor.'; cls = 'hot'; }
-  else if(myPos === 2){ msg = 'Presión activada: cerca del líder y con el retrovisor encendido.'; cls = 'good'; }
-  else if(ratio >= .8){ msg = '¡Mano arriba! Buen ritmo en los últimos partidos.'; cls = 'good'; }
-  else if(ratio >= .45){ msg = 'Seguimos vivos: faltó poco para acompañar a los mejores.'; cls = 'warn'; }
-  wrap.innerHTML = `<div class="recent-summary-card">
-    <div class="rs-head"><div><div class="rs-title">Últimos 3 apurados</div></div><div class="rs-msg ${cls}">${msg}</div></div>
+  const shareBtn = share ? `<button class="rs-share-btn" onclick="shareRecentSummaryImage()" aria-label="Compartir resumen" title="Compartir resumen">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.8 15.4 6.2"></path><path d="M8.6 13.2l6.8 4.6"></path></svg>
+  </button>` : '';
+  return `<div class="recent-summary-card" id="recent-summary-card">
+    <div class="rs-head">
+      <div class="rs-head-main"><div><div class="rs-title">Tu momento</div><div class="rs-kpi"><span class="rs-kpi-main">${data.myTotal} pts</span><span class="rs-kpi-sub">${data.exacts} exacto${data.exacts===1?'':'s'} · ${data.scored}/${data.games.length} puntuados</span></div></div>${shareBtn}</div>
+      <div class="rs-msg ${data.cls}">${data.msg}</div>
+    </div>
     <div class="rs-games">${rows}</div>
   </div>`;
+}
+
+function renderRecentSummary(){
+  const wrap = document.getElementById('recent-summary-wrap');
+  if(!wrap) return;
+  wrap.innerHTML = recentSummaryHtml({share:true});
+}
+
+function openRecentSummaryModal(){
+  const modal = document.getElementById('summary-modal');
+  const body = document.getElementById('summary-modal-body');
+  if(!modal || !body) return;
+  const html = recentSummaryHtml({share:true});
+  body.innerHTML = html || `<div class="recent-summary-card"><div class="rs-title">Resumen reciente</div><div class="rs-msg warn" style="margin-top:8px;max-width:none;">Todavía no hay partidos apurados para mostrar.</div></div>`;
+  modal.style.display='flex';
+}
+function closeRecentSummaryModal(){
+  const modal = document.getElementById('summary-modal');
+  if(modal) modal.style.display='none';
+}
+function closeSummaryOutside(e){
+  if(e.target === document.getElementById('summary-modal')) closeRecentSummaryModal();
+}
+
+async function shareRecentSummaryImage(){
+  const data = getRecentSummaryData();
+  const W = 900, H = 540;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#009B54'; ctx.fillRect(0,0,W,92);
+  ctx.fillStyle = '#FFFFFF'; ctx.font = '900 34px Inter, Arial'; ctx.fillText('Tu momento en el bolão', 34, 58);
+  ctx.fillStyle = '#111114'; ctx.font = '900 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, 34, 142);
+  ctx.fillStyle = '#6B7280'; ctx.font = '800 21px Inter, Arial'; ctx.fillText(`${data.exacts} exacto${data.exacts===1?'':'s'} · ${data.scored}/${data.games.length} partidos puntuados`, 180, 142);
+  ctx.fillStyle = data.cls === 'good' ? '#009B54' : (data.cls === 'hot' ? '#B45309' : (data.cls === 'bad' ? '#CE1126' : '#92400E'));
+  ctx.font = '800 23px Inter, Arial'; wrapCanvasText(ctx, data.msg, 34, 184, 820, 30);
+  let y = 258;
+  data.games.forEach(g=>{
+    ctx.fillStyle = '#F5F5F7'; roundRect(ctx, 34, y-36, 832, 82, 18); ctx.fill();
+    ctx.fillStyle = '#111114'; ctx.font = '850 23px Inter, Arial';
+    const m = g.m, real = g.real;
+    ctx.fillText(`${m.home} ${real.home}:${real.away} ${m.away}`, 58, y);
+    ctx.fillStyle = '#6B7280'; ctx.font = '750 18px Inter, Arial';
+    const pickTxt = g.myPick ? `${g.myPick.home}:${g.myPick.away}` : 'sin palpite';
+    const lab = getRecentSummaryLabel(g.type, g.myPts);
+    ctx.fillText(`Tu palpite: ${pickTxt} · ${lab.txt}`, 58, y+28);
+    ctx.fillStyle = g.myPts === 0 ? '#CE1126' : (g.type === 'exact' ? '#B45309' : '#009B54');
+    ctx.font = '900 30px Inter, Arial'; ctx.fillText(`+${g.myPts}`, 760, y+12);
+    y += 98;
+  });
+  canvas.toBlob(async blob=>{
+    try{
+      const file = new File([blob], 'tu-momento-bolao.png', {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:'Tu momento en el Bolão'});
+      }else if(navigator.share){
+        await navigator.share({title:'Tu momento en el Bolão', text:`${data.myTotal} pts en los últimos 3 partidos. ${data.msg}`});
+      }else{
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tu-momento-bolao.png'; a.click();
+      }
+    }catch(e){ console.warn(e); }
+  }, 'image/png');
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+  const words = String(text||'').split(' '); let line='';
+  words.forEach((word,i)=>{
+    const test=line + word + ' ';
+    if(ctx.measureText(test).width > maxWidth && i>0){ ctx.fillText(line, x, y); line = word + ' '; y += lineHeight; }
+    else line = test;
+  });
+  if(line) ctx.fillText(line, x, y);
 }
 
 // ══ FILTER STATE ══
