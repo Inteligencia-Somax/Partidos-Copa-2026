@@ -266,24 +266,15 @@ body{
 .match-card.x2-game{
   border-color:rgba(245,158,11,.55);
   box-shadow:0 2px 12px rgba(245,158,11,.16), var(--shadow);
-  animation:x2CardFloat 3.8s ease-in-out infinite;
 }
 .match-card.x2-game::before{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(110deg,transparent 0%,rgba(245,158,11,.08) 42%,rgba(255,255,255,.42) 50%,rgba(245,158,11,.08) 58%,transparent 100%);
+  background:linear-gradient(110deg,transparent 0%,rgba(245,158,11,.045) 46%,rgba(255,255,255,.22) 50%,rgba(245,158,11,.045) 54%,transparent 100%);
   transform:translateX(-130%);
-  animation:x2CardShine 5.5s ease-in-out infinite;
+  animation:x2CardShine 7s ease-in-out infinite;
   pointer-events:none;
 }
-.match-card.x2-game::after{
-  content:'×2';position:absolute;right:14px;bottom:10px;
-  font-size:10px;font-weight:900;letter-spacing:.6px;
-  color:#9A5A00;background:#FFF4D6;border:1px solid rgba(245,158,11,.38);
-  border-radius:999px;padding:2px 7px;opacity:.9;
-  transform:scale(.96);
-  animation:x2BadgeBreath 2.8s ease-in-out infinite;
-  pointer-events:none;
-}
+.match-card.x2-game::after{content:none;}
 .match-card.x2-game .mc-status.pending,
 .match-card.x2-game .mc-status.palp{
   background:rgba(245,158,11,.13);
@@ -293,7 +284,13 @@ body{
   border-color:rgba(245,158,11,.28);
 }
 .date-x2{
-  animation:x2PillPulse 2.6s ease-in-out infinite;
+  position:relative;overflow:hidden;
+  animation:x2PillPulse 1.9s ease-in-out infinite;
+}
+.date-x2::after{
+  content:'';position:absolute;top:-40%;bottom:-40%;width:26px;left:-45%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.78),transparent);
+  transform:rotate(18deg);animation:x2PillShine 3.4s ease-in-out infinite;
 }
 @keyframes x2CardFloat{
   0%,100%{transform:translateY(0);}
@@ -304,16 +301,17 @@ body{
   66%{opacity:1;}
   82%,100%{transform:translateX(130%);opacity:0;}
 }
-@keyframes x2BadgeBreath{
-  0%,100%{transform:scale(.96);opacity:.82;}
-  50%{transform:scale(1.05);opacity:1;}
-}
 @keyframes x2PillPulse{
-  0%,100%{box-shadow:0 1px 4px rgba(245,158,11,.4);transform:scale(1);}
-  50%{box-shadow:0 3px 12px rgba(245,158,11,.55);transform:scale(1.03);}
+  0%,100%{box-shadow:0 2px 8px rgba(245,158,11,.48),0 0 0 rgba(245,158,11,0);transform:scale(1);}
+  50%{box-shadow:0 5px 20px rgba(245,158,11,.85),0 0 22px rgba(255,193,7,.55);transform:scale(1.045);}
+}
+@keyframes x2PillShine{
+  0%,52%{left:-45%;opacity:0;}
+  60%{opacity:1;}
+  78%,100%{left:125%;opacity:0;}
 }
 @media (prefers-reduced-motion:reduce){
-  .match-card.x2-game,.match-card.x2-game::before,.match-card.x2-game::after,.date-x2{animation:none;}
+  .match-card.x2-game::before,.date-x2{animation:none;}
 }
 
 
@@ -906,8 +904,8 @@ body{
     <div class="rules-head">
       <div class="rules-title">Sistema de Puntuación</div>
       <div class="score-mode">
-        <button id="sm-grupos" onclick="setScoringMode('grupos')">Grupos</button>
-        <button id="sm-decisiva" class="active x2" onclick="setScoringMode('decisiva')">Fase decisiva ×2</button>
+        <button id="sm-grupos" class="active" onclick="setScoringMode('grupos')">Grupos</button>
+        <button id="sm-decisiva" class="x2" onclick="setScoringMode('decisiva')">Decisiva</button>
       </div>
     </div>
     <div class="rules-grid">
@@ -3714,8 +3712,8 @@ body{
     <div class="rules-section decepcion-page-section">
       <div class="decepcion-page-head">
         <div>
-          <h3>🥴 Decepción</h3>
-          <p>Los 3 peores puntajes entre quienes palpitaron <strong>todos los partidos ya disputados</strong>. Vista exclusiva del administrador.</p>
+          <h3>🥴 Pelota desinflada</h3>
+          <p>Los <strong>10 puntajes más bajos</strong> entre quienes hicieron pronóstico en todos los partidos ya disputados. El primero es el candidato al premio <strong>Bola Murcha</strong>. Vista exclusiva del administrador.</p>
         </div>
       </div>
       <div class="dec-body" id="decepcion-body"></div>
@@ -3736,8 +3734,8 @@ body{
       <div class="rules-head">
         <h3>🏆 Puntuación</h3>
         <div class="score-mode">
-          <button id="rules-sm-grupos" onclick="setScoringMode('grupos')">Grupos</button>
-          <button id="rules-sm-decisiva" class="active x2" onclick="setScoringMode('decisiva')">Fase decisiva ×2</button>
+          <button id="rules-sm-grupos" class="active" onclick="setScoringMode('grupos')">Grupos</button>
+          <button id="rules-sm-decisiva" class="x2" onclick="setScoringMode('decisiva')">Decisiva</button>
         </div>
       </div>
       <div class="score-table">
@@ -5294,16 +5292,20 @@ body{
 .decepcion-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;position:relative;z-index:1;}
 .decepcion-page-head h3{margin-bottom:4px;font-size:22px;font-weight:900;}
 .decepcion-page-head p{font-size:13px!important;line-height:1.55;color:var(--sub)!important;margin:0!important;max-width:540px;}
-.dec-body{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px;}
-.dec-card{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:12px 14px;}
-.dec-card.d1{border-color:rgba(220,90,60,.45);box-shadow:0 4px 14px rgba(220,90,60,.10);}
-.dec-pos{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;background:var(--bg);color:var(--sub);flex-shrink:0;}
-.dec-pos.d1{background:#FBE3DC;color:#B23B22;}
+.dec-body{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px;}
+.dec-card{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;}
+.dec-card:hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(220,90,60,.12);border-color:rgba(220,90,60,.35);}
+.dec-card:active{transform:scale(.985);}
+.dec-card.d1{border-color:rgba(220,90,60,.48);background:linear-gradient(180deg,#FFF3EF,#fff);box-shadow:0 4px 14px rgba(220,90,60,.12);}
+.dec-pos{min-width:46px;text-align:center;font-size:18px;font-weight:900;color:#B23B22;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:3px;}
+.dec-pos.d1{color:#B23B22;}
+.dec-emoji{font-size:20px;line-height:1;}
 .dec-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;background:linear-gradient(135deg,#DC5A3C,#E8895F);flex-shrink:0;}
 .dec-info{flex:1;min-width:0;}
-.dec-name{font-size:15px;font-weight:800;color:var(--text);}
+.dec-name{font-size:15px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .dec-detail{font-size:12px;color:var(--sub);margin-top:2px;}
-.dec-pts{font-size:20px;font-weight:900;color:#B23B22;line-height:1;text-align:right;}
+.dec-tag{display:inline-flex;align-items:center;gap:4px;margin-top:5px;font-size:11px;font-weight:800;color:#9A3412;background:#FFF1E8;border:1px solid rgba(220,90,60,.20);border-radius:999px;padding:2px 8px;}
+.dec-pts{font-size:22px;font-weight:900;color:#B23B22;line-height:1;text-align:right;}
 .dec-pts-label{font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;text-align:right;margin-top:2px;}
 .dec-empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:14px;font-weight:600;line-height:1.5;}
 .dec-meta{font-size:12px;color:var(--sub);margin-top:6px;padding-top:10px;border-top:1px dashed var(--border);}
@@ -5740,7 +5742,7 @@ fbAuth.onAuthStateChanged(async user=>{
 });
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  setScoringMode('decisiva');
+  setScoringMode('grupos');
   ['auth-email','auth-pass','auth-name'].forEach(id=>{
     document.getElementById(id)?.addEventListener('keydown', e=>{
       if(e.key==='Enter') handleAuthAction();
@@ -7083,7 +7085,7 @@ function renderDecepcion(){
   const playedCount = playedIds.length;
 
   if(playedCount === 0){
-    container.innerHTML = '<div class="dec-empty">Aún no hay partidos disputados.<br>La lista aparecerá cuando se cargue el primer resultado.</div>';
+    container.innerHTML = '<div class="dec-empty">Aún no hay partidos disputados.<br>La lista del premio Bola Murcha aparecerá cuando se cargue el primer resultado.</div>';
     return;
   }
 
@@ -7095,24 +7097,29 @@ function renderDecepcion(){
   });
 
   if(qualified.length === 0){
-    container.innerHTML = `<div class="dec-empty">Ningún participante palpitó los ${playedCount} partidos disputados.<br>Por eso aún no hay candidatos a la decepción.</div>`;
+    container.innerHTML = `<div class="dec-empty">Ningún participante palpitó los ${playedCount} partidos disputados.<br>Por eso aún no hay candidatos al premio Bola Murcha.</div>`;
     return;
   }
 
-  // Los 3 peores: tomar el final del ranking (peor primero).
-  const worst = qualified.slice(-3).reverse();
-  const medals = ['🥴','😬','😴'];
+  // Los 10 peores: tomar el final del ranking (peor primero).
+  const worst = qualified.slice(-10).reverse();
+  const emojis = ['🥴','😬','😴','🙈','🥶','😵','🫠','🤕','😮‍💨','🪫'];
 
   let html = '';
   worst.forEach((u,i)=>{
     const d1 = i===0 ? ' d1' : '';
+    const avg = playedCount ? (u.score / playedCount).toFixed(1).replace('.', ',') : '0';
+    const aciertos = (u.exact || 0) + (u.winnerGoals || 0) + (u.diff || 0) + (u.loserGoals || 0) + (u.winner || 0);
+    const hitRate = playedCount ? Math.round((aciertos / playedCount) * 100) : 0;
+    const tag = i===0 ? '🏆 Premio Bola Murcha' : `${hitRate}% de aciertos`;
     html += `
-      <div class="dec-card${d1}">
-        <div class="dec-pos${d1}">${medals[i] || (i+1)}</div>
+      <div class="dec-card${d1}" onclick="openUserDetail('${String(u.name).replace(/'/g,"\\'")}')" title="Ver detalle del participante">
+        <div class="dec-pos${d1}"><span class="dec-emoji">${emojis[i] || '🥴'}</span><span>${i+1}º</span></div>
         <div class="dec-avatar">${u.name.charAt(0).toUpperCase()}</div>
         <div class="dec-info">
-          <div class="dec-name">${u.name}</div>
-          <div class="dec-detail">${u.pickCount}/${MATCHES.length} palpites · exactos: ${u.exact}</div>
+          <div class="dec-name">${u.name}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></div>
+          <div class="dec-detail">${u.pickCount}/${MATCHES.length} pronósticos · ${u.exact} exacto${u.exact===1?'':'s'} · ${avg} pts/partido</div>
+          <div class="dec-tag">${tag}</div>
         </div>
         <div>
           <div class="dec-pts">${u.score}</div>
@@ -7120,10 +7127,9 @@ function renderDecepcion(){
         </div>
       </div>`;
   });
-  html += `<div class="dec-meta">Califican ${qualified.length} participante(s) con palpite en los ${playedCount} partidos disputados.</div>`;
+  html += `<div class="dec-meta">Califican ${qualified.length} participante(s) con palpite en los ${playedCount} partidos disputados. Tocá un participante para ver el detalle.</div>`;
   container.innerHTML = html;
 }
-
 // ══ EXPORTAR HTML ACTUALIZADO ══
 
 function getSomaxExportSnapshot(){
@@ -7496,7 +7502,7 @@ function closeAnnounceOutside(e){
   if(e.target === document.getElementById('announce-modal')) dismissAnnounce();
 }
 
-// ── Toggle compacto del "Sistema de Puntuación" (grupos / decisiva ×2) ──
+// ── Toggle compacto del "Sistema de Puntuación" (grupos / decisiva) ──
 function setScoringMode(mode){
   const x2 = mode === 'decisiva';
 
