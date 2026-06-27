@@ -262,6 +262,61 @@ body{
 }
 .match-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.12);border-color:rgba(0,155,84,.3);}
 
+
+.match-card.x2-game{
+  border-color:rgba(245,158,11,.55);
+  box-shadow:0 2px 12px rgba(245,158,11,.16), var(--shadow);
+  animation:x2CardFloat 3.8s ease-in-out infinite;
+}
+.match-card.x2-game::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(110deg,transparent 0%,rgba(245,158,11,.08) 42%,rgba(255,255,255,.42) 50%,rgba(245,158,11,.08) 58%,transparent 100%);
+  transform:translateX(-130%);
+  animation:x2CardShine 5.5s ease-in-out infinite;
+  pointer-events:none;
+}
+.match-card.x2-game::after{
+  content:'×2';position:absolute;right:14px;bottom:10px;
+  font-size:10px;font-weight:900;letter-spacing:.6px;
+  color:#9A5A00;background:#FFF4D6;border:1px solid rgba(245,158,11,.38);
+  border-radius:999px;padding:2px 7px;opacity:.9;
+  transform:scale(.96);
+  animation:x2BadgeBreath 2.8s ease-in-out infinite;
+  pointer-events:none;
+}
+.match-card.x2-game .mc-status.pending,
+.match-card.x2-game .mc-status.palp{
+  background:rgba(245,158,11,.13);
+  color:#B36B00;
+}
+.match-card.x2-game .mc-score{
+  border-color:rgba(245,158,11,.28);
+}
+.date-x2{
+  animation:x2PillPulse 2.6s ease-in-out infinite;
+}
+@keyframes x2CardFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-2px);}
+}
+@keyframes x2CardShine{
+  0%,55%{transform:translateX(-130%);opacity:0;}
+  66%{opacity:1;}
+  82%,100%{transform:translateX(130%);opacity:0;}
+}
+@keyframes x2BadgeBreath{
+  0%,100%{transform:scale(.96);opacity:.82;}
+  50%{transform:scale(1.05);opacity:1;}
+}
+@keyframes x2PillPulse{
+  0%,100%{box-shadow:0 1px 4px rgba(245,158,11,.4);transform:scale(1);}
+  50%{box-shadow:0 3px 12px rgba(245,158,11,.55);transform:scale(1.03);}
+}
+@media (prefers-reduced-motion:reduce){
+  .match-card.x2-game,.match-card.x2-game::before,.match-card.x2-game::after,.date-x2{animation:none;}
+}
+
+
 .mc-top{
   display:flex;align-items:center;justify-content:space-between;
   margin-bottom:10px;gap:8px;position:relative;
@@ -5985,7 +6040,7 @@ function renderMatches(filter){
       const points = calculatePickPoints(pick, real, m).pts;
       const isZero = real && points === 0;
       const card = document.createElement('div');
-      card.className = `match-card ${hasPick?'done':'pending'} ${m.py?'py-game':''}`;
+      card.className = `match-card ${hasPick?'done':'pending'} ${m.py?'py-game':''} ${m.x2?'x2-game':''}`;
       const hScore = hasPick ? pick.home : '–';
       const aScore = hasPick ? pick.away : '–';
       // Palpitado pendiente (sin resultado) = neutro; apurado = verde/rojo según puntos.
