@@ -5064,10 +5064,11 @@ body{
 }
 .filter-row .filter-chip.active{background:var(--green);color:#fff;border-color:var(--green);}
 /* Filtro de marcadores (modal "Puntos por participante", partido cerrado) */
-.ud-tabs.mb-score-filter{gap:6px;padding:10px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.ud-tabs.mb-score-filter{gap:7px;padding:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;}
 .ud-tabs.mb-score-filter::-webkit-scrollbar{display:none;}
-.mb-sfchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;}
-.mb-sfchip .mb-sfn{font-size:11px;font-weight:700;opacity:.65;}
+.mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;font-size:12px;font-weight:800;color:var(--sub);white-space:nowrap;padding-right:1px;}
+.mb-sfchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:10px 15px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;}
+.mb-sfchip .mb-sfn{font-size:12px;font-weight:700;opacity:.65;}
 .mb-sfchip.active{background:var(--green);color:#fff;border-color:var(--green);}
 .mb-sfchip.active .mb-sfn{opacity:.85;}
 /* Misma fila de chips, pero dentro del cuerpo (lista con resultado) */
@@ -6697,7 +6698,8 @@ function buildMbScoreChips(){
   parts.forEach(p => { const k = `${p.pick.home}:${p.pick.away}`; tally[k] = (tally[k] || 0) + 1; });
   const top3 = Object.entries(tally).sort((a,b) => b[1] - a[1]).slice(0, 3);
   const fs = mbState.filterScore;
-  let chips = `<button class="mb-sfchip ${!fs ? 'active' : ''}" onclick="setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
+  let chips = `<span class="mb-sflabel">Palpites:</span>`;
+  chips += `<button class="mb-sfchip ${!fs ? 'active' : ''}" onclick="setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
   chips += top3.map(([sc, n]) =>
     `<button class="mb-sfchip ${fs === sc ? 'active' : ''}" onclick="setMbScoreFilter('${sc}')">${sc} <span class="mb-sfn">${n}</span></button>`
   ).join('');
