@@ -1042,6 +1042,28 @@ body{
 #panel-matches #recent-summary-wrap .recent-summary-card{margin-top:6px!important;}
 #panel-matches{padding-top:0!important;}
 
+
+/* Ajuste pedido: no modal de puntos, el usuario actual se identifica por texto verde,
+   pero sin fondo verde; el fondo verde queda solo para marcadores exactos. */
+#match-breakdown-modal .ud-row.mine:not(.exact){
+  background:transparent!important;
+}
+#match-breakdown-modal .ud-row.mine .mb-pos,
+#match-breakdown-modal .ud-row.mine .ud-teams{
+  color:var(--green)!important;
+  font-weight:900;
+}
+#match-breakdown-modal .ud-row.mine.exact{
+  background:rgba(0,155,84,.08)!important;
+}
+#match-breakdown-modal .ud-row.mine .ud-mine-tag.me{
+  background:transparent!important;
+  border:none!important;
+  color:var(--green)!important;
+  padding:0!important;
+  margin-left:4px!important;
+  font-weight:900!important;
+}
 </style>
 </head>
 <body><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
