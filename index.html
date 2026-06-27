@@ -5064,15 +5064,20 @@ body{
 }
 .filter-row .filter-chip.active{background:var(--green);color:#fff;border-color:var(--green);}
 /* Filtro de marcadores (modal "Puntos por participante", partido cerrado) */
-.ud-tabs.mb-score-filter{gap:7px;padding:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;}
+.ud-tabs.mb-score-filter{gap:7px;padding:18px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;}
 .ud-tabs.mb-score-filter::-webkit-scrollbar{display:none;}
-.mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;font-size:12px;font-weight:800;color:var(--sub);white-space:nowrap;padding-right:1px;}
+.mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;font-size:12px;font-weight:800;color:var(--sub);white-space:nowrap;position:sticky;left:0;background:var(--bg);padding-right:7px;z-index:1;}
 .mb-sfchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:10px 15px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;}
 .mb-sfchip .mb-sfn{font-size:12px;font-weight:700;opacity:.65;}
 .mb-sfchip.active{background:var(--green);color:#fff;border-color:var(--green);}
 .mb-sfchip.active .mb-sfn{opacity:.85;}
 /* Misma fila de chips, pero dentro del cuerpo (lista con resultado) */
-.ud-tabs.mb-score-filter-body{background:transparent;border-bottom:none;padding:2px 0 10px;margin-bottom:2px;}
+.ud-tabs.mb-score-filter-body{background:transparent;border-bottom:none;padding:6px 0 14px;margin-bottom:2px;}
+.ud-tabs.mb-score-filter-body .mb-sflabel{background:var(--white);}
+/* Resaltado de filas cuyo palpite coincide con el del usuario */
+.ud-row.mine{background:rgba(0,155,84,.06);border-radius:10px;}
+.ud-mine-tag{display:inline-block;margin-left:7px;padding:1px 8px;border-radius:50px;background:var(--green);color:#fff;font-size:10px;font-weight:800;vertical-align:middle;letter-spacing:.2px;}
+.ud-mine-tag.me{background:var(--text);}
 /* Tarjetas de estadística (Análisis: más palpitado / puntuó) */
 .mb-stat-cards{display:flex;gap:8px;margin:4px 0 12px;}
 .mb-stat-card{flex:1;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;box-shadow:var(--shadow);}
@@ -6665,7 +6670,8 @@ function openMatchBreakdown(matchId){
     parts.push({ name:u.name, pos:idx + 1, pick, pts:calc.pts, type:calc.type });
   });
 
-  mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null };
+  const myPick = (allPicks[currentUser] || {})[matchId] || null;
+  mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null, myPick, myName:currentUser };
   document.getElementById('match-breakdown-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
   renderMatchBreakdown();
@@ -6754,15 +6760,24 @@ function renderMatchBreakdown(){
     // En modo finalizado los chips van dentro del cuerpo (las pestañas Lista/Análisis ya ocupan mb-tabs).
     const chipBar = pending ? '' : `<div class="ud-tabs mb-score-filter mb-score-filter-body">${buildMbScoreChips()}</div>`;
     const rowsHtml = rows.length
-      ? rows.map(p => `
-        <div class="ud-row">
+      ? rows.map(p => {
+          const mp = mbState.myPick;
+          const isMe = p.name === mbState.myName;
+          const sameAsMine = !!mp && p.pick.home === mp.home && p.pick.away === mp.away;
+          const tag = isMe
+            ? '<span class="ud-mine-tag me">Vos</span>'
+            : (sameAsMine ? '<span class="ud-mine-tag">= Vos</span>' : '');
+          const rowCls = (isMe || sameAsMine) ? 'ud-row mine' : 'ud-row';
+          return `
+        <div class="${rowCls}">
           <span class="mb-pos">${p.pos}º</span>
           <div class="ud-match">
-            <div class="ud-teams">${p.name}</div>
+            <div class="ud-teams">${p.name}${tag}</div>
             <div class="ud-meta">Palpite: ${p.pick.home}:${p.pick.away}</div>
           </div>
           <div class="ud-pts ${pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero')}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
-        </div>`).join('')
+        </div>`;
+        }).join('')
       : '<div class="ud-empty">Nadie palpitó este marcador.</div>';
     body.innerHTML = chipBar + rowsHtml;
     return;
