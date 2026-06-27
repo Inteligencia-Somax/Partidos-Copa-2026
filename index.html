@@ -55,8 +55,13 @@ body{
 .topbar-right{
   display:none;align-items:center;gap:10px;flex-shrink:0;
 }
-.topbar-pts{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap;}
+.topbar-pts{font-size:13px;font-weight:700;color:var(--green);white-space:nowrap;display:flex;align-items:center;gap:5px;}
 .topbar-pos{color:var(--text);font-weight:700;font-size:13px;}
+.topbar-sep{color:var(--sub);font-weight:800;}
+.topbar-rank-delta{font-size:11px;font-weight:900;line-height:1;}
+.topbar-rank-delta.up{color:var(--green);}
+.topbar-rank-delta.down{color:var(--red);}
+.topbar-rank-delta.same{color:var(--sub);}
 .topbar-avatar{
   width:32px;height:32px;border-radius:50%;
   background:linear-gradient(135deg,var(--red),var(--blue));
@@ -427,6 +432,7 @@ body{
 .ud-pick{font-size:12px;color:var(--text);font-weight:700;white-space:nowrap;}
 .ud-sc-in{display:inline-block;min-width:16px;text-align:center;font-weight:900;color:var(--text);}
 .ud-pts{flex-shrink:0;min-width:48px;text-align:right;font-size:15px;font-weight:900;}
+.ud-pts.exact{background:rgba(0,155,84,.10);border:1px solid rgba(0,155,84,.24);border-radius:999px;padding:3px 8px;min-width:auto;text-align:center;}
 .ud-pts.win{color:var(--green);}
 .ud-pts.zero{color:var(--red);}
 .ud-pts.pending{color:var(--sub);font-weight:700;}
@@ -748,7 +754,6 @@ body{
   .topbar-inner{height:52px;}
   .topbar-logo img{height:26px;}
   .topbar-name{font-size:13px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .topbar-avatar{width:38px;height:38px;font-size:16px;}
   .name-setup{margin-top:12px;padding:18px;}
   .name-row{flex-direction:column;}
   .name-input,.name-btn{width:100%;font-size:16px;}
@@ -768,11 +773,10 @@ body{
   <div class="topbar-inner">
 
     <div class="topbar-name-wrap" id="topbar-user" style="display:none;">
-      <div class="topbar-avatar" id="user-avatar">A</div>
       <div class="topbar-name" id="user-name-display"></div>
     </div>
     <div class="topbar-right" id="topbar-right" style="display:none;">
-      <div class="topbar-pts"><span id="user-pos-display" class="topbar-pos"></span><span id="user-pts-display">0</span> pts</div>
+      <div class="topbar-pts"><span id="user-pos-display" class="topbar-pos"></span><span class="topbar-sep">•</span><span><span id="user-pts-display">0</span> pts</span><span id="user-rank-delta" class="topbar-rank-delta"></span></div>
       <button class="topbar-logout" onclick="logoutUser()">Salir</button>
     </div>
   </div>
@@ -5127,9 +5131,10 @@ body{
 .ud-tabs.mb-score-filter-body .mb-sflabel{background:var(--white);}
 /* Resaltado de filas cuyo palpite coincide con el del usuario */
 .ud-row.mine{background:rgba(0,155,84,.06);border-radius:10px;}
-.ud-mine-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:var(--bg);border:1px solid var(--border);color:var(--sub);font-size:10px;font-weight:800;vertical-align:middle;letter-spacing:.2px;}
+.ud-row.exact{background:rgba(0,155,84,.08);border-radius:10px;}
+.ud-mine-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:rgba(0,56,168,.10);border:1px solid rgba(0,56,168,.25);color:var(--blue);font-size:10px;font-weight:800;vertical-align:middle;letter-spacing:.2px;}
 .ud-mine-tag.me{background:var(--text);border-color:var(--text);color:#fff;}
-.ud-exact-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:#FFF8E1;border:1px solid #F0C14B;color:#92400E;font-size:10px;font-weight:900;vertical-align:middle;letter-spacing:.2px;}
+.ud-exact-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:rgba(0,155,84,.12);border:1px solid rgba(0,155,84,.35);color:var(--green);font-size:10px;font-weight:900;vertical-align:middle;letter-spacing:.2px;}
 /* Tarjetas de estadística (Análisis: más palpitado / puntuó) */
 .mb-stat-cards{display:flex;gap:8px;margin:4px 0 12px;}
 .mb-stat-card{flex:1;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;box-shadow:var(--shadow);}
@@ -5708,7 +5713,6 @@ function showApp(){
   document.getElementById('topbar-user').style.display='flex';
   document.getElementById('topbar-right').style.display='flex';
   document.getElementById('user-name-display').textContent = currentUser;
-  document.getElementById('user-avatar').textContent = currentUser.charAt(0).toUpperCase();
   switchTab('matches', document.getElementById('tab-matches'));
   filterMatches('all');
   requestAnimationFrame(()=>{ document.getElementById('today-group')?.scrollIntoView({block:'start'}); });
@@ -6207,8 +6211,30 @@ function updateTopbarPoints(){
   const idx = ranked.findIndex(u=>u.name===currentUser);
   const me = idx>=0 ? ranked[idx] : null;
   ptsEl.textContent = me ? me.score : 0;
+
   const posEl = document.getElementById('user-pos-display');
-  if(posEl) posEl.textContent = me ? (idx+1)+'º - ' : '';
+  if(posEl) posEl.textContent = me ? (idx+1)+'º' : '';
+
+  const deltaEl = document.getElementById('user-rank-delta');
+  if(deltaEl){
+    deltaEl.className = 'topbar-rank-delta';
+    deltaEl.textContent = '';
+    const realResults = loadRealResults();
+    const now = new Date();
+    const playedSorted = MATCHES.filter(m=>realResults[m.id] && getMatchDateTime(m) <= now)
+      .sort((a,b)=>getMatchDateTime(b)-getMatchDateTime(a));
+    const lastDate = playedSorted.length ? playedSorted[0].date : null;
+    if(me && lastDate){
+      const before = getRankedUsersExcludingDate(lastDate);
+      const prevIdx = before.findIndex(u=>u.name===currentUser);
+      if(prevIdx >= 0){
+        const d = prevIdx - idx;
+        if(d > 0){ deltaEl.textContent = `▲${d}`; deltaEl.classList.add('up'); }
+        else if(d < 0){ deltaEl.textContent = `▼${-d}`; deltaEl.classList.add('down'); }
+        else { deltaEl.textContent = '='; deltaEl.classList.add('same'); }
+      }
+    }
+  }
 }
 
 let rankSearch = '';
@@ -6547,19 +6573,21 @@ function renderUdPartidos(){
   shown.forEach(m => {
     const pick = picks[m.id], r = real[m.id];
     const pending = !r;
-    const pts = calculatePickPoints(pick, r, m).pts;
+    const calc = calculatePickPoints(pick, r, m);
+    const pts = calc.pts;
+    const isExact = !pending && calc.type === 'exact';
     if(!pending) shownTotal += pts;
-    const pickLabel = pick ? `Palpite: ${pick.home}:${pick.away}` : 'Sin palpite';
+    const pickLabel = pick ? `Palpite: ${pick.home}:${pick.away}${isExact ? ' <span class="ud-exact-tag">Exacto</span>' : ''}` : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
     const ptsStr = pending ? '🔒' : `${pts > 0 ? '+' : ''}${pts}`;
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
     rows += `
-      <div class="ud-row">
+      <div class="ud-row ${isExact ? 'exact' : ''}">
         <div class="ud-match">
           <div class="ud-teams">${m.hf || ''} ${m.hc || m.home} ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} ${m.ac || m.away} ${m.af || ''}</div>
         </div>
         <div class="ud-scores"><span class="ud-pick">${pickLabel}</span></div>
-        <div class="ud-pts ${pending ? 'zero' : cls}">${ptsStr}</div>
+        <div class="ud-pts ${pending ? 'zero' : cls} ${isExact ? 'exact' : ''}">${ptsStr}</div>
       </div>`;
   });
 
@@ -6770,6 +6798,25 @@ function renderMatchBreakdown(){
   const total = parts.length;
   const mult = m.x2 ? 2 : 1;
 
+  // Misma lógica del ranking: compara la posición actual con la posición
+  // antes del último día disputado, para mostrar si subió, bajó o quedó igual.
+  const realResultsForDelta = loadRealResults();
+  const nowForDelta = new Date();
+  const playedSortedForDelta = MATCHES.filter(mx => realResultsForDelta[mx.id] && getMatchDateTime(mx) <= nowForDelta)
+    .sort((a,b) => getMatchDateTime(b) - getMatchDateTime(a));
+  const lastDateForDelta = playedSortedForDelta.length ? playedSortedForDelta[0].date : null;
+  const prevIndexForDelta = {};
+  if(lastDateForDelta){
+    getRankedUsersExcludingDate(lastDateForDelta).forEach((u, idx) => { prevIndexForDelta[u.name] = idx; });
+  }
+  function mbPosDeltaHtml(name, currentPos){
+    if(!lastDateForDelta || prevIndexForDelta[name] === undefined) return '';
+    const d = prevIndexForDelta[name] - (currentPos - 1);
+    if(d > 0) return `<span class="rank-pos-delta"><span class="rank-delta up">▲${d}</span></span>`;
+    if(d < 0) return `<span class="rank-pos-delta"><span class="rank-delta down">▼${-d}</span></span>`;
+    return `<span class="rank-pos-delta"><span class="rank-delta same">=</span></span>`;
+  }
+
   const _disp = matchDisplay(m, loadRealResults(), computeStandings(loadRealResults()));
   const nameLine = pending
     ? `${_disp.hf} ${_disp.home} × ${_disp.away} ${_disp.af}`
@@ -6820,15 +6867,16 @@ function renderMatchBreakdown(){
           const pickTags = [];
           if(!isMe && sameAsMine) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
           if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
-          const rowCls = isMe ? 'ud-row mine' : 'ud-row';
+          const rowCls = ['ud-row', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
+          const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           return `
         <div class="${rowCls}">
-          <span class="mb-pos">${p.pos}º</span>
+          <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
             <div class="ud-teams">${p.name}${nameTag}</div>
             <div class="ud-meta">Palpite: ${p.pick.home}:${p.pick.away}${pickTags.join('')}</div>
           </div>
-          <div class="ud-pts ${pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero')}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
+          <div class="${ptsCls}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
         </div>`;
         }).join('')
       : '<div class="ud-empty">Nadie palpitó este marcador.</div>';
