@@ -8045,7 +8045,8 @@ function renderUdDayDetail(date){
 }
 
 function renderUdPartidos(){
-  const { matches, rounds, idx, picks, real, sortAsc } = udState;
+  const { matches, rounds, idx, picks, real, sortAsc, viewerPicks } = udState;
+  const allPicks = loadAllPicks();
   // idx 0..rounds.length-1 = fecha (0 = última jugada). idx === rounds.length = Todas (al final).
   const selected = idx < rounds.length ? rounds[idx] : null;
   let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
@@ -8062,15 +8063,31 @@ function renderUdPartidos(){
     const pickLabel = pick ? `Palpite: ${pick.home}:${pick.away}` : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
     const ptsStr = pending ? '🔒' : `${pts > 0 ? '+' : ''}${pts}`;
-    const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
+
+    const pickTags = [];
+    if(pick){
+      const myPick = viewerPicks && viewerPicks[m.id];
+      if(myPick && myPick.home === pick.home && myPick.away === pick.away) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
+      const scoreCounts = {};
+      Object.values(allPicks).forEach(userPicks => {
+        const pp = userPicks && userPicks[m.id];
+        if(!pp) return;
+        const key = `${pp.home}:${pp.away}`;
+        scoreCounts[key] = (scoreCounts[key] || 0) + 1;
+      });
+      const scoreKey = `${pick.home}:${pick.away}`;
+      const maxScoreCount = Object.values(scoreCounts).length ? Math.max(...Object.values(scoreCounts)) : 0;
+      if(maxScoreCount > 1 && scoreCounts[scoreKey] === maxScoreCount) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
+      if(isExact) pickTags.push('<span class="ud-exact-tag">Exacto</span>');
+    }
+
     rows += `
       <div class="ud-row ${isExact ? 'exact' : ''}">
         <div class="ud-match">
           <div class="ud-line-main">
             <span class="ud-teams">${m.hf || ''} ${m.hc || m.home} ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} ${m.ac || m.away} ${m.af || ''}</span>
-            <span class="ud-inline-sep">•</span>
-            <span class="ud-pick">${pickLabel}</span>
           </div>
+          <div class="ud-pick-line"><span class="ud-pick">${pickLabel}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
         </div>
         <div class="ud-pts ${pending ? 'zero' : cls} ${isExact ? 'exact' : ''}">${ptsStr}</div>
       </div>`;
@@ -8355,6 +8372,7 @@ function renderMatchBreakdown(){
           const scoreKey = `${p.pick.home}:${p.pick.away}`;
           const isMostPicked = maxScoreCount > 1 && scoreCounts[scoreKey] === maxScoreCount;
           
+          if(sameAsMine) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
           if(isMostPicked) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
           if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
           const rowCls = ['ud-row', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
@@ -8364,7 +8382,7 @@ function renderMatchBreakdown(){
           <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
             <div class="ud-teams">${p.name}${nameTag}</div>
-            <div class="ud-meta"><span class="ud-pick-text">Palpite: ${p.pick.home}:${p.pick.away}</span>${pickTags.join('')}</div>
+            <div class="ud-meta"><span class="ud-pick-text">Palpite: ${p.pick.home}:${p.pick.away}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
           </div>
           <div class="${ptsCls}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
         </div>`;
@@ -9757,6 +9775,254 @@ function showSaveBanner(msg){
   font-size:26px!important;
   line-height:1!important;
 }
+</style>
+
+
+
+<!-- AJUSTE FINAL: palpite compacto com = Vos no modal Puntos por participante -->
+<style id="final-match-breakdown-vos-badge-compact-20260627">
+  #match-breakdown-modal .ud-row{
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    padding:3px 8px!important;
+    align-items:center!important;
+    overflow:hidden!important;
+  }
+
+  #match-breakdown-modal .ud-match{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    min-height:0!important;
+  }
+
+  #match-breakdown-modal .ud-teams{
+    font-size:12.6px!important;
+    line-height:1.05!important;
+    margin:0!important;
+    font-weight:800!important;
+  }
+
+  #match-breakdown-modal .ud-meta{
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:nowrap!important;
+    gap:4px!important;
+    margin-top:1px!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    color:#6b7280!important;
+    font-size:12px!important;
+    font-weight:400!important;
+    line-height:1!important;
+  }
+
+  #match-breakdown-modal .ud-pick-text{
+    flex:0 1 auto!important;
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    color:#6b7280!important;
+    font-size:12px!important;
+    font-weight:400!important;
+    line-height:1!important;
+  }
+
+  #match-breakdown-modal .ud-meta-sep{
+    flex:0 0 auto!important;
+    color:#9ca3af!important;
+    font-size:10px!important;
+    line-height:1!important;
+  }
+
+  #match-breakdown-modal .ud-mine-tag,
+  #match-breakdown-modal .ud-most-tag,
+  #match-breakdown-modal .ud-exact-tag{
+    flex:0 0 auto!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    height:16px!important;
+    min-height:16px!important;
+    margin-left:0!important;
+    white-space:nowrap!important;
+    font-size:12px!important;
+    font-weight:800!important;
+    line-height:1!important;
+    padding:0 6px!important;
+    max-width:92px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    vertical-align:middle!important;
+  }
+
+  #match-breakdown-modal .ud-pts{
+    align-self:center!important;
+  }
+</style>
+
+
+
+<!-- AJUSTE FINAL: modal detalle participante - palpite na segunda linha -->
+<style id="final-user-detail-partidos-pick-second-line-20260627">
+  #user-detail-modal .ud-row,
+  #user-detail-modal .ud-row.exact{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 52px!important;
+    align-items:center!important;
+    column-gap:10px!important;
+    height:46px!important;
+    min-height:46px!important;
+    max-height:46px!important;
+    padding:0 10px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #user-detail-modal .ud-match{
+    min-width:0!important;
+    width:100%!important;
+    margin:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    gap:3px!important;
+    overflow:hidden!important;
+  }
+
+  #user-detail-modal .ud-line-main{
+    display:flex!important;
+    align-items:center!important;
+    min-width:0!important;
+    width:100%!important;
+    line-height:1.05!important;
+  }
+
+  #user-detail-modal .ud-teams{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    max-width:100%!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    line-height:1.05!important;
+    margin:0!important;
+    font-weight:800!important;
+  }
+
+  #user-detail-modal .ud-inline-sep{display:none!important;}
+
+  #user-detail-modal .ud-pick-line{
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:nowrap!important;
+    gap:5px!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    line-height:1!important;
+  }
+
+  #user-detail-modal .ud-pick{
+    color:#6b7280!important;
+    font-weight:500!important;
+    white-space:nowrap!important;
+    line-height:1!important;
+    margin:0!important;
+    font-size:11.8px!important;
+    flex:0 1 auto!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  #user-detail-modal .ud-meta-sep{
+    color:#9ca3af!important;
+    font-weight:800!important;
+    flex:0 0 auto!important;
+    line-height:1!important;
+  }
+
+  #user-detail-modal .ud-mine-tag,
+  #user-detail-modal .ud-most-tag,
+  #user-detail-modal .ud-exact-tag{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    flex:0 0 auto!important;
+    white-space:nowrap!important;
+    margin-left:0!important;
+    font-size:11.2px!important;
+    line-height:1!important;
+    height:17px!important;
+    padding:1px 6px!important;
+    max-width:86px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    vertical-align:middle!important;
+  }
+
+  #user-detail-modal .ud-pts{
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:28px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    justify-self:end!important;
+    align-self:center!important;
+    margin:0!important;
+    padding:0!important;
+    line-height:1!important;
+    box-sizing:border-box!important;
+  }
+
+  #user-detail-modal .ud-pts.exact{
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:28px!important;
+    padding:0 8px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border-radius:999px!important;
+  }
+
+  @media(max-width:430px){
+    #user-detail-modal .ud-row,
+    #user-detail-modal .ud-row.exact{
+      grid-template-columns:minmax(0,1fr) 48px!important;
+      height:45px!important;
+      min-height:45px!important;
+      max-height:45px!important;
+      padding:0 8px!important;
+      column-gap:8px!important;
+    }
+    #user-detail-modal .ud-match{gap:3px!important;}
+    #user-detail-modal .ud-teams{font-size:12.6px!important;}
+    #user-detail-modal .ud-pick{font-size:11.4px!important;}
+    #user-detail-modal .ud-mine-tag,
+    #user-detail-modal .ud-most-tag,
+    #user-detail-modal .ud-exact-tag{
+      font-size:10.8px!important;
+      height:16px!important;
+      padding:1px 5px!important;
+      max-width:78px!important;
+    }
+    #user-detail-modal .ud-pts,
+    #user-detail-modal .ud-pts.exact{
+      width:48px!important;
+      min-width:48px!important;
+      max-width:48px!important;
+      height:26px!important;
+      font-size:13.8px!important;
+    }
+  }
 </style>
 
 </body></html>
