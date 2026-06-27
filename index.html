@@ -6223,46 +6223,47 @@ body{
   overflow:hidden;         /* sem rolagem horizontal */
 }
 .ud-tabs.mb-score-filter::-webkit-scrollbar{display:none;}
-/* Rótulo "Palpites:" — menor, centralizado verticalmente, sem roubar espaço dos chips */
+/* Rótulo "Palpites:" — centralizado verticalmente, fonte menor, sem roubar espaço dos chips.
+   Usa a MESMA caixa de texto (line-height) e padding vertical dos chips/abas. */
 .mb-sflabel{
   flex:0 0 auto;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  min-height:34px;         /* mesma altura visual dos chips/abas */
-  padding:0 4px 0 0;
-  font-size:11px;
+  padding:8px 4px 8px 0;   /* mesmo padding vertical do .ud-tab */
+  font-size:clamp(10px,2.8vw,12px);
+  line-height:16px;        /* mesma caixa de texto do .ud-tab (13px normal) */
   font-weight:800;
-  line-height:1;
   color:var(--sub);
   white-space:nowrap;
   background:#fff;
   text-align:center;
 }
-/* Chips — MESMO box dos botões "Lista / Análisis" (.ud-tab), só com fonte menor */
+/* Chips — MESMO box dos botões "Lista / Análisis" (.ud-tab): mesmo padding, mesma
+   borda, mesmo raio e mesma caixa de texto -> MESMA altura. A fonte só encolhe o
+   necessário para caber os 4 chips na largura do modal (cresce até 12px em telas largas). */
 .mb-sfchip{
   flex:1 1 0;              /* divide a largura igualmente */
   min-width:0;
   box-sizing:border-box;
-  min-height:34px;         /* mesma altura dos botões Lista/Análisis */
   display:inline-flex;
   align-items:center;      /* centraliza verticalmente */
   justify-content:center;  /* centraliza horizontalmente */
   gap:4px;
-  padding:0 6px;
+  padding:8px 6px;         /* IGUAL ao .ud-tab */
   border:1px solid var(--border);
-  border-radius:50px;
+  border-radius:50px;      /* IGUAL ao .ud-tab */
   background:#fff;
   color:var(--sub);
-  font-size:11px;
+  font-size:clamp(10px,3vw,12px);
+  line-height:16px;        /* mesma caixa de texto do .ud-tab -> mesma altura */
   font-weight:800;
   font-family:inherit;
-  line-height:1;
   cursor:pointer;
   white-space:nowrap;
   transition:background .2s,color .2s,border-color .2s;
 }
-.mb-sfchip .mb-sfn{flex:0 0 auto;font-size:10px;font-weight:800;opacity:.68;line-height:1;}
+.mb-sfchip .mb-sfn{flex:0 0 auto;font-size:clamp(9px,2.6vw,11px);font-weight:800;opacity:.68;line-height:16px;}
 /* Variante "fill": comportamento idêntico (chips dividem toda a largura) */
 .ud-tabs.mb-score-filter-fill{gap:6px;}
 .mb-score-filter-fill .mb-sfchip{flex:1 1 0;min-width:0;}
