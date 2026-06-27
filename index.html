@@ -268,6 +268,13 @@ body{
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
 .mc-status.palp{background:rgba(0,56,168,.1);color:var(--blue);}
 .mc-badge.center.wait{color:var(--sub);}
+.mc-badge.wait{color:var(--sub);}
+.mc-x2{
+  font-size:11px;font-weight:800;line-height:1;
+  color:var(--gold);background:rgba(245,158,11,.12);
+  border:1px solid rgba(245,158,11,.3);
+  padding:3px 7px;border-radius:20px;flex-shrink:0;
+}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
 .mc-status .mc-pts{font-size:16px;font-weight:900;}
@@ -5277,22 +5284,22 @@ const MATCHES = [
   {id:71, date:'Sáb, 27 de Jun.',time:'18:00',phase:'Grupo L',home:'Panamá',      hf:'🇵🇦',hc:'PAN',away:'Inglaterra',     af:'🏴',ac:'ENG'},
   {id:72, date:'Sáb, 27 de Jun.',time:'18:00',phase:'Grupo L',home:'Croacia',     hf:'🇭🇷',hc:'CRO',away:'Ghana',          af:'🇬🇭',ac:'GHA'},
   // ── 1/16 (estructura oficial FIFA por posición) ──
-  {id:73, date:'Dom, 28 de Jun.',time:'16:00',phase:'1/16',home:'2º Gr. A',      hf:'⚽',hc:'',away:'2º Gr. B',           af:'⚽',ac:''},
-  {id:74, date:'Lun, 29 de Jun.',time:'17:30',phase:'1/16',home:'1º Gr. E',      hf:'⚽',hc:'',away:'3º Gr. A/B/C/D/F',  af:'⚽',ac:''},
-  {id:75, date:'Lun, 29 de Jun.',time:'22:00',phase:'1/16',home:'1º Gr. F',      hf:'⚽',hc:'',away:'2º Gr. C',           af:'⚽',ac:''},
-  {id:76, date:'Lun, 29 de Jun.', time:'14:00',phase:'1/16',home:'1º Gr. C',      hf:'⚽',hc:'',away:'2º Gr. F',           af:'⚽',ac:''},
-  {id:77, date:'Mar, 30 de Jun.', time:'18:00',phase:'1/16',home:'1º Gr. I',      hf:'⚽',hc:'',away:'3º Gr. C/D/F/G/H',  af:'⚽',ac:''},
-  {id:78, date:'Mar, 30 de Jun.', time:'14:00',phase:'1/16',home:'2º Gr. E',      hf:'⚽',hc:'',away:'2º Gr. I',           af:'⚽',ac:''},
-  {id:79, date:'Mar, 30 de Jun.', time:'22:00',phase:'1/16',home:'1º Gr. A',      hf:'⚽',hc:'',away:'3º Gr. C/E/F/H/I',  af:'⚽',ac:''},
-  {id:80, date:'Mié, 1 de Jul.', time:'13:00',phase:'1/16',home:'1º Gr. L',      hf:'⚽',hc:'',away:'3º Gr. E/H/I/J/K',  af:'⚽',ac:''},
-  {id:81, date:'Mié, 1 de Jul.', time:'21:00',phase:'1/16',home:'1º Gr. D',      hf:'⚽',hc:'',away:'3º Gr. B/E/F/I/J',  af:'⚽',ac:''},
-  {id:82, date:'Mié, 1 de Jul.', time:'17:00',phase:'1/16',home:'1º Gr. G',      hf:'⚽',hc:'',away:'3º Gr. A/E/H/I/J',  af:'⚽',ac:''},
-  {id:83, date:'Jue, 2 de Jul.', time:'20:00',phase:'1/16',home:'2º Gr. K',      hf:'⚽',hc:'',away:'2º Gr. L',           af:'⚽',ac:''},
-  {id:84, date:'Jue, 2 de Jul.', time:'16:00',phase:'1/16',home:'1º Gr. H',      hf:'⚽',hc:'',away:'2º Gr. J',           af:'⚽',ac:''},
-  {id:85, date:'Vie, 3 de Jul.', time:'00:00',phase:'1/16',home:'1º Gr. B',      hf:'⚽',hc:'',away:'3º Gr. E/F/G/I/J',  af:'⚽',ac:''},
-  {id:86, date:'Vie, 3 de Jul.', time:'19:00',phase:'1/16',home:'1º Gr. J',      hf:'⚽',hc:'',away:'2º Gr. H',           af:'⚽',ac:''},
-  {id:87, date:'Vie, 3 de Jul.', time:'22:30',phase:'1/16',home:'1º Gr. K',      hf:'⚽',hc:'',away:'3º Gr. D/E/I/J/L',  af:'⚽',ac:''},
-  {id:88, date:'Vie, 3 de Jul.', time:'15:00',phase:'1/16',home:'2º Gr. D',      hf:'⚽',hc:'',away:'2º Gr. G',           af:'⚽',ac:''},
+  {id:73, date:'Dom, 28 de Jun.',time:'16:00',phase:'1/16',home:'2º Gr. A',      hf:'⚽',hc:'',away:'2º Gr. B',           af:'⚽',ac:'',x2:true},
+  {id:74, date:'Lun, 29 de Jun.',time:'17:30',phase:'1/16',home:'1º Gr. E',      hf:'⚽',hc:'',away:'3º Gr. A/B/C/D/F',  af:'⚽',ac:'',x2:true},
+  {id:75, date:'Lun, 29 de Jun.',time:'22:00',phase:'1/16',home:'1º Gr. F',      hf:'⚽',hc:'',away:'2º Gr. C',           af:'⚽',ac:'',x2:true},
+  {id:76, date:'Lun, 29 de Jun.', time:'14:00',phase:'1/16',home:'1º Gr. C',      hf:'⚽',hc:'',away:'2º Gr. F',           af:'⚽',ac:'',x2:true},
+  {id:77, date:'Mar, 30 de Jun.', time:'18:00',phase:'1/16',home:'1º Gr. I',      hf:'⚽',hc:'',away:'3º Gr. C/D/F/G/H',  af:'⚽',ac:'',x2:true},
+  {id:78, date:'Mar, 30 de Jun.', time:'14:00',phase:'1/16',home:'2º Gr. E',      hf:'⚽',hc:'',away:'2º Gr. I',           af:'⚽',ac:'',x2:true},
+  {id:79, date:'Mar, 30 de Jun.', time:'22:00',phase:'1/16',home:'1º Gr. A',      hf:'⚽',hc:'',away:'3º Gr. C/E/F/H/I',  af:'⚽',ac:'',x2:true},
+  {id:80, date:'Mié, 1 de Jul.', time:'13:00',phase:'1/16',home:'1º Gr. L',      hf:'⚽',hc:'',away:'3º Gr. E/H/I/J/K',  af:'⚽',ac:'',x2:true},
+  {id:81, date:'Mié, 1 de Jul.', time:'21:00',phase:'1/16',home:'1º Gr. D',      hf:'⚽',hc:'',away:'3º Gr. B/E/F/I/J',  af:'⚽',ac:'',x2:true},
+  {id:82, date:'Mié, 1 de Jul.', time:'17:00',phase:'1/16',home:'1º Gr. G',      hf:'⚽',hc:'',away:'3º Gr. A/E/H/I/J',  af:'⚽',ac:'',x2:true},
+  {id:83, date:'Jue, 2 de Jul.', time:'20:00',phase:'1/16',home:'2º Gr. K',      hf:'⚽',hc:'',away:'2º Gr. L',           af:'⚽',ac:'',x2:true},
+  {id:84, date:'Jue, 2 de Jul.', time:'16:00',phase:'1/16',home:'1º Gr. H',      hf:'⚽',hc:'',away:'2º Gr. J',           af:'⚽',ac:'',x2:true},
+  {id:85, date:'Vie, 3 de Jul.', time:'00:00',phase:'1/16',home:'1º Gr. B',      hf:'⚽',hc:'',away:'3º Gr. E/F/G/I/J',  af:'⚽',ac:'',x2:true},
+  {id:86, date:'Vie, 3 de Jul.', time:'19:00',phase:'1/16',home:'1º Gr. J',      hf:'⚽',hc:'',away:'2º Gr. H',           af:'⚽',ac:'',x2:true},
+  {id:87, date:'Vie, 3 de Jul.', time:'22:30',phase:'1/16',home:'1º Gr. K',      hf:'⚽',hc:'',away:'3º Gr. D/E/I/J/L',  af:'⚽',ac:'',x2:true},
+  {id:88, date:'Vie, 3 de Jul.', time:'15:00',phase:'1/16',home:'2º Gr. D',      hf:'⚽',hc:'',away:'2º Gr. G',           af:'⚽',ac:'',x2:true},
   // ── OCTAVOS ──
   {id:89, date:'Sáb, 4 de Jul.', time:'18:00',phase:'Octavos',home:'G. P74',     hf:'⚽',hc:'',away:'G. P77',             af:'⚽',ac:'',x2:true},
   {id:90, date:'Sáb, 4 de Jul.', time:'14:00',phase:'Octavos',home:'G. P73',     hf:'⚽',hc:'',away:'G. P75',             af:'⚽',ac:'',x2:true},
@@ -5889,7 +5896,7 @@ function renderMatches(filter){
       // Palpitado pendiente (sin resultado) = neutro; apurado = verde/rojo según puntos.
       const statusCls = real ? (isZero ? 'zero' : 'done') : (hasPick ? 'palp' : 'pending');
       const scoreCls = (hasPick && real) ? (isZero ? 'zero' : 'filled') : '';
-      const x2badge = m.x2 ? '<span style="font-size:11px;font-weight:800;color:var(--gold);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);padding:2px 8px;border-radius:20px;margin-left:4px;">✕2</span>' : '';
+      const x2badge = m.x2 ? '<span class="mc-x2">×2</span>' : '';
       const locked = !canEditPick(m);
       const hasBreakdown = locked; // cerrado o finalizado → se pueden ver los palpites de todos
       const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg>' : '';
@@ -5900,8 +5907,8 @@ function renderMatches(filter){
           <span class="mc-dot"></span>
           <span class="mc-phase">${m.phase}</span>
           ${x2badge}
-          ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge center wait">Esperando partido</span>`}
           <div style="flex:1"></div>
+          ${real ? `<span class="mc-badge">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge wait">Esperando partido</span>`}
           <span class="mc-status ${statusCls}">
             ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? 'Palpitado' : 'Pendiente'))}
           </span>${detailI}
@@ -6760,8 +6767,9 @@ function renderMatchBreakdown(){
     if(mbState.filterScore){
       rows = parts.filter(p => `${p.pick.home}:${p.pick.away}` === mbState.filterScore);
     }
-    // En modo finalizado los chips van dentro del cuerpo (las pestañas Lista/Análisis ya ocupan mb-tabs).
-    const chipBar = pending ? '' : `<div class="ud-tabs mb-score-filter mb-score-filter-body">${buildMbScoreChips()}</div>`;
+    // El filtro por marcador solo sirve mientras se espera el resultado (chips en mb-tabs).
+    // Con resultado ya cargado no se muestra esa barra de "Palpites".
+    const chipBar = '';
     const rowsHtml = rows.length
       ? rows.map(p => {
           const mp = mbState.myPick;
