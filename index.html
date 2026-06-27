@@ -791,6 +791,18 @@ body{
 .rank-general-pos b{color:var(--text);font-weight:900;}
 .rank-card.round-mode{background:#fff;border-color:var(--border)!important;}
 .rank-card.round-mode.top1,.rank-card.round-mode.top2,.rank-card.round-mode.top3{background:#fff;border-color:var(--border);}
+.rank-card.round-mode .rank-pos.round-top1,
+.rank-card.round-mode .rank-pos.round-top2,
+.rank-card.round-mode .rank-pos.round-top3{
+  min-width:52px;height:38px;border-radius:14px;font-size:18px;font-weight:950;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.rank-card.round-mode .rank-pos.round-top1{background:#FFF4D6;color:#A76200;border:1px solid #F2C45B;}
+.rank-card.round-mode .rank-pos.round-top2{background:#F3F4F6;color:#4B5563;border:1px solid #D1D5DB;}
+.rank-card.round-mode .rank-pos.round-top3{background:#FFF0E2;color:#9A4A12;border:1px solid #E4A56D;}
+.rank-card.round-mode .rank-pos.round-top1::before{content:'🏆';font-size:14px;margin-right:2px;}
+.rank-card.round-mode .rank-pos.round-top2::before{content:'🥈';font-size:14px;margin-right:2px;}
+.rank-card.round-mode .rank-pos.round-top3::before{content:'🥉';font-size:14px;margin-right:2px;}
 @media(max-width:430px){.rank-filter-btn{min-width:96px;padding:0 10px;font-size:12px}.rank-search{font-size:13px}}
 .rank-avatar{
   width:40px;height:40px;border-radius:50%;
@@ -3770,7 +3782,7 @@ body{
       <div class="decepcion-page-head">
         <div>
           <h3>🥴 Pelota desinflada</h3>
-          <p>Los <strong>10 puntajes más bajos</strong> entre quienes hicieron pronóstico en todos los partidos ya disputados. El primer lugar es el único candidato al premio <strong>Pelota Desinflada</strong>. Vista exclusiva del administrador.</p>
+          <p>Los <strong>puntajes más bajos</strong> entre quienes hicieron pronóstico en todos los partidos ya disputados. El primer lugar es el único candidato al premio <strong>Pelota Desinflada</strong>. Vista exclusiva del administrador.</p>
         </div>
       </div>
       <div class="dec-body" id="decepcion-body"></div>
@@ -5370,6 +5382,28 @@ body{
 .dec-pts-label{font-size:9px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;text-align:right;margin-top:2px;}
 .dec-empty{text-align:center;padding:40px 20px;color:var(--sub);font-size:14px;font-weight:600;line-height:1.5;}
 .dec-meta{font-size:12px;color:var(--sub);margin-top:6px;padding-top:10px;border-top:1px dashed var(--border);}
+.dec-pts{color:#B91C1C;}
+.dec-card.d1 .dec-pts{color:#991B1B;}
+.dec-bad-modal-head{padding:13px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#FFF7ED,#fff);}
+.dec-bad-title{font-size:13px;font-weight:900;color:#9A3412;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.dec-bad-sub{font-size:12px;font-weight:700;color:var(--sub);line-height:1.35;}
+.dec-bad-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);background:#fff;}
+.dec-bad-stat{background:#FFF7ED;border:1px solid rgba(220,90,60,.22);border-radius:13px;padding:8px 6px;text-align:center;}
+.dec-bad-num{font-size:20px;font-weight:950;color:#B91C1C;line-height:1;}
+.dec-bad-lbl{font-size:9px;font-weight:900;color:#7C2D12;text-transform:uppercase;letter-spacing:.35px;margin-top:3px;line-height:1.15;}
+.dec-bad-section{margin:10px 12px;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.dec-bad-section-title{padding:9px 12px;background:#FFF7ED;border-bottom:1px solid rgba(220,90,60,.18);font-size:12px;font-weight:900;color:#7C2D12;}
+.dec-bad-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);}
+.dec-bad-row:last-child{border-bottom:none;}
+.dec-bad-match{flex:1;min-width:0;}
+.dec-bad-teams{font-size:12.5px;font-weight:850;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dec-bad-meta{font-size:10.5px;font-weight:700;color:var(--sub);margin-top:2px;line-height:1.3;}
+.dec-bad-pts{min-width:42px;text-align:right;font-size:14px;font-weight:950;color:#B91C1C;}
+.dec-bad-pts.good{color:var(--green);}
+.dec-bad-pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;padding:3px 8px;font-size:11px;font-weight:900;}
+.dec-bad-note{margin:10px 12px 12px;padding:10px 12px;border-radius:14px;background:#FEF2F2;border:1px solid #FECACA;color:#7F1D1D;font-size:12px;font-weight:750;line-height:1.45;}
+.dec-bad-empty{padding:16px 12px;text-align:center;color:var(--sub);font-size:12px;font-weight:700;}
+
 /* Banner superior personalizado Somax Mundial */
 .hero-banner-custom{
     width:100%;
@@ -6573,7 +6607,9 @@ function renderRanking(){
     if(isMe) card.id = 'my-rank-card';
     card.addEventListener('click', ()=>openUserDetail(u.name));
     if(isMe) card.style.border='2px solid var(--gold)';
-    const posClass = (!isRoundRanking && i===0)?'p1':(!isRoundRanking && i===1)?'p2':(!isRoundRanking && i===2)?'p3':'';
+    const posClass = isRoundRanking
+      ? (i===0?'round-top1':i===1?'round-top2':i===2?'round-top3':'')
+      : (i===0?'p1':i===1?'p2':i===2?'p3':'');
     const posCell = (!isRoundRanking && i<3) ? `<span class="rank-medal">${i===0?'🥇':i===1?'🥈':'🥉'}</span>` : `${i+1}º`;
     const upicks = all[u.name] || {};
     const dots = recent5.map(m=>{
@@ -6581,6 +6617,9 @@ function renderRanking(){
       return `<span class="fd ${pts>0?'win':'miss'}"></span>`;
     }).join('');
     const formHtml = dots ? ` · <span class="form-dots">${dots}</span>` : '';
+    const generalHtml = (isRoundRanking && generalRankMap[u.name]) ? `<span class="rank-general-pos">General <b>${generalRankMap[u.name]}º</b></span>` : '';
+    const exactHtml = `${u.exact} exacto${u.exact===1?'':'s'}`;
+    const detailHtml = isRoundRanking ? `${generalHtml}${generalHtml?' · ':''}${exactHtml}${formHtml}` : `${exactHtml}${formHtml}`;
     let posDeltaHtml = '';
     if(!isRoundRanking && lastDate && prevIndex[u.name] !== undefined){
       const d = prevIndex[u.name] - i;
@@ -6592,7 +6631,7 @@ function renderRanking(){
       <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${posCell}${posDeltaHtml?`<span class="rank-pos-delta">${posDeltaHtml}</span>`:''}</div>
       <div class="rank-info">
         <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></div>
-        <div class="rank-detail">${u.exact} exacto${u.exact===1?'':'s'}${isRoundRanking && generalRankMap[u.name] ? ` <span class="rank-general-pos">General <b>${generalRankMap[u.name]}º</b></span>` : ''}${formHtml}</div>
+        <div class="rank-detail">${detailHtml}</div>
       </div>
       <div>
         <div class="rank-pts">${u.score}</div>
@@ -7247,35 +7286,41 @@ function closeMatchBreakdownOutside(e){
 }
 
 // ══ DECEPCIÓN (solo admin) ══
+function decEsc(v){
+  return String(v ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+function decSafeName(name){
+  return String(name).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+function getDecepcionQualified(){
+  const allPicksData = loadAllPicks();
+  const realResults = loadRealResults();
+  const playedIds = Object.keys(realResults);
+  const ranked = getRankedUsers();
+  const qualified = ranked.filter(u=>{
+    const picks = allPicksData[u.name] || {};
+    return playedIds.length && playedIds.every(id => picks[id] !== undefined && picks[id] !== null);
+  });
+  return { qualified, playedIds, playedCount: playedIds.length, allPicksData, realResults };
+}
 function renderDecepcion(){
   const container = document.getElementById('decepcion-body');
   if(!container) return;
 
-  const allPicksData = loadAllPicks();
-  const realResults = loadRealResults();
-  // "Partidos disputados" = los que ya tienen resultado cargado por el admin.
-  const playedIds = Object.keys(realResults);
-  const playedCount = playedIds.length;
+  const { qualified, playedCount } = getDecepcionQualified();
 
   if(playedCount === 0){
     container.innerHTML = '<div class="dec-empty">Aún no hay partidos disputados.<br>La lista del premio Pelota Desinflada aparecerá cuando se cargue el primer resultado.</div>';
     return;
   }
 
-  // Califican solo quienes registraron palpite en TODOS los partidos disputados.
-  const ranked = getRankedUsers(); // ya ordenado de mejor a peor
-  const qualified = ranked.filter(u=>{
-    const picks = allPicksData[u.name] || {};
-    return playedIds.every(id => picks[id] !== undefined && picks[id] !== null);
-  });
-
   if(qualified.length === 0){
     container.innerHTML = `<div class="dec-empty">Ningún participante palpitó los ${playedCount} partidos disputados.<br>Por eso aún no hay candidatos al premio Pelota Desinflada.</div>`;
     return;
   }
 
-  // Los 10 peores: tomar el final del ranking (peor primero).
-  const worst = qualified.slice(-10).reverse();
+  // Peor primero. Se muestran todos los candidatos, no solo 10.
+  const worst = qualified.slice().reverse();
   const emojis = ['🥴','😬','😴','🙈','🥶','😵','🫠','🤕','😮‍💨','🪫'];
 
   let html = '';
@@ -7286,10 +7331,10 @@ function renderDecepcion(){
     const hitRate = playedCount ? Math.round((aciertos / playedCount) * 100) : 0;
     const tag = i===0 ? '🏆 Premio Pelota Desinflada' : `${hitRate}% de aciertos`;
     html += `
-      <div class="dec-card${d1}" onclick="openUserDetail('${String(u.name).replace(/'/g,"\\'")}')" title="Ver detalle del participante">
+      <div class="dec-card${d1}" onclick="openDecepcionDetail('${decSafeName(u.name)}')" title="Ver por qué está en Decepción">
         <div class="dec-pos${d1}"><span class="dec-emoji">${emojis[i] || '🥴'}</span><span>${i+1}º</span></div>
         <div class="dec-info">
-          <div class="dec-name">${u.name}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></div>
+          <div class="dec-name">${decEsc(u.name)}</div>
           <div class="dec-detail">${u.pickCount}/${MATCHES.length} pronósticos · ${u.exact} exacto${u.exact===1?'':'s'} · ${avg} pts/partido</div>
           <div class="dec-tag">${tag}</div>
         </div>
@@ -7299,8 +7344,115 @@ function renderDecepcion(){
         </div>
       </div>`;
   });
-  html += `<div class="dec-meta">Califican ${qualified.length} participante(s) con palpite en los ${playedCount} partidos disputados. Tocá un participante para ver el detalle.</div>`;
+  html += `<div class="dec-meta">Califican ${qualified.length} participante(s) con pronóstico en los ${playedCount} partidos disputados. Tocá un participante para ver por qué está en Decepción.</div>`;
   container.innerHTML = html;
+}
+
+function openDecepcionDetail(name){
+  const { qualified, playedCount, allPicksData, realResults } = getDecepcionQualified();
+  const worst = qualified.slice().reverse();
+  const u = worst.find(x => x.name === name) || qualified.find(x => x.name === name);
+  if(!u) return;
+
+  const posDec = worst.findIndex(x => x.name === name) + 1;
+  const general = getRankedUsers();
+  const posGeneral = general.findIndex(x => x.name === name) + 1;
+  const picks = allPicksData[name] || {};
+  const playedMatches = MATCHES.filter(m => realResults[m.id]).sort((a,b)=>getMatchDateTime(a)-getMatchDateTime(b));
+
+  let total = 0, possible = 0, zeros = 0, aciertos = 0;
+  const byRound = {};
+  const mistakes = [];
+  const rowsAll = [];
+  playedMatches.forEach(m=>{
+    const r = realResults[m.id];
+    const pick = picks[m.id];
+    const calc = calculatePickPoints(pick, r, m);
+    total += calc.pts;
+    possible += 25 * (m.x2 ? 2 : 1);
+    const round = getRoundLabel(m);
+    if(!byRound[round]) byRound[round] = {round, pts:0, possible:0, zeros:0, count:0};
+    byRound[round].pts += calc.pts;
+    byRound[round].possible += 25 * (m.x2 ? 2 : 1);
+    byRound[round].count++;
+    if(calc.pts === 0){ zeros++; byRound[round].zeros++; }
+    if(calc.pts > 0) aciertos++;
+    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin pronóstico';
+    const row = { m, r, pickStr, pts:calc.pts, type:calc.type, round };
+    rowsAll.push(row);
+    if(calc.pts === 0) mistakes.push(row);
+  });
+  const lost = Math.max(possible - total, 0);
+  const hitRate = playedCount ? Math.round(aciertos / playedCount * 100) : 0;
+  const avg = playedCount ? (total / playedCount).toFixed(1).replace('.', ',') : '0';
+  const worstRound = Object.values(byRound).sort((a,b)=>a.pts-b.pts || b.zeros-a.zeros)[0];
+  const latestMistakes = mistakes.slice().reverse();
+  const firstName = (name || '').split(' ')[0] || name;
+
+  document.getElementById('ud-title').textContent = '🥴 Detalle de Decepción';
+  document.getElementById('ud-hero').innerHTML = `
+    <div class="dec-bad-hero">
+      <div class="dec-bad-stat"><div class="dec-bad-num">${posDec}º</div><div class="dec-bad-lbl">Pelota desinflada</div></div>
+      <div class="dec-bad-stat"><div class="dec-bad-num">${zeros}</div><div class="dec-bad-lbl">Partidos sin puntuar</div></div>
+      <div class="dec-bad-stat"><div class="dec-bad-num">${lost}</div><div class="dec-bad-lbl">Puntos dejados</div></div>
+    </div>`;
+  document.getElementById('ud-tabs').innerHTML = '';
+  document.getElementById('ud-tabs').classList.remove('four');
+
+  const trophy = posDec === 1 ? `<div class="dec-bad-note"><strong>${decEsc(firstName)}</strong> es el candidato actual al premio <strong>Pelota Desinflada</strong>. Tiene el menor puntaje entre quienes palpitaron todos los partidos ya disputados.</div>` : '';
+  const roundHtml = worstRound ? `
+    <div class="dec-bad-section">
+      <div class="dec-bad-section-title">Dónde más perdió puntos</div>
+      <div class="dec-bad-row">
+        <div class="dec-bad-match">
+          <div class="dec-bad-teams">${decEsc(worstRound.round)}</div>
+          <div class="dec-bad-meta">${worstRound.zeros} partido(s) en cero · ${worstRound.pts}/${worstRound.possible} pts posibles</div>
+        </div>
+        <div class="dec-bad-pts">${worstRound.pts}</div>
+      </div>
+    </div>` : '';
+
+  const mistakesHtml = latestMistakes.length ? latestMistakes.map(({m,r,pickStr,pts})=>`
+      <div class="dec-bad-row">
+        <div class="dec-bad-match">
+          <div class="dec-bad-teams">${m.hf || ''} ${decEsc(m.home)} × ${decEsc(m.away)} ${m.af || ''}</div>
+          <div class="dec-bad-meta">${decEsc(m.date)} · ${decEsc(getRoundLabel(m))} · Resultado: ${r.home}:${r.away} · Pronóstico: ${decEsc(pickStr)}</div>
+        </div>
+        <div class="dec-bad-pts">${pts}</div>
+      </div>`).join('') : '<div class="dec-bad-empty">No tuvo partidos en cero. Está aquí por bajo promedio general.</div>';
+
+  const allHtml = rowsAll.slice().reverse().map(({m,r,pickStr,pts})=>`
+      <div class="dec-bad-row">
+        <div class="dec-bad-match">
+          <div class="dec-bad-teams">${m.hf || ''} ${decEsc(m.home)} × ${decEsc(m.away)} ${m.af || ''}</div>
+          <div class="dec-bad-meta">Resultado: ${r.home}:${r.away} · Pronóstico: ${decEsc(pickStr)}</div>
+        </div>
+        <div class="dec-bad-pts ${pts>0?'good':''}">${pts>0?'+':''}${pts}</div>
+      </div>`).join('');
+
+  document.getElementById('ud-body').innerHTML = `
+    <div class="dec-bad-modal-head">
+      <div class="dec-bad-title">${decEsc(name)}</div>
+      <div class="dec-bad-sub">Ranking general: ${posGeneral ? posGeneral + 'º' : '–'} · ${total} puntos · ${avg} pts/partido · ${hitRate}% de aciertos</div>
+    </div>
+    ${trophy}
+    <div class="dec-bad-section">
+      <div class="dec-bad-section-title">Resumen de la decepción</div>
+      <div class="dec-bad-row"><div class="dec-bad-match"><div class="dec-bad-teams">Puntaje bajo con participación completa</div><div class="dec-bad-meta">Palpitó los ${playedCount} partidos disputados, pero dejó muchos puntos en el camino.</div></div><span class="dec-bad-pill">${total}/${possible} pts</span></div>
+      <div class="dec-bad-row"><div class="dec-bad-match"><div class="dec-bad-teams">Marcadores exactos</div><div class="dec-bad-meta">Exactos son los que más pesan para escapar de esta lista.</div></div><span class="dec-bad-pill">${u.exact}</span></div>
+    </div>
+    ${roundHtml}
+    <div class="dec-bad-section">
+      <div class="dec-bad-section-title">Partidos en los que no sumó</div>
+      ${mistakesHtml}
+    </div>
+    <div class="dec-bad-section">
+      <div class="dec-bad-section-title">Todos los partidos apurados</div>
+      ${allHtml}
+    </div>`;
+
+  document.getElementById('user-detail-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 }
 // ══ EXPORTAR HTML ACTUALIZADO ══
 
