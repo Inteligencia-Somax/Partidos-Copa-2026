@@ -8066,9 +8066,12 @@ function renderUdPartidos(){
     rows += `
       <div class="ud-row ${isExact ? 'exact' : ''}">
         <div class="ud-match">
-          <div class="ud-teams">${m.hf || ''} ${m.hc || m.home} ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} ${m.ac || m.away} ${m.af || ''}</div>
+          <div class="ud-line-main">
+            <span class="ud-teams">${m.hf || ''} ${m.hc || m.home} ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} ${m.ac || m.away} ${m.af || ''}</span>
+            <span class="ud-inline-sep">•</span>
+            <span class="ud-pick">${pickLabel}</span>
+          </div>
         </div>
-        <div class="ud-scores"><span class="ud-pick">${pickLabel}</span></div>
         <div class="ud-pts ${pending ? 'zero' : cls} ${isExact ? 'exact' : ''}">${ptsStr}</div>
       </div>`;
   });
@@ -8361,7 +8364,7 @@ function renderMatchBreakdown(){
           <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
             <div class="ud-teams">${p.name}${nameTag}</div>
-            <div class="ud-meta">Palpite: ${p.pick.home}:${p.pick.away}${pickTags.join('')}</div>
+            <div class="ud-meta"><span class="ud-pick-text">Palpite: ${p.pick.home}:${p.pick.away}</span>${pickTags.join('')}</div>
           </div>
           <div class="${ptsCls}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
         </div>`;
@@ -11538,6 +11541,225 @@ function showSaveBanner(msg){
       min-width:48px!important;
       max-width:48px!important;
       height:26px!important;
+    }
+  }
+</style>
+
+<!-- AJUSTE FINAL: aba Partidos do modal de detalhes - palpite inline ao jogo -->
+<style id="final-user-detail-partidos-inline-pick-20260627">
+  #user-detail-modal .ud-row{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 52px!important;
+    align-items:center!important;
+    column-gap:10px!important;
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    padding:0 10px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #user-detail-modal .ud-row.exact{
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    padding:0 10px!important;
+    border-radius:10px!important;
+  }
+
+  #user-detail-modal .ud-match{
+    min-width:0!important;
+    width:100%!important;
+    margin:0!important;
+  }
+
+  #user-detail-modal .ud-line-main{
+    display:flex!important;
+    align-items:center!important;
+    min-width:0!important;
+    width:100%!important;
+    gap:6px!important;
+    line-height:1!important;
+  }
+
+  #user-detail-modal .ud-teams{
+    flex:0 1 auto!important;
+    min-width:0!important;
+    max-width:58%!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    line-height:1!important;
+    margin:0!important;
+    font-weight:800!important;
+  }
+
+  #user-detail-modal .ud-inline-sep{
+    flex:0 0 auto!important;
+    color:#9ca3af!important;
+    font-weight:700!important;
+    line-height:1!important;
+  }
+
+  #user-detail-modal .ud-pick{
+    flex:0 0 auto!important;
+    color:#6b7280!important;
+    font-weight:500!important;
+    white-space:nowrap!important;
+    line-height:1!important;
+    margin:0!important;
+  }
+
+  #user-detail-modal .ud-pick::first-letter{
+    font-weight:500!important;
+  }
+
+  #user-detail-modal .ud-scores{
+    display:none!important;
+  }
+
+  #user-detail-modal .ud-pts{
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:28px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    justify-self:end!important;
+    align-self:center!important;
+    margin:0!important;
+    padding:0!important;
+    line-height:1!important;
+    box-sizing:border-box!important;
+  }
+
+  #user-detail-modal .ud-pts.exact{
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:28px!important;
+    padding:0 8px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border-radius:999px!important;
+    line-height:1!important;
+    box-sizing:border-box!important;
+  }
+
+  @media(max-width:430px){
+    #user-detail-modal .ud-row,
+    #user-detail-modal .ud-row.exact{
+      grid-template-columns:minmax(0,1fr) 48px!important;
+      height:40px!important;
+      min-height:40px!important;
+      max-height:40px!important;
+      padding:0 8px!important;
+      column-gap:8px!important;
+    }
+
+    #user-detail-modal .ud-line-main{gap:5px!important;}
+    #user-detail-modal .ud-teams{font-size:12.6px!important;max-width:54%!important;}
+    #user-detail-modal .ud-pick{font-size:11.6px!important;}
+    #user-detail-modal .ud-pts,
+    #user-detail-modal .ud-pts.exact{
+      width:48px!important;
+      min-width:48px!important;
+      max-width:48px!important;
+      height:26px!important;
+      font-size:13.8px!important;
+    }
+  }
+</style>
+
+
+<!-- AJUSTE FINAL: linha do palpite no modal Puntos por participante -->
+<style id="final-match-breakdown-palpite-line-20260627">
+  #match-breakdown-modal .ud-row{
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    padding-top:4px!important;
+    padding-bottom:4px!important;
+    overflow:hidden!important;
+  }
+
+  #match-breakdown-modal .ud-teams{
+    font-size:12.2px!important;
+    line-height:1.05!important;
+    margin:0!important;
+  }
+
+  #match-breakdown-modal .ud-meta{
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:nowrap!important;
+    gap:5px!important;
+    margin-top:2px!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    color:#6b7280!important;
+    font-size:12.2px!important;
+    font-weight:500!important;
+    line-height:1.05!important;
+  }
+
+  #match-breakdown-modal .ud-pick-text{
+    flex:0 1 auto!important;
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    color:#6b7280!important;
+    font-size:inherit!important;
+    font-weight:500!important;
+    line-height:inherit!important;
+  }
+
+  #match-breakdown-modal .ud-mine-tag,
+  #match-breakdown-modal .ud-most-tag,
+  #match-breakdown-modal .ud-exact-tag{
+    flex:0 0 auto!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    margin-left:0!important;
+    white-space:nowrap!important;
+    font-size:12.2px!important;
+    font-weight:800!important;
+    line-height:1!important;
+    padding:1px 6px!important;
+    max-width:96px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    vertical-align:middle!important;
+  }
+
+  #match-breakdown-modal .ud-pts{
+    align-self:center!important;
+    justify-self:end!important;
+  }
+
+  @media(max-width:430px){
+    #match-breakdown-modal .ud-row{
+      height:43px!important;
+      min-height:43px!important;
+      max-height:43px!important;
+      padding-top:4px!important;
+      padding-bottom:4px!important;
+    }
+    #match-breakdown-modal .ud-teams,
+    #match-breakdown-modal .ud-meta{font-size:12px!important;}
+    #match-breakdown-modal .ud-mine-tag,
+    #match-breakdown-modal .ud-most-tag,
+    #match-breakdown-modal .ud-exact-tag{
+      font-size:12px!important;
+      padding:1px 5px!important;
+      max-width:90px!important;
     }
   }
 </style>
