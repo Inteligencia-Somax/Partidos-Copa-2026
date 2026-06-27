@@ -7033,7 +7033,7 @@ function renderRanking(){
       return `<span class="rank-general-pos${gcls}">General <b>${gp}º</b></span>`;
     })() : '';
     const exactHtml = `<span class="rank-exact-badge">${u.exact} exacto${u.exact===1?'':'s'}</span>`;
-    const detailHtml = isRoundRanking ? `${generalHtml}${generalHtml?'<span class="rank-sep">•</span>':''}${exactHtml}${formHtml}` : `${exactHtml}${formHtml}`;
+    const detailHtml = isRoundRanking ? `${generalHtml}${generalHtml?' ':''}${exactHtml}${formHtml}` : `${exactHtml}${formHtml}`;
     let posDeltaHtml = '';
     if(!isRoundRanking && lastDate && prevIndex[u.name] !== undefined){
       const d = prevIndex[u.name] - i;
@@ -8692,4 +8692,78 @@ function showSaveBanner(msg){
 .rank-sep{color:var(--sub);font-weight:900;opacity:.75;flex-shrink:0;}
 .rank-detail .rank-exact-badge + .form-dots{margin-left:2px;}
 </style>
+
+
+<style id="rank-alignment-compact-20260627">
+/* Ranking: cards mais compactos, nome mais próximo da colocação e detalhes cabendo em uma linha */
+.rank-card{
+  padding:11px 14px!important;
+  gap:8px!important;
+  min-height:76px!important;
+}
+.rank-pos{
+  min-width:38px!important;
+  width:38px!important;
+  justify-content:flex-start!important;
+}
+.rank-info{
+  flex:1 1 auto!important;
+  min-width:0!important;
+}
+.rank-name{
+  font-size:14.5px!important;
+  gap:4px!important;
+}
+.rank-detail{
+  margin-top:4px!important;
+  gap:4px!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+.rank-general-pos,
+.rank-exact-badge{
+  min-height:22px!important;
+  height:22px!important;
+  padding:3px 8px!important;
+  font-size:11px!important;
+  font-weight:700!important;
+  line-height:1!important;
+  gap:2px!important;
+}
+.rank-general-pos b{
+  font-weight:700!important;
+}
+.rank-sep{
+  font-size:11px!important;
+  opacity:.65!important;
+  margin:0 1px!important;
+}
+.form-dots{
+  gap:3px!important;
+  flex-shrink:0!important;
+}
+.fd{
+  width:8px!important;
+  height:8px!important;
+}
+.rank-score-wrap{
+  gap:5px!important;
+}
+.rank-score-info{
+  width:15px!important;
+  height:15px!important;
+}
+.rank-pts{
+  font-size:21px!important;
+}
+@media(max-width:430px){
+  .rank-card{padding:10px 12px!important;gap:7px!important;}
+  .rank-pos{min-width:34px!important;width:34px!important;font-size:17px!important;}
+  .rank-name{font-size:14px!important;}
+  .rank-general-pos,.rank-exact-badge{font-size:10.5px!important;padding:3px 7px!important;}
+  .rank-detail{gap:3px!important;}
+  .rank-score-wrap{gap:4px!important;}
+}
+</style>
+
 </body></html>
