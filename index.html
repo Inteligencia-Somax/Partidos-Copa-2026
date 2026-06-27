@@ -370,9 +370,9 @@ body{
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
 .mc-status.palp{background:rgba(0,56,168,.1);color:var(--blue);}
 .mc-status.closed{background:rgba(0,56,168,.1);color:var(--blue);}
-/* Resultado / esperando resultado: texto rosado con fondo gris */
-.mc-badge.center{color:#B14A5A;}
-.mc-badge.center.wait{color:#B14A5A;background:rgba(0,0,0,.05);border-color:var(--border);}
+/* Resultado / esperando resultado: texto preto con fondo gris */
+.mc-badge.center{color:var(--text);}
+.mc-badge.center.wait{color:var(--text);background:rgba(0,0,0,.05);border-color:var(--border);}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
 .mc-status .mc-pts{font-size:16px;font-weight:900;}
@@ -9231,4 +9231,102 @@ function showSaveBanner(msg){
 .rank-card[style*="var(--gold)"] .rank-name .vos-tag{
   color:var(--text)!important;
 }
+</style>
+
+<style id="final-align-expanded-and-summary-tight-20260627">
+/* Expansão do análisis de puntos: ocupa a largura certinha e alinha até a direita */
+.mb-names{
+  box-sizing:border-box!important;
+  width:100%!important;
+  margin:0!important;
+  padding:6px 10px 10px 32px!important;
+  background:#F7F8FA!important;
+  border-bottom:1px solid var(--border)!important;
+}
+.mb-name-row{
+  box-sizing:border-box!important;
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:6px 0!important;
+}
+.mb-name-txt{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.mb-name-pick{
+  justify-self:end!important;
+  min-width:42px!important;
+  text-align:right!important;
+  font-weight:900!important;
+  color:#111827!important;
+}
+.mb-leg-item.open + .mb-names{
+  border-radius:0 0 14px 14px!important;
+}
+
+/* Resumo: título e frase mais próximos, com o mesmo ajuste no card, modal e imagem de compartilhar */
+.recent-summary-card .rs-head,
+#summary-modal .recent-summary-card .rs-head,
+.share-card .rs-head,
+.share-summary-card .rs-head{
+  gap:4px!important;
+  margin-bottom:8px!important;
+}
+.recent-summary-card .rs-head-main,
+#summary-modal .recent-summary-card .rs-head-main,
+.share-card .rs-head-main,
+.share-summary-card .rs-head-main{
+  min-height:26px!important;
+  align-items:center!important;
+}
+.recent-summary-card .rs-msg,
+#summary-modal .recent-summary-card .rs-msg,
+.share-card .rs-msg,
+.share-summary-card .rs-msg{
+  margin-top:-1px!important;
+  color:#6B7280!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+}
+</style>
+
+<style id="final-rank-summary-polish-20260627-b">
+/* Resumen: card/modal/compartir con el mismo ancho visual y título más cerca de la frase */
+#panel-matches #recent-summary-wrap{max-width:680px;margin:0 auto!important;padding:0 12px!important;box-sizing:border-box;}
+#panel-matches #recent-summary-wrap .recent-summary-card{width:100%!important;box-sizing:border-box!important;margin-top:4px!important;margin-bottom:14px!important;}
+.recent-summary-card .rs-head{gap:3px!important;margin-bottom:8px!important;}
+.recent-summary-card .rs-head-main{min-height:24px!important;align-items:center!important;}
+.recent-summary-card .rs-msg{margin:0!important;align-self:flex-start!important;text-align:left!important;max-width:100%!important;color:#6B7280!important;font-size:12px!important;line-height:1.2!important;font-weight:800!important;}
+#summary-modal .recent-summary-card .rs-head{gap:3px!important;margin-bottom:8px!important;}
+#summary-modal .recent-summary-card .rs-msg{margin:0!important;text-align:left!important;max-width:100%!important;color:#6B7280!important;line-height:1.2!important;}
+.rs-titleline{gap:6px!important;}
+.rs-kpi-main{color:#111827!important;}
+
+/* Ranking: "Vos" fica evidente só com texto/posição verde; fundo verde fica reservado para exatos */
+#ranking-list .rank-card#my-rank-card{background:#fff!important;}
+#ranking-list .rank-card#my-rank-card .rank-pos,
+#ranking-list .rank-card#my-rank-card .rank-name,
+#ranking-list .rank-card#my-rank-card .rank-name-txt{color:var(--green)!important;}
+#ranking-list .rank-card#my-rank-card .rank-pts{color:#111827!important;}
+#ranking-list .rank-pts{color:#111827!important;}
+#ranking-list .rank-exact-badge{background:rgba(0,155,84,.12)!important;color:var(--green)!important;border:1px solid rgba(0,155,84,.25)!important;font-size:11px!important;font-weight:800!important;padding:3px 9px!important;border-radius:999px!important;line-height:1!important;white-space:nowrap!important;}
+#ranking-list .rank-detail{gap:6px!important;}
+#ranking-list .rank-detail::before{content:none!important;}
+#ranking-list .rank-exact-badge + .form-dots{margin-left:2px!important;}
+#ranking-list .rank-medal{font-size:46px!important;line-height:1!important;}
+
+/* Modal/expansão: linhas ocupam toda a largura e o lado direito fica alinhado */
+#user-detail-modal .ud-body,
+#match-breakdown-modal .ud-body{box-sizing:border-box!important;padding-left:14px!important;padding-right:14px!important;}
+#user-detail-modal .ud-row,
+#match-breakdown-modal .ud-row,
+#user-detail-modal .ud-day-row,
+#match-breakdown-modal .ud-day-row{width:100%!important;box-sizing:border-box!important;}
+#user-detail-modal .ud-pts,
+#match-breakdown-modal .ud-pts{margin-left:auto!important;text-align:right!important;}
 </style>
