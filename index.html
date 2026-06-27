@@ -770,20 +770,22 @@ body{
 .rank-tools{display:flex;align-items:center;gap:8px;}
 .rank-search-box{position:relative;flex:1;min-width:0;}
 .rank-search-ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--sub);pointer-events:none;}
-.rank-search{width:100%;padding:11px 16px 11px 42px;border:1px solid var(--border);border-radius:50px;font-family:inherit;font-size:14px;background:#fff;box-shadow:var(--shadow);outline:none;box-sizing:border-box;}
+.rank-search{width:100%;height:44px;padding:0 16px 0 42px;border:1px solid var(--border);border-radius:50px;font-family:inherit;font-size:14px;background:#fff;box-shadow:var(--shadow);outline:none;box-sizing:border-box;}
 .rank-search:focus{border-color:var(--green);}
 .rank-search:focus + .rank-search-ico,.rank-search-box:focus-within .rank-search-ico{color:var(--green);}
 .rank-filter-wrap{position:relative;flex-shrink:0;}
-.rank-filter-btn{height:46px;min-width:112px;padding:0 13px;border:1px solid var(--border);border-radius:50px;background:#fff;box-shadow:var(--shadow);font-family:inherit;font-size:13px;font-weight:800;color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;}
+.rank-filter-btn{height:44px;min-width:108px;padding:0 12px;border:1px solid var(--border);border-radius:50px;background:#fff;box-shadow:var(--shadow);font-family:inherit;font-size:13px;font-weight:800;color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;}
 .rank-filter-btn .ico{font-size:15px;line-height:1;}
 .rank-filter-btn .chev{font-size:10px;color:var(--sub);margin-left:1px;}
-.rank-filter-menu{position:absolute;right:0;top:52px;width:190px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.16);padding:6px;z-index:320;display:none;}
+.rank-filter-menu{position:absolute;right:0;top:50px;width:190px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.16);padding:6px;z-index:320;display:none;}
 .rank-filter-menu.open{display:block;animation:fadeUp .18s ease;}
 .rank-filter-option{width:100%;border:none;background:transparent;border-radius:12px;padding:10px 12px;text-align:left;font-family:inherit;font-size:13px;font-weight:800;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .rank-filter-option small{display:block;font-size:10px;font-weight:700;color:var(--sub);margin-top:1px;}
 .rank-filter-option.active{background:#E8F5EE;color:var(--green);}
-.rank-context{max-width:680px;margin:-2px auto 8px;padding:0 12px;font-size:12px;font-weight:700;color:var(--sub);}
+.rank-context{max-width:680px;margin:0 auto 10px;padding:0 12px;font-size:12px;font-weight:700;color:var(--text);}
+.rank-context .rank-context-card{background:#fff;border:1px solid rgba(255,255,255,.9);border-radius:14px;padding:9px 12px;box-shadow:var(--shadow);line-height:1.35;}
 .rank-context strong{color:var(--green);font-weight:900;}
+.rank-context .muted{color:var(--sub);font-weight:700;}
 .rank-card.round-mode{background:#fff;border-color:var(--border)!important;}
 .rank-card.round-mode.top1,.rank-card.round-mode.top2,.rank-card.round-mode.top3{background:#fff;border-color:var(--border);}
 @media(max-width:430px){.rank-filter-btn{min-width:96px;padding:0 10px;font-size:12px}.rank-search{font-size:13px}}
@@ -6388,8 +6390,14 @@ function getRankedUsersByRound(roundLabel){
 }
 
 function getRankFilterOptions(){
+  const realResults = loadRealResults();
   const labels = [];
-  MATCHES.forEach(m=>{ const r = getRoundLabel(m); if(!labels.includes(r)) labels.push(r); });
+  // Solo muestra rondas que ya tienen al menos un partido apurado.
+  MATCHES.forEach(m=>{
+    if(!realResults[m.id]) return;
+    const r = getRoundLabel(m);
+    if(!labels.includes(r)) labels.push(r);
+  });
   return ['Ranking', ...labels];
 }
 
@@ -6499,6 +6507,8 @@ function renderRanking(){
   const realResults = loadRealResults();
   const container = document.getElementById('ranking-list');
   const finishedCount = Object.keys(realResults).length;
+  const availableRankScopes = getRankFilterOptions();
+  if(rankScope !== 'Ranking' && !availableRankScopes.includes(rankScope)) rankScope = 'Ranking';
   updateTopbarPoints();
 
   if(Object.keys(all).length===0){
@@ -6513,9 +6523,12 @@ function renderRanking(){
   const ctx = document.getElementById('rank-context');
   if(ctx){
     if(isRoundRanking){
-      const qtd = MATCHES.filter(m=>getRoundLabel(m)===rankScope).length;
+      const qtd = MATCHES.filter(m=>getRoundLabel(m)===rankScope && realResults[m.id]).length;
+      const general = getRankedUsers();
+      const myIdx = general.findIndex(u=>u.name===currentUser);
+      const myPos = myIdx >= 0 ? `${myIdx+1}º` : '—';
       ctx.style.display = 'block';
-      ctx.innerHTML = `<strong>${rankScope}</strong> · ranking exclusivo de esta ronda (${qtd} partidos). El ranking general no cambia.`;
+      ctx.innerHTML = `<div class="rank-context-card"><strong>${rankScope}</strong> · solo partidos apurados de esta ronda (${qtd}). <span class="muted">Tu posición actual en el ranking general:</span> <strong>${myPos}</strong>.</div>`;
     }else{
       ctx.style.display = 'none';
       ctx.innerHTML = '';
