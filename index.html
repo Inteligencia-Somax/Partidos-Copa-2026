@@ -1639,7 +1639,7 @@ body{
   text-align:center!important;
 }
 
-/* “Tu palpite:” sem peso excessivo; o status continua destacado */
+/* “Vos palpite:” sem peso excessivo; o status continua destacado */
 .recent-summary-card .rs-sub,
 .recent-summary-card .rs-game-sub,
 #summary-modal .recent-summary-card .rs-sub,
@@ -1855,7 +1855,7 @@ body{
 
     <div class="auth-error" id="auth-error"></div>
     <button class="auth-secondary-btn" onclick="resetPassword()">Recuperar contraseña</button>
-    <p class="auth-help">Tu sesión quedará recordada en este navegador. Si usás otro celular o computadora, podrás ingresar con el mismo correo y contraseña.</p>
+    <p class="auth-help">Vos sesión quedará recordada en este navegador. Si usás otro celular o computadora, podrás ingresar con el mismo correo y contraseña.</p>
   </div>
 </div>
 
@@ -6932,7 +6932,7 @@ function recentSummaryHtml({compact=false, share=false}={}){
     return `<div class="rs-game">
       <div class="rs-match">
         <div class="rs-teams">${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}</div>
-        <div class="rs-sub">Tu palpite: ${pickTxt}<span class="rs-tag ${lab.cls}">${lab.txt}</span></div>
+        <div class="rs-sub">Vos palpite: ${pickTxt}<span class="rs-tag ${lab.cls}">${lab.txt}</span></div>
       </div>
       <div class="rs-pts ${g.myPts===0?'zero':''} ${g.type==='exact'?'exact':''}">+${g.myPts}</div>
     </div>`;
@@ -7030,7 +7030,7 @@ async function shareRecentSummaryImage(){
     canvasTextFit(`${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}`, 148, y-8, 480);
     const pickTxt = g.myPick ? `${g.myPick.home}:${g.myPick.away}` : 'sin palpite';
     const lab = getRecentSummaryLabel(g.type, g.myPts);
-    ctx.fillStyle = '#6B7280'; ctx.font = '800 17px Inter, Arial'; ctx.fillText(`Tu palpite: ${pickTxt}`, 148, y+20);
+    ctx.fillStyle = '#6B7280'; ctx.font = '800 17px Inter, Arial'; ctx.fillText(`Vos palpite: ${pickTxt}`, 148, y+20);
 
     if(g.type === 'exact'){
       ctx.fillStyle = 'rgba(0,155,84,.12)'; roundRect(ctx, 282, y+2, 86, 26, 13); ctx.fill();
@@ -7727,7 +7727,7 @@ function renderRanking(){
       const myIdx = general.findIndex(u=>u.name===currentUser);
       const myPos = myIdx >= 0 ? `${myIdx+1}º` : '—';
       ctx.style.display = 'block';
-      ctx.innerHTML = `<div class="rank-context-card"><span class="rank-context-label">${rankScope}</span> solo partidos apurados de esta ronda (${qtd}). <span class="muted">Tu posición actual en el ranking general:</span> <strong>${myPos}</strong>.</div>`;
+      ctx.innerHTML = `<div class="rank-context-card"><span class="rank-context-label">${rankScope}</span> solo partidos apurados de esta ronda (${qtd}). <span class="muted">Vos posición actual en el ranking general:</span> <strong>${myPos}</strong>.</div>`;
     }else{
       ctx.style.display = 'none';
       ctx.innerHTML = '';
@@ -7969,7 +7969,7 @@ function renderUdResumen(){
     const d = s.viewedScore - s.myScore;
     const txt = d > 0 ? `Te saca <strong>${d} pts</strong>` : (d < 0 ? `Le sacás <strong>${-d} pts</strong>` : `Están <strong>empatados</strong>`);
     const cls = d > 0 ? 'down' : (d < 0 ? 'up' : 'same');
-    html += `<div class="ud-cmp ${cls}"><div class="ud-cmp-main">${txt}</div><div class="ud-cmp-sub">Tú ${s.myScore} · ${udState.name.split(' ')[0]} ${s.viewedScore}</div></div>`;
+    html += `<div class="ud-cmp ${cls}"><div class="ud-cmp-main">${txt}</div><div class="ud-cmp-sub">Vos ${s.myScore} · ${udState.name.split(' ')[0]} ${s.viewedScore}</div></div>`;
   }
 
   html += `<div class="ud-cards">
@@ -8149,7 +8149,7 @@ function renderUdComparar(){
         </div>
         <div class="cmp-grid">
           <div class="cmp-cell ${myWin?'win':''}">
-            <div class="cmp-who">Tú</div>
+            <div class="cmp-who">Vos</div>
             <div class="cmp-pickline"><span class="cmp-pick">${myStr}</span><span class="cmp-dot">•</span><span class="cmp-pts ${pending?'zero':(myPts>0?'win':'zero')}">${myPtsStr}</span></div>
           </div>
           <div class="cmp-cell ${thWin?'win':''}">
@@ -8172,7 +8172,7 @@ function renderUdComparar(){
   const summary = shown.length ? `
     <div class="cmp-summary">
       <div class="cmp-sum-cell ${myTotal>=theirTotal?'lead':''}">
-        <div class="cmp-sum-lbl">Tú</div>
+        <div class="cmp-sum-lbl">Vos</div>
         <div class="cmp-sum-line"><span class="cmp-sum-num">${myTotal}</span><span class="cmp-sum-unit">pts</span></div>
       </div>
       <div class="cmp-sum-vs">⚔</div>
@@ -9440,7 +9440,7 @@ function showSaveBanner(msg){
 </style>
 
 <style id="final-spacing-summary-exact-20260627">
-/* Espaçamento padronizado entre Sistema de puntuación e Tu momento */
+/* Espaçamento padronizado entre Sistema de puntuación e Vos momento */
 #scoring-rules-wrap .rules-card{
   margin-bottom:14px!important;
 }
@@ -10386,10 +10386,53 @@ function showSaveBanner(msg){
   }
 </style>
 
+
+
+<!-- AJUSTE FINAL: centralização vertical da navegação de Fecha na aba Comparar -->
+<style id="final-compare-round-nav-vertical-center-20260627">
+  #user-detail-modal .ud-round-nav{
+    min-height:56px!important;
+    padding:0 12px!important;
+    display:grid!important;
+    grid-template-columns:34px minmax(0,1fr) 34px!important;
+    align-items:center!important;
+    background:#fff!important;
+    border-top:0!important;
+    border-bottom:1px solid rgba(0,0,0,.08)!important;
+    box-sizing:border-box!important;
+  }
+
+  #user-detail-modal .ud-rnav-label{
+    height:100%!important;
+    min-height:56px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    align-items:center!important;
+    text-align:center!important;
+    line-height:1.12!important;
+    padding:0!important;
+    margin:0!important;
+  }
+
+  #user-detail-modal .ud-rnav-btn{
+    align-self:center!important;
+    justify-self:center!important;
+    margin:0!important;
+    transform:none!important;
+  }
+
+  #user-detail-modal .ud-rnav-title,
+  #user-detail-modal .ud-rnav-sub{
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+</style>
+
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
-/* Aproxima o card de “Tu momento” do Sistema de puntuación, mantendo respiro visual */
+/* Aproxima o card de “Vos momento” do Sistema de puntuación, mantendo respiro visual */
 #scoring-rules-wrap .rules-card{
   margin-bottom:8px!important;
 }
@@ -13253,5 +13296,16 @@ function showSaveBanner(msg){
     min-width:0!important;
     padding-left:10px!important;
     padding-right:10px!important;
+  }
+</style>
+
+<!-- AJUSTE FINAL: modal detalhes participante - abas inativas com texto preto -->
+<style>
+  #user-detail-modal .ud-tab:not(.active){
+    color:#000 !important;
+  }
+  #user-detail-modal .ud-tab:not(.active) svg{
+    color:#000 !important;
+    stroke:currentColor !important;
   }
 </style>
