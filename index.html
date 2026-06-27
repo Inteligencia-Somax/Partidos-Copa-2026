@@ -156,6 +156,13 @@ body{
   font-size:12px;font-weight:700;color:var(--sub);
   letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;
 }
+.rules-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.rules-head .rules-title{margin-bottom:0;}
+.score-mode{display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px;gap:2px;flex-shrink:0;}
+.score-mode button{border:none;background:none;font-family:inherit;font-size:10px;font-weight:800;letter-spacing:.3px;color:var(--sub);padding:4px 9px;border-radius:16px;cursor:pointer;white-space:nowrap;}
+.score-mode button.active{background:var(--green);color:#fff;}
+.score-mode button.active.x2{background:var(--gold);}
+.rules-card.x2mode .rule-pts{color:var(--gold);}
 .rules-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .rule-item{
   background:var(--bg);border-radius:10px;
@@ -781,25 +788,14 @@ body{
      style="background:linear-gradient(90deg,var(--red) 33%,#fff 33%,#fff 67%,var(--blue) 67%)">
 </div>
 
-<!-- UPDATE NOTICE -->
-<div class="update-notice">
-  <div class="update-notice-card">
-    <button class="update-notice-head" type="button" onclick="toggleNotice(this)">
-      <span class="update-notice-title"><svg class="update-notice-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>Resultados Oficiales</span>
-      <span class="update-notice-chev" id="update-notice-chev">▾</span>
-    </button>
-    <div class="update-notice-text" id="update-notice-text" style="display:none;">Los resultados y puntajes del bolão se actualizarán a partir de las <strong>11:00 h del día siguiente</strong> a cada partido. Los partidos disputados durante el fin de semana serán actualizados el <strong>lunes</strong>.</div>
-  </div>
-</div>
-
 <!-- DECISIVE PHASES NOTICE -->
 <div class="update-notice">
   <div class="update-notice-card">
     <button class="update-notice-head" type="button" onclick="toggleNotice(this)">
-      <span class="update-notice-title"><svg class="update-notice-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>Fases decisivas — puntos dobles ×2</span>
+      <span class="update-notice-title"><svg class="update-notice-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><span id="decisive-notice-title">Fases decisivas — puntos dobles ×2</span></span>
       <span class="update-notice-chev">▾</span>
     </button>
-    <div class="update-notice-text" style="display:none;">Desde el <strong>domingo 28/6</strong>, en las eliminatorias todos los puntos valen el <strong>doble (×2)</strong>. Se puntúa sobre el <strong>tiempo reglamentario + prórroga</strong>. Los <strong>penales</strong> definen quién clasifica, pero <strong>no</strong> entran en el acierto. Ej.: si termina 2:2 (con prórroga) y se define por penales, el palpite se puntúa sobre <strong>2:2</strong>.</div>
+    <div class="update-notice-text" id="decisive-notice-text" style="display:none;">Desde el <strong>domingo 28/6</strong>, en las eliminatorias todos los puntos valen el <strong>doble (×2)</strong>. Se puntúa sobre el <strong>tiempo reglamentario + prórroga</strong>. Los <strong>penales</strong> definen quién clasifica, pero <strong>no</strong> entran en el acierto. Ej.: si termina 2:2 (con prórroga) y se define por penales, el palpite se puntúa sobre <strong>2:2</strong>.</div>
   </div>
 </div>
 
@@ -807,14 +803,20 @@ body{
 <!-- SCORING RULES MINI -->
 <div id="scoring-rules-wrap" style="max-width:680px;margin:0 auto;padding:0 12px;">
   <div class="rules-card">
-    <div class="rules-title">Sistema de Puntuación</div>
+    <div class="rules-head">
+      <div class="rules-title">Sistema de Puntuación</div>
+      <div class="score-mode">
+        <button id="sm-grupos" class="active" onclick="setScoringMode('grupos')">Grupos</button>
+        <button id="sm-decisiva" class="x2" onclick="setScoringMode('decisiva')">Decisiva ×2</button>
+      </div>
+    </div>
     <div class="rules-grid">
-      <div class="rule-item"><span class="rule-pts">25</span><span class="rule-label">Marcador exacto</span></div>
-      <div class="rule-item"><span class="rule-pts">18</span><span class="rule-label">Ganador + goles del ganador</span></div>
-      <div class="rule-item"><span class="rule-pts">15</span><span class="rule-label">Ganador + diferencia de goles</span></div>
-      <div class="rule-item"><span class="rule-pts">12</span><span class="rule-label">Ganador + goles del perdedor</span></div>
-      <div class="rule-item"><span class="rule-pts">7</span><span class="rule-label">Solo ganador correcto</span></div>
-      <div class="rule-item"><span class="rule-pts">0</span><span class="rule-label">Palpite incorrecto</span></div>
+      <div class="rule-item"><span class="rule-pts" data-base="25" data-x2="50">25</span><span class="rule-label">Marcador exacto</span></div>
+      <div class="rule-item"><span class="rule-pts" data-base="18" data-x2="36">18</span><span class="rule-label">Ganador + goles del ganador</span></div>
+      <div class="rule-item"><span class="rule-pts" data-base="15" data-x2="30">15</span><span class="rule-label">Ganador + diferencia de goles</span></div>
+      <div class="rule-item"><span class="rule-pts" data-base="12" data-x2="24">12</span><span class="rule-label">Ganador + goles del perdedor</span></div>
+      <div class="rule-item"><span class="rule-pts" data-base="7" data-x2="14">7</span><span class="rule-label">Solo ganador correcto</span></div>
+      <div class="rule-item"><span class="rule-pts" data-base="0" data-x2="0">0</span><span class="rule-label">Palpite incorrecto</span></div>
     </div>
   </div>
 </div>
@@ -3683,6 +3685,33 @@ body{
         <p class="admin-export-note">Usá este botón después de cargar o corregir resultados. El archivo descargado ya incluye los resultados reales y los palpites guardados en este navegador.</p>
       </div>
 
+      <div class="rules-section">
+        <h3>📢 Comunicado de entrada</h3>
+        <p>Mensaje que aparece al entrar a la app. Después de guardar, descargá el HTML y publicalo para que llegue a todos.</p>
+        <label class="adm-check"><input type="checkbox" id="adm-ann-enabled"> Mostrar el comunicado</label>
+        <label class="adm-field-label">Título</label>
+        <input class="adm-input" id="adm-ann-title" type="text" placeholder="📢 Título del comunicado">
+        <label class="adm-field-label">Mensaje (acepta &lt;strong&gt;, &lt;p&gt;, emojis)</label>
+        <textarea class="adm-textarea" id="adm-ann-html" rows="7" placeholder="Texto del comunicado..."></textarea>
+        <label class="adm-check"><input type="checkbox" id="adm-ann-reshow"> Mostrar de nuevo a todos (resetea el "ya visto")</label>
+        <div class="admin-export-box">
+          <button class="admin-copy-btn" type="button" onclick="previewAnnounce()">👁 Vista previa</button>
+          <button class="admin-download-btn" type="button" onclick="saveAnnounceCfg()">💾 Guardar comunicado</button>
+        </div>
+      </div>
+
+      <div class="rules-section">
+        <h3>📌 Aviso de la página principal</h3>
+        <p>Es el cartel que abre y recolhe en la pantalla de partidas. Mismo flujo: guardá y publicá el HTML.</p>
+        <label class="adm-field-label">Título</label>
+        <input class="adm-input" id="adm-notice-title" type="text" placeholder="Título del aviso">
+        <label class="adm-field-label">Texto (acepta &lt;strong&gt;, emojis)</label>
+        <textarea class="adm-textarea" id="adm-notice-html" rows="5" placeholder="Texto del aviso..."></textarea>
+        <div class="admin-export-box">
+          <button class="admin-download-btn" type="button" onclick="saveNoticeCfg()">💾 Guardar aviso</button>
+        </div>
+      </div>
+
 
       <div class="filter-row">
         <button class="filter-chip active" onclick="filterAdminResults('all',this)">Todos</button>
@@ -5175,11 +5204,16 @@ body{
 .admin-adv-btn{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;font-family:'Inter',sans-serif;font-size:14px;font-weight:800;color:var(--text);cursor:pointer;transition:all .15s;}
 .admin-adv-btn:active{transform:scale(.97);}
 .admin-adv-btn.sel{background:#E8F5EE;border-color:var(--green);color:var(--green2);box-shadow:0 0 0 3px rgba(0,155,84,.15);}
-.admin-export-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
-.admin-download-btn,.admin-copy-btn{border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
+.admin-export-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}.admin-download-btn,.admin-copy-btn{border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
 .admin-copy-btn{background:#F8D45C;color:#173F1F;min-width:140px;}
 .admin-export-note{font-size:12px!important;margin-top:10px;color:var(--sub)!important;}
+.adm-field-label{display:block;font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 5px;}
+.adm-input,.adm-textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:13px;color:var(--text);background:var(--white);}
+.adm-textarea{resize:vertical;line-height:1.5;}
+.adm-input:focus,.adm-textarea:focus{outline:none;border-color:var(--green);}
+.adm-check{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);margin-top:12px;cursor:pointer;}
+.adm-check input{width:17px;height:17px;accent-color:var(--green);}
 .decepcion-page-section{border:1px solid rgba(220,90,60,.28);background:linear-gradient(180deg,#fff 0%,#FFF4F0 58%,#FFFFFF 100%);position:relative;overflow:hidden;}
 .decepcion-page-section::before{content:'';position:absolute;top:-70px;right:-70px;width:180px;height:180px;background:radial-gradient(circle,rgba(220,90,60,.14) 0%,transparent 70%);pointer-events:none;}
 .decepcion-page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;position:relative;z-index:1;}
@@ -5718,6 +5752,7 @@ function showApp(){
     if(adminUnlocked) localStorage.setItem('somax_admin_unlocked','1');
   }
   setTimeout(maybeShowAnnouncement, 600);
+  applyNoticeCfg();
 }
 
 // ══ FILTER STATE ══
@@ -6962,10 +6997,15 @@ function renderDecepcion(){
 // ══ EXPORTAR HTML ACTUALIZADO ══
 
 function getSomaxExportSnapshot(){
-  return {
+  const snap = {
     somax_all_picks: localStorage.getItem('somax_all_picks') || '{}',
     somax_real_results: localStorage.getItem('somax_real_results') || '{}'
   };
+  const annCfg = localStorage.getItem('somax_announce_cfg');
+  const noticeCfg = localStorage.getItem('somax_notice_cfg');
+  if(annCfg) snap.somax_announce_cfg = annCfg;
+  if(noticeCfg) snap.somax_notice_cfg = noticeCfg;
+  return snap;
 }
 function buildUpdatedHTML(){
   const clone = document.documentElement.cloneNode(true);
@@ -7026,6 +7066,7 @@ function showAdminArea(){
   const area = document.getElementById('admin-area');
   if(login) login.style.display='none';
   if(area) area.style.display='block';
+  loadAdminTextEditors();
   renderAdminResults(currentAdminFilter, true);
 }
 function filterAdminResults(f, btn){
@@ -7261,7 +7302,7 @@ function switchTab(tab, btn){
   // Ocultar el mini "Sistema de Puntuación" en Ranking, Admin y Decepción.
   const scoringWrap = document.getElementById('scoring-rules-wrap');
   if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin' || tab === 'decepcion') ? 'none' : '';
-  // Ocultar los avisos (Resultados Oficiales / Fases decisivas) en Admin.
+  // Ocultar el aviso de la página principal (Fases decisivas) en Admin.
   document.querySelectorAll('.update-notice').forEach(n => {
     n.style.display = (tab === 'admin') ? 'none' : '';
   });
@@ -7296,11 +7337,12 @@ function toggleUpdateNotice(){
   if(c) c.classList.toggle('open', open);
 }
 
-// ══ COMUNICADOS / ANUNCIOS (reutilizable) ══
-// Para publicar un nuevo comunicado: cambiá el "id" y el contenido de abajo.
-// Se muestra una sola vez por navegador; al cambiar el id, vuelve a aparecer para todos.
-const APP_ANNOUNCEMENT = {
+// ══ COMUNICADOS / ANUNCIOS + AVISO (editables desde Admin) ══
+// Los textos por defecto viven acá. El admin puede sobrescribirlos desde el panel,
+// y los cambios viajan a todos al exportar el HTML (snapshot).
+const DEFAULT_ANNOUNCEMENT = {
   id: 'fases-decisivas-2026-06-28',
+  enabled: true,
   title: '📢 ¡Empiezan las fases decisivas!',
   html: `
     <p>🔥 <strong>¡Preparate!</strong> El <strong>domingo 28/6</strong> arrancan las eliminatorias y los puntos pasan a valer el <strong>doble (×2)</strong>. Acá se define todo, así que afiná la puntería. 😤</p>
@@ -7309,10 +7351,34 @@ const APP_ANNOUNCEMENT = {
     <p>¿Alguna duda? Consultá antes de palpitar. ¡Mucha suerte! 🍀</p>
   `
 };
+const DEFAULT_NOTICE = {
+  title: 'Fases decisivas — puntos dobles ×2',
+  html: 'Desde el <strong>domingo 28/6</strong>, en las eliminatorias todos los puntos valen el <strong>doble (×2)</strong>. Se puntúa sobre el <strong>tiempo reglamentario + prórroga</strong>. Los <strong>penales</strong> definen quién clasifica, pero <strong>no</strong> entran en el acierto. Ej.: si termina 2:2 (con prórroga) y se define por penales, el palpite se puntúa sobre <strong>2:2</strong>.'
+};
+
+function getAnnouncement(){
+  let cfg = {};
+  try{ cfg = JSON.parse(localStorage.getItem('somax_announce_cfg') || '{}'); }catch{ cfg = {}; }
+  return Object.assign({}, DEFAULT_ANNOUNCEMENT, cfg);
+}
+function getNotice(){
+  let cfg = {};
+  try{ cfg = JSON.parse(localStorage.getItem('somax_notice_cfg') || '{}'); }catch{ cfg = {}; }
+  return Object.assign({}, DEFAULT_NOTICE, cfg);
+}
+
+// Aplica el texto del aviso de la página principal (acordeón "Fases decisivas").
+function applyNoticeCfg(){
+  const n = getNotice();
+  const t = document.getElementById('decisive-notice-title');
+  const b = document.getElementById('decisive-notice-text');
+  if(t) t.textContent = n.title;
+  if(b) b.innerHTML = n.html;
+}
 
 function maybeShowAnnouncement(){
-  const a = APP_ANNOUNCEMENT;
-  if(!a || !a.id) return;
+  const a = getAnnouncement();
+  if(!a || !a.id || a.enabled === false) return;
   let seen = [];
   try{ seen = JSON.parse(localStorage.getItem('somax_announce_seen') || '[]'); }catch{ seen = []; }
   if(seen.includes(a.id)) return;
@@ -7326,7 +7392,7 @@ function maybeShowAnnouncement(){
 }
 
 function dismissAnnounce(){
-  const a = APP_ANNOUNCEMENT;
+  const a = getAnnouncement();
   const modal = document.getElementById('announce-modal');
   if(modal) modal.style.display = 'none';
   try{
@@ -7340,6 +7406,65 @@ function dismissAnnounce(){
 
 function closeAnnounceOutside(e){
   if(e.target === document.getElementById('announce-modal')) dismissAnnounce();
+}
+
+// ── Toggle compacto del "Sistema de Puntuación" (grupos / decisiva ×2) ──
+function setScoringMode(mode){
+  const card = document.querySelector('#scoring-rules-wrap .rules-card');
+  if(!card) return;
+  const x2 = mode === 'decisiva';
+  card.classList.toggle('x2mode', x2);
+  card.querySelectorAll('.rule-pts').forEach(el=>{
+    const v = x2 ? el.dataset.x2 : el.dataset.base;
+    if(v !== undefined) el.textContent = v;
+  });
+  document.getElementById('sm-grupos')?.classList.toggle('active', !x2);
+  document.getElementById('sm-decisiva')?.classList.toggle('active', x2);
+}
+
+// ── Admin: editar comunicado y aviso de la página principal ──
+function loadAdminTextEditors(){
+  const a = getAnnouncement();
+  const n = getNotice();
+  const setVal = (id,v)=>{ const el=document.getElementById(id); if(el) el.value = v; };
+  const setChk = (id,v)=>{ const el=document.getElementById(id); if(el) el.checked = !!v; };
+  setChk('adm-ann-enabled', a.enabled !== false);
+  setVal('adm-ann-title', a.title || '');
+  setVal('adm-ann-html', (a.html || '').trim());
+  setVal('adm-notice-title', n.title || '');
+  setVal('adm-notice-html', n.html || '');
+}
+function saveAnnounceCfg(){
+  const enabled = document.getElementById('adm-ann-enabled')?.checked;
+  const title = (document.getElementById('adm-ann-title')?.value || '').trim();
+  const html  = (document.getElementById('adm-ann-html')?.value || '').trim();
+  const reshow = document.getElementById('adm-ann-reshow')?.checked;
+  const prev = getAnnouncement();
+  // Si se marca "mostrar de nuevo a todos", se genera un id nuevo (resetea el "ya visto").
+  const id = reshow ? ('aviso-' + Date.now()) : prev.id;
+  const cfg = { id, enabled: !!enabled, title, html };
+  localStorage.setItem('somax_announce_cfg', JSON.stringify(cfg));
+  const rs = document.getElementById('adm-ann-reshow'); if(rs) rs.checked = false;
+  showSaveBanner('Comunicado guardado ✅');
+}
+function saveNoticeCfg(){
+  const title = (document.getElementById('adm-notice-title')?.value || '').trim();
+  const html  = (document.getElementById('adm-notice-html')?.value || '').trim();
+  localStorage.setItem('somax_notice_cfg', JSON.stringify({ title, html }));
+  applyNoticeCfg();
+  showSaveBanner('Aviso de la página principal guardado ✅');
+}
+function previewAnnounce(){
+  // Vista previa inmediata del comunicado tal cual está en los campos (sin guardar el "ya visto").
+  const title = (document.getElementById('adm-ann-title')?.value || '').trim();
+  const html  = (document.getElementById('adm-ann-html')?.value || '').trim();
+  const titleEl = document.getElementById('announce-title');
+  const bodyEl  = document.getElementById('announce-body');
+  const modal   = document.getElementById('announce-modal');
+  if(!titleEl || !bodyEl || !modal) return;
+  titleEl.textContent = title || '📢 Comunicado';
+  bodyEl.innerHTML = html;
+  modal.style.display = 'flex';
 }
 function showSaveBanner(msg){
   const b=document.getElementById('save-banner');
