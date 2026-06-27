@@ -6202,71 +6202,15 @@ body{
 #match-breakdown-modal .ud-tabs.mb-score-filter{
   background:#fff;
 }
-/* ============================================================
-   Filtro de marcadores (modal "Puntos por participante").
-   FONTE ÚNICA DE VERDADE: mesma linguagem visual da faixa
-   "Lista / Análisis" (.ud-tabs / .ud-tab). Os chips usam o MESMO
-   box dos botões dessa faixa (mesma altura, borda e raio), ocupam
-   toda a largura do modal divididos igualmente, sem rolagem
-   horizontal e sem corte. A fonte é menor só para caber os 4 chips.
-   ============================================================ */
-.ud-tabs.mb-score-filter{
-  display:flex;
-  flex-wrap:nowrap;
-  align-items:center;
-  gap:6px;                 /* igual à faixa Lista/Análisis */
-  padding:10px 12px;       /* igual à faixa Lista/Análisis */
-  width:100%;
-  box-sizing:border-box;
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  overflow:hidden;         /* sem rolagem horizontal */
-}
+/* Filtro de marcadores (modal "Puntos por participante", partido cerrado) */
+.ud-tabs.mb-score-filter{gap:8px;padding:10px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;background:#fff;min-height:64px;}
 .ud-tabs.mb-score-filter::-webkit-scrollbar{display:none;}
-/* Rótulo "Palpites:" — centralizado verticalmente, fonte menor, sem roubar espaço dos chips.
-   Usa a MESMA caixa de texto (line-height) e padding vertical dos chips/abas. */
-.mb-sflabel{
-  flex:0 0 auto;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:8px 4px 8px 0;   /* mesmo padding vertical do .ud-tab */
-  font-size:clamp(10px,2.8vw,12px);
-  line-height:16px;        /* mesma caixa de texto do .ud-tab (13px normal) */
-  font-weight:800;
-  color:var(--sub);
-  white-space:nowrap;
-  background:#fff;
-  text-align:center;
-}
-/* Chips — MESMO box dos botões "Lista / Análisis" (.ud-tab): mesmo padding, mesma
-   borda, mesmo raio e mesma caixa de texto -> MESMA altura. A fonte só encolhe o
-   necessário para caber os 4 chips na largura do modal (cresce até 12px em telas largas). */
-.mb-sfchip{
-  flex:1 1 0;              /* divide a largura igualmente */
-  min-width:0;
-  box-sizing:border-box;
-  display:inline-flex;
-  align-items:center;      /* centraliza verticalmente */
-  justify-content:center;  /* centraliza horizontalmente */
-  gap:4px;
-  padding:8px 6px;         /* IGUAL ao .ud-tab */
-  border:1px solid var(--border);
-  border-radius:50px;      /* IGUAL ao .ud-tab */
-  background:#fff;
-  color:var(--sub);
-  font-size:clamp(10px,3vw,12px);
-  line-height:16px;        /* mesma caixa de texto do .ud-tab -> mesma altura */
-  font-weight:800;
-  font-family:inherit;
-  cursor:pointer;
-  white-space:nowrap;
-  transition:background .2s,color .2s,border-color .2s;
-}
-.mb-sfchip .mb-sfn{flex:0 0 auto;font-size:clamp(9px,2.6vw,11px);font-weight:800;opacity:.68;line-height:16px;}
-/* Variante "fill": comportamento idêntico (chips dividem toda a largura) */
+.mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;align-self:stretch;font-size:13px;font-weight:800;color:var(--sub);white-space:nowrap;background:#fff;padding-right:8px;z-index:1;}
+.mb-sfchip{flex:0 0 auto;min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;line-height:1;transition:background .2s,color .2s,border-color .2s;}
+.mb-sfchip .mb-sfn{font-size:12px;font-weight:800;opacity:.68;line-height:1;}
+/* Cerrado: los chips ocupan todo el ancho, sin scroll horizontal */
 .ud-tabs.mb-score-filter-fill{gap:6px;}
-.mb-score-filter-fill .mb-sfchip{flex:1 1 0;min-width:0;}
+.mb-score-filter-fill .mb-sfchip{flex:1 1 auto;justify-content:center;padding-left:8px;padding-right:8px;}
 .mb-sfchip.active{background:var(--green);color:#fff;border-color:var(--green);}
 .mb-sfchip.active .mb-sfn{opacity:.85;}
 /* Misma fila de chips, pero dentro del cuerpo (lista con resultado) */
@@ -10520,87 +10464,66 @@ function showSaveBanner(msg){
 
 
 
-<!-- AJUSTE DEFINITIVO: Fecha com a mesma altura visual das abas superiores -->
-<style id="final-user-detail-round-nav-same-height-tabs-20260627">
-  /*
-    A faixa da Fecha agora segue a MESMA régua da .ud-tabs:
-    - altura fixa de 54px, equivalente à faixa Partidos / Resumen / Comparar;
-    - padding vertical igual;
-    - conteúdo central e setas alinhados no meio;
-    - sem min-height herdado aumentando a área.
-  */
-  #user-detail-modal .ud-tabs{
-    height:54px!important;
-    min-height:54px!important;
-    padding:10px 12px!important;
-    display:flex!important;
-    align-items:center!important;
-    box-sizing:border-box!important;
+<!-- AJUSTE FINAL: modais - espaçamento do bloco Fecha e arredondamento consistente -->
+<style id="final-modal-radius-and-roundnav-spacing-20260627">
+  /* Garante que nenhuma seção interna vaze quadrada para fora do modal */
+  #user-detail-modal .modal,
+  #match-breakdown-modal .modal{
+    border-radius:20px!important;
+    overflow:hidden!important;
+    background:#fff!important;
   }
 
+  #user-detail-modal .modal-header,
+  #match-breakdown-modal .modal-header{
+    border-radius:20px 20px 0 0!important;
+  }
+
+  /* Aba Partidos/Resumen/Comparar: remove o respiro superior excessivo antes de "Todas las fechas" */
+  #user-detail-modal .ud-body{
+    padding-top:0!important;
+  }
+
+  #user-detail-modal .ud-body > .ud-round-nav:first-child{
+    margin-top:0!important;
+  }
+
+  /* Centraliza o bloco de data entre as linhas, com setas no mesmo eixo */
   #user-detail-modal .ud-round-nav{
-    height:54px!important;
-    min-height:54px!important;
-    max-height:54px!important;
-    padding:10px 12px!important;
+    height:58px!important;
+    min-height:58px!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
     display:grid!important;
     grid-template-columns:34px minmax(0,1fr) 34px!important;
     align-items:center!important;
-    column-gap:10px!important;
-    background:#fff!important;
-    border-top:0!important;
-    border-bottom:1px solid var(--border)!important;
     box-sizing:border-box!important;
+    background:#fff!important;
   }
 
   #user-detail-modal .ud-rnav-label{
-    height:34px!important;
-    min-height:34px!important;
-    max-height:34px!important;
-    padding:0!important;
-    margin:0!important;
+    height:58px!important;
     display:flex!important;
     flex-direction:column!important;
     align-items:center!important;
     justify-content:center!important;
     text-align:center!important;
-    line-height:1!important;
-    overflow:hidden!important;
-  }
-
-  #user-detail-modal .ud-rnav-title{
-    display:block!important;
-    font-size:13px!important;
-    font-weight:800!important;
-    line-height:16px!important;
     margin:0!important;
-    padding:0!important;
-  }
-
-  #user-detail-modal .ud-rnav-sub{
-    display:block!important;
-    font-size:11px!important;
-    line-height:14px!important;
-    margin:1px 0 0!important;
     padding:0!important;
   }
 
   #user-detail-modal .ud-rnav-btn{
-    width:30px!important;
-    height:30px!important;
-    min-width:30px!important;
-    min-height:30px!important;
-    padding:0!important;
-    margin:0!important;
     align-self:center!important;
     justify-self:center!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    line-height:1!important;
-    transform:none!important;
+  }
+
+  #user-detail-modal .ud-rnav-title,
+  #user-detail-modal .ud-rnav-sub{
+    margin-left:0!important;
+    margin-right:0!important;
   }
 </style>
+
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
@@ -13415,6 +13338,62 @@ function showSaveBanner(msg){
   #match-breakdown-modal .ud-row:focus{outline:2px solid rgba(0,155,84,.35);outline-offset:-2px;}
 </style>
 
+<style id="final-match-breakdown-score-filter-size-20260627">
+  /* Modal “Puntos por participante”: filtros de palpites com a mesma linguagem visual das abas Lista/Análisis */
+  #match-breakdown-modal .ud-tabs.mb-score-filter{
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:10px 12px!important;
+    background:#fff!important;
+    border-bottom:1px solid rgba(0,0,0,.08)!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sflabel{
+    height:42px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:0 8px 0 0!important;
+    font-size:15px!important;
+    line-height:1!important;
+    font-weight:850!important;
+    color:var(--sub)!important;
+    background:#fff!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip{
+    height:42px!important;
+    min-height:42px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:7px!important;
+    padding:0 16px!important;
+    border-radius:999px!important;
+    font-size:15px!important;
+    line-height:1!important;
+    font-weight:850!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
+    font-size:14px!important;
+    line-height:1!important;
+    font-weight:800!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
+    flex:1 1 0!important;
+    min-width:0!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+</style>
+
 <!-- AJUSTE FINAL: modal detalhes participante - abas inativas com texto preto -->
 <style>
   #user-detail-modal .ud-tab:not(.active){
@@ -13423,6 +13402,88 @@ function showSaveBanner(msg){
   #user-detail-modal .ud-tab:not(.active) svg{
     color:#000 !important;
     stroke:currentColor !important;
+  }
+</style>
+
+<!-- AJUSTE FINAL: Puntos por participante - filtros de palpites mais compactos e sem corte -->
+<style id="final-mb-score-filter-compact-20260627">
+  #match-breakdown-modal .ud-tabs.mb-score-filter{
+    display:flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    padding:6px 12px!important;
+    background:#fff!important;
+    border-bottom:1px solid rgba(0,0,0,.08)!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    scrollbar-width:none!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter::-webkit-scrollbar{
+    display:none!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sflabel{
+    flex:0 0 auto!important;
+    height:36px!important;
+    min-height:36px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:0 6px 0 0!important;
+    font-size:13px!important;
+    line-height:1!important;
+    font-weight:850!important;
+    color:var(--sub)!important;
+    background:#fff!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip{
+    flex:0 0 auto!important;
+    width:auto!important;
+    min-width:max-content!important;
+    height:36px!important;
+    min-height:36px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:5px!important;
+    padding:0 13px!important;
+    border-radius:999px!important;
+    font-size:13px!important;
+    line-height:1!important;
+    font-weight:850!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
+    font-size:12px!important;
+    line-height:1!important;
+    font-weight:800!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    opacity:.72!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip.active .mb-sfn{
+    opacity:.9!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill{
+    gap:6px!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
+    flex:0 0 auto!important;
+    min-width:max-content!important;
+    padding-left:13px!important;
+    padding-right:13px!important;
   }
 </style>
 
@@ -13463,71 +13524,5 @@ function showSaveBanner(msg){
   #user-detail-modal .ud-rnav-btn{
     align-self:center!important;
     justify-self:center!important;
-  }
-</style>
-
-<!-- OVERRIDE ABSOLUTO: Fecha igual à faixa de botões superiores -->
-<style id="override-user-detail-round-nav-54px-20260627">
-  #user-detail-modal .ud-tabs{
-    height:54px!important;
-    min-height:54px!important;
-    padding:10px 12px!important;
-    display:flex!important;
-    align-items:center!important;
-    box-sizing:border-box!important;
-  }
-  #user-detail-modal .ud-round-nav{
-    height:54px!important;
-    min-height:54px!important;
-    max-height:54px!important;
-    padding:10px 12px!important;
-    display:grid!important;
-    grid-template-columns:34px minmax(0,1fr) 34px!important;
-    align-items:center!important;
-    column-gap:10px!important;
-    box-sizing:border-box!important;
-    background:#fff!important;
-    border-bottom:1px solid var(--border)!important;
-  }
-  #user-detail-modal .ud-rnav-label{
-    height:34px!important;
-    min-height:34px!important;
-    max-height:34px!important;
-    padding:0!important;
-    margin:0!important;
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:center!important;
-    text-align:center!important;
-    line-height:1!important;
-    overflow:hidden!important;
-  }
-  #user-detail-modal .ud-rnav-title{
-    font-size:13px!important;
-    line-height:16px!important;
-    margin:0!important;
-    padding:0!important;
-  }
-  #user-detail-modal .ud-rnav-sub{
-    font-size:11px!important;
-    line-height:14px!important;
-    margin:1px 0 0!important;
-    padding:0!important;
-  }
-  #user-detail-modal .ud-rnav-btn{
-    width:30px!important;
-    height:30px!important;
-    min-width:30px!important;
-    min-height:30px!important;
-    padding:0!important;
-    margin:0!important;
-    align-self:center!important;
-    justify-self:center!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    line-height:1!important;
-    transform:none!important;
   }
 </style>
