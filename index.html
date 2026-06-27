@@ -767,11 +767,26 @@ body{
 .rank-card.top2{background:linear-gradient(180deg,#F6F7FA,#fff);border-color:#DEE1E7;}
 .rank-card.top3{background:linear-gradient(180deg,#FCF4EB,#fff);border-color:#EBD4BE;}
 .rank-search-wrap{max-width:680px;margin:0 auto 10px;padding:0 12px;}
-.rank-search-box{position:relative;}
+.rank-tools{display:flex;align-items:center;gap:8px;}
+.rank-search-box{position:relative;flex:1;min-width:0;}
 .rank-search-ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:17px;height:17px;color:var(--sub);pointer-events:none;}
 .rank-search{width:100%;padding:11px 16px 11px 42px;border:1px solid var(--border);border-radius:50px;font-family:inherit;font-size:14px;background:#fff;box-shadow:var(--shadow);outline:none;box-sizing:border-box;}
 .rank-search:focus{border-color:var(--green);}
 .rank-search:focus + .rank-search-ico,.rank-search-box:focus-within .rank-search-ico{color:var(--green);}
+.rank-filter-wrap{position:relative;flex-shrink:0;}
+.rank-filter-btn{height:46px;min-width:112px;padding:0 13px;border:1px solid var(--border);border-radius:50px;background:#fff;box-shadow:var(--shadow);font-family:inherit;font-size:13px;font-weight:800;color:var(--text);display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;}
+.rank-filter-btn .ico{font-size:15px;line-height:1;}
+.rank-filter-btn .chev{font-size:10px;color:var(--sub);margin-left:1px;}
+.rank-filter-menu{position:absolute;right:0;top:52px;width:190px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.16);padding:6px;z-index:320;display:none;}
+.rank-filter-menu.open{display:block;animation:fadeUp .18s ease;}
+.rank-filter-option{width:100%;border:none;background:transparent;border-radius:12px;padding:10px 12px;text-align:left;font-family:inherit;font-size:13px;font-weight:800;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.rank-filter-option small{display:block;font-size:10px;font-weight:700;color:var(--sub);margin-top:1px;}
+.rank-filter-option.active{background:#E8F5EE;color:var(--green);}
+.rank-context{max-width:680px;margin:-2px auto 8px;padding:0 12px;font-size:12px;font-weight:700;color:var(--sub);}
+.rank-context strong{color:var(--green);font-weight:900;}
+.rank-card.round-mode{background:#fff;border-color:var(--border)!important;}
+.rank-card.round-mode.top1,.rank-card.round-mode.top2,.rank-card.round-mode.top3{background:#fff;border-color:var(--border);}
+@media(max-width:430px){.rank-filter-btn{min-width:96px;padding:0 10px;font-size:12px}.rank-search{font-size:13px}}
 .rank-avatar{
   width:40px;height:40px;border-radius:50%;
   background:linear-gradient(135deg,var(--red),var(--blue));
@@ -3720,11 +3735,18 @@ body{
   <!-- RANKING PANEL -->
   <div class="panel" id="panel-ranking">
     <div class="rank-search-wrap">
-      <div class="rank-search-box">
-        <svg class="rank-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-        <input id="rank-search" class="rank-search" type="text" placeholder="Buscar un adversario..." oninput="filterRanking(this.value)">
+      <div class="rank-tools">
+        <div class="rank-search-box">
+          <svg class="rank-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          <input id="rank-search" class="rank-search" type="text" placeholder="Buscar un adversario..." oninput="filterRanking(this.value)">
+        </div>
+        <div class="rank-filter-wrap">
+          <button id="rank-filter-btn" class="rank-filter-btn" onclick="toggleRankFilter(event)" type="button"><span class="ico">🏆</span><span id="rank-filter-label">Ranking</span><span class="chev">▾</span></button>
+          <div id="rank-filter-menu" class="rank-filter-menu"></div>
+        </div>
       </div>
     </div>
+    <div id="rank-context" class="rank-context" style="display:none;"></div>
     <div class="ranking-list" id="ranking-list"><div class="rules-section"><h3>⏳ Esperando resultados reales</h3><p>El ranking ya está listo, pero los puntos aparecerán cuando el administrador cargue el resultado real de cada partido.</p></div><div class="rank-card" style="border: 2px solid var(--green);">
       <div class="rank-pos p1">🥇</div>
       <div class="rank-info">
@@ -6347,6 +6369,30 @@ function getRankedUsers(){
     b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
   );
 }
+function getRankedUsersByRound(roundLabel){
+  const all = loadAllPicks();
+  const realResults = loadRealResults();
+  const roundMatches = MATCHES.filter(m => getRoundLabel(m) === roundLabel);
+  return Object.entries(all).map(([name, picks])=>{
+    const stats = {name, pickCount:0, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
+    roundMatches.forEach(m=>{
+      if(picks[m.id]) stats.pickCount++;
+      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
+      stats.score += calc.pts;
+      if(stats[calc.type]!==undefined) stats[calc.type]++;
+    });
+    return stats;
+  }).sort((a,b)=>
+    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
+  );
+}
+
+function getRankFilterOptions(){
+  const labels = [];
+  MATCHES.forEach(m=>{ const r = getRoundLabel(m); if(!labels.includes(r)) labels.push(r); });
+  return ['Ranking', ...labels];
+}
+
 
 // Mismo ranking pero excluyendo una fecha/ronda (para saber la posición anterior).
 function getRankedUsersExcludingRound(excludeRound){
@@ -6418,10 +6464,35 @@ function updateTopbarPoints(){
 }
 
 let rankSearch = '';
+let rankScope = 'Ranking';
 function filterRanking(v){
   rankSearch = (v || '').trim().toLowerCase();
   renderRanking();
 }
+function toggleRankFilter(ev){
+  if(ev) ev.stopPropagation();
+  buildRankFilterMenu();
+  document.getElementById('rank-filter-menu')?.classList.toggle('open');
+}
+function setRankScope(scope){
+  rankScope = scope || 'Ranking';
+  document.getElementById('rank-filter-menu')?.classList.remove('open');
+  renderRanking();
+}
+function buildRankFilterMenu(){
+  const menu = document.getElementById('rank-filter-menu');
+  if(!menu) return;
+  const options = getRankFilterOptions();
+  menu.innerHTML = options.map(opt=>{
+    const active = opt === rankScope ? ' active' : '';
+    const sub = opt === 'Ranking' ? '<small>Clasificación general</small>' : '<small>Solo esta ronda</small>';
+    return `<button class="rank-filter-option${active}" type="button" onclick="setRankScope('${opt.replace(/'/g, "\\'")}')"><span>${opt}${sub}</span><span>${opt===rankScope?'✓':''}</span></button>`;
+  }).join('');
+}
+document.addEventListener('click', (ev)=>{
+  const wrap = document.querySelector('.rank-filter-wrap');
+  if(wrap && !wrap.contains(ev.target)) document.getElementById('rank-filter-menu')?.classList.remove('open');
+});
 
 function renderRanking(){
   const all = loadAllPicks();
@@ -6435,7 +6506,21 @@ function renderRanking(){
     return;
   }
 
-  const users = getRankedUsers();
+  const isRoundRanking = rankScope && rankScope !== 'Ranking';
+  const users = isRoundRanking ? getRankedUsersByRound(rankScope) : getRankedUsers();
+  const labelEl = document.getElementById('rank-filter-label');
+  if(labelEl) labelEl.textContent = isRoundRanking ? rankScope : 'Ranking';
+  const ctx = document.getElementById('rank-context');
+  if(ctx){
+    if(isRoundRanking){
+      const qtd = MATCHES.filter(m=>getRoundLabel(m)===rankScope).length;
+      ctx.style.display = 'block';
+      ctx.innerHTML = `<strong>${rankScope}</strong> · ranking exclusivo de esta ronda (${qtd} partidos). El ranking general no cambia.`;
+    }else{
+      ctx.style.display = 'none';
+      ctx.innerHTML = '';
+    }
+  }
 
   container.innerHTML='';
   if(finishedCount===0){
@@ -6455,7 +6540,9 @@ function renderRanking(){
   if(lastDate){
     getRankedUsersExcludingDate(lastDate).forEach((u,idx)=>{ prevIndex[u.name] = idx; });
   }
-  const recent5 = playedSorted.slice(0,5).reverse(); // 5 más recientes, en orden cronológico
+  const recent5 = isRoundRanking
+    ? MATCHES.filter(m=>getRoundLabel(m)===rankScope && realResults[m.id]).slice(0,5)
+    : playedSorted.slice(0,5).reverse(); // 5 más recientes, en orden cronológico
 
   let anyShown = false;
   users.forEach((u,i)=>{
@@ -6463,13 +6550,13 @@ function renderRanking(){
     anyShown = true;
     const isMe = u.name===currentUser;
     const card = document.createElement('div');
-    card.className = 'rank-card' + (i===0?' top1':i===1?' top2':i===2?' top3':'');
+    card.className = 'rank-card' + (isRoundRanking ? ' round-mode' : (i===0?' top1':i===1?' top2':i===2?' top3':''));
     card.style.cursor='pointer';
     if(isMe) card.id = 'my-rank-card';
     card.addEventListener('click', ()=>openUserDetail(u.name));
     if(isMe) card.style.border='2px solid var(--gold)';
-    const posClass = i===0?'p1':i===1?'p2':i===2?'p3':'';
-    const posCell = i<3 ? `<span class="rank-medal">${i===0?'🥇':i===1?'🥈':'🥉'}</span>` : `${i+1}º`;
+    const posClass = (!isRoundRanking && i===0)?'p1':(!isRoundRanking && i===1)?'p2':(!isRoundRanking && i===2)?'p3':'';
+    const posCell = (!isRoundRanking && i<3) ? `<span class="rank-medal">${i===0?'🥇':i===1?'🥈':'🥉'}</span>` : `${i+1}º`;
     const upicks = all[u.name] || {};
     const dots = recent5.map(m=>{
       const pts = calculatePickPoints(upicks[m.id], realResults[m.id], m).pts;
@@ -6477,7 +6564,7 @@ function renderRanking(){
     }).join('');
     const formHtml = dots ? ` · <span class="form-dots">${dots}</span>` : '';
     let posDeltaHtml = '';
-    if(lastDate && prevIndex[u.name] !== undefined){
+    if(!isRoundRanking && lastDate && prevIndex[u.name] !== undefined){
       const d = prevIndex[u.name] - i;
       if(d > 0) posDeltaHtml = `<span class="rank-delta up">▲${d}</span>`;
       else if(d < 0) posDeltaHtml = `<span class="rank-delta down">▼${-d}</span>`;
@@ -6499,7 +6586,7 @@ function renderRanking(){
   if(rankSearch && !anyShown){
     const none = document.createElement('div');
     none.style.cssText = 'text-align:center;padding:32px 20px;color:var(--sub);font-size:14px;font-weight:600;';
-    none.textContent = 'No se encontró ningún jugador.';
+    none.textContent = isRoundRanking ? 'No se encontró ningún jugador en esta rodada.' : 'No se encontró ningún jugador.';
     container.appendChild(none);
   }
 
