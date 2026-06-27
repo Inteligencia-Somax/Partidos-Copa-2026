@@ -8766,4 +8766,93 @@ function showSaveBanner(msg){
 }
 </style>
 
+
+<style id="rank-general-vs-round-spacing-20260627">
+/* Ranking general: volta ao espaçamento confortável para não sobrepor subida/queda.
+   Rankings por rodada continuam compactos via .round-mode. */
+.rank-card:not(.round-mode){
+  padding:14px 16px!important;
+  gap:12px!important;
+  min-height:88px!important;
+}
+.rank-card:not(.round-mode) .rank-pos{
+  min-width:46px!important;
+  width:46px!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:4px!important;
+  font-size:18px!important;
+}
+.rank-card:not(.round-mode) .rank-pos-delta{
+  font-size:11px!important;
+  line-height:1!important;
+  flex-shrink:0!important;
+}
+.rank-card:not(.round-mode) .rank-name{
+  font-size:15px!important;
+  gap:5px!important;
+}
+.rank-card:not(.round-mode) .rank-detail{
+  margin-top:4px!important;
+  gap:6px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.rank-card:not(.round-mode) .rank-exact-badge{
+  min-height:22px!important;
+  height:22px!important;
+  font-size:12px!important;
+  padding:3px 9px!important;
+  font-weight:800!important;
+}
+.rank-card:not(.round-mode) .rank-pts{
+  font-size:22px!important;
+}
+@media(max-width:430px){
+  .rank-card:not(.round-mode){padding:13px 15px!important;gap:10px!important;min-height:86px!important;}
+  .rank-card:not(.round-mode) .rank-pos{min-width:44px!important;width:44px!important;font-size:18px!important;}
+  .rank-card:not(.round-mode) .rank-name{font-size:14.5px!important;}
+}
+</style>
 </body></html>
+
+<style id="final-spacing-and-exact-chip-20260627">
+/* Aproxima o card de “Tu momento” do Sistema de puntuación, mantendo respiro visual */
+#scoring-rules-wrap .rules-card{
+  margin-bottom:8px!important;
+}
+#recent-summary-wrap .recent-summary-card{
+  margin-top:8px!important;
+}
+
+/* Padrão visual: tudo que for Exacto recebe o mesmo fundo verde suave */
+.rs-tag.exact{
+  display:inline-flex!important;
+  align-items:center!important;
+  border-radius:999px!important;
+  background:rgba(0,155,84,.12)!important;
+  color:var(--green)!important;
+  border:1px solid rgba(0,155,84,.25)!important;
+  padding:2px 8px!important;
+  font-weight:850!important;
+}
+.rs-pts.exact{
+  background:rgba(0,155,84,.12)!important;
+  color:var(--green)!important;
+  border:1px solid rgba(0,155,84,.25)!important;
+}
+.rs-tag.good{
+  background:transparent!important;
+  border-color:transparent!important;
+  color:var(--green)!important;
+  padding-left:4px!important;
+  padding-right:0!important;
+}
+.rs-tag.bad{
+  background:transparent!important;
+  border-color:transparent!important;
+  color:var(--red)!important;
+  padding-left:4px!important;
+  padding-right:0!important;
+}
+</style>
