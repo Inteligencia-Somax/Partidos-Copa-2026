@@ -6195,7 +6195,7 @@ function recentSummaryHtml({compact=false, share=false}={}){
         <div class="rs-titleline"><span class="rs-title">Tu momento</span><span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span>${posHtml}${deltaHtml}</div>
         ${shareBtn}
       </div>
-      <div class="rs-msg ${data.cls}">${data.msg}</div>
+      <div class="rs-msg ${data.cls}"><span class="rs-period">Últimos 3 partidos</span><span class="rs-msg-sep"> • </span><span class="rs-msg-text">${data.msg}</span></div>
     </div>
     <div class="rs-games">${rows}</div>
   </div>`;
@@ -6276,7 +6276,7 @@ async function shareRecentSummaryImage(){
 
   ctx.fillStyle = '#374151';
   ctx.font = '850 21px Inter, Arial';
-  canvasTextFit(data.msg, 124, 250, 650);
+  canvasTextFit('Últimos 3 partidos • ' + data.msg, 124, 250, 650);
 
   let y = 316;
   data.games.forEach(g=>{
@@ -8900,6 +8900,20 @@ function showSaveBanner(msg){
   text-overflow:ellipsis!important;
   font-size:12.5px!important;
   line-height:1.25!important;
+}
+
+
+.rs-period{
+  color:var(--green)!important;
+  font-weight:900!important;
+}
+.rs-msg-sep{
+  color:#9CA3AF!important;
+  font-weight:900!important;
+}
+.rs-msg-text{
+  color:#374151!important;
+  font-weight:800!important;
 }
 
 /* Cards internos do resumo padronizados */
