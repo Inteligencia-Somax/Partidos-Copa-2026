@@ -782,10 +782,13 @@ body{
 .rank-filter-option{width:100%;border:none;background:transparent;border-radius:12px;padding:10px 12px;text-align:left;font-family:inherit;font-size:13px;font-weight:800;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .rank-filter-option small{display:block;font-size:10px;font-weight:700;color:var(--sub);margin-top:1px;}
 .rank-filter-option.active{background:#E8F5EE;color:var(--green);}
-.rank-context{max-width:680px;margin:0 auto 10px;padding:0 12px;font-size:12px;font-weight:700;color:var(--text);}
-.rank-context .rank-context-card{background:#fff;border:1px solid rgba(255,255,255,.9);border-radius:14px;padding:9px 12px;box-shadow:var(--shadow);line-height:1.35;}
-.rank-context strong{color:var(--green);font-weight:900;}
-.rank-context .muted{color:var(--sub);font-weight:700;}
+.rank-context{max-width:680px;margin:0 auto 10px;padding:0 12px;font-size:12px;font-weight:800;color:#fff;}
+.rank-context .rank-context-card{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);border-radius:14px;padding:9px 12px;box-shadow:0 4px 14px rgba(0,0,0,.12);line-height:1.35;color:#fff;}
+.rank-context strong{color:#fff;font-weight:900;}
+.rank-context .rank-context-label{display:inline-block;background:#fff;color:var(--green);font-weight:900;border-radius:999px;padding:2px 8px;margin-right:4px;}
+.rank-context .muted{color:rgba(255,255,255,.82);font-weight:700;}
+.rank-general-pos{display:inline-flex;align-items:center;gap:3px;margin-left:6px;padding:2px 7px;border-radius:999px;background:#F3F4F6;color:var(--sub);font-size:10px;font-weight:900;vertical-align:1px;}
+.rank-general-pos b{color:var(--text);font-weight:900;}
 .rank-card.round-mode{background:#fff;border-color:var(--border)!important;}
 .rank-card.round-mode.top1,.rank-card.round-mode.top2,.rank-card.round-mode.top3{background:#fff;border-color:var(--border);}
 @media(max-width:430px){.rank-filter-btn{min-width:96px;padding:0 10px;font-size:12px}.rank-search{font-size:13px}}
@@ -6518,6 +6521,8 @@ function renderRanking(){
 
   const isRoundRanking = rankScope && rankScope !== 'Ranking';
   const users = isRoundRanking ? getRankedUsersByRound(rankScope) : getRankedUsers();
+  const generalRankMap = {};
+  getRankedUsers().forEach((gu, gi)=>{ generalRankMap[gu.name] = gi + 1; });
   const labelEl = document.getElementById('rank-filter-label');
   if(labelEl) labelEl.textContent = isRoundRanking ? rankScope : 'Ranking';
   const ctx = document.getElementById('rank-context');
@@ -6528,7 +6533,7 @@ function renderRanking(){
       const myIdx = general.findIndex(u=>u.name===currentUser);
       const myPos = myIdx >= 0 ? `${myIdx+1}º` : '—';
       ctx.style.display = 'block';
-      ctx.innerHTML = `<div class="rank-context-card"><strong>${rankScope}</strong> · solo partidos apurados de esta ronda (${qtd}). <span class="muted">Tu posición actual en el ranking general:</span> <strong>${myPos}</strong>.</div>`;
+      ctx.innerHTML = `<div class="rank-context-card"><span class="rank-context-label">${rankScope}</span> solo partidos apurados de esta ronda (${qtd}). <span class="muted">Tu posición actual en el ranking general:</span> <strong>${myPos}</strong>.</div>`;
     }else{
       ctx.style.display = 'none';
       ctx.innerHTML = '';
@@ -6587,7 +6592,7 @@ function renderRanking(){
       <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${posCell}${posDeltaHtml?`<span class="rank-pos-delta">${posDeltaHtml}</span>`:''}</div>
       <div class="rank-info">
         <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></div>
-        <div class="rank-detail">${u.exact} exacto${u.exact===1?'':'s'}${formHtml}</div>
+        <div class="rank-detail">${u.exact} exacto${u.exact===1?'':'s'}${isRoundRanking && generalRankMap[u.name] ? ` <span class="rank-general-pos">General <b>${generalRankMap[u.name]}º</b></span>` : ''}${formHtml}</div>
       </div>
       <div>
         <div class="rank-pts">${u.score}</div>
