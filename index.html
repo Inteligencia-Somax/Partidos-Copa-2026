@@ -1122,7 +1122,7 @@ body{
 <div class="modal-overlay" id="summary-modal" style="display:none" onclick="closeSummaryOutside(event)">
   <div class="modal summary-modal-box">
     <div class="modal-header announce-header summary-header">
-      <span class="modal-match-label">Resumen reciente</span>
+      <span class="modal-match-label">Mi resumen</span>
     </div>
     <div class="summary-modal-body" id="summary-modal-body"></div>
     <div class="summary-modal-footer">
@@ -6209,54 +6209,88 @@ async function shareRecentSummaryImage(){
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
+  const displayName = (currentUser || 'Participante').trim();
 
-  // Fondo estilo app
-  ctx.fillStyle = '#0B5A30'; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle = '#00A35B'; roundRect(ctx, 70, 54, 760, 70, 26); ctx.fill();
-  ctx.fillStyle = '#FFFFFF'; ctx.font = '900 30px Inter, Arial'; ctx.fillText('Resumen reciente', 104, 99);
+  function canvasTextFit(text, x, y, maxWidth){
+    let t = String(text || '');
+    if(ctx.measureText(t).width <= maxWidth){ ctx.fillText(t, x, y); return; }
+    while(t.length > 3 && ctx.measureText(t + '…').width > maxWidth) t = t.slice(0, -1);
+    ctx.fillText(t + '…', x, y);
+  }
 
-  // Card principal igual al resumen de la pantalla, sin botones
-  ctx.fillStyle = '#FFFFFF'; roundRect(ctx, 70, 138, 760, 520, 28); ctx.fill();
-  ctx.strokeStyle = 'rgba(0,155,84,.22)'; ctx.lineWidth = 2; roundRect(ctx, 94, 166, 712, 456, 24); ctx.stroke();
+  // Fondo más limpio para compartir: sin bloque verde pesado.
+  const bg = ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#F7FBF8');
+  bg.addColorStop(1,'#EEF7F1');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  // Marco principal
+  ctx.fillStyle = '#FFFFFF'; roundRect(ctx, 54, 42, 792, 604, 34); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,155,84,.20)'; ctx.lineWidth = 2; roundRect(ctx, 54, 42, 792, 604, 34); ctx.stroke();
+
+  // Header verde como la pantalla, pero más equilibrado
+  ctx.fillStyle = '#009B54'; roundRect(ctx, 54, 42, 792, 88, 34); ctx.fill();
+  ctx.fillStyle = '#FFFFFF'; ctx.font = '900 30px Inter, Arial'; ctx.fillText('Mi resumen', 92, 94);
+  ctx.font = '800 18px Inter, Arial'; ctx.fillStyle = 'rgba(255,255,255,.88)';
+  ctx.textAlign = 'right'; canvasTextFit(displayName, 806, 94, 330); ctx.textAlign = 'left';
+
+  // Cuerpo interno
+  ctx.fillStyle = '#FFFFFF'; roundRect(ctx, 88, 158, 724, 422, 24); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,155,84,.22)'; ctx.lineWidth = 2; roundRect(ctx, 88, 158, 724, 422, 24); ctx.stroke();
 
   const deltaTxt = data.rankDelta === null ? '' : (data.rankDelta > 0 ? ` ▲${data.rankDelta}` : (data.rankDelta < 0 ? ` ▼${Math.abs(data.rankDelta)}` : ' ='));
   const deltaColor = data.rankDelta > 0 ? '#009B54' : (data.rankDelta < 0 ? '#CE1126' : '#6B7280');
-  ctx.fillStyle = '#6B7280'; ctx.font = '900 26px Inter, Arial'; ctx.fillText('TU MOMENTO', 122, 214);
-  ctx.fillStyle = '#6B7280'; ctx.font = '900 26px Inter, Arial'; ctx.fillText('•', 304, 214);
-  ctx.fillStyle = '#009B54'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, 330, 216);
-  if(deltaTxt){ ctx.fillStyle = deltaColor; ctx.font = '900 24px Inter, Arial'; ctx.fillText(deltaTxt, 462, 214); }
+  ctx.fillStyle = '#6B7280'; ctx.font = '900 25px Inter, Arial'; ctx.fillText('TU MOMENTO', 124, 214);
+  ctx.fillStyle = '#6B7280'; ctx.font = '900 24px Inter, Arial'; ctx.fillText('•', 294, 214);
+  ctx.fillStyle = '#009B54'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, 322, 216);
+  if(deltaTxt){ ctx.fillStyle = deltaColor; ctx.font = '900 24px Inter, Arial'; ctx.fillText(deltaTxt, 460, 214); }
 
   ctx.fillStyle = data.cls === 'good' ? '#009B54' : (data.cls === 'hot' ? '#B45309' : (data.cls === 'bad' ? '#CE1126' : '#92400E'));
-  ctx.font = '850 22px Inter, Arial';
-  wrapCanvasText(ctx, data.msg, 122, 252, 640, 26);
+  ctx.font = '850 21px Inter, Arial';
+  ctx.textAlign = 'right';
+  wrapCanvasTextRight(ctx, data.msg, 772, 214, 300, 25);
+  ctx.textAlign = 'left';
 
-  let y = 322;
+  let y = 296;
   data.games.forEach(g=>{
-    ctx.fillStyle = '#F5F5F7'; roundRect(ctx, 122, y-42, 656, 82, 17); ctx.fill();
-    ctx.strokeStyle = '#E8E8EC'; ctx.lineWidth = 1; roundRect(ctx, 122, y-42, 656, 82, 17); ctx.stroke();
+    ctx.fillStyle = '#F5F5F7'; roundRect(ctx, 124, y-38, 652, 76, 16); ctx.fill();
+    ctx.strokeStyle = '#E8E8EC'; ctx.lineWidth = 1; roundRect(ctx, 124, y-38, 652, 76, 16); ctx.stroke();
     const m = g.m, real = g.real;
     ctx.fillStyle = '#111114'; ctx.font = '850 22px Inter, Arial';
-    ctx.fillText(`${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}`, 146, y-7);
+    canvasTextFit(`${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}`, 148, y-8, 480);
     const pickTxt = g.myPick ? `${g.myPick.home}:${g.myPick.away}` : 'sin palpite';
     const lab = getRecentSummaryLabel(g.type, g.myPts);
-    ctx.fillStyle = '#6B7280'; ctx.font = '800 18px Inter, Arial'; ctx.fillText(`Tu palpite: ${pickTxt}`, 146, y+22);
-    ctx.fillStyle = lab.cls === 'bad' ? '#CE1126' : '#009B54'; ctx.font = '900 18px Inter, Arial'; ctx.fillText(lab.txt, 298, y+22);
-    ctx.fillStyle = g.myPts === 0 ? '#CE1126' : '#009B54'; ctx.font = '900 28px Inter, Arial';
-    ctx.textAlign = 'right'; ctx.fillText(`+${g.myPts}`, 740, y+12); ctx.textAlign = 'left';
-    y += 104;
+    ctx.fillStyle = '#6B7280'; ctx.font = '800 17px Inter, Arial'; ctx.fillText(`Tu palpite: ${pickTxt}`, 148, y+20);
+
+    if(g.type === 'exact'){
+      ctx.fillStyle = 'rgba(0,155,84,.12)'; roundRect(ctx, 282, y+2, 86, 26, 13); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,155,84,.25)'; ctx.stroke();
+      ctx.fillStyle = '#009B54'; ctx.font = '900 16px Inter, Arial'; ctx.fillText('Exacto', 298, y+21);
+      ctx.fillStyle = 'rgba(0,155,84,.12)'; roundRect(ctx, 694, y-19, 58, 36, 18); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,155,84,.25)'; ctx.stroke();
+    }else{
+      ctx.fillStyle = lab.cls === 'bad' ? '#CE1126' : '#009B54'; ctx.font = '900 17px Inter, Arial'; ctx.fillText(lab.txt, 286, y+20);
+    }
+
+    ctx.fillStyle = g.myPts === 0 ? '#CE1126' : '#009B54'; ctx.font = '900 25px Inter, Arial';
+    ctx.textAlign = 'right'; ctx.fillText(`+${g.myPts}`, 740, y+9); ctx.textAlign = 'left';
+    y += 94;
   });
 
-  ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.font = '800 17px Inter, Arial'; ctx.fillText('Vive el Mundial • Somax', 304, 690);
+  // Rodapé centralizado
+  ctx.fillStyle = '#0B5A30'; ctx.font = '850 17px Inter, Arial'; ctx.textAlign = 'center';
+  ctx.fillText('Vive el Mundial • Somax', W/2, 626);
+  ctx.textAlign = 'left';
 
   canvas.toBlob(async blob=>{
     try{
-      const file = new File([blob], 'resumen-reciente-bolao.png', {type:'image/png'});
+      const file = new File([blob], 'mi-resumen-bolao.png', {type:'image/png'});
       if(navigator.canShare && navigator.canShare({files:[file]})){
-        await navigator.share({files:[file], title:'Resumen reciente'});
+        await navigator.share({files:[file], title:'Mi resumen'});
       }else if(navigator.share){
-        await navigator.share({title:'Resumen reciente', text:`${data.myTotal} pts en los últimos 3 partidos. ${data.msg}`});
+        await navigator.share({title:'Mi resumen', text:`${displayName}: ${data.myTotal} pts en los últimos 3 partidos. ${data.msg}`});
       }else{
-        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='resumen-reciente-bolao.png'; a.click();
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='mi-resumen-bolao.png'; a.click();
       }
     }catch(e){ console.warn(e); }
   }, 'image/png');
@@ -8265,5 +8299,191 @@ function showSaveBanner(msg){
 .rs-games{gap:7px!important;}
 .rs-game{border-radius:13px!important;}
 .rs-share-btn{flex-shrink:0!important;}
+</style>
+
+<style id="final-visual-unify-cards-20260627">
+/* Ajuste visual: menos “carnaval”, tipografia e espaçamento unificados */
+#scoring-rules-wrap .rules-card,
+.rules-score-section,
+.recent-summary-card{
+  border-radius:24px!important;
+  border:1px solid rgba(232,232,236,.95)!important;
+  box-shadow:0 2px 10px rgba(0,0,0,.06)!important;
+}
+
+#scoring-rules-wrap .rules-card{
+  padding:16px 18px 18px!important;
+  margin-top:16px!important;
+  margin-bottom:14px!important;
+}
+
+#scoring-rules-wrap .rules-head,
+.rules-score-section .rules-head{
+  align-items:center!important;
+  margin-bottom:14px!important;
+  min-height:32px!important;
+}
+
+.rules-title,
+.rules-score-section h3,
+.rs-title{
+  font-family:'Inter',sans-serif!important;
+  font-size:13px!important;
+  font-weight:850!important;
+  letter-spacing:2.5px!important;
+  text-transform:uppercase!important;
+  color:#6B7280!important;
+  line-height:1.15!important;
+}
+
+.score-mode{
+  height:34px!important;
+  padding:3px!important;
+  border-radius:999px!important;
+  background:#F2F3F5!important;
+  border:1px solid #E2E4E8!important;
+}
+.score-mode button{
+  height:26px!important;
+  min-width:72px!important;
+  padding:0 12px!important;
+  border-radius:999px!important;
+  font-size:12px!important;
+  font-weight:850!important;
+  letter-spacing:0!important;
+}
+
+.rules-grid{
+  gap:10px!important;
+}
+.rule-item{
+  min-height:96px!important;
+  padding:12px 8px!important;
+  border-radius:14px!important;
+  background:#F4F4F6!important;
+  border:1px solid #E5E7EB!important;
+}
+.rule-pts{
+  font-size:28px!important;
+  font-weight:900!important;
+  line-height:1!important;
+  margin-bottom:6px!important;
+}
+.rule-label{
+  font-family:'Inter',sans-serif!important;
+  font-size:12px!important;
+  font-weight:750!important;
+  line-height:1.2!important;
+  color:#6B7280!important;
+  margin-top:0!important;
+}
+
+.recent-summary-card{
+  padding:18px 20px!important;
+  margin:16px 0 18px!important;
+  background:#fff!important;
+}
+.rs-head{
+  gap:8px!important;
+  margin-bottom:12px!important;
+}
+.rs-head-main{
+  min-height:34px!important;
+}
+.rs-titleline{
+  gap:8px!important;
+}
+.rs-title{
+  font-size:13px!important;
+  font-weight:850!important;
+  letter-spacing:2.5px!important;
+}
+.rs-dot{
+  color:#9CA3AF!important;
+  opacity:1!important;
+}
+.rs-kpi-main{
+  font-family:'Inter',sans-serif!important;
+  font-size:26px!important;
+  font-weight:900!important;
+  line-height:1!important;
+  color:var(--green)!important;
+}
+.rs-summary-delta{
+  font-size:13px!important;
+  font-weight:900!important;
+}
+.rs-msg{
+  font-family:'Inter',sans-serif!important;
+  font-size:13px!important;
+  font-weight:800!important;
+  line-height:1.3!important;
+  color:var(--green)!important;
+  max-width:100%!important;
+  text-align:left!important;
+  align-self:flex-start!important;
+}
+.rs-games{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:9px!important;
+}
+.rs-game{
+  min-height:58px!important;
+  padding:9px 12px!important;
+  border-radius:14px!important;
+  background:#F4F4F6!important;
+  border:1px solid #E5E7EB!important;
+}
+.rs-teams{
+  font-family:'Inter',sans-serif!important;
+  font-size:14px!important;
+  font-weight:850!important;
+  line-height:1.15!important;
+}
+.rs-sub{
+  font-size:12px!important;
+  font-weight:800!important;
+  color:#6B7280!important;
+  margin-top:4px!important;
+}
+.rs-tag{
+  font-size:12px!important;
+  font-weight:850!important;
+}
+.rs-pts{
+  font-size:16px!important;
+  font-weight:900!important;
+  min-width:42px!important;
+}
+.rs-share-btn{
+  width:42px!important;
+  height:42px!important;
+  border-radius:50%!important;
+  background:#fff!important;
+  border:1px solid #E5E7EB!important;
+  color:#6B7280!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.08)!important;
+}
+
+#summary-modal .recent-summary-card{
+  padding:16px 18px!important;
+  margin:0!important;
+}
+#summary-modal .rs-share-btn{display:none!important;}
+
+@media(max-width:430px){
+  #scoring-rules-wrap .rules-card{padding:15px 16px 17px!important;}
+  .rules-title,.rules-score-section h3,.rs-title{font-size:12px!important;letter-spacing:2.2px!important;}
+  .score-mode{height:32px!important;}
+  .score-mode button{height:24px!important;min-width:64px!important;font-size:11px!important;padding:0 10px!important;}
+  .rules-grid{gap:8px!important;}
+  .rule-item{min-height:92px!important;padding:11px 7px!important;}
+  .rule-pts{font-size:26px!important;}
+  .rule-label{font-size:11.5px!important;}
+  .recent-summary-card{padding:16px 18px!important;}
+  .rs-kpi-main{font-size:24px!important;}
+  .rs-msg{font-size:12.5px!important;}
+}
 </style>
 </body></html>
