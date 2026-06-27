@@ -1061,6 +1061,7 @@ body{
 
   <!-- MATCHES PANEL -->
   <div class="panel active" id="panel-matches">
+    <div id="recent-summary-wrap"></div>
     <!-- Filter row -->
     <div class="filter-row">
       <button class="filter-chip active" onclick="filterMatches('all',this)">Todos</button>
@@ -5294,6 +5295,29 @@ body{
 </div>
 
 <style>
+
+/* Resumen rápido: últimos partidos apurados */
+.recent-summary-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin:0 0 16px;box-shadow:var(--shadow);overflow:hidden;
+}
+.rs-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.rs-title{font-size:13px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;color:var(--sub);}
+.rs-msg{font-size:12px;font-weight:800;line-height:1.35;color:var(--text);max-width:270px;}
+.rs-msg.good{color:var(--green);} .rs-msg.warn{color:#92400E;} .rs-msg.hot{color:var(--gold);}
+.rs-games{display:flex;flex-direction:column;gap:7px;}
+.rs-game{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:8px 10px;}
+.rs-match{flex:1;min-width:0;}
+.rs-teams{font-size:12px;font-weight:850;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rs-sub{font-size:10px;font-weight:700;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rs-pts{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.rs-me,.rs-best{min-width:42px;text-align:center;border-radius:999px;padding:4px 7px;font-size:12px;font-weight:900;line-height:1;}
+.rs-me{background:rgba(0,155,84,.12);color:var(--green);border:1px solid rgba(0,155,84,.25);}
+.rs-me.zero{background:rgba(206,17,38,.08);color:var(--red);border-color:rgba(206,17,38,.18);}
+.rs-best{background:rgba(245,158,11,.12);color:#92400E;border:1px solid rgba(245,158,11,.25);}
+.rs-vs{font-size:10px;font-weight:900;color:var(--sub);}
+@media(max-width:430px){.recent-summary-card{padding:12px;margin-bottom:14px}.rs-title{font-size:12px}.rs-msg{font-size:11px;max-width:210px}.rs-game{padding:7px 8px}.rs-me,.rs-best{min-width:37px;font-size:11px;padding:4px 6px}}
+
 .filter-chip{
   background:var(--white);border:1.5px solid var(--border);border-radius:50px;
   padding:6px 14px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
@@ -5961,6 +5985,57 @@ function showApp(){
   setTimeout(maybeShowAnnouncement, 600);
 }
 
+
+function renderRecentSummary(){
+  const wrap = document.getElementById('recent-summary-wrap');
+  if(!wrap) return;
+  const all = loadAllPicks();
+  const realResults = loadRealResults();
+  const myPicks = loadUserPicks();
+  const now = new Date();
+  const played = MATCHES
+    .filter(m => realResults[m.id] && getMatchDateTime(m) <= now)
+    .sort((a,b)=>getMatchDateTime(b)-getMatchDateTime(a))
+    .slice(0,3);
+  if(!played.length){ wrap.innerHTML=''; return; }
+  const general = getRankedUsers();
+  const myIdx = general.findIndex(u=>u.name===currentUser);
+  const myPos = myIdx >= 0 ? myIdx + 1 : null;
+  let myTotal = 0, bestTotal = 0;
+  const rows = played.map(m=>{
+    const real = realResults[m.id];
+    const myCalc = calculatePickPoints(myPicks[m.id], real, m);
+    const myPts = myCalc.pts || 0;
+    myTotal += myPts;
+    let bestPts = 0, bestNames = [];
+    Object.entries(all).forEach(([name,picks])=>{
+      const pts = calculatePickPoints((picks||{})[m.id], real, m).pts || 0;
+      if(pts > bestPts){ bestPts = pts; bestNames = [name]; }
+      else if(pts === bestPts && pts > 0){ bestNames.push(name); }
+    });
+    bestTotal += bestPts;
+    const bestTxt = bestNames.length ? (bestNames.includes(currentUser) ? 'Vos' : bestNames[0].split(' ')[0]) : '—';
+    return `<div class="rs-game">
+      <div class="rs-match">
+        <div class="rs-teams">${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}</div>
+        <div class="rs-sub">Vos ${myPicks[m.id] ? `${myPicks[m.id].home}:${myPicks[m.id].away}` : 'sin palpite'} · mejor ${bestTxt}</div>
+      </div>
+      <div class="rs-pts"><span class="rs-me ${myPts===0?'zero':''}">${myPts}</span><span class="rs-vs">vs</span><span class="rs-best">${bestPts}</span></div>
+    </div>`;
+  }).join('');
+  const ratio = bestTotal ? myTotal / bestTotal : 0;
+  let msg = 'Vamos a reaccionar: los próximos puntos pueden cambiar la historia.';
+  let cls = 'warn';
+  if(myPos === 1){ msg = 'Líder no sube más: ahora es cuidar el retrovisor.'; cls = 'hot'; }
+  else if(myPos === 2){ msg = 'Presión activada: cerca del líder y con el retrovisor encendido.'; cls = 'good'; }
+  else if(ratio >= .8){ msg = '¡Mano arriba! Buen ritmo en los últimos partidos.'; cls = 'good'; }
+  else if(ratio >= .45){ msg = 'Seguimos vivos: faltó poco para acompañar a los mejores.'; cls = 'warn'; }
+  wrap.innerHTML = `<div class="recent-summary-card">
+    <div class="rs-head"><div><div class="rs-title">Últimos 3 apurados</div></div><div class="rs-msg ${cls}">${msg}</div></div>
+    <div class="rs-games">${rows}</div>
+  </div>`;
+}
+
 // ══ FILTER STATE ══
 let currentFilter = 'all';
 
@@ -6152,6 +6227,7 @@ function renderMatches(filter){
   const realResults = loadRealResults();
   const standings = computeStandings(realResults);
   const container = document.getElementById('matches-list');
+  renderRecentSummary();
   container.innerHTML = '';
 
   // Group by date
