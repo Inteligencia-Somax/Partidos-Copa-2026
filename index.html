@@ -330,9 +330,21 @@ body{
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 
 /* Modal de palpite centrado en pantalla */
-#modal{align-items:center;padding:16px;box-sizing:border-box;}
-#modal .modal{border-radius:24px;max-height:92vh;overflow-y:auto;animation:fadeScale .25s ease;box-shadow:0 12px 48px rgba(0,0,0,.28);}
+#modal{align-items:center;padding:16px;box-sizing:border-box;}#modal .modal{border-radius:24px;max-height:92vh;overflow-y:auto;animation:fadeScale .25s ease;box-shadow:0 12px 48px rgba(0,0,0,.28);}
 #modal .modal-header{border-radius:24px 24px 0 0;}
+
+/* Comunicado / anuncio reutilizable */
+#announce-modal{align-items:center;padding:16px;box-sizing:border-box;}
+#announce-modal .modal{border-radius:24px;max-height:88vh;overflow-y:auto;animation:fadeScale .25s ease;box-shadow:0 12px 48px rgba(0,0,0,.28);}
+.announce-header{border-radius:24px 24px 0 0;}
+.announce-body{padding:18px 20px 4px;}
+.announce-body p{font-size:13.5px;line-height:1.6;color:var(--text);margin-bottom:13px;}
+.announce-body p:last-child{margin-bottom:0;}
+.announce-body strong{color:var(--green2);font-weight:800;}
+.announce-body .ann-ex{display:block;font-size:12.5px;color:var(--sub);margin-top:3px;}
+.announce-actions{padding:14px 20px 18px;}
+.announce-btn{width:100%;padding:13px;border:none;border-radius:14px;background:var(--green);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
+.announce-btn:active{transform:scale(.98);}
 
 .modal-header{
   background:var(--green);border-radius:24px 24px 0 0;
@@ -772,11 +784,22 @@ body{
 <!-- UPDATE NOTICE -->
 <div class="update-notice">
   <div class="update-notice-card">
-    <button class="update-notice-head" type="button" onclick="toggleUpdateNotice()">
+    <button class="update-notice-head" type="button" onclick="toggleNotice(this)">
       <span class="update-notice-title"><svg class="update-notice-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>Resultados Oficiales</span>
       <span class="update-notice-chev" id="update-notice-chev">▾</span>
     </button>
     <div class="update-notice-text" id="update-notice-text" style="display:none;">Los resultados y puntajes del bolão se actualizarán a partir de las <strong>11:00 h del día siguiente</strong> a cada partido. Los partidos disputados durante el fin de semana serán actualizados el <strong>lunes</strong>.</div>
+  </div>
+</div>
+
+<!-- DECISIVE PHASES NOTICE -->
+<div class="update-notice">
+  <div class="update-notice-card">
+    <button class="update-notice-head" type="button" onclick="toggleNotice(this)">
+      <span class="update-notice-title"><svg class="update-notice-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>Fases decisivas — puntos dobles ×2</span>
+      <span class="update-notice-chev">▾</span>
+    </button>
+    <div class="update-notice-text" style="display:none;">Desde el <strong>domingo 28/6</strong>, en las eliminatorias todos los puntos valen el <strong>doble (×2)</strong>. Se puntúa sobre el <strong>tiempo reglamentario + prórroga</strong>. Los <strong>penales</strong> definen quién clasifica, pero <strong>no</strong> entran en el acierto. Ej.: si termina 2:2 (con prórroga) y se define por penales, el palpite se puntúa sobre <strong>2:2</strong>.</div>
   </div>
 </div>
 
@@ -817,6 +840,19 @@ body{
     <div class="auth-error" id="auth-error"></div>
     <button class="auth-secondary-btn" onclick="resetPassword()">Recuperar contraseña</button>
     <p class="auth-help">Tu sesión quedará recordada en este navegador. Si usás otro celular o computadora, podrás ingresar con el mismo correo y contraseña.</p>
+  </div>
+</div>
+
+<!-- COMUNICADO / ANUNCIO (reutilizable) -->
+<div class="modal-overlay" id="announce-modal" style="display:none" onclick="closeAnnounceOutside(event)">
+  <div class="modal announce-modal">
+    <div class="modal-header announce-header">
+      <span class="modal-match-label" id="announce-title">📢 Comunicado</span>
+    </div>
+    <div class="announce-body" id="announce-body"></div>
+    <div class="announce-actions">
+      <button class="announce-btn" onclick="dismissAnnounce()">Entendido 👍</button>
+    </div>
   </div>
 </div>
 
@@ -3610,6 +3646,10 @@ body{
       <p>A partir de los dieciseisavos de final, todos los puntos valen el doble. ¡Acertar el marcador exacto vale 50 puntos!</p>
     </div>
     <div class="rules-section">
+      <h3>🥅 Fases decisivas: prórroga y penales</h3>
+      <p>En las eliminatorias, el resultado que se puntúa es el del <strong>tiempo reglamentario + prórroga</strong>. Los <strong>penales</strong> solo definen quién clasifica y <strong>no</strong> cuentan para el palpite. Ejemplo: si un partido termina 2:2 (con prórroga) y se decide por penales, tu palpite se puntúa sobre el 2:2.</p>
+    </div>
+    <div class="rules-section">
       <h3>⏰ Plazo</h3>
       <p>Los palpites se bloquean 30 minutos antes del horario previsto del partido. ¡Atención a los horarios!</p>
     </div>
@@ -5677,6 +5717,7 @@ function showApp(){
     adminUnlocked = currentUserRole === 'admin';
     if(adminUnlocked) localStorage.setItem('somax_admin_unlocked','1');
   }
+  setTimeout(maybeShowAnnouncement, 600);
 }
 
 // ══ FILTER STATE ══
@@ -7220,9 +7261,10 @@ function switchTab(tab, btn){
   // Ocultar el mini "Sistema de Puntuación" en Ranking, Admin y Decepción.
   const scoringWrap = document.getElementById('scoring-rules-wrap');
   if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin' || tab === 'decepcion') ? 'none' : '';
-  // Ocultar el aviso "Resultados Oficiales" en Admin.
-  const updateNotice = document.querySelector('.update-notice');
-  if(updateNotice) updateNotice.style.display = (tab === 'admin') ? 'none' : '';
+  // Ocultar los avisos (Resultados Oficiales / Fases decisivas) en Admin.
+  document.querySelectorAll('.update-notice').forEach(n => {
+    n.style.display = (tab === 'admin') ? 'none' : '';
+  });
   if(tab==='ranking'){
     renderRanking();
     requestAnimationFrame(()=>{ document.getElementById('my-rank-card')?.scrollIntoView({block:'center'}); });
@@ -7235,6 +7277,16 @@ function switchTab(tab, btn){
 }
 
 // ══ TOAST ══
+function toggleNotice(btn){
+  const card = btn.closest('.update-notice-card');
+  if(!card) return;
+  const t = card.querySelector('.update-notice-text');
+  const c = card.querySelector('.update-notice-chev');
+  if(!t) return;
+  const open = t.style.display === 'none';
+  t.style.display = open ? 'block' : 'none';
+  if(c) c.classList.toggle('open', open);
+}
 function toggleUpdateNotice(){
   const t = document.getElementById('update-notice-text');
   const c = document.getElementById('update-notice-chev');
@@ -7242,6 +7294,52 @@ function toggleUpdateNotice(){
   const open = t.style.display === 'none';
   t.style.display = open ? 'block' : 'none';
   if(c) c.classList.toggle('open', open);
+}
+
+// ══ COMUNICADOS / ANUNCIOS (reutilizable) ══
+// Para publicar un nuevo comunicado: cambiá el "id" y el contenido de abajo.
+// Se muestra una sola vez por navegador; al cambiar el id, vuelve a aparecer para todos.
+const APP_ANNOUNCEMENT = {
+  id: 'fases-decisivas-2026-06-28',
+  title: '📢 ¡Empiezan las fases decisivas!',
+  html: `
+    <p>🔥 <strong>¡Preparate!</strong> El <strong>domingo 28/6</strong> arrancan las eliminatorias y los puntos pasan a valer el <strong>doble (×2)</strong>. Acá se define todo, así que afiná la puntería. 😤</p>
+    <p>⏱️ El resultado que cuenta para tu palpite es el del <strong>tiempo reglamentario + prórroga</strong>.<span class="ann-ex">Ej.: si va 1:1 en los 90' y termina 2:1 en la prórroga, el resultado oficial para puntuar es <strong>2:1</strong>.</span></p>
+    <p>🥅 Los <strong>penales</strong> solo definen quién clasifica: <strong>no</strong> entran en el acierto.<span class="ann-ex">Ej.: si termina 2:2 (con prórroga) y se define por penales, se puntúa sobre <strong>2:2</strong>. Quien gane por penales no cambia tu palpite.</span></p>
+    <p>¿Alguna duda? Consultá antes de palpitar. ¡Mucha suerte! 🍀</p>
+  `
+};
+
+function maybeShowAnnouncement(){
+  const a = APP_ANNOUNCEMENT;
+  if(!a || !a.id) return;
+  let seen = [];
+  try{ seen = JSON.parse(localStorage.getItem('somax_announce_seen') || '[]'); }catch{ seen = []; }
+  if(seen.includes(a.id)) return;
+  const titleEl = document.getElementById('announce-title');
+  const bodyEl  = document.getElementById('announce-body');
+  const modal   = document.getElementById('announce-modal');
+  if(!titleEl || !bodyEl || !modal) return;
+  titleEl.textContent = a.title;
+  bodyEl.innerHTML = a.html;
+  modal.style.display = 'flex';
+}
+
+function dismissAnnounce(){
+  const a = APP_ANNOUNCEMENT;
+  const modal = document.getElementById('announce-modal');
+  if(modal) modal.style.display = 'none';
+  try{
+    let seen = JSON.parse(localStorage.getItem('somax_announce_seen') || '[]');
+    if(a && a.id && !seen.includes(a.id)){
+      seen.push(a.id);
+      localStorage.setItem('somax_announce_seen', JSON.stringify(seen));
+    }
+  }catch{ /* noop */ }
+}
+
+function closeAnnounceOutside(e){
+  if(e.target === document.getElementById('announce-modal')) dismissAnnounce();
 }
 function showSaveBanner(msg){
   const b=document.getElementById('save-banner');
