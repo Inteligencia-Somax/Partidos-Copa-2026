@@ -8085,7 +8085,7 @@ function renderUdPartidos(){
       <div class="ud-row ${isExact ? 'exact' : ''}">
         <div class="ud-match">
           <div class="ud-line-main">
-            <span class="ud-teams">${m.hf || ''} ${m.hc || m.home} ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} ${m.ac || m.away} ${m.af || ''}</span>
+            <span class="ud-teams"><span class="ud-team-name home">${m.hf || ''} ${m.home}</span> ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} <span class="ud-team-name away">${m.away} ${m.af || ''}</span></span>
           </div>
           <div class="ud-pick-line"><span class="ud-pick">${pickLabel}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
         </div>
@@ -10159,6 +10159,193 @@ function showSaveBanner(msg){
     }
   }
 </style>
+
+
+<!-- AJUSTE FINAL: modal detalle participante > Partidos, nombres completos y palpite segunda línea -->
+<style id="final-user-detail-partidos-fullnames-compact-20260627">
+  #user-detail-modal .ud-body{
+    padding:8px 14px 16px!important;
+  }
+
+  #user-detail-modal .ud-row,
+  #user-detail-modal .ud-row.exact{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 52px!important;
+    column-gap:10px!important;
+    align-items:center!important;
+    min-height:54px!important;
+    height:54px!important;
+    max-height:54px!important;
+    padding:6px 10px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    border-bottom:1px solid var(--border)!important;
+  }
+
+  #user-detail-modal .ud-row.exact{
+    border-radius:10px!important;
+  }
+
+  #user-detail-modal .ud-match{
+    min-width:0!important;
+    width:100%!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:center!important;
+    gap:4px!important;
+    overflow:hidden!important;
+  }
+
+  #user-detail-modal .ud-line-main{
+    display:block!important;
+    min-width:0!important;
+    width:100%!important;
+    overflow:hidden!important;
+    line-height:1.1!important;
+  }
+
+  #user-detail-modal .ud-teams{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    margin:0!important;
+    font-size:13px!important;
+    font-weight:800!important;
+    color:var(--text)!important;
+    line-height:1.1!important;
+  }
+
+  #user-detail-modal .ud-team-name{
+    white-space:nowrap!important;
+  }
+
+  #user-detail-modal .ud-pick-line{
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:nowrap!important;
+    gap:6px!important;
+    min-width:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    line-height:1!important;
+    margin:0!important;
+  }
+
+  #user-detail-modal .ud-pick{
+    color:#6b7280!important;
+    font-weight:500!important;
+    font-size:11.8px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    flex:0 0 auto!important;
+    margin:0!important;
+  }
+
+  #user-detail-modal .ud-meta-sep{
+    display:inline-flex!important;
+    align-items:center!important;
+    color:#9ca3af!important;
+    font-weight:800!important;
+    font-size:10px!important;
+    line-height:1!important;
+    flex:0 0 auto!important;
+    margin:0 1px!important;
+  }
+
+  #user-detail-modal .ud-mine-tag,
+  #user-detail-modal .ud-most-tag,
+  #user-detail-modal .ud-exact-tag{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    height:18px!important;
+    min-height:18px!important;
+    padding:1px 7px!important;
+    border-radius:999px!important;
+    font-size:11.2px!important;
+    font-weight:800!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    flex:0 0 auto!important;
+    max-width:104px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    margin:0!important;
+  }
+
+  #user-detail-modal .ud-pts{
+    grid-column:2!important;
+    width:52px!important;
+    min-width:52px!important;
+    max-width:52px!important;
+    height:28px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    justify-self:end!important;
+    align-self:center!important;
+    margin:0!important;
+    padding:0!important;
+    line-height:1!important;
+    box-sizing:border-box!important;
+  }
+
+  #user-detail-modal .ud-pts.exact{
+    justify-content:center!important;
+    padding:0 8px!important;
+    border-radius:999px!important;
+  }
+
+  #user-detail-modal .ud-scores{
+    display:none!important;
+  }
+
+  #user-detail-modal .ud-inline-sep{
+    display:none!important;
+  }
+
+  @media(max-width:430px){
+    #user-detail-modal .modal{max-width:calc(100vw - 28px)!important;}
+    #user-detail-modal .ud-body{padding:8px 12px 16px!important;}
+    #user-detail-modal .ud-row,
+    #user-detail-modal .ud-row.exact{
+      grid-template-columns:minmax(0,1fr) 48px!important;
+      column-gap:8px!important;
+      min-height:55px!important;
+      height:55px!important;
+      max-height:55px!important;
+      padding:6px 8px!important;
+    }
+    #user-detail-modal .ud-teams{font-size:12.4px!important;}
+    #user-detail-modal .ud-pick{font-size:11.2px!important;}
+    #user-detail-modal .ud-mine-tag,
+    #user-detail-modal .ud-most-tag,
+    #user-detail-modal .ud-exact-tag{
+      height:17px!important;
+      min-height:17px!important;
+      font-size:10.7px!important;
+      padding:1px 6px!important;
+      max-width:90px!important;
+    }
+    #user-detail-modal .ud-pts,
+    #user-detail-modal .ud-pts.exact{
+      width:48px!important;
+      min-width:48px!important;
+      max-width:48px!important;
+      height:26px!important;
+      font-size:13.8px!important;
+    }
+  }
+</style>
+
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
