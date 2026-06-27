@@ -991,7 +991,9 @@ body{
 .rs-dot{font-size:13px;font-weight:900;color:var(--sub);opacity:.65;}
 .rs-kpi-main{font-size:21px;font-weight:950;color:var(--green);line-height:1;}
 .rs-kpi,.rs-kpi-sub{display:none!important;}
-.rs-msg{font-size:12px;font-weight:850;line-height:1.35;max-width:none!important;text-align:center!important;margin:0 auto;color:var(--green);}
+.rs-msg{font-size:12px;font-weight:850;line-height:1.35;max-width:58%!important;text-align:right!important;margin:-1px 0 0 auto;color:var(--green);align-self:flex-end;}
+.rs-summary-delta{font-size:13px;font-weight:950;margin-left:2px;white-space:nowrap;}
+.rs-summary-delta.up{color:var(--green);} .rs-summary-delta.down{color:var(--red);} .rs-summary-delta.same{color:var(--sub);}
 .rs-msg.warn{color:#92400E}.rs-msg.hot{color:var(--gold)}.rs-msg.bad{color:var(--red)}.rs-msg.good{color:var(--green)}
 .rs-share-btn{width:34px!important;height:34px!important;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--sub);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(0,0,0,.08);}
 .rs-share-btn svg{width:17px!important;height:17px!important;stroke:currentColor;}
@@ -6116,6 +6118,15 @@ function getRecentSummaryData(){
   const general = getRankedUsers();
   const myIdx = general.findIndex(u=>u.name===currentUser);
   const myPos = myIdx >= 0 ? myIdx + 1 : null;
+  let rankDelta = null;
+  const playedForDelta = MATCHES.filter(m=>realResults[m.id] && getMatchDateTime(m) <= now)
+    .sort((a,b)=>getMatchDateTime(b)-getMatchDateTime(a));
+  const lastDateForDelta = playedForDelta.length ? playedForDelta[0].date : null;
+  if(myIdx >= 0 && lastDateForDelta){
+    const before = getRankedUsersExcludingDate(lastDateForDelta);
+    const prevIdx = before.findIndex(u=>u.name===currentUser);
+    if(prevIdx >= 0) rankDelta = prevIdx - myIdx;
+  }
   let myTotal = 0, exacts = 0, scored = 0;
   const games = played.map(m=>{
     const real = realResults[m.id];
@@ -6134,7 +6145,7 @@ function getRecentSummaryData(){
   else if(exacts >= 2){ msg = 'Puntería fina. Buen momento para presumir.'; cls = 'good'; }
   else if(myTotal >= 45 || scored === games.length){ msg = 'Seguís sumando. La racha está viva.'; cls = 'good'; }
   else if(ratio >= .5){ msg = 'Hay puntos, falta el golpe exacto.'; cls = 'warn'; }
-  return {played, games, myTotal, exacts, scored, myPos, msg, cls};
+  return {played, games, myTotal, exacts, scored, myPos, rankDelta, msg, cls};
 }
 
 function recentSummaryHtml({compact=false, share=false}={}){
@@ -6155,10 +6166,11 @@ function recentSummaryHtml({compact=false, share=false}={}){
   const shareBtn = share ? `<button class="rs-share-btn" onclick="shareRecentSummaryImage()" aria-label="Compartir resumen" title="Compartir resumen">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.6 10.8 15.4 6.2"></path><path d="M8.6 13.2l6.8 4.6"></path></svg>
   </button>` : '';
+  const deltaHtml = data.rankDelta === null ? '' : (data.rankDelta > 0 ? `<span class="rs-summary-delta up">▲${data.rankDelta}</span>` : (data.rankDelta < 0 ? `<span class="rs-summary-delta down">▼${Math.abs(data.rankDelta)}</span>` : `<span class="rs-summary-delta same">=</span>`));
   return `<div class="recent-summary-card" id="recent-summary-card">
     <div class="rs-head">
       <div class="rs-head-main">
-        <div class="rs-titleline"><span class="rs-title">Tu momento</span><span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span></div>
+        <div class="rs-titleline"><span class="rs-title">Tu momento</span><span class="rs-dot">•</span><span class="rs-kpi-main">${data.myTotal} pts</span>${deltaHtml}</div>
         ${shareBtn}
       </div>
       <div class="rs-msg ${data.cls}">${data.msg}</div>
@@ -6193,40 +6205,58 @@ function closeSummaryOutside(e){
 
 async function shareRecentSummaryImage(){
   const data = getRecentSummaryData();
-  const W = 900, H = 540;
+  const W = 900, H = 720;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle = '#009B54'; ctx.fillRect(0,0,W,92);
-  ctx.fillStyle = '#FFFFFF'; ctx.font = '900 34px Inter, Arial'; ctx.fillText('Tu momento en el bolão', 34, 58);
-  ctx.fillStyle = '#111114'; ctx.font = '900 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, 34, 142);
-  ctx.fillStyle = '#6B7280'; ctx.font = '800 21px Inter, Arial'; ctx.fillText(`${data.exacts} exacto${data.exacts===1?'':'s'} · ${data.scored}/${data.games.length} partidos puntuados`, 180, 142);
+
+  // Fondo estilo app
+  ctx.fillStyle = '#0B5A30'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#00A35B'; roundRect(ctx, 70, 54, 760, 70, 26); ctx.fill();
+  ctx.fillStyle = '#FFFFFF'; ctx.font = '900 30px Inter, Arial'; ctx.fillText('Resumen reciente', 104, 99);
+
+  // Card principal igual al resumen de la pantalla, sin botones
+  ctx.fillStyle = '#FFFFFF'; roundRect(ctx, 70, 138, 760, 520, 28); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,155,84,.22)'; ctx.lineWidth = 2; roundRect(ctx, 94, 166, 712, 456, 24); ctx.stroke();
+
+  const deltaTxt = data.rankDelta === null ? '' : (data.rankDelta > 0 ? ` ▲${data.rankDelta}` : (data.rankDelta < 0 ? ` ▼${Math.abs(data.rankDelta)}` : ' ='));
+  const deltaColor = data.rankDelta > 0 ? '#009B54' : (data.rankDelta < 0 ? '#CE1126' : '#6B7280');
+  ctx.fillStyle = '#6B7280'; ctx.font = '900 26px Inter, Arial'; ctx.fillText('TU MOMENTO', 122, 214);
+  ctx.fillStyle = '#6B7280'; ctx.font = '900 26px Inter, Arial'; ctx.fillText('•', 304, 214);
+  ctx.fillStyle = '#009B54'; ctx.font = '950 34px Inter, Arial'; ctx.fillText(`${data.myTotal} pts`, 330, 216);
+  if(deltaTxt){ ctx.fillStyle = deltaColor; ctx.font = '900 24px Inter, Arial'; ctx.fillText(deltaTxt, 462, 214); }
+
   ctx.fillStyle = data.cls === 'good' ? '#009B54' : (data.cls === 'hot' ? '#B45309' : (data.cls === 'bad' ? '#CE1126' : '#92400E'));
-  ctx.font = '800 23px Inter, Arial'; wrapCanvasText(ctx, data.msg, 34, 184, 820, 30);
-  let y = 258;
+  ctx.font = '850 22px Inter, Arial';
+  wrapCanvasText(ctx, data.msg, 122, 252, 640, 26);
+
+  let y = 322;
   data.games.forEach(g=>{
-    ctx.fillStyle = '#F5F5F7'; roundRect(ctx, 34, y-36, 832, 82, 18); ctx.fill();
-    ctx.fillStyle = '#111114'; ctx.font = '850 23px Inter, Arial';
+    ctx.fillStyle = '#F5F5F7'; roundRect(ctx, 122, y-42, 656, 82, 17); ctx.fill();
+    ctx.strokeStyle = '#E8E8EC'; ctx.lineWidth = 1; roundRect(ctx, 122, y-42, 656, 82, 17); ctx.stroke();
     const m = g.m, real = g.real;
-    ctx.fillText(`${m.home} ${real.home}:${real.away} ${m.away}`, 58, y);
-    ctx.fillStyle = '#6B7280'; ctx.font = '750 18px Inter, Arial';
+    ctx.fillStyle = '#111114'; ctx.font = '850 22px Inter, Arial';
+    ctx.fillText(`${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}`, 146, y-7);
     const pickTxt = g.myPick ? `${g.myPick.home}:${g.myPick.away}` : 'sin palpite';
     const lab = getRecentSummaryLabel(g.type, g.myPts);
-    ctx.fillText(`Tu palpite: ${pickTxt} · ${lab.txt}`, 58, y+28);
-    ctx.fillStyle = g.myPts === 0 ? '#CE1126' : (g.type === 'exact' ? '#B45309' : '#009B54');
-    ctx.font = '900 30px Inter, Arial'; ctx.fillText(`+${g.myPts}`, 760, y+12);
-    y += 98;
+    ctx.fillStyle = '#6B7280'; ctx.font = '800 18px Inter, Arial'; ctx.fillText(`Tu palpite: ${pickTxt}`, 146, y+22);
+    ctx.fillStyle = lab.cls === 'bad' ? '#CE1126' : '#009B54'; ctx.font = '900 18px Inter, Arial'; ctx.fillText(lab.txt, 298, y+22);
+    ctx.fillStyle = g.myPts === 0 ? '#CE1126' : '#009B54'; ctx.font = '900 28px Inter, Arial';
+    ctx.textAlign = 'right'; ctx.fillText(`+${g.myPts}`, 740, y+12); ctx.textAlign = 'left';
+    y += 104;
   });
+
+  ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.font = '800 17px Inter, Arial'; ctx.fillText('Vive el Mundial • Somax', 304, 690);
+
   canvas.toBlob(async blob=>{
     try{
-      const file = new File([blob], 'tu-momento-bolao.png', {type:'image/png'});
+      const file = new File([blob], 'resumen-reciente-bolao.png', {type:'image/png'});
       if(navigator.canShare && navigator.canShare({files:[file]})){
-        await navigator.share({files:[file], title:'Tu momento en el Bolão'});
+        await navigator.share({files:[file], title:'Resumen reciente'});
       }else if(navigator.share){
-        await navigator.share({title:'Tu momento en el Bolão', text:`${data.myTotal} pts en los últimos 3 partidos. ${data.msg}`});
+        await navigator.share({title:'Resumen reciente', text:`${data.myTotal} pts en los últimos 3 partidos. ${data.msg}`});
       }else{
-        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tu-momento-bolao.png'; a.click();
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='resumen-reciente-bolao.png'; a.click();
       }
     }catch(e){ console.warn(e); }
   }, 'image/png');
@@ -6235,6 +6265,20 @@ async function shareRecentSummaryImage(){
 function roundRect(ctx,x,y,w,h,r){
   ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
 }
+function wrapCanvasTextRight(ctx, text, rightX, y, maxWidth, lineHeight){
+  const words = String(text||'').split(' '); let lines=[], line='';
+  words.forEach((word,i)=>{
+    const test=line + word + ' ';
+    if(ctx.measureText(test).width > maxWidth && i>0){ lines.push(line.trim()); line = word + ' '; }
+    else line = test;
+  });
+  if(line) lines.push(line.trim());
+  const oldAlign = ctx.textAlign;
+  ctx.textAlign = 'right';
+  lines.forEach((ln,i)=>ctx.fillText(ln, rightX, y + i*lineHeight));
+  ctx.textAlign = oldAlign;
+}
+
 function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
   const words = String(text||'').split(' '); let line='';
   words.forEach((word,i)=>{
@@ -8176,4 +8220,50 @@ function showSaveBanner(msg){
 </script>
 
 
+
+<style id="final-recent-summary-align-fix">
+/* Ajuste final do resumen reciente: misma lectura en card y modal */
+.recent-summary-card{
+  border-radius:24px!important;
+  border:1px solid rgba(0,155,84,.18)!important;
+  padding:16px 18px!important;
+}
+.summary-modal-body .recent-summary-card,
+#summary-modal .recent-summary-card{
+  margin:0!important;
+  box-shadow:none!important;
+}
+.rs-head{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:6px!important;
+  margin-bottom:10px!important;
+}
+.rs-head-main{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  width:100%!important;
+}
+.rs-titleline{
+  display:flex!important;
+  align-items:baseline!important;
+  gap:7px!important;
+  flex-wrap:wrap!important;
+  min-width:0!important;
+}
+.rs-msg{
+  align-self:flex-start!important;
+  margin:0!important;
+  max-width:100%!important;
+  text-align:left!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+.rs-games{gap:7px!important;}
+.rs-game{border-radius:13px!important;}
+.rs-share-btn{flex-shrink:0!important;}
+</style>
 </body></html>
