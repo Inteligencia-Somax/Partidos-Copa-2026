@@ -851,8 +851,8 @@ body{
     <div class="rules-head">
       <div class="rules-title">Sistema de Puntuación</div>
       <div class="score-mode">
-        <button id="sm-grupos" class="active" onclick="setScoringMode('grupos')">Grupos</button>
-        <button id="sm-decisiva" class="x2" onclick="setScoringMode('decisiva')">Decisiva ×2</button>
+        <button id="sm-grupos" onclick="setScoringMode('grupos')">Grupos</button>
+        <button id="sm-decisiva" class="active x2" onclick="setScoringMode('decisiva')">Fase decisiva ×2</button>
       </div>
     </div>
     <div class="rules-grid">
@@ -3681,8 +3681,8 @@ body{
       <div class="rules-head">
         <h3>🏆 Puntuación</h3>
         <div class="score-mode">
-          <button id="rules-sm-grupos" class="active" onclick="setScoringMode('grupos')">Grupos</button>
-          <button id="rules-sm-decisiva" class="x2" onclick="setScoringMode('decisiva')">Fase decisiva ×2</button>
+          <button id="rules-sm-grupos" onclick="setScoringMode('grupos')">Grupos</button>
+          <button id="rules-sm-decisiva" class="active x2" onclick="setScoringMode('decisiva')">Fase decisiva ×2</button>
         </div>
       </div>
       <div class="score-table">
@@ -5004,7 +5004,7 @@ body{
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-time" id="modal-time">Jue 11 Jun · 16:00</div>
-    <div class="modal-x2-note" id="modal-x2-note">🏆 Fase decisiva ×2 · puntos duplicados</div>
+    <div class="modal-x2-note" id="modal-x2-note">🏆 Fase decisiva ×2 · los puntos se duplican</div>
     <div class="modal-score-display">
       <div class="modal-team">
         <span class="modal-flag" id="modal-home-flag">🇲🇽</span>
@@ -5038,7 +5038,7 @@ body{
     </div>
     <div class="modal-confirm" id="modal-confirm" style="display:none">
       <div class="mcf-title">¿Confirmás tu palpite?</div>
-      <div class="mcf-x2-note" id="mcf-x2-note">🏆 Fase decisiva ×2: la puntuación de este partido será duplicada.</div>
+      <div class="mcf-x2-note" id="mcf-x2-note">🏆 Fase decisiva ×2: los puntos de este partido se duplican.</div>
       <div class="mcf-score" id="mcf-score"></div>
       <div class="mcf-warn" id="mcf-warn">⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.</div>
       <div class="mcf-actions">
@@ -5687,6 +5687,7 @@ fbAuth.onAuthStateChanged(async user=>{
 });
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  setScoringMode('decisiva');
   ['auth-email','auth-pass','auth-name'].forEach(id=>{
     document.getElementById(id)?.addEventListener('keydown', e=>{
       if(e.key==='Enter') handleAuthAction();
@@ -6037,6 +6038,13 @@ function renderMatches(filter){
 }
 
 // ══ MODAL ══
+// Fase decisiva: usa x2 explícito y también protege por nombre de fase.
+function isX2Match(match){
+  if(!match) return false;
+  const phase = String(match.phase || '').toLowerCase();
+  return !!match.x2 || phase.includes('1/16') || phase.includes('octavos') || phase.includes('cuartos') || phase.includes('semifinal') || phase.includes('final') || phase.includes('3° puesto');
+}
+
 function openModal(matchId){
   const m = MATCHES.find(x=>x.id===matchId);
   if(!m) return;
@@ -6055,7 +6063,7 @@ function openModal(matchId){
   document.getElementById('modal-match-label').textContent = `${disp.home} vs ${disp.away}`;
   document.getElementById('modal-time').textContent = `${m.date.replace('.,','.')} · ${m.time}hs`;
   const x2Note = document.getElementById('modal-x2-note');
-  if(x2Note) x2Note.className = 'modal-x2-note' + (m.x2 ? ' show' : '');
+  if(x2Note) x2Note.className = 'modal-x2-note' + (isX2Match(m) ? ' show' : '');
   document.getElementById('modal-home-flag').textContent = disp.hf;
   document.getElementById('modal-home-code').textContent = disp.hc||disp.home.substring(0,3).toUpperCase();
   document.getElementById('modal-away-flag').textContent = disp.af;
@@ -6134,11 +6142,11 @@ function savePick(){
       `<span class="mcf-code">${ac}</span><span class="mcf-flag">${disp.af}</span>`;
   }
   const mcfX2 = document.getElementById('mcf-x2-note');
-  if(mcfX2) mcfX2.className = 'mcf-x2-note' + (match && match.x2 ? ' show' : '');
+  if(mcfX2) mcfX2.className = 'mcf-x2-note' + (isX2Match(match) ? ' show' : '');
   const mcfWarn = document.getElementById('mcf-warn');
   if(mcfWarn){
-    mcfWarn.innerHTML = match && match.x2
-      ? '⚠ Este partido es de <b>fase decisiva ×2</b>. Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.'
+    mcfWarn.innerHTML = isX2Match(match)
+      ? '⚠ Este partido es de <b>fase decisiva ×2</b>: los puntos serán duplicados. Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.'
       : '⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.';
   }
   document.getElementById('modal-numpad').style.display = 'none';
