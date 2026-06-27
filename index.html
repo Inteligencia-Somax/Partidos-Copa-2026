@@ -624,18 +624,18 @@ body{
 .np-btn.np-save:active{background:var(--green2);border-color:var(--green2);}
 
 /* Confirmación de palpite (paso irreversible) */
-.modal-confirm{padding:4px 2px 2px;animation:cfFade .18s ease;}
+.modal-confirm{padding:0 2px 8px;animation:cfFade .18s ease;}
 @keyframes cfFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-.mcf-title{text-align:center;font-size:15px;font-weight:800;color:var(--text);margin:2px 0 12px;}
+.mcf-title{text-align:center;font-size:15px;font-weight:800;color:var(--text);margin:2px 0 10px;}
 .mcf-score{
   display:flex;align-items:center;justify-content:center;gap:10px;
   font-size:26px;font-weight:900;color:var(--text);
   background:#E8F5EE;border:2px solid var(--green);border-radius:16px;
-  padding:16px 12px;margin-bottom:12px;
+  padding:12px 10px;margin-bottom:10px;
 }
 .mcf-score .mcf-num{
   min-width:46px;text-align:center;color:var(--green);
-  font-size:34px;font-weight:900;line-height:1;
+  font-size:32px;font-weight:900;line-height:1;
 }
 .mcf-score .mcf-flag{font-size:24px;}
 .mcf-score .mcf-code{font-size:15px;font-weight:800;color:var(--sub);}
@@ -643,12 +643,12 @@ body{
 .mcf-warn{
   text-align:center;font-size:13px;font-weight:600;color:#92400E;
   background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);
-  border-radius:12px;padding:10px 12px;margin-bottom:14px;line-height:1.35;
+  border-radius:12px;padding:9px 11px;margin-bottom:10px;line-height:1.35;
 }
 .mcf-warn b{color:#92400E;}
-.mcf-actions{display:flex;gap:10px;}
+.mcf-actions{display:flex;gap:10px;padding-bottom:2px;}
 .mcf-btn{
-  flex:1;border-radius:14px;padding:15px 10px;font-family:'Inter',sans-serif;
+  flex:1;border-radius:14px;padding:13px 10px;font-family:'Inter',sans-serif;
   font-size:15px;font-weight:800;cursor:pointer;transition:all .15s;border:1px solid var(--border);
 }
 .mcf-btn:active{transform:scale(.97);}
@@ -5004,7 +5004,6 @@ body{
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-time" id="modal-time">Jue 11 Jun · 16:00</div>
-    <div class="modal-x2-note" id="modal-x2-note">🏆 Fase decisiva ×2 · los puntos se duplican</div>
     <div class="modal-score-display">
       <div class="modal-team">
         <span class="modal-flag" id="modal-home-flag">🇲🇽</span>
@@ -5038,7 +5037,6 @@ body{
     </div>
     <div class="modal-confirm" id="modal-confirm" style="display:none">
       <div class="mcf-title">¿Confirmás tu palpite?</div>
-      <div class="mcf-x2-note" id="mcf-x2-note">🏆 Fase decisiva ×2: los puntos de este partido se duplican.</div>
       <div class="mcf-score" id="mcf-score"></div>
       <div class="mcf-warn" id="mcf-warn">⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.</div>
       <div class="mcf-actions">
@@ -6062,8 +6060,6 @@ function openModal(matchId){
 
   document.getElementById('modal-match-label').textContent = `${disp.home} vs ${disp.away}`;
   document.getElementById('modal-time').textContent = `${m.date.replace('.,','.')} · ${m.time}hs`;
-  const x2Note = document.getElementById('modal-x2-note');
-  if(x2Note) x2Note.className = 'modal-x2-note' + (isX2Match(m) ? ' show' : '');
   document.getElementById('modal-home-flag').textContent = disp.hf;
   document.getElementById('modal-home-code').textContent = disp.hc||disp.home.substring(0,3).toUpperCase();
   document.getElementById('modal-away-flag').textContent = disp.af;
@@ -6141,12 +6137,10 @@ function savePick(){
       `<span class="mcf-num">${parseInt(hVal)}</span><span class="mcf-colon">:</span><span class="mcf-num">${parseInt(aVal)}</span>`+
       `<span class="mcf-code">${ac}</span><span class="mcf-flag">${disp.af}</span>`;
   }
-  const mcfX2 = document.getElementById('mcf-x2-note');
-  if(mcfX2) mcfX2.className = 'mcf-x2-note' + (isX2Match(match) ? ' show' : '');
   const mcfWarn = document.getElementById('mcf-warn');
   if(mcfWarn){
     mcfWarn.innerHTML = isX2Match(match)
-      ? '⚠ Este partido es de <b>fase decisiva ×2</b>: los puntos serán duplicados. Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.'
+      ? '⚠ Este partido corresponde a la <b>fase decisiva ×2</b>. Los puntos obtenidos se duplicarán. Una vez guardado, el pronóstico <b>no podrá modificarse</b>. Revisá bien el marcador.'
       : '⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.';
   }
   document.getElementById('modal-numpad').style.display = 'none';
