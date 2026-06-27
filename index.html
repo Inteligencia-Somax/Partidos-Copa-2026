@@ -232,6 +232,12 @@ body{
   color:#fff;background:none;padding:0;border-radius:0;white-space:nowrap;
 }
 .date-sep{color:#fff;opacity:.65;font-weight:700;}
+.date-x2{
+  font-size:11px;font-weight:800;letter-spacing:1px;
+  color:#fff;background:var(--gold);
+  padding:3px 11px;border-radius:20px;white-space:nowrap;flex-shrink:0;
+  box-shadow:0 1px 4px rgba(245,158,11,.4);
+}
 
 /* ══ MATCH CARD ══ */
 .match-card{
@@ -268,13 +274,6 @@ body{
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
 .mc-status.palp{background:rgba(0,56,168,.1);color:var(--blue);}
 .mc-badge.center.wait{color:var(--sub);}
-.mc-badge.wait{color:var(--sub);}
-.mc-x2{
-  font-size:11px;font-weight:800;line-height:1;
-  color:var(--gold);background:rgba(245,158,11,.12);
-  border:1px solid rgba(245,158,11,.3);
-  padding:3px 7px;border-radius:20px;flex-shrink:0;
-}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
 .mc-status .mc-pts{font-size:16px;font-weight:900;}
@@ -5281,7 +5280,7 @@ const MATCHES = [
   {id:68, date:'Sáb, 27 de Jun.',time:'23:00',phase:'Grupo J',home:'Jordania',    hf:'🇯🇴',hc:'JOR',away:'Argentina',      af:'🇦🇷',ac:'ARG'},
   {id:69, date:'Sáb, 27 de Jun.',time:'20:30',phase:'Grupo K',home:'Colombia',    hf:'🇨🇴',hc:'COL',away:'Portugal',       af:'🇵🇹',ac:'POR'},
   {id:70, date:'Sáb, 27 de Jun.',time:'20:30',phase:'Grupo K',home:'RD Congo',    hf:'🇨🇩',hc:'COD',away:'Uzbekistán',     af:'🇺🇿',ac:'UZB'},
-  {id:71, date:'Sáb, 27 de Jun.',time:'18:00',phase:'Grupo L',home:'Panamá',      hf:'🇵🇦',hc:'PAN',away:'Inglaterra',     af:'🏴',ac:'ENG'},
+  {id:71, date:'Sáb, 27 de Jun.',time:'18:00',phase:'Grupo L',home:'Panamá',      hf:'🇵🇦',hc:'PAN',away:'Inglaterra',     af:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',ac:'ENG'},
   {id:72, date:'Sáb, 27 de Jun.',time:'18:00',phase:'Grupo L',home:'Croacia',     hf:'🇭🇷',hc:'CRO',away:'Ghana',          af:'🇬🇭',ac:'GHA'},
   // ── 1/16 (estructura oficial FIFA por posición) ──
   {id:73, date:'Dom, 28 de Jun.',time:'16:00',phase:'1/16',home:'2º Gr. A',      hf:'⚽',hc:'',away:'2º Gr. B',           af:'⚽',ac:'',x2:true},
@@ -5882,7 +5881,8 @@ function renderMatches(filter){
     const group = document.createElement('div');
     group.className = 'date-group';
     if(isMatchToday(matches[0])) group.id = 'today-group';
-    group.innerHTML = `<div class="date-row"><div class="date-label">${date.toUpperCase()}</div><span class="date-sep">·</span><div class="round-badge">${getRoundLabel(matches[0])}</div></div>`;
+    const groupX2 = matches[0].x2 ? '<div style="flex:1"></div><span class="date-x2">×2 PUNTOS</span>' : '';
+    group.innerHTML = `<div class="date-row"><div class="date-label">${date.toUpperCase()}</div><span class="date-sep">·</span><div class="round-badge">${getRoundLabel(matches[0])}</div>${groupX2}</div>`;
     matches.forEach(m => {
       const pick = userPicks[m.id];
       const real = realResults[m.id];
@@ -5896,7 +5896,6 @@ function renderMatches(filter){
       // Palpitado pendiente (sin resultado) = neutro; apurado = verde/rojo según puntos.
       const statusCls = real ? (isZero ? 'zero' : 'done') : (hasPick ? 'palp' : 'pending');
       const scoreCls = (hasPick && real) ? (isZero ? 'zero' : 'filled') : '';
-      const x2badge = m.x2 ? '<span class="mc-x2">×2</span>' : '';
       const locked = !canEditPick(m);
       const hasBreakdown = locked; // cerrado o finalizado → se pueden ver los palpites de todos
       const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg>' : '';
@@ -5906,9 +5905,8 @@ function renderMatches(filter){
           <span class="mc-time">${m.time}</span>
           <span class="mc-dot"></span>
           <span class="mc-phase">${m.phase}</span>
-          ${x2badge}
+          ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge center wait">Esperando partido</span>`}
           <div style="flex:1"></div>
-          ${real ? `<span class="mc-badge">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge wait">Esperando partido</span>`}
           <span class="mc-status ${statusCls}">
             ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? 'Palpitado' : 'Pendiente'))}
           </span>${detailI}
