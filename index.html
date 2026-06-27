@@ -13343,18 +13343,26 @@ function showSaveBanner(msg){
   }
 </style>
 
-<!-- AJUSTE FINAL: Puntos por participante - filtros de palpites mais compactos e sem corte -->
+<!-- AJUSTE FINAL: Puntos por participante - faixa de filtros idêntica em altura à faixa Lista/Análisis, ocupando toda a largura, sem rolagem horizontal e sem corte -->
 <style id="final-mb-score-filter-compact-20260627">
-  #match-breakdown-modal .ud-tabs.mb-score-filter{
+  /* Faixa de filtros de palpites: mesma altura da faixa "Lista / Análisis",
+     ocupa toda a largura do modal, distribui os chips proporcionalmente,
+     sem rolagem horizontal e sem texto cortado. */
+  #match-breakdown-modal .ud-tabs.mb-score-filter,
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill{
     display:flex!important;
+    flex-wrap:nowrap!important;
     align-items:center!important;
-    gap:6px!important;
-    padding:6px 12px!important;
+    justify-content:flex-start!important;
+    gap:5px!important;
+    padding:10px 12px!important;
+    width:100%!important;
+    box-sizing:border-box!important;
     background:#fff!important;
     border-bottom:1px solid rgba(0,0,0,.08)!important;
-    overflow-x:auto!important;
-    overflow-y:hidden!important;
-    -webkit-overflow-scrolling:touch!important;
+    overflow:hidden!important;
+    min-height:0!important;
+    -webkit-overflow-scrolling:auto!important;
     scrollbar-width:none!important;
   }
 
@@ -13362,44 +13370,50 @@ function showSaveBanner(msg){
     display:none!important;
   }
 
+  /* Rótulo "Palpites:" — menor, centralizado verticalmente, sem ocupar espaço dos chips */
   #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sflabel{
     flex:0 0 auto!important;
-    height:36px!important;
-    min-height:36px!important;
+    height:34px!important;
+    min-height:34px!important;
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
-    padding:0 6px 0 0!important;
-    font-size:13px!important;
+    padding:0 5px 0 0!important;
+    margin:0!important;
+    font-size:11px!important;
     line-height:1!important;
-    font-weight:850!important;
+    font-weight:800!important;
     color:var(--sub)!important;
     background:#fff!important;
     white-space:nowrap!important;
+    text-align:center!important;
   }
 
-  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip{
-    flex:0 0 auto!important;
+  /* Chips — mesma altura visual dos botões "Lista / Análisis", divididos igualmente */
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip,
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
+    flex:1 1 0!important;
     width:auto!important;
-    min-width:max-content!important;
-    height:36px!important;
-    min-height:36px!important;
+    min-width:0!important;
+    height:34px!important;
+    min-height:34px!important;
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
-    gap:5px!important;
-    padding:0 13px!important;
+    gap:4px!important;
+    padding:0 6px!important;
     border-radius:999px!important;
-    font-size:13px!important;
+    font-size:11px!important;
     line-height:1!important;
-    font-weight:850!important;
+    font-weight:800!important;
     white-space:nowrap!important;
     overflow:visible!important;
     text-overflow:clip!important;
   }
 
   #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
-    font-size:12px!important;
+    flex:0 0 auto!important;
+    font-size:10px!important;
     line-height:1!important;
     font-weight:800!important;
     display:inline-flex!important;
@@ -13411,17 +13425,6 @@ function showSaveBanner(msg){
 
   #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip.active .mb-sfn{
     opacity:.9!important;
-  }
-
-  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill{
-    gap:6px!important;
-  }
-
-  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
-    flex:0 0 auto!important;
-    min-width:max-content!important;
-    padding-left:13px!important;
-    padding-right:13px!important;
   }
 </style>
 
