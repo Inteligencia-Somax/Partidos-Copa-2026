@@ -6203,11 +6203,11 @@ body{
   background:#fff;
 }
 /* Filtro de marcadores (modal "Puntos por participante", partido cerrado) */
-.ud-tabs.mb-score-filter{gap:7px;padding:18px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;background:#fff;}
+.ud-tabs.mb-score-filter{gap:8px;padding:10px 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:center;background:#fff;min-height:64px;}
 .ud-tabs.mb-score-filter::-webkit-scrollbar{display:none;}
-.mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;font-size:12px;font-weight:800;color:var(--sub);white-space:nowrap;position:sticky;left:0;background:#fff;padding-right:7px;z-index:1;}
-.mb-sfchip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:10px 15px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;transition:background .2s,color .2s,border-color .2s;}
-.mb-sfchip .mb-sfn{font-size:12px;font-weight:700;opacity:.65;}
+.mb-sflabel{flex:0 0 auto;display:inline-flex;align-items:center;align-self:stretch;font-size:13px;font-weight:800;color:var(--sub);white-space:nowrap;background:#fff;padding-right:8px;z-index:1;}
+.mb-sfchip{flex:0 0 auto;min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 16px;border:1px solid var(--border);border-radius:50px;background:#fff;color:var(--sub);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;line-height:1;transition:background .2s,color .2s,border-color .2s;}
+.mb-sfchip .mb-sfn{font-size:12px;font-weight:800;opacity:.68;line-height:1;}
 /* Cerrado: los chips ocupan todo el ancho, sin scroll horizontal */
 .ud-tabs.mb-score-filter-fill{gap:6px;}
 .mb-score-filter-fill .mb-sfchip{flex:1 1 auto;justify-content:center;padding-left:8px;padding-right:8px;}
