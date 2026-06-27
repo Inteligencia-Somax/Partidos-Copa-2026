@@ -296,8 +296,7 @@ body{
   pointer-events:none;
 }
 .match-card.x2-game::after{content:none;}
-.match-card.x2-game .mc-status.pending,
-.match-card.x2-game .mc-status.palp{
+.match-card.x2-game .mc-status.pending{
   background:rgba(245,158,11,.13);
   color:#B36B00;
 }
@@ -368,6 +367,7 @@ body{
 }
 .mc-status.pending{background:rgba(245,158,11,.1);color:var(--pending);}
 .mc-status.palp{background:rgba(0,56,168,.1);color:var(--blue);}
+.mc-status.closed{background:rgba(0,56,168,.1);color:var(--blue);}
 .mc-badge.center.wait{color:var(--sub);}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
@@ -394,8 +394,24 @@ body{
   min-width:38px;text-align:center;line-height:1;
   transition:all .2s;
 }
+.mc-score.palp-score,.mc-score.closed-score{
+  background:rgba(0,56,168,.08);
+  border-color:rgba(0,56,168,.18);
+  color:var(--blue);
+}
+.mc-score.pending-score{
+  background:rgba(245,158,11,.10);
+  border-color:rgba(245,158,11,.28);
+  color:#B36B00;
+}
 .mc-score.filled{
   background:#E8F5EE;border-color:var(--green);color:var(--green);
+}
+.mc-score.palp{
+  background:rgba(0,56,168,.10);border-color:rgba(0,56,168,.28);color:var(--blue);
+}
+.mc-score.pending{
+  background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.34);color:#B36B00;
 }
 .mc-score.zero{
   background:rgba(206,17,38,.07);border-color:var(--red);color:var(--red);
@@ -758,8 +774,9 @@ body{
 .ranking-list{display:flex;flex-direction:column;gap:8px;}
 .rank-card{
   background:var(--white);border-radius:var(--radius);
-  border:1px solid var(--border);padding:14px 16px;
+  border:1px solid var(--border);padding:12px 16px;
   display:flex;align-items:center;gap:12px;
+  min-height:78px;
   box-shadow:var(--shadow);
 }
 .rank-pos{
@@ -846,9 +863,11 @@ body{
   display:flex;align-items:center;justify-content:center;
   font-size:16px;font-weight:800;color:#fff;flex-shrink:0;
 }
-.rank-info{flex:1;}
-.rank-name{font-size:15px;font-weight:700;}
-.rank-detail{font-size:12px;color:var(--sub);margin-top:2px;}
+.rank-info{flex:1;min-width:0;}
+.rank-name{font-size:15px;font-weight:700;display:flex;align-items:center;gap:5px;min-width:0;white-space:nowrap;}
+.rank-name-txt{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rank-name .vos-tag{font-size:11px;color:var(--green);font-weight:800;flex-shrink:0;}
+.rank-detail{font-size:12px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .detail-i{width:15px;height:15px;color:#AAB2BF;flex-shrink:0;display:inline-block;vertical-align:-3px;margin-left:6px;}
 .rank-delta{font-weight:800;}
 .form-dots{display:inline-flex;gap:3px;vertical-align:middle;}
@@ -6554,10 +6573,10 @@ function renderMatches(filter){
       card.className = `match-card ${hasPick?'done':'pending'} ${m.py?'py-game':''} ${m.x2?'x2-game':''} ${isExactHit?'exact-hit':''}`;
       const hScore = hasPick ? pick.home : '–';
       const aScore = hasPick ? pick.away : '–';
-      // Palpitado pendiente (sin resultado) = neutro; apurado = verde/rojo según puntos.
-      const statusCls = real ? (isZero ? 'zero' : 'done') : (hasPick ? 'palp' : 'pending');
-      const scoreCls = (hasPick && real) ? (isZero ? 'zero' : 'filled') : '';
       const locked = !canEditPick(m);
+      // Palpitado/Cerrado = azul; pendiente = amarillo; apurado = verde/rojo según puntos.
+      const statusCls = real ? (isZero ? 'zero' : 'done') : (hasPick ? 'palp' : (locked ? 'closed' : 'pending'));
+      const scoreCls = real ? (hasPick ? (isZero ? 'zero' : 'filled') : '') : (hasPick ? 'palp-score' : (locked ? 'closed-score' : 'pending-score'));
       const hasBreakdown = locked; // cerrado o finalizado → se pueden ver los palpites de todos
       const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg>' : '';
       const disp = matchDisplay(m, realResults, standings);
@@ -7023,7 +7042,7 @@ function renderRanking(){
     card.innerHTML=`
       <div class="rank-pos ${posClass}"${isMe?' style="color:var(--green);"':''}>${posCell}${posDeltaHtml?`<span class="rank-pos-delta">${posDeltaHtml}</span>`:''}</div>
       <div class="rank-info">
-        <div class="rank-name"${isMe?' style="color:var(--green);"':''}>${u.name}${isMe?' <span style="font-size:11px;color:var(--green);">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></div>
+        <div class="rank-name"${isMe?' style="color:var(--green);"':''}><span class="rank-name-txt">${u.name}</span>${isMe?' <span class="vos-tag">(Vos)</span>':''}<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></div>
         <div class="rank-detail">${detailHtml}</div>
       </div>
       <div>
@@ -8484,6 +8503,168 @@ function showSaveBanner(msg){
   .recent-summary-card{padding:16px 18px!important;}
   .rs-kpi-main{font-size:24px!important;}
   .rs-msg{font-size:12.5px!important;}
+}
+</style>
+
+<style id="final-single-line-standard-cards-20260627">
+/* Padronização final: títulos em uma linha e cards internos mais consistentes */
+#scoring-rules-wrap .rules-head,
+.rules-score-section .rules-head{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  flex-wrap:nowrap!important;
+  gap:10px!important;
+}
+#scoring-rules-wrap .rules-title,
+.rules-score-section h3,
+.rs-title{
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  font-size:12px!important;
+  letter-spacing:1.9px!important;
+  line-height:1!important;
+}
+#scoring-rules-wrap .rules-title,
+.rules-score-section h3{
+  flex:1 1 auto!important;
+  min-width:0!important;
+}
+.score-mode{
+  flex:0 0 auto!important;
+  height:32px!important;
+}
+.score-mode button{
+  height:24px!important;
+  min-width:66px!important;
+  padding:0 10px!important;
+  font-size:11px!important;
+}
+#scoring-rules-wrap .rules-card{
+  padding:15px 18px 16px!important;
+}
+.rules-grid{
+  gap:8px!important;
+}
+.rule-item{
+  min-height:84px!important;
+  height:84px!important;
+  padding:10px 7px!important;
+  border-radius:13px!important;
+}
+.rule-pts{
+  font-size:25px!important;
+  margin-bottom:5px!important;
+}
+.rule-label{
+  font-size:11px!important;
+  line-height:1.15!important;
+  max-width:100%!important;
+}
+.recent-summary-card{
+  padding:15px 18px!important;
+}
+.rs-head{
+  margin-bottom:10px!important;
+}
+.rs-head-main{
+  min-height:30px!important;
+}
+.rs-titleline{
+  flex-wrap:nowrap!important;
+  white-space:nowrap!important;
+  min-width:0!important;
+}
+.rs-kpi-main{
+  font-size:24px!important;
+}
+.rs-msg{
+  font-size:12px!important;
+}
+.rs-game{
+  min-height:54px!important;
+  height:54px!important;
+  padding:8px 11px!important;
+  border-radius:13px!important;
+}
+.rs-teams{
+  font-size:13px!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.rs-sub{
+  font-size:11px!important;
+  margin-top:3px!important;
+}
+.rs-pts{
+  font-size:15px!important;
+  min-width:40px!important;
+}
+@media(max-width:430px){
+  #scoring-rules-wrap .rules-card{padding:14px 16px 15px!important;}
+  #scoring-rules-wrap .rules-title,.rules-score-section h3,.rs-title{font-size:10.5px!important;letter-spacing:1.55px!important;}
+  .score-mode{height:30px!important;}
+  .score-mode button{height:22px!important;min-width:58px!important;font-size:10px!important;padding:0 8px!important;}
+  .rule-item{min-height:80px!important;height:80px!important;padding:9px 6px!important;}
+  .rule-pts{font-size:23px!important;}
+  .rule-label{font-size:10.2px!important;line-height:1.12!important;}
+  .recent-summary-card{padding:14px 16px!important;}
+  .rs-kpi-main{font-size:22px!important;}
+  .rs-game{min-height:52px!important;height:52px!important;padding:7px 10px!important;}
+  .rs-teams{font-size:12.3px!important;}
+  .rs-sub,.rs-tag{font-size:10.5px!important;}
+}
+</style>
+
+<style id="final-spacing-summary-exact-20260627">
+/* Espaçamento padronizado entre Sistema de puntuación e Tu momento */
+#scoring-rules-wrap .rules-card{
+  margin-bottom:14px!important;
+}
+#recent-summary-wrap .recent-summary-card{
+  margin-top:0!important;
+  margin-bottom:18px!important;
+}
+
+/* No resumo: Exacto sempre com fundo verde suave; demais acertos ficam só texto verde */
+.recent-summary-card .rs-tag.exact,
+#summary-modal .recent-summary-card .rs-tag.exact{
+  background:rgba(0,155,84,.12)!important;
+  color:var(--green)!important;
+  border:1px solid rgba(0,155,84,.25)!important;
+  padding:2px 7px!important;
+  border-radius:999px!important;
+}
+.recent-summary-card .rs-tag.good,
+#summary-modal .recent-summary-card .rs-tag.good{
+  background:transparent!important;
+  color:var(--green)!important;
+  border-color:transparent!important;
+  padding-left:4px!important;
+  padding-right:0!important;
+}
+.recent-summary-card .rs-tag.bad,
+#summary-modal .recent-summary-card .rs-tag.bad{
+  background:transparent!important;
+  color:var(--red)!important;
+  border-color:transparent!important;
+  padding-left:4px!important;
+  padding-right:0!important;
+}
+.recent-summary-card .rs-pts.exact,
+#summary-modal .recent-summary-card .rs-pts.exact{
+  background:rgba(0,155,84,.12)!important;
+  color:var(--green)!important;
+  border:1px solid rgba(0,155,84,.25)!important;
+}
+.recent-summary-card .rs-pts:not(.exact):not(.zero),
+#summary-modal .recent-summary-card .rs-pts:not(.exact):not(.zero){
+  background:transparent!important;
+  border-color:transparent!important;
+  color:var(--green)!important;
 }
 </style>
 </body></html>
