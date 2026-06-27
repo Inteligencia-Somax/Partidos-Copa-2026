@@ -509,6 +509,7 @@ body{
 .ud-day-row:last-child{border-bottom:none;}
 .ud-day-match{flex:1;font-size:12px;font-weight:700;color:var(--text);min-width:0;}
 .ud-day-sub{font-size:10px;color:var(--sub);font-weight:600;margin-top:1px;}
+.ud-day-date-inline{font-size:11px;color:var(--sub);font-weight:700;white-space:nowrap;}
 .ud-day-sc{font-size:11px;color:var(--sub);font-weight:600;text-align:right;}
 .ud-day-sc span{font-weight:600;}
 .ud-day-pts{min-width:36px;text-align:right;font-size:13px;font-weight:900;}
@@ -538,6 +539,36 @@ body{
   text-align:center;font-size:12px;color:var(--sub);
   padding:8px 20px 0;font-weight:500;
 }
+
+.modal-x2-note{
+  display:none;
+  width:max-content;
+  max-width:calc(100% - 40px);
+  margin:8px auto 0;
+  padding:7px 12px;
+  border-radius:999px;
+  background:#FFF7E6;
+  border:1px solid rgba(245,158,11,.45);
+  color:#92400E;
+  font-size:12px;
+  font-weight:900;
+  text-align:center;
+}
+.modal-x2-note.show{display:block;}
+.mcf-x2-note{
+  display:none;
+  text-align:center;
+  font-size:13px;
+  font-weight:800;
+  color:#92400E;
+  background:#FFF7E6;
+  border:1px solid rgba(245,158,11,.45);
+  border-radius:12px;
+  padding:9px 12px;
+  margin:0 0 12px;
+  line-height:1.35;
+}
+.mcf-x2-note.show{display:block;}
 
 .modal-score-display{
   display:flex;align-items:center;justify-content:center;gap:12px;
@@ -734,6 +765,14 @@ body{
   padding:10px 14px;border:1px solid var(--border);
 }
 .score-row.highlight{border-color:var(--green);background:#E8F5EE;}
+.rules-score-section .rules-head{margin-bottom:12px;}
+.rules-score-section .rules-head h3{margin-bottom:0;}
+.rules-score-section.x2mode .score-pts{color:var(--gold);}
+.rules-score-section.x2mode .score-row.highlight{border-color:var(--gold);background:#FFF7E6;}
+@media(max-width:520px){
+  .rules-score-section .rules-head{align-items:flex-start;}
+  .rules-score-section .score-mode button{font-size:9px;padding:4px 7px;}
+}
 .score-desc{font-size:13px;font-weight:600;}
 .score-pts{font-size:18px;font-weight:900;color:var(--green);}
 
@@ -3638,20 +3677,26 @@ body{
       <h3>👥 Participación</h3>
       <p>El bolão es de uso exclusivo para colaboradores de Somax Agro S.A. Cada participante debe registrarse con su cuenta y será responsable por los palpites cargados en su usuario.</p>
     </div>
-    <div class="rules-section">
-      <h3>🏆 Puntuación</h3>
+    <div class="rules-section rules-score-section" id="rules-score-section">
+      <div class="rules-head">
+        <h3>🏆 Puntuación</h3>
+        <div class="score-mode">
+          <button id="rules-sm-grupos" class="active" onclick="setScoringMode('grupos')">Grupos</button>
+          <button id="rules-sm-decisiva" class="x2" onclick="setScoringMode('decisiva')">Fase decisiva ×2</button>
+        </div>
+      </div>
       <div class="score-table">
-        <div class="score-row highlight"><span class="score-desc">Marcador exacto</span><span class="score-pts">25 pts</span></div>
-        <div class="score-row"><span class="score-desc">Ganador + goles del ganador</span><span class="score-pts">18 pts</span></div>
-        <div class="score-row"><span class="score-desc">Ganador + diferencia de goles</span><span class="score-pts">15 pts</span></div>
-        <div class="score-row"><span class="score-desc">Ganador + goles del perdedor</span><span class="score-pts">12 pts</span></div>
-        <div class="score-row"><span class="score-desc">Solo ganador correcto</span><span class="score-pts">7 pts</span></div>
-        <div class="score-row"><span class="score-desc">Palpite incorrecto</span><span class="score-pts">0 pts</span></div>
+        <div class="score-row highlight"><span class="score-desc">Marcador exacto</span><span class="score-pts" data-base="25" data-x2="50">25 pts</span></div>
+        <div class="score-row"><span class="score-desc">Ganador + goles del ganador</span><span class="score-pts" data-base="18" data-x2="36">18 pts</span></div>
+        <div class="score-row"><span class="score-desc">Ganador + diferencia de goles</span><span class="score-pts" data-base="15" data-x2="30">15 pts</span></div>
+        <div class="score-row"><span class="score-desc">Ganador + goles del perdedor</span><span class="score-pts" data-base="12" data-x2="24">12 pts</span></div>
+        <div class="score-row"><span class="score-desc">Solo ganador correcto</span><span class="score-pts" data-base="7" data-x2="14">7 pts</span></div>
+        <div class="score-row"><span class="score-desc">Palpite incorrecto</span><span class="score-pts" data-base="0" data-x2="0">0 pts</span></div>
       </div>
     </div>
     <div class="rules-section">
       <h3>✖2 Puntos dobles</h3>
-      <p>A partir de los dieciseisavos de final, todos los puntos valen el doble. ¡Acertar el marcador exacto vale 50 puntos!</p>
+      <p>A partir de los octavos de final, todos los puntos valen el doble. Un marcador exacto puede otorgar hasta <strong>50 puntos</strong>.</p>
     </div>
     <div class="rules-section">
       <h3>🥅 Fases decisivas: prórroga y penales</h3>
@@ -4959,6 +5004,7 @@ body{
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-time" id="modal-time">Jue 11 Jun · 16:00</div>
+    <div class="modal-x2-note" id="modal-x2-note">🏆 Fase decisiva ×2 · puntos duplicados</div>
     <div class="modal-score-display">
       <div class="modal-team">
         <span class="modal-flag" id="modal-home-flag">🇲🇽</span>
@@ -4992,8 +5038,9 @@ body{
     </div>
     <div class="modal-confirm" id="modal-confirm" style="display:none">
       <div class="mcf-title">¿Confirmás tu palpite?</div>
+      <div class="mcf-x2-note" id="mcf-x2-note">🏆 Fase decisiva ×2: la puntuación de este partido será duplicada.</div>
       <div class="mcf-score" id="mcf-score"></div>
-      <div class="mcf-warn">⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.</div>
+      <div class="mcf-warn" id="mcf-warn">⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.</div>
       <div class="mcf-actions">
         <button class="mcf-btn mcf-back" onclick="cancelConfirmPick()">‹ Revisar</button>
         <button class="mcf-btn mcf-go" onclick="commitPick()">Confirmar y guardar</button>
@@ -5999,6 +6046,7 @@ function openModal(matchId){
   const cf=document.getElementById('modal-confirm'); if(cf) cf.style.display='none';
   const np=document.getElementById('modal-numpad'); if(np) np.style.display='';
   const tt=document.querySelector('#modal-box .modal-team-tabs'); if(tt) tt.style.display='';
+  const sd=document.querySelector('#modal-box .modal-score-display'); if(sd) sd.style.display='';
 
   const userPicks = loadUserPicks();
   const pick = userPicks[matchId] || {};
@@ -6006,6 +6054,8 @@ function openModal(matchId){
 
   document.getElementById('modal-match-label').textContent = `${disp.home} vs ${disp.away}`;
   document.getElementById('modal-time').textContent = `${m.date.replace('.,','.')} · ${m.time}hs`;
+  const x2Note = document.getElementById('modal-x2-note');
+  if(x2Note) x2Note.className = 'modal-x2-note' + (m.x2 ? ' show' : '');
   document.getElementById('modal-home-flag').textContent = disp.hf;
   document.getElementById('modal-home-code').textContent = disp.hc||disp.home.substring(0,3).toUpperCase();
   document.getElementById('modal-away-flag').textContent = disp.af;
@@ -6083,8 +6133,17 @@ function savePick(){
       `<span class="mcf-num">${parseInt(hVal)}</span><span class="mcf-colon">:</span><span class="mcf-num">${parseInt(aVal)}</span>`+
       `<span class="mcf-code">${ac}</span><span class="mcf-flag">${disp.af}</span>`;
   }
+  const mcfX2 = document.getElementById('mcf-x2-note');
+  if(mcfX2) mcfX2.className = 'mcf-x2-note' + (match && match.x2 ? ' show' : '');
+  const mcfWarn = document.getElementById('mcf-warn');
+  if(mcfWarn){
+    mcfWarn.innerHTML = match && match.x2
+      ? '⚠ Este partido es de <b>fase decisiva ×2</b>. Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.'
+      : '⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.';
+  }
   document.getElementById('modal-numpad').style.display = 'none';
   const tt = document.querySelector('#modal-box .modal-team-tabs'); if(tt) tt.style.display = 'none';
+  const sd = document.querySelector('#modal-box .modal-score-display'); if(sd) sd.style.display = 'none';
   document.getElementById('modal-confirm').style.display = 'block';
   hEl.classList.add('confirming');
   aEl.classList.add('confirming');
@@ -6094,6 +6153,7 @@ function cancelConfirmPick(){
   document.getElementById('modal-confirm').style.display = 'none';
   document.getElementById('modal-numpad').style.display = '';
   const tt = document.querySelector('#modal-box .modal-team-tabs'); if(tt) tt.style.display = '';
+  const sd = document.querySelector('#modal-box .modal-score-display'); if(sd) sd.style.display = '';
   setActiveTeam(activeTeam); // limpia la clase "confirming" y restaura el resaltado
 }
 
@@ -6529,8 +6589,7 @@ function renderUdStreakDetail(){
     const dm = m.date.replace(/^[^,]+,\s*/, '');
     return `
       <div class="ud-day-row">
-        <div class="ud-day-match">${m.hf} ${m.home} × ${m.away} ${m.af}<div class="ud-day-sub">${dm}</div></div>
-        <div class="ud-day-sc">${r.home}:${r.away} <span>· ${pickStr}</span></div>
+        <div class="ud-day-match">${m.hf} ${m.home} × ${m.away} ${m.af} <span class="ud-day-date-inline">· ${dm}</span><div class="ud-day-sub">Resultado: ${r.home}:${r.away} · Palpite: ${pickStr}</div></div>
         <div class="ud-day-pts win">+${pts}</div>
       </div>`;
   }).join('');
@@ -6579,7 +6638,7 @@ function renderUdPartidos(){
     const pts = calc.pts;
     const isExact = !pending && calc.type === 'exact';
     if(!pending) shownTotal += pts;
-    const pickLabel = pick ? `Palpite: ${pick.home}:${pick.away}${isExact ? ' <span class="ud-exact-tag">Exacto</span>' : ''}` : 'Sin palpite';
+    const pickLabel = pick ? `Palpite: ${pick.home}:${pick.away}` : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
     const ptsStr = pending ? '🔒' : `${pts > 0 ? '+' : ''}${pts}`;
     const dm = m.date.replace(/^[^,]+,\s*/, ''); // "Jue, 11 de Jun." -> "11 de Jun."
@@ -6602,9 +6661,7 @@ function renderUdPartidos(){
       <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>
     </div>` : '';
 
-  const sortToggle = `<div class="ud-sort-row"><button class="ud-sort" onclick="toggleUdSort()">${sortAsc ? 'Antiguos primero' : 'Recientes primero'} ⇅</button></div>`;
-
-  return nav + sortToggle + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos.</div>');
+  return nav + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos.</div>');
 }
 
 function renderUdComparar(){
@@ -6661,8 +6718,6 @@ function renderUdComparar(){
       <div class="ud-rnav-label"><span class="ud-rnav-title">${navLabel}</span><span class="ud-rnav-sub">${navSub}</span></div>
       <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>
     </div>` : '';
-
-  const sortToggle = `<div class="ud-sort-row"><button class="ud-sort" onclick="toggleUdSort()">${sortAsc ? 'Antiguos primero' : 'Recientes primero'} ⇅</button></div>`;
 
   const summary = shown.length ? `
     <div class="cmp-summary">
@@ -7386,16 +7441,30 @@ function closeAnnounceOutside(e){
 
 // ── Toggle compacto del "Sistema de Puntuación" (grupos / decisiva ×2) ──
 function setScoringMode(mode){
-  const card = document.querySelector('#scoring-rules-wrap .rules-card');
-  if(!card) return;
   const x2 = mode === 'decisiva';
-  card.classList.toggle('x2mode', x2);
-  card.querySelectorAll('.rule-pts').forEach(el=>{
-    const v = x2 ? el.dataset.x2 : el.dataset.base;
-    if(v !== undefined) el.textContent = v;
-  });
+
+  const card = document.querySelector('#scoring-rules-wrap .rules-card');
+  if(card){
+    card.classList.toggle('x2mode', x2);
+    card.querySelectorAll('.rule-pts').forEach(el=>{
+      const v = x2 ? el.dataset.x2 : el.dataset.base;
+      if(v !== undefined) el.textContent = v;
+    });
+  }
+
+  const rulesScore = document.getElementById('rules-score-section');
+  if(rulesScore){
+    rulesScore.classList.toggle('x2mode', x2);
+    rulesScore.querySelectorAll('.score-pts').forEach(el=>{
+      const v = x2 ? el.dataset.x2 : el.dataset.base;
+      if(v !== undefined) el.textContent = `${v} pts`;
+    });
+  }
+
   document.getElementById('sm-grupos')?.classList.toggle('active', !x2);
   document.getElementById('sm-decisiva')?.classList.toggle('active', x2);
+  document.getElementById('rules-sm-grupos')?.classList.toggle('active', !x2);
+  document.getElementById('rules-sm-decisiva')?.classList.toggle('active', x2);
 }
 function showSaveBanner(msg){
   const b=document.getElementById('save-banner');
