@@ -497,12 +497,12 @@ body{
 .ud-insight.down{color:var(--red);background:rgba(206,17,38,.06);}
 .ud-insight.same{color:var(--sub);}
 .ud-insight.cmp{color:var(--text);background:var(--bg);}
-.ud-round-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);background:var(--bg);}
-.ud-rnav-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--text);font-size:17px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.ud-round-nav{display:grid;grid-template-columns:34px 1fr 34px;align-items:center;column-gap:10px;padding:6px 12px;border-bottom:1px solid var(--border);background:#fff;}
+.ud-rnav-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--text);font-size:17px;font-weight:900;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;align-self:center;justify-self:center;padding:0;}
 .ud-rnav-btn:disabled{opacity:.3;cursor:default;}
-.ud-rnav-label{flex:1;text-align:center;min-width:0;}
-.ud-rnav-title{display:block;font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ud-rnav-sub{display:block;font-size:11px;color:var(--sub);margin-top:1px;}
+.ud-rnav-label{min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.12;}
+.ud-rnav-title{display:block;font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.12;}
+.ud-rnav-sub{display:block;font-size:11px;color:var(--sub);margin-top:2px;line-height:1.12;}
 /* Detalle centrado en pantalla (no pegado abajo) */
 #user-detail-modal, #match-breakdown-modal{align-items:center;padding:16px;}
 #user-detail-modal .modal, #match-breakdown-modal .modal{border-radius:20px;width:100%;max-width:460px;max-height:84vh;display:flex;flex-direction:column;animation:fadeScale .25s ease;padding:0;}
@@ -8412,7 +8412,7 @@ function renderMatchBreakdown(){
           const rowCls = ['ud-row', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           return `
-        <div class="${rowCls}">
+        <div class="${rowCls}" onclick="openUserDetailFromMb('${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
           <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
             <div class="ud-teams">${p.name}${nameTag}</div>
@@ -8494,6 +8494,12 @@ function renderMatchBreakdown(){
 function closeMatchBreakdown(){
   document.getElementById('match-breakdown-modal').style.display = 'none';
   document.body.style.overflow = '';
+}
+function openUserDetailFromMb(name){
+  // Reutiliza exatamente o modal/função de detalhe já usado no Ranking.
+  // Fecha o modal de puntos para que o detalhe fique visível acima da tela.
+  closeMatchBreakdown();
+  openUserDetail(name);
 }
 function closeMatchBreakdownOutside(e){
   if(e.target === document.getElementById('match-breakdown-modal')) closeMatchBreakdown();
@@ -13186,5 +13192,66 @@ function showSaveBanner(msg){
       height:32px!important;
       font-size:24px!important;
     }
+  }
+</style>
+
+<style id="final-mb-click-open-user-detail-20260627">
+  #match-breakdown-modal .ud-row{cursor:pointer;}
+  #match-breakdown-modal .ud-row:focus{outline:2px solid rgba(0,155,84,.35);outline-offset:-2px;}
+</style>
+
+<style id="final-match-breakdown-score-filter-size-20260627">
+  /* Modal “Puntos por participante”: filtros de palpites com a mesma linguagem visual das abas Lista/Análisis */
+  #match-breakdown-modal .ud-tabs.mb-score-filter{
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:10px 12px!important;
+    background:#fff!important;
+    border-bottom:1px solid rgba(0,0,0,.08)!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sflabel{
+    height:42px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:0 8px 0 0!important;
+    font-size:15px!important;
+    line-height:1!important;
+    font-weight:850!important;
+    color:var(--sub)!important;
+    background:#fff!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip{
+    height:42px!important;
+    min-height:42px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:7px!important;
+    padding:0 16px!important;
+    border-radius:999px!important;
+    font-size:15px!important;
+    line-height:1!important;
+    font-weight:850!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip .mb-sfn{
+    font-size:14px!important;
+    line-height:1!important;
+    font-weight:800!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+
+  #match-breakdown-modal .ud-tabs.mb-score-filter.mb-score-filter-fill .mb-sfchip{
+    flex:1 1 0!important;
+    min-width:0!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
   }
 </style>
