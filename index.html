@@ -8968,7 +8968,7 @@ function renderMatchBreakdown(){
     <button class="mb-nav-btn" onclick="navigateMbMatch(-1)" ${mbHasPrev ? '' : 'disabled'} aria-label="Partido anterior">‹</button>
     <div class="mb-summary-center">
       <div class="ud-summary-name">${nameLine}</div>
-      <div class="ud-summary-sub">${m.date} · ${m.phase}</div>
+      <div class="ud-summary-sub">${m.date} · ${m.time || ''} · ${m.phase}</div>
     </div>
     <button class="mb-nav-btn" onclick="navigateMbMatch(1)" ${mbHasNext ? '' : 'disabled'} aria-label="Próximo partido">›</button>`;
 
