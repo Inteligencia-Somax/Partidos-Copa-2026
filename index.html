@@ -14018,71 +14018,50 @@ function showSaveBanner(msg){
   }
 </style>
 
-<script id="edson-mb-score-filter-swipe-20260627-2227">
+<script id="edson-mb-game-swipe-20260627-2234">
 (function(){
-  if(window.__edsonMbScoreSwipeApplied) return;
+  /* Ajuste Edson: o gesto horizontal no modal "Puntos por participante" agora navega entre jogos,
+     igual às setas do topo. Não troca mais o filtro de palpites. */
   window.__edsonMbScoreSwipeApplied = true;
 
   var startX = 0;
   var startY = 0;
   var tracking = false;
-  var startedInMb = false;
 
   function isSwipeArea(el){
-    return !!(el && el.closest && el.closest('#match-breakdown-modal .ud-tabs.mb-score-filter, #match-breakdown-modal .ud-body'));
+    return !!(el && el.closest && el.closest(
+      '#match-breakdown-modal .ud-summary, #match-breakdown-modal .ud-tabs.mb-score-filter, #match-breakdown-modal .ud-body'
+    ));
   }
 
-  function isInteractiveButAllowed(el){
-    /* Botões dos filtros também podem receber swipe; demais botões/nav não. */
-    if(el && el.closest && el.closest('#match-breakdown-modal .ud-tabs.mb-score-filter')) return false;
+  function isInteractive(el){
+    /* Botões dos filtros continuam clicáveis, mas não comandam o swipe. */
     return !!(el && el.closest && el.closest('button, a, input, textarea, select'));
   }
 
-  function getScoreOptions(){
-    var buttons = Array.prototype.slice.call(document.querySelectorAll('#match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip'));
-    return buttons.map(function(btn){
-      var on = btn.getAttribute('onclick') || '';
-      var m = on.match(/setMbScoreFilter\((null|'[^']*'|\"[^\"]*\")\)/);
-      if(!m) return null;
-      if(m[1] === 'null') return null;
-      return m[1].slice(1, -1);
-    });
-  }
-
-  function goScoreFilter(dir){
-    if(typeof setMbScoreFilter !== 'function' || typeof mbState === 'undefined' || !mbState || !mbState.pending) return;
-    var options = getScoreOptions();
-    if(!options.length) return;
-    var current = mbState.filterScore || null;
-    var idx = options.indexOf(current);
-    if(idx < 0) idx = 0;
-    var next = idx + dir;
-    if(next < 0) next = 0;
-    if(next >= options.length) next = options.length - 1;
-    if(next === idx) return;
-    setMbScoreFilter(options[next]);
+  function goGame(dir){
+    if(typeof navigateMbMatch !== 'function') return;
+    navigateMbMatch(dir);
   }
 
   document.addEventListener('touchstart', function(e){
-    if(!isSwipeArea(e.target) || isInteractiveButAllowed(e.target) || !e.touches || e.touches.length !== 1) return;
+    if(!isSwipeArea(e.target) || isInteractive(e.target) || !e.touches || e.touches.length !== 1) return;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     tracking = true;
-    startedInMb = true;
   }, {passive:true});
 
   document.addEventListener('touchend', function(e){
-    if(!tracking || !startedInMb) return;
+    if(!tracking) return;
     tracking = false;
-    startedInMb = false;
     if(!e.changedTouches || e.changedTouches.length !== 1) return;
 
     var dx = e.changedTouches[0].clientX - startX;
     var dy = e.changedTouches[0].clientY - startY;
 
     if(Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
-    /* Arrastar para esquerda avança para o próximo filtro; para direita volta. */
-    goScoreFilter(dx < 0 ? 1 : -1);
+    /* Arrastar para esquerda vai ao próximo jogo; para direita volta ao jogo anterior. */
+    goGame(dx < 0 ? 1 : -1);
   }, {passive:true});
 })();
 </script>
