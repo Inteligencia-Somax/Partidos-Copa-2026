@@ -8586,7 +8586,7 @@ function renderUdPartidos(){
     }
 
     rows += `
-      <div class="ud-row ${isExact ? 'exact' : ''}" onclick="openMatchInfoFromUserDetail(${m.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMatchInfoFromUserDetail(${m.id})}">
+      <div class="ud-row ${m.x2 ? 'x2-game' : ''} ${isExact ? 'exact' : ''}" onclick="openMatchInfoFromUserDetail(${m.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMatchInfoFromUserDetail(${m.id})}">
         <div class="ud-match">
           <div class="ud-line-main">
             <span class="ud-teams"><span class="ud-team-name home">${m.hf || ''} ${m.home}</span> ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} <span class="ud-team-name away">${m.away} ${m.af || ''}</span></span>
@@ -12055,6 +12055,38 @@ body.edson-matches-bg #summary-modal .summary-header{
 }
 </style>
 
+
+
+<style id="ranking-decisiones-naranja-20260628">
+/* Ranking / detalle del jugador: en fase decisiva, cualquier acierto usa naranja.
+   Errores siguen rojos; fase de grupos sigue verde. */
+#user-detail-modal .ud-row.x2-game .ud-pts.win,
+#user-detail-modal .ud-row.x2-game .ud-sc-in,
+#user-detail-modal .ud-day-row.x2-game .ud-day-pts.win{
+  color:var(--gold)!important;
+}
+#user-detail-modal .ud-row.x2-game.exact{
+  background:rgba(245,158,11,.08)!important;
+}
+#user-detail-modal .ud-row.x2-game.exact .ud-pts.exact{
+  background:rgba(245,158,11,.13)!important;
+  color:var(--gold)!important;
+  border-color:rgba(245,158,11,.35)!important;
+}
+#user-detail-modal .ud-row.x2-game .ud-exact-tag{
+  background:rgba(245,158,11,.13)!important;
+  color:var(--gold)!important;
+  border-color:rgba(245,158,11,.35)!important;
+}
+#user-detail-modal .ud-row.x2-game .ud-mine-tag{
+  color:#8A5200!important;
+  border-color:rgba(245,158,11,.35)!important;
+  background:rgba(245,158,11,.10)!important;
+}
+#user-detail-modal .ud-row.x2-game .ud-most-tag{
+  color:#8A5200!important;
+}
+</style>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
