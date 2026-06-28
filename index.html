@@ -1500,6 +1500,14 @@ body{
 #match-breakdown-modal .ud-row.exact{border-radius:12px!important;}
 #match-breakdown-modal .mb-names{width:100%!important;box-sizing:border-box!important;margin:0!important;padding-right:14px!important;}
 #match-breakdown-modal .mb-name-row{grid-template-columns:minmax(0,1fr) 48px!important;width:100%!important;box-sizing:border-box!important;}
+/* Pontuação geral exibida no detalhe do jogo fechado, ainda sem resultado */
+#match-breakdown-modal .ud-pending-score{
+  font-size:12px;
+  font-weight:700;
+  color:var(--sub);
+  white-space:nowrap;
+}
+
 
 @media(max-width:430px){
   #summary-modal{padding:10px!important;}
@@ -8246,7 +8254,7 @@ function openMatchBreakdown(matchId){
     const pick = (allPicks[u.name] || {})[matchId];
     if(pick === undefined) return; // solo quienes palpitaron este partido
     const calc = calculatePickPoints(pick, real, m);
-    parts.push({ name:u.name, pos:idx + 1, pick, pts:calc.pts, type:calc.type });
+    parts.push({ name:u.name, pos:idx + 1, pick, pts:calc.pts, type:calc.type, totalScore:u.score });
   });
 
   const myPick = (allPicks[currentUser] || {})[matchId] || null;
@@ -8404,12 +8412,13 @@ function renderMatchBreakdown(){
           if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
           const rowCls = ['ud-row', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
+          const pendingScoreHtml = pending ? `<span class="ud-meta-sep">•</span><span class="ud-pending-score">${p.totalScore || 0} pts</span>` : '';
           return `
         <div class="${rowCls}" onclick="openUserDetailFromMb('${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
           <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
             <div class="ud-teams">${p.name}${nameTag}</div>
-            <div class="ud-meta"><span class="ud-pick-text">Palpite: ${p.pick.home}:${p.pick.away}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
+            <div class="ud-meta"><span class="ud-pick-text">Palpite: ${p.pick.home}:${p.pick.away}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}${pendingScoreHtml}</div>
           </div>
           <div class="${ptsCls}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
         </div>`;
