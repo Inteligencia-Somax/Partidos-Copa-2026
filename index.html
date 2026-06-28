@@ -2198,6 +2198,10 @@ body.somax-loading::after{
 body:not(.somax-loading) #somax-loader-dot{display:none;}
 @keyframes somaxLoaderSpin{to{transform:rotate(360deg);}}
 </style>
+
+<style id="edson-no-transition-scroll-20260628">
+html, body{scroll-behavior:auto!important;}
+</style>
 </head>
 <body class="somax-loading"><div id="somax-loader-dot" aria-hidden="true"></div><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
@@ -9471,21 +9475,10 @@ function switchTab(tab, btn){
     updateQuickFloatButtons();
   }
   if(tab === 'matches' && __previousTabBeforeSwitch && __previousTabBeforeSwitch !== 'matches'){
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=>{
-        setTimeout(()=>{
-          const target = document.getElementById('today-group') || document.querySelector('#matches-list .date-group, #matches-list .match-card');
-          if(!target) return;
-          const topbar = document.querySelector('.topbar');
-          const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height || 56) : 56;
-          const filterRow = document.querySelector('#panel-matches .filter-row');
-          const filterH = filterRow ? Math.round(filterRow.getBoundingClientRect().height || 0) : 0;
-          const y = target.getBoundingClientRect().top + window.pageYOffset - topbarH - filterH - 12;
-          edsonInstantScrollToY(y);
-          if(window.__edsonMatchesStickyFinalUpdate) setTimeout(window.__edsonMatchesStickyFinalUpdate, 220);
-        }, 90);
-      });
-    });
+    window.__somaxMatchesReturnTodayEnabled = true;
+    if(window.__edsonGoTodayInstant){
+      window.__edsonGoTodayInstant();
+    }
   }
   if(tab==='decepcion') renderDecepcion();
   if(tab==='admin'){
@@ -9601,6 +9594,36 @@ const APP_ANNOUNCEMENT = {
   `
 };
 
+
+function edsonGetTodayTarget(){
+  return document.getElementById('today-group') || document.querySelector('#matches-list .date-group, #matches-list .match-card');
+}
+
+function edsonScrollToTodayNow(){
+  const target = edsonGetTodayTarget();
+  if(!target) return;
+  const topbar = document.querySelector('.topbar');
+  const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height || 56) : 56;
+  const filterRow = document.querySelector('#panel-matches .filter-row');
+  const filterH = filterRow ? Math.round(filterRow.getBoundingClientRect().height || 0) : 0;
+  const y = target.getBoundingClientRect().top + window.pageYOffset - topbarH - filterH - 12;
+  edsonInstantScrollToY(y);
+  if(window.__edsonMatchesStickyFinalUpdate) window.__edsonMatchesStickyFinalUpdate();
+  if(window.updateQuickFloatButtons) window.updateQuickFloatButtons();
+}
+
+function edsonPrepareMatchesTodayInstant(){
+  window.__somaxMatchesReturnTodayEnabled = true;
+  const matchesPanel = document.getElementById('panel-matches');
+  if(!matchesPanel || !matchesPanel.classList.contains('active')){
+    try{ switchTab('matches', document.getElementById('tab-matches') || document.getElementById('nav-matches')); }catch(e){}
+  }
+  try{ filterMatches('all'); }catch(e){}
+  edsonScrollToTodayNow();
+  requestAnimationFrame(()=>edsonScrollToTodayNow());
+}
+window.__edsonGoTodayInstant = edsonPrepareMatchesTodayInstant;
+
 function maybeShowAnnouncement(){
   if(document.body.classList.contains('somax-loading')){
     window.__somaxPendingAnnouncement = true;
@@ -9612,6 +9635,7 @@ function maybeShowAnnouncement(){
   const bodyEl  = document.getElementById('announce-body');
   const modal   = document.getElementById('announce-modal');
   if(!titleEl || !bodyEl || !modal) return;
+  edsonPrepareMatchesTodayInstant();
   titleEl.textContent = a.title;
   bodyEl.innerHTML = a.html;
   modal.style.display = 'flex';
@@ -9627,22 +9651,7 @@ function scrollToTodayAfterAnnounce(){
     filterMatches('all');
   }catch(e){}
 
-  const run = ()=>{
-    const target = document.getElementById('today-group') || document.querySelector('#matches-list .date-group, #matches-list .match-card');
-    if(!target) return;
-
-    const topbar = document.querySelector('.topbar');
-    const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height || 56) : 56;
-    const filterRow = document.querySelector('#panel-matches .filter-row');
-    const filterH = filterRow ? Math.round(filterRow.getBoundingClientRect().height || 0) : 0;
-    const offset = topbarH + filterH + 12;
-    const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
-
-    edsonInstantScrollToY(y);
-    setTimeout(()=>{ if(window.__edsonMatchesStickyFinalUpdate) window.__edsonMatchesStickyFinalUpdate(); }, 180);
-  };
-
-  requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(run, 120)));
+  edsonPrepareMatchesTodayInstant();
 }
 
 function dismissAnnounce(){
@@ -11611,11 +11620,8 @@ function showSaveBanner(msg){
     const result = originalSwitchTab.apply(this, arguments);
 
     if(tab === 'matches' && previous !== 'matches' && window.__somaxMatchesReturnTodayEnabled){
-      requestAnimationFrame(function(){
-        requestAnimationFrame(function(){
-          setTimeout(scrollMatchesToTodayFixed, 80);
-        });
-      });
+      if(window.__edsonGoTodayInstant) window.__edsonGoTodayInstant();
+      else scrollMatchesToTodayFixed();
     }
     return result;
   };
