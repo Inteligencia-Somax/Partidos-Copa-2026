@@ -354,6 +354,15 @@ body{
   white-space:nowrap;
 }
 .mc-time{font-size:12px;font-weight:600;color:var(--text);}
+.mc-pid{
+  font-size:10px;font-weight:800;letter-spacing:.3px;
+  padding:1px 6px;border-radius:8px;margin-left:6px;
+  color:var(--blue);background:rgba(0,56,168,.1);
+  border:1px solid rgba(0,56,168,.18);vertical-align:middle;
+}
+.match-card.x2-game .mc-pid{
+  color:var(--gold);background:rgba(212,160,23,.14);border-color:rgba(212,160,23,.3);
+}
 .mc-phase{display:none;}
 .mc-dot{display:none;}
 .mc-badge{
@@ -668,6 +677,21 @@ body{
   text-align:center;
 }
 .modal-x2-note.show{display:block;}
+.modal-prorroga{
+  display:none;
+  margin:6px auto 0;
+  max-width:calc(100% - 36px);
+  padding:6px 12px;
+  border-radius:10px;
+  background:rgba(0,56,168,.07);
+  border:1px solid rgba(0,56,168,.15);
+  color:var(--blue);
+  font-size:11.5px;
+  font-weight:600;
+  text-align:center;
+  line-height:1.3;
+}
+.modal-prorroga b{font-weight:800;}
 .mcf-x2-note{
   display:none;
   text-align:center;
@@ -907,6 +931,23 @@ body{
   box-shadow:0 6px 24px rgba(0,155,84,.45);white-space:nowrap;
 }
 .save-banner.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Aviso central de palpite bloqueado */
+.locked-toast{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(.9);
+  background:#FFF7E6;color:#92400E;
+  border:2px solid #F59E0B;
+  padding:22px 28px;border-radius:20px;
+  font-family:'Inter',sans-serif;text-align:center;
+  opacity:0;transition:opacity .25s, transform .25s;
+  z-index:10000;pointer-events:none;
+  box-shadow:0 12px 40px rgba(0,0,0,.28);
+  max-width:300px;
+}
+.locked-toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+.locked-toast-icon{font-size:42px;line-height:1;margin-bottom:8px;}
+.locked-toast-msg{font-size:15px;font-weight:800;line-height:1.35;}
 
 /* ══ BOTTOM NAV ══ */
 .bottom-nav{
@@ -6217,6 +6258,7 @@ body{
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-time" id="modal-time">Jue 11 Jun · 16:00</div>
+    <div class="modal-prorroga" id="modal-prorroga">⚽ Resultado al final del <b>tiempo normal + prórroga</b> (sin penales)</div>
     <div class="modal-score-display">
       <div class="modal-team">
         <span class="modal-flag" id="modal-home-flag">🇲🇽</span>
@@ -6338,6 +6380,10 @@ body{
 
 <!-- SAVE BANNER -->
 <div class="save-banner" id="save-banner">🔓 Acceso administrador habilitado</div>
+<div class="locked-toast" id="locked-toast">
+  <div class="locked-toast-icon">🔒</div>
+  <div class="locked-toast-msg">Ya palpitaste este partido,<br>no se puede cambiar.</div>
+</div>
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
@@ -6405,6 +6451,22 @@ body{
   box-shadow:var(--shadow);
 }
 .filter-row .filter-chip.active{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* Barra de filtros fija al hacer scroll (sticky bajo el topbar) */
+#panel-matches .filter-row{
+  position:sticky;
+  top:56px;
+  z-index:150;
+  margin-bottom:12px;
+  padding:10px 0 8px;
+  /* el color de fondo se sincroniza por JS con el verde de la página */
+}
+#panel-matches .filter-row.stuck{
+  box-shadow:0 6px 14px rgba(0,0,0,.18);
+}
+@media(max-width:520px){
+  #panel-matches .filter-row{top:52px;}
+}
 
 /* Ajuste solicitado: no modal "Puntos por participante", remover a faixa cinza
    atrás das abas/filtros mantendo espaçamentos, tamanhos e funcionamento. */
@@ -7076,6 +7138,7 @@ function showApp(){
   switchTab('matches', document.getElementById('tab-matches'));
   filterMatches('all');
   requestAnimationFrame(()=>{ document.getElementById('today-group')?.scrollIntoView({block:'start'}); });
+  requestAnimationFrame(syncFilterStickyBg);
   renderRanking();
   updateCounts();
   updateRoleBasedNavigation();
@@ -7555,6 +7618,7 @@ function renderMatches(filter){
       card.innerHTML = `
         <div class="mc-top">
           <span class="mc-time">${m.time}</span>
+          ${m.phase && !/^Grupo/.test(m.phase) ? `<span class="mc-pid">P${m.id}</span>` : ''}
           <span class="mc-dot"></span>
           <span class="mc-phase">${m.phase}</span>
           ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge center wait">Esperando resultado</span>`}
@@ -7582,7 +7646,7 @@ function renderMatches(filter){
       card.addEventListener('click', ()=>{
         if(locked){ openMatchBreakdown(m.id); return; } // cerrado o finalizado: ver palpites de todos en orden de ranking
         if(hasPick){
-          showSaveBanner(' Ya palpitaste este partido, no se puede cambiar.');
+          showLockedToast('Ya palpitaste este partido,<br>no se puede cambiar.');
           return;
         }
         openModal(m.id);
@@ -7618,6 +7682,8 @@ function openModal(matchId){
 
   document.getElementById('modal-match-label').textContent = `${disp.home} vs ${disp.away}`;
   document.getElementById('modal-time').textContent = `${m.date.replace('.,','.')} · ${m.time}hs`;
+  const proro = document.getElementById('modal-prorroga');
+  if(proro) proro.style.display = (m.phase && !/^Grupo/.test(m.phase)) ? 'block' : 'none';
   document.getElementById('modal-home-flag').textContent = disp.hf;
   document.getElementById('modal-home-code').textContent = disp.hc||disp.home.substring(0,3).toUpperCase();
   document.getElementById('modal-away-flag').textContent = disp.af;
@@ -9309,6 +9375,36 @@ function setScoringMode(mode){
   document.getElementById('sm-decisiva')?.classList.toggle('active', x2);
   document.getElementById('rules-sm-grupos')?.classList.toggle('active', !x2);
   document.getElementById('rules-sm-decisiva')?.classList.toggle('active', x2);
+}
+// Sincroniza el fondo de la barra sticky de filtros con el verde real de la página
+// (el color lo pinta un ancestro, así que lo buscamos y lo copiamos para evitar costuras).
+function syncFilterStickyBg(){
+  const row=document.querySelector('#panel-matches .filter-row');
+  if(!row) return;
+  let el=row.parentElement, bg='';
+  while(el){
+    const c=getComputedStyle(el).backgroundColor;
+    if(c && c!=='rgba(0, 0, 0, 0)' && c!=='transparent'){ bg=c; break; }
+    el=el.parentElement;
+  }
+  if(bg) row.style.background=bg;
+  // sombra solo cuando está "pegada" arriba
+  const onScroll=()=>{
+    const topOffset = window.innerWidth<=520 ? 52 : 56;
+    const stuck = row.getBoundingClientRect().top <= topOffset + 0.5;
+    row.classList.toggle('stuck', stuck);
+  };
+  if(!row._stickyBound){ window.addEventListener('scroll', onScroll, {passive:true}); row._stickyBound=true; }
+  onScroll();
+}
+
+function showLockedToast(msg){
+  const t=document.getElementById('locked-toast');
+  if(!t) return;
+  t.querySelector('.locked-toast-msg').innerHTML = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),2200);
 }
 function showSaveBanner(msg){
   const b=document.getElementById('save-banner');
