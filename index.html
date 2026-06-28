@@ -370,6 +370,12 @@ body{
 /* Resultado / esperando resultado: texto preto con fondo gris */
 .mc-badge.center{color:var(--text);}
 .mc-badge.center.wait{color:var(--text);background:rgba(0,0,0,.05);border-color:var(--border);}
+/* Acerto exato: badge "Resultado X:Y" em verde com fundo verde */
+.match-card.exact-hit .mc-badge.center{
+  color:var(--green);
+  background:rgba(0,155,84,.12);
+  border-color:rgba(0,155,84,.30);
+}
 .mc-status.done{background:rgba(0,155,84,.1);color:var(--green);}
 .mc-status.zero{background:rgba(206,17,38,.1);color:var(--red);}
 .mc-status .mc-pts{font-size:16px;font-weight:900;}
@@ -11856,6 +11862,14 @@ body.edson-matches-bg #summary-modal .summary-header{
 .mc-status.zero .mc-pts{
   font-size:15px!important;
 }
+</style>
+
+<style id="mc-pts-bg-only-exact-20260628">
+/* Badge de pontos: fundo (pílula) verde só no acerto EXATO.
+   Acerto parcial fica só com o texto verde, e o zero perde o fundo vermelho. */
+.mc-status.done{background:transparent!important;}
+.match-card.exact-hit .mc-status.done{background:rgba(0,155,84,.1)!important;}
+.mc-status.zero{background:transparent!important;}
 </style>
 
 <style id="mc-status-as-number-20260628">
