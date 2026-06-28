@@ -12095,6 +12095,54 @@ body.edson-matches-bg #summary-modal .summary-header{
   color:#8A5200!important;
 }
 </style>
+
+
+<!-- AJUSTE FINAL EDSON: botões dos modais verdes e = Vos azul -->
+<style id="edson-final-botoes-verdes-vos-azul-20260628">
+  /* Botões/abas principais continuam verdes, inclusive em jogos de decisão */
+  #user-detail-modal.x2-mode .ud-tab.active,
+  #user-detail-modal .ud-tab.active,
+  #match-breakdown-modal.x2-mode .ud-tab.active,
+  #match-breakdown-modal .ud-tab.active,
+  #match-breakdown-modal.x2-mode .mb-sfchip.active,
+  #match-breakdown-modal .mb-sfchip.active,
+  #match-breakdown-modal .mb-toggle.active{
+    background:var(--green)!important;
+    border-color:var(--green)!important;
+    color:#fff!important;
+  }
+
+  #user-detail-modal.x2-mode .ud-tab.active svg,
+  #user-detail-modal .ud-tab.active svg,
+  #match-breakdown-modal.x2-mode .ud-tab.active svg,
+  #match-breakdown-modal .ud-tab.active svg,
+  #match-breakdown-modal .mb-toggle.active svg{
+    color:#fff!important;
+    stroke:currentColor!important;
+  }
+
+  /* O chip = Vos fica sempre azul e não herda o laranja das decisões */
+  #user-detail-modal .ud-mine-tag,
+  #user-detail-modal .ud-mine-tag.me,
+  #match-breakdown-modal .ud-mine-tag,
+  #match-breakdown-modal .ud-mine-tag.me,
+  #user-detail-modal.x2-mode .ud-mine-tag,
+  #user-detail-modal.x2-mode .ud-mine-tag.me,
+  #match-breakdown-modal.x2-mode .ud-mine-tag,
+  #match-breakdown-modal.x2-mode .ud-mine-tag.me{
+    background:rgba(0,56,168,.10)!important;
+    border-color:rgba(0,56,168,.25)!important;
+    color:var(--blue)!important;
+  }
+
+  /* Mantém o texto/placar do resultado em preto normal */
+  #user-detail-modal .ud-row.x2-game .ud-sc-in,
+  #user-detail-modal .ud-sc-in,
+  #match-breakdown-modal .ud-sc-in{
+    color:var(--text)!important;
+  }
+</style>
+
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
