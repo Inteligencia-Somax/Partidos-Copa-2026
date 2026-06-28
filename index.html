@@ -9382,6 +9382,8 @@ function closeAdminResultOutside(e){
 
 // ══ TABS ══
 function switchTab(tab, btn){
+  const __previousPanelBeforeSwitch = document.querySelector('.panel.active');
+  const __previousTabBeforeSwitch = (__previousPanelBeforeSwitch && __previousPanelBeforeSwitch.id) ? __previousPanelBeforeSwitch.id.replace('panel-','') : null;
   if((tab === 'decepcion' || tab === 'admin') && currentUserRole !== 'admin'){
     showSaveBanner('Acceso reservado');
     return;
@@ -9401,8 +9403,26 @@ function switchTab(tab, btn){
   } else {
     updateQuickFloatButtons();
   }
+  if(tab === 'matches' && __previousTabBeforeSwitch && __previousTabBeforeSwitch !== 'matches'){
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        setTimeout(()=>{
+          const target = document.getElementById('today-group') || document.querySelector('#matches-list .date-group, #matches-list .match-card');
+          if(!target) return;
+          const topbar = document.querySelector('.topbar');
+          const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height || 56) : 56;
+          const filterRow = document.querySelector('#panel-matches .filter-row');
+          const filterH = filterRow ? Math.round(filterRow.getBoundingClientRect().height || 0) : 0;
+          const y = target.getBoundingClientRect().top + window.pageYOffset - topbarH - filterH - 12;
+          window.scrollTo({top:Math.max(0,y), behavior:'smooth'});
+          if(window.__edsonMatchesStickyFinalUpdate) setTimeout(window.__edsonMatchesStickyFinalUpdate, 220);
+        }, 90);
+      });
+    });
+  }
   if(tab==='decepcion') renderDecepcion();
   if(tab==='admin'){
+
     if(adminUnlocked) showAdminArea();
     else setTimeout(()=>document.getElementById('admin-pass')?.focus(),100);
   }
