@@ -1783,6 +1783,61 @@ body{
 }
 </style>
 
+
+<style id="ajuste-ranking-medalha-exatos-20260627">
+/* Ranking: medalhas um pouco menores */
+#ranking-list .rank-card:not(.round-mode).top1 .rank-pos,
+#ranking-list .rank-card:not(.round-mode).top2 .rank-pos,
+#ranking-list .rank-card:not(.round-mode).top3 .rank-pos{
+  width:68px!important;
+  min-width:68px!important;
+  grid-template-columns:44px 18px!important;
+}
+
+#ranking-list .rank-card:not(.round-mode).top1 .rank-medal,
+#ranking-list .rank-card:not(.round-mode).top2 .rank-medal,
+#ranking-list .rank-card:not(.round-mode).top3 .rank-medal{
+  font-size:40px!important;
+}
+
+/* Ranking: selo de exactos menor, cinza e sem fundo verde */
+#ranking-list .rank-exact-badge,
+.rank-card:not(.round-mode) .rank-exact-badge{
+  background:#F3F4F6!important;
+  border:1px solid #E5E7EB!important;
+  color:#6B7280!important;
+  font-size:10.5px!important;
+  font-weight:800!important;
+  height:20px!important;
+  min-height:20px!important;
+  padding:2px 8px!important;
+}
+
+@media(max-width:430px){
+  #ranking-list .rank-card:not(.round-mode).top1 .rank-pos,
+  #ranking-list .rank-card:not(.round-mode).top2 .rank-pos,
+  #ranking-list .rank-card:not(.round-mode).top3 .rank-pos{
+    width:64px!important;
+    min-width:64px!important;
+    grid-template-columns:42px 18px!important;
+  }
+
+  #ranking-list .rank-card:not(.round-mode).top1 .rank-medal,
+  #ranking-list .rank-card:not(.round-mode).top2 .rank-medal,
+  #ranking-list .rank-card:not(.round-mode).top3 .rank-medal{
+    font-size:38px!important;
+  }
+
+  #ranking-list .rank-exact-badge,
+  .rank-card:not(.round-mode) .rank-exact-badge{
+    font-size:10px!important;
+    height:19px!important;
+    min-height:19px!important;
+    padding:2px 7px!important;
+  }
+}
+</style>
+
 </head>
 <body><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
