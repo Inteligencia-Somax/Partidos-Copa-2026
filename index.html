@@ -435,6 +435,30 @@ body{
 /* PY highlight */
 .match-card.py-game .mc-name.py{color:var(--red);font-weight:800;}
 
+
+/* Bloqueo de scroll cuando un modal está abierto */
+html.somax-modal-open,
+body.somax-modal-open{
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+}
+body.somax-modal-locked{
+  position:fixed!important;
+  left:0!important;
+  right:0!important;
+  width:100%!important;
+  overflow:hidden!important;
+  touch-action:none!important;
+}
+.modal-overlay{
+  overscroll-behavior:contain;
+  touch-action:none;
+}
+.modal-overlay .modal{
+  touch-action:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
 /* ══ NUMPAD MODAL ══ */
 .modal-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.5);
@@ -7240,6 +7264,7 @@ function openRecentSummaryModal(){
   if(!modal || !body) return;
   const ann = document.getElementById('announce-modal');
   if(ann) ann.style.display='none';
+  lockSomaxPageScroll();
   const html = recentSummaryHtml({share:false});
   body.innerHTML = html || `<div class="recent-summary-card"><div class="rs-title">Resumen reciente</div><div class="rs-msg warn" style="margin-top:8px;max-width:none;">Todavía no hay partidos apurados para mostrar.</div></div>`;
   modal.style.display='flex';
@@ -7247,6 +7272,7 @@ function openRecentSummaryModal(){
 function closeRecentSummaryModal(){
   const modal = document.getElementById('summary-modal');
   if(modal) modal.style.display='none';
+  unlockSomaxPageScroll();
 }
 function closeSummaryOutside(e){
   if(e.target === document.getElementById('summary-modal')) closeRecentSummaryModal();
@@ -9314,6 +9340,23 @@ function toggleUpdateNotice(){
 }
 
 // ══ COMUNICADO / ANUNCIO DE ENTRADA ══
+
+let somaxModalScrollY = 0;
+function lockSomaxPageScroll(){
+  if(document.body.classList.contains('somax-modal-locked')) return;
+  somaxModalScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  document.documentElement.classList.add('somax-modal-open');
+  document.body.classList.add('somax-modal-open','somax-modal-locked');
+  document.body.style.top = `-${somaxModalScrollY}px`;
+}
+function unlockSomaxPageScroll(){
+  if(!document.body.classList.contains('somax-modal-locked')) return;
+  document.documentElement.classList.remove('somax-modal-open');
+  document.body.classList.remove('somax-modal-open','somax-modal-locked');
+  document.body.style.top = '';
+  window.scrollTo(0, somaxModalScrollY || 0);
+}
+
 const APP_ANNOUNCEMENT = {
   id: 'alerta-mata-mata-puntos-dobles-20260628',
   title: '⚠️ Atención',
@@ -9339,16 +9382,27 @@ function maybeShowAnnouncement(){
   titleEl.textContent = a.title;
   bodyEl.innerHTML = a.html;
   modal.style.display = 'flex';
+  lockSomaxPageScroll();
 }
 
 function dismissAnnounce(){
   const modal = document.getElementById('announce-modal');
   if(modal) modal.style.display = 'none';
+  unlockSomaxPageScroll();
 }
 
 function closeAnnounceOutside(e){
   if(e.target === document.getElementById('announce-modal')) dismissAnnounce();
 }
+
+['announce-modal','summary-modal'].forEach(id=>{
+  const overlay = document.getElementById(id);
+  if(overlay){
+    overlay.addEventListener('touchmove', function(e){
+      if(e.target === overlay) e.preventDefault();
+    }, {passive:false});
+  }
+});
 
 // ── Toggle compacto del "Sistema de Puntuación" (grupos / decisiva) ──
 function setScoringMode(mode){
