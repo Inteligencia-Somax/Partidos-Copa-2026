@@ -1963,6 +1963,30 @@ body{
 }
 </style>
 
+
+<style id="ajuste-final-remover-grupo-header-modal-20260627">
+/* Remove apenas a informação do grupo no cabeçalho do modal de pontos */
+#match-breakdown-modal .modal-time .mc-phase,
+#match-breakdown-modal .modal-time .match-group,
+#match-breakdown-modal .modal-time .modal-group,
+#match-breakdown-modal .modal-time .group-label,
+#match-breakdown-modal .ud-rnav-sub .mc-phase,
+#match-breakdown-modal .ud-rnav-sub .match-group,
+#match-breakdown-modal .ud-rnav-sub .modal-group,
+#match-breakdown-modal .ud-rnav-sub .group-label{
+  display:none!important;
+}
+</style>
+
+
+<style id="ajuste-final-meus-pontos-verde-ranking-20260627">
+/* Ranking: somente no meu card, deixa pontuação e texto "puntos" em verde */
+#ranking-list .rank-card#my-rank-card .rank-pts,
+#ranking-list .rank-card#my-rank-card .rank-pts-label{
+  color:var(--green)!important;
+}
+</style>
+
 </head>
 <body><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
