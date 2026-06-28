@@ -7794,18 +7794,22 @@ function renderMatches(filter){
       const hasBreakdown = locked; // cerrado o finalizado → se pueden ver los palpites de todos
       const detailI = hasBreakdown ? '<svg class="detail-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg>' : '';
       const disp = matchDisplay(m, realResults, standings);
+      const pidTag = (m.phase && !/^Grupo/.test(m.phase)) ? `P${m.id}` : '';
+      const statusLabel = locked ? 'Cerrado' : (hasPick ? 'Palpitado' : 'Pendiente');
       card.innerHTML = `
         <div class="mc-top">
           <span class="mc-time">${m.time}</span>
-          ${m.phase && !/^Grupo/.test(m.phase) ? `<span class="mc-top-dot">·</span><span class="mc-pid">P${m.id}</span>` : ''}
+          ${real && pidTag ? `<span class="mc-top-dot">·</span><span class="mc-pid">${pidTag}</span>` : ''}
           <span class="mc-dot"></span>
           <span class="mc-phase">${m.phase}</span>
-          ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge center wait">Esperando resultado</span>`}
+          ${real
+            ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>`
+            : `<span class="mc-badge center wait">${statusLabel}</span>`}
           <div style="flex:1"></div>
           ${detailI}
-          <span class="mc-status ${statusCls}">
-            ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? ' Cerrado' : (hasPick ? 'Palpitado' : 'Pendiente'))}
-          </span>
+          ${real
+            ? `<span class="mc-status ${statusCls}"><span class="mc-pts">${points} pts</span></span>`
+            : `<span class="mc-status ${statusCls} mc-asnum">${pidTag}</span>`}
         </div>
         <div class="mc-teams">
           <div class="mc-team">
@@ -11732,6 +11736,20 @@ body.edson-matches-bg #summary-modal .summary-header{
   opacity:.7;
 }
 </style>
+<style id="mc-status-as-number-20260628">
+/* Jogos sem resultado: a "etiqueta" da direita vira só o número do jogo (texto simples).
+   Mantém a classe palp/pending/closed para o seletor :has() seguir pintando a borda do placar. */
+.mc-status.mc-asnum{
+  background:none!important;
+  border:none!important;
+  padding:0!important;
+  color:var(--text)!important;
+  font-size:12px!important;
+  font-weight:600!important;
+  gap:0!important;
+}
+</style>
+
 <style id="rank-pos-name-gap-match-20260628">
 /* Espaçamento colocação -> nome igual ao espaçamento borda -> colocação (= padding lateral).
    - número ancorado à esquerda: começa sempre na mesma distância da borda (1 ou 2 dígitos);
