@@ -11696,6 +11696,44 @@ body.edson-matches-bg #summary-modal .summary-header{
   background:var(--green)!important;
 }
 </style>
+
+<style id="rank-exactos-fonte-separador-20260628">
+/* Ranking: exactos com a mesma fonte discreta do texto de palpite e separador antes da forma */
+#ranking-list .rank-detail{
+  gap:0!important;
+}
+#ranking-list .rank-exact-badge,
+#ranking-list .rank-card:not(.round-mode) .rank-exact-badge,
+.rank-card .rank-exact-badge{
+  font-family:'Inter',sans-serif!important;
+  font-size:12px!important;
+  font-weight:500!important;
+  color:var(--sub)!important;
+  background:transparent!important;
+  border:none!important;
+  padding:0!important;
+  border-radius:0!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+}
+#ranking-list .rank-exact-badge + .form-dots,
+.rank-card .rank-exact-badge + .form-dots{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:3px!important;
+  margin-left:8px!important;
+}
+#ranking-list .rank-exact-badge + .form-dots::before,
+.rank-card .rank-exact-badge + .form-dots::before{
+  content:'•';
+  color:var(--sub);
+  font-size:13px;
+  font-weight:600;
+  line-height:1;
+  margin-right:5px;
+  opacity:.7;
+}
+</style>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
