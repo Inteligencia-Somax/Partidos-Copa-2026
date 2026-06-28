@@ -16332,3 +16332,265 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     color:var(--blue)!important;
   }
 </style>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     AUDITORÍA DE PALPITES (regla 30 min) — solo página de Admin
+     Bloque autocontenido: pegar UNA vez antes de </body> (o al final).
+     Inyecta un botón en el panel Admin y abre un modal de auditoría.
+     ════════════════════════════════════════════════════════════════ -->
+<style id="edson-audit-palpites-30min">
+  /* Botón de entrada dentro del panel Admin */
+  #audit-open-card{
+    background:linear-gradient(135deg,#0A2A6E,#0D3A8A);
+    border-radius:var(--radius,16px);
+    padding:16px;margin:0 0 14px;
+    box-shadow:var(--shadow,0 2px 12px rgba(0,0,0,.1));
+  }
+  #audit-open-card h3{color:#fff;font-size:15px;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:7px;}
+  #audit-open-card p{color:rgba(255,255,255,.78);font-size:12.5px;line-height:1.45;margin:0 0 12px;}
+  #audit-open-btn{
+    width:100%;border:none;border-radius:12px;cursor:pointer;
+    background:#F59E0B;color:#1a1205;font-family:inherit;font-weight:800;
+    font-size:14px;padding:12px 14px;display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  #audit-open-btn:active{transform:scale(.99);}
+
+  /* Modal */
+  #audit-modal{position:fixed;inset:0;z-index:600;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.55);padding:14px;animation:fadeIn .2s;}
+  #audit-modal .aud-card{background:var(--white,#fff);border-radius:20px;width:100%;max-width:480px;
+    max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  #audit-modal .aud-head{background:#0A2A6E;color:#fff;padding:15px 16px;display:flex;align-items:center;gap:10px;}
+  #audit-modal .aud-head h3{font-size:15px;font-weight:800;margin:0;flex:1;line-height:1.2;}
+  #audit-modal .aud-close{background:rgba(255,255,255,.2);color:#fff;border:none;width:30px;height:30px;
+    border-radius:50%;font-size:15px;cursor:pointer;flex-shrink:0;line-height:1;}
+  #audit-modal .aud-sub{font-size:11.5px;color:#5F4300;background:#FFF8E1;border-bottom:1px solid #F0C14B;
+    padding:9px 16px;line-height:1.4;}
+  #audit-modal .aud-sub b{color:#92400E;}
+
+  /* Resumen */
+  #audit-modal .aud-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:12px 14px 4px;}
+  #audit-modal .aud-stat{background:var(--bg,#F5F5F7);border:1px solid var(--border,#E8E8EC);border-radius:10px;
+    padding:8px 4px;text-align:center;}
+  #audit-modal .aud-stat .v{font-size:18px;font-weight:900;line-height:1;}
+  #audit-modal .aud-stat .l{font-size:9.5px;font-weight:700;color:var(--sub,#6B7280);margin-top:3px;
+    text-transform:uppercase;letter-spacing:.3px;}
+  #audit-modal .aud-stat.ok .v{color:var(--green,#009B54);}
+  #audit-modal .aud-stat.bad .v{color:var(--red,#CE1126);}
+  #audit-modal .aud-stat.nd .v{color:var(--sub,#6B7280);}
+
+  /* Controles */
+  #audit-modal .aud-controls{display:flex;gap:7px;padding:8px 14px 10px;flex-wrap:wrap;}
+  #audit-modal .aud-controls button{flex:1;min-width:120px;border:1px solid var(--border,#E8E8EC);
+    background:var(--white,#fff);color:var(--text,#111);font-family:inherit;font-weight:700;font-size:12px;
+    border-radius:20px;padding:8px 10px;cursor:pointer;white-space:nowrap;}
+  #audit-modal .aud-controls button.active{background:var(--red,#CE1126);border-color:var(--red,#CE1126);color:#fff;}
+  #audit-modal .aud-controls button.ghost.active{background:#0A2A6E;border-color:#0A2A6E;color:#fff;}
+
+  /* Lista */
+  #audit-modal .aud-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 12px 16px;flex:1;}
+  #audit-modal .aud-game{border:1px solid var(--border,#E8E8EC);border-radius:14px;margin-bottom:10px;overflow:hidden;background:var(--white,#fff);}
+  #audit-modal .aud-game.has-bad{border-color:rgba(206,17,38,.45);}
+  #audit-modal .aud-ghead{display:flex;align-items:center;gap:8px;padding:11px 12px;cursor:pointer;background:var(--bg,#F5F5F7);}
+  #audit-modal .aud-ghead .aud-when{font-size:11px;font-weight:700;color:var(--sub,#6B7280);}
+  #audit-modal .aud-ghead .aud-teams{font-size:13px;font-weight:800;color:var(--text,#111);line-height:1.25;margin-top:1px;}
+  #audit-modal .aud-ghead .aud-gmeta{flex:1;min-width:0;}
+  #audit-modal .aud-badges{display:flex;gap:5px;align-items:center;flex-shrink:0;}
+  #audit-modal .aud-pill{font-size:10.5px;font-weight:800;padding:3px 7px;border-radius:20px;line-height:1;white-space:nowrap;}
+  #audit-modal .aud-pill.cnt{background:rgba(10,42,110,.1);color:#0A2A6E;}
+  #audit-modal .aud-pill.bad{background:rgba(206,17,38,.12);color:var(--red,#CE1126);}
+  #audit-modal .aud-chev{font-size:12px;color:var(--sub,#6B7280);transition:transform .2s;flex-shrink:0;}
+  #audit-modal .aud-game.open .aud-chev{transform:rotate(180deg);}
+  #audit-modal .aud-rows{display:none;padding:4px 8px 8px;}
+  #audit-modal .aud-game.open .aud-rows{display:block;}
+  #audit-modal .aud-deadline{font-size:10.5px;color:var(--sub,#6B7280);font-weight:600;padding:6px 6px 8px;border-bottom:1px dashed var(--border,#E8E8EC);margin-bottom:6px;}
+  #audit-modal .aud-deadline b{color:var(--text,#111);}
+
+  #audit-modal .aud-row{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;
+    padding:8px 8px;border-radius:10px;}
+  #audit-modal .aud-row+.aud-row{margin-top:3px;}
+  #audit-modal .aud-row.ok{background:rgba(0,155,84,.06);}
+  #audit-modal .aud-row.warn,#audit-modal .aud-row.late{background:rgba(206,17,38,.07);}
+  #audit-modal .aud-row.nodata{background:rgba(107,114,128,.08);}
+  #audit-modal .aud-rname{font-size:13px;font-weight:700;color:var(--text,#111);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #audit-modal .aud-rpick{font-size:11px;font-weight:700;color:var(--sub,#6B7280);}
+  #audit-modal .aud-rtime{font-size:11px;color:var(--sub,#6B7280);font-weight:600;grid-column:1 / -1;line-height:1.35;}
+  #audit-modal .aud-rtime b{color:var(--text,#111);}
+  #audit-modal .aud-status{justify-self:end;font-size:10.5px;font-weight:800;padding:4px 8px;border-radius:20px;line-height:1;white-space:nowrap;text-align:center;}
+  #audit-modal .aud-status.ok{background:rgba(0,155,84,.14);color:var(--green,#009B54);}
+  #audit-modal .aud-status.warn,#audit-modal .aud-status.late{background:rgba(206,17,38,.14);color:var(--red,#CE1126);}
+  #audit-modal .aud-status.nodata{background:rgba(107,114,128,.14);color:var(--sub,#6B7280);}
+  #audit-modal .aud-empty{text-align:center;padding:40px 20px;color:var(--sub,#6B7280);font-size:13px;font-weight:600;}
+</style>
+
+<div id="audit-modal" onclick="if(event.target===this)closeAuditModal()">
+  <div class="aud-card">
+    <div class="aud-head">
+      <h3>🕵️ Auditoría de palpites</h3>
+      <button class="aud-close" onclick="closeAuditModal()">✕</button>
+    </div>
+    <div class="aud-sub">Regla: el palpite vale solo si fue hecho <b>30 min o más</b> antes del inicio. Aquí ves la <b>hora del partido</b> y la <b>hora del palpite</b> de cada participante para verificarlo.</div>
+    <div class="aud-summary" id="aud-summary"></div>
+    <div class="aud-controls">
+      <button id="aud-filter-all" class="active" onclick="auditSetFilter('all')">Todos</button>
+      <button id="aud-filter-bad" onclick="auditSetFilter('bad')">⚠ Solo sospechosos</button>
+      <button id="aud-toggle-all" class="ghost" onclick="auditToggleAll()">Expandir todo</button>
+    </div>
+    <div class="aud-body" id="aud-body"></div>
+  </div>
+</div>
+
+<script id="edson-audit-palpites-js">
+(function(){
+  var auditFilter = 'all';
+  var auditAllOpen = false;
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function toBRT(d){ return new Date(d.getTime() - 3*60*60*1000); }
+  function fmtBRT(d){ var b=toBRT(d); return pad(b.getUTCDate())+'/'+pad(b.getUTCMonth()+1)+' '+pad(b.getUTCHours())+':'+pad(b.getUTCMinutes()); }
+  function fmtDur(mins){ var a=Math.abs(Math.round(mins)),h=Math.floor(a/60),m=a%60; return h>0?(h+'h '+m+'min'):(m+'min'); }
+
+  // Resuelve nombres de equipos (mata-mata) si el helper existe; si no, usa los del MATCHES.
+  function dispTeams(m){
+    try{
+      if(typeof matchDisplay==='function' && typeof loadRealResults==='function' && typeof computeStandings==='function'){
+        var r=loadRealResults(); var d=matchDisplay(m, r, computeStandings(r));
+        return { hf:d.hf||'', home:d.home||m.home, af:d.af||'', away:d.away||m.away };
+      }
+    }catch(e){}
+    return { hf:m.hf||'', home:m.home, af:m.af||'', away:m.away };
+  }
+
+  function getPicks(){
+    if(typeof allPicks==='object' && allPicks) return allPicks;
+    try{ return JSON.parse(localStorage.getItem('somax_all_picks')||'{}'); }catch(e){ return {}; }
+  }
+
+  function buildAudit(){
+    if(typeof MATCHES==='undefined' || typeof getMatchDateTime!=='function') return [];
+    var picks=getPicks();
+    var sorted=MATCHES.slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});
+    var games=[];
+    sorted.forEach(function(m){
+      var kick=getMatchDateTime(m);
+      var limit=new Date(kick.getTime()-30*60*1000);
+      var entries=[];
+      Object.keys(picks).forEach(function(name){
+        var p=picks[name] && picks[name][m.id];
+        if(!p || p.home==null || p.away==null) return;
+        var status='nodata', mins=null, sd=null;
+        if(p.savedAt){ var t=new Date(p.savedAt); if(!isNaN(t.getTime())){ sd=t; mins=(kick-t)/60000; status = sd<limit?'ok':(sd<kick?'warn':'late'); } }
+        entries.push({name:name,home:p.home,away:p.away,sd:sd,mins:mins,status:status});
+      });
+      if(!entries.length) return;
+      var rank=function(s){return s==='late'?0:s==='warn'?1:s==='nodata'?2:3;};
+      entries.sort(function(a,b){ return rank(a.status)-rank(b.status) || ((a.sd?a.sd.getTime():0)-(b.sd?b.sd.getTime():0)); });
+      games.push({m:m,kick:kick,limit:limit,entries:entries});
+    });
+    return games;
+  }
+
+  function statusLabel(s){ return s==='ok'?'✅ OK':s==='warn'?'🚨 Menos de 30m':s==='late'?'⛔ Después':'❓ Sin dato'; }
+
+  window.renderAudit = function(){
+    var games=buildAudit();
+    var body=document.getElementById('aud-body');
+    var sumEl=document.getElementById('aud-summary');
+    if(!body||!sumEl) return;
+
+    var tot=0,ok=0,bad=0,nd=0;
+    games.forEach(function(g){ g.entries.forEach(function(e){ tot++; if(e.status==='ok')ok++; else if(e.status==='nodata')nd++; else bad++; }); });
+
+    sumEl.innerHTML =
+      '<div class="aud-stat"><div class="v">'+tot+'</div><div class="l">Palpites</div></div>'+
+      '<div class="aud-stat ok"><div class="v">'+ok+'</div><div class="l">OK</div></div>'+
+      '<div class="aud-stat bad"><div class="v">'+bad+'</div><div class="l">Sospech.</div></div>'+
+      '<div class="aud-stat nd"><div class="v">'+nd+'</div><div class="l">Sin dato</div></div>';
+
+    var shown = games.filter(function(g){ return auditFilter!=='bad' || g.entries.some(function(e){return e.status==='warn'||e.status==='late';}); });
+    if(!shown.length){ body.innerHTML='<div class="aud-empty">'+(auditFilter==='bad'?'✅ Ningún palpite sospechoso. Todos respetaron los 30 min.':'Todavía no hay palpites cargados para auditar.')+'</div>'; return; }
+
+    var html='';
+    shown.forEach(function(g){
+      var d=dispTeams(g.m);
+      var gbad=g.entries.filter(function(e){return e.status==='warn'||e.status==='late';}).length;
+      var rows=g.entries.filter(function(e){ return auditFilter!=='bad' || e.status==='warn'||e.status==='late'; });
+      var openCls = (auditAllOpen || gbad>0) ? ' open' : '';
+      html+=''+
+      '<div class="aud-game'+(gbad>0?' has-bad':'')+openCls+'" id="audg-'+g.m.id+'">'+
+        '<div class="aud-ghead" onclick="auditToggleGame('+g.m.id+')">'+
+          '<div class="aud-gmeta">'+
+            '<div class="aud-when">'+esc(g.m.date)+' · '+esc(g.m.time)+' · '+esc(g.m.phase)+'</div>'+
+            '<div class="aud-teams">'+esc(d.hf)+' '+esc(d.home)+' <span style="color:var(--sub,#6B7280)">x</span> '+esc(d.away)+' '+esc(d.af)+'</div>'+
+          '</div>'+
+          '<div class="aud-badges">'+
+            '<span class="aud-pill cnt">'+g.entries.length+' 👤</span>'+
+            (gbad>0?'<span class="aud-pill bad">'+gbad+' ⚠</span>':'')+
+            '<span class="aud-chev">▾</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="aud-rows">'+
+          '<div class="aud-deadline">Inicio: <b>'+esc(g.m.time)+'</b> (BRT) · Límite para palpitar: <b>'+fmtBRT(g.limit)+'</b> (30 min antes)</div>'+
+          rows.map(function(e){
+            var when = e.sd ? fmtBRT(e.sd) : '—';
+            var marg = (e.mins==null)?'sin marca de tiempo':(e.mins>=0?(fmtDur(e.mins)+' antes del inicio'):(fmtDur(e.mins)+' DESPUÉS del inicio'));
+            return '<div class="aud-row '+e.status+'">'+
+              '<div class="aud-rname">'+esc(e.name)+'</div>'+
+              '<div class="aud-status '+e.status+'">'+statusLabel(e.status)+'</div>'+
+              '<div class="aud-rtime">Palpite: <b>'+e.home+'-'+e.away+'</b> · enviado <b>'+when+'</b> · '+marg+'</div>'+
+            '</div>';
+          }).join('')+
+        '</div>'+
+      '</div>';
+    });
+    body.innerHTML=html;
+  };
+
+  window.auditToggleGame = function(id){ var el=document.getElementById('audg-'+id); if(el) el.classList.toggle('open'); };
+  window.auditToggleAll = function(){
+    auditAllOpen=!auditAllOpen;
+    var btn=document.getElementById('aud-toggle-all');
+    if(btn){ btn.textContent=auditAllOpen?'Colapsar todo':'Expandir todo'; btn.classList.toggle('active',auditAllOpen); }
+    document.querySelectorAll('#aud-body .aud-game').forEach(function(g){ g.classList.toggle('open',auditAllOpen); });
+  };
+  window.auditSetFilter = function(f){
+    auditFilter=f;
+    var a=document.getElementById('aud-filter-all'), b=document.getElementById('aud-filter-bad');
+    if(a) a.classList.toggle('active',f==='all');
+    if(b) b.classList.toggle('active',f==='bad');
+    window.renderAudit();
+  };
+
+  window.openAuditModal = function(){
+    var mod=document.getElementById('audit-modal'); if(!mod) return;
+    window.renderAudit();
+    mod.style.display='flex';
+    document.body.style.overflow='hidden';
+  };
+  window.closeAuditModal = function(){
+    var mod=document.getElementById('audit-modal'); if(!mod) return;
+    mod.style.display='none';
+    document.body.style.overflow='';
+  };
+
+  // Inyecta el botón de acceso dentro del panel Admin.
+  function injectBtn(){
+    var area=document.getElementById('admin-area');
+    if(!area || document.getElementById('audit-open-card')) return;
+    var card=document.createElement('div');
+    card.id='audit-open-card';
+    card.innerHTML='<h3>🕵️ Auditoría de palpites</h3>'+
+      '<p>Verificá, partido por partido, quién palpitó y a qué hora — para confirmar que cada palpite fue hecho 30 min o más antes del inicio.</p>'+
+      '<button id="audit-open-btn" onclick="openAuditModal()">Abrir auditoría (regla 30 min)</button>';
+    var filterRow=area.querySelector('.filter-row');
+    if(filterRow) area.insertBefore(card, filterRow);
+    else area.insertBefore(card, area.firstChild);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', injectBtn);
+  else injectBtn();
+  // Reintento por si el panel se monta tarde.
+  setTimeout(injectBtn, 1200);
+})();
+</script>
