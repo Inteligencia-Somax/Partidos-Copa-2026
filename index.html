@@ -351,15 +351,18 @@ body{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   white-space:nowrap;
 }
-.mc-time{font-size:12px;font-weight:600;color:var(--text);}
+.mc-time,.mc-pid{
+  font-size:12px;font-weight:600;color:var(--text);line-height:1;
+}
 .mc-pid{
-  font-size:10px;font-weight:800;letter-spacing:.3px;
-  padding:1px 6px;border-radius:8px;margin-left:6px;
-  color:var(--blue);background:rgba(0,56,168,.1);
-  border:1px solid rgba(0,56,168,.18);vertical-align:middle;
+  letter-spacing:0;padding:0;margin-left:0;
+  background:none;border:none;border-radius:0;vertical-align:baseline;
+}
+.mc-top-dot{
+  font-size:12px;font-weight:600;color:var(--sub);line-height:1;
 }
 .match-card.x2-game .mc-pid{
-  color:var(--gold);background:rgba(212,160,23,.14);border-color:rgba(212,160,23,.3);
+  color:var(--text);background:none;border-color:transparent;
 }
 .mc-phase{display:none;}
 .mc-dot{display:none;}
@@ -677,19 +680,19 @@ body{
 .modal-x2-note.show{display:block;}
 .modal-prorroga{
   display:none;
-  margin:6px auto 0;
-  max-width:calc(100% - 36px);
-  padding:6px 12px;
-  border-radius:10px;
-  background:rgba(0,56,168,.07);
-  border:1px solid rgba(0,56,168,.15);
-  color:var(--blue);
-  font-size:11.5px;
+  margin:8px auto 8px;
+  max-width:calc(100% - 40px);
+  padding:9px 11px;
+  border-radius:12px;
+  background:rgba(245,158,11,.12);
+  border:1px solid rgba(245,158,11,.35);
+  color:#92400E;
+  font-size:13px;
   font-weight:600;
   text-align:center;
-  line-height:1.3;
+  line-height:1.35;
 }
-.modal-prorroga b{font-weight:800;}
+.modal-prorroga b{font-weight:800;color:#92400E;}
 .mcf-x2-note{
   display:none;
   text-align:center;
@@ -6256,7 +6259,7 @@ body{
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-time" id="modal-time">Jue 11 Jun · 16:00</div>
-    <div class="modal-prorroga" id="modal-prorroga">⚽ Resultado al final del <b>tiempo normal + prórroga</b> (sin penales)</div>
+    <div class="modal-prorroga" id="modal-prorroga">Resultado al final del <b>tiempo normal + prórroga</b> (sin penales)</div>
     <div class="modal-score-display">
       <div class="modal-team">
         <span class="modal-flag" id="modal-home-flag">🇲🇽</span>
@@ -7616,7 +7619,7 @@ function renderMatches(filter){
       card.innerHTML = `
         <div class="mc-top">
           <span class="mc-time">${m.time}</span>
-          ${m.phase && !/^Grupo/.test(m.phase) ? `<span class="mc-pid">P${m.id}</span>` : ''}
+          ${m.phase && !/^Grupo/.test(m.phase) ? `<span class="mc-top-dot">·</span><span class="mc-pid">P${m.id}</span>` : ''}
           <span class="mc-dot"></span>
           <span class="mc-phase">${m.phase}</span>
           ${real ? `<span class="mc-badge center">Resultado ${resultLabel(real)}</span>` : `<span class="mc-badge center wait">Esperando resultado</span>`}
