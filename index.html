@@ -9397,7 +9397,7 @@ function switchTab(tab, btn){
   if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin' || tab === 'decepcion') ? 'none' : '';
   if(tab==='ranking'){
     renderRanking();
-    requestAnimationFrame(()=>{ document.getElementById('my-rank-card')?.scrollIntoView({block:'center'}); updateQuickFloatButtons(); });
+    requestAnimationFrame(()=>{ const me=document.getElementById('my-rank-card'); me?.scrollIntoView({block:'center'}); updateQuickFloatButtons(); setTimeout(spotlightMyRankCard, 260); });
   } else {
     updateQuickFloatButtons();
   }
@@ -9410,6 +9410,21 @@ function switchTab(tab, btn){
 
 
 
+
+function spotlightMyRankCard(){
+  const rankingOn = document.getElementById('panel-ranking')?.classList.contains('active');
+  const card = document.getElementById('my-rank-card');
+  const layer = document.getElementById('rank-spotlight-layer');
+  if(!rankingOn || !card || !layer) return;
+  clearTimeout(window.__rankSpotlightTimer);
+  layer.classList.add('active');
+  card.classList.add('rank-spotlight-me');
+  window.__rankSpotlightTimer = setTimeout(()=>{
+    layer.classList.remove('active');
+    card.classList.remove('rank-spotlight-me');
+  }, 1500);
+}
+
 // ══ BOTÕES FLUTUANTES: TOPO / EU ══
 function isRankingActive(){
   return document.getElementById('panel-ranking')?.classList.contains('active');
@@ -9421,7 +9436,7 @@ function quickScrollTop(){
 function quickScrollMe(){
   const me = document.getElementById('my-rank-card');
   if(me) me.scrollIntoView({block:'center', behavior:'smooth'});
-  setTimeout(updateQuickFloatButtons, 420);
+  setTimeout(()=>{ updateQuickFloatButtons(); spotlightMyRankCard(); }, 420);
 }
 function updateQuickFloatButtons(){
   const topBtn = document.getElementById('quick-top-btn');
@@ -9558,8 +9573,10 @@ function dismissAnnounceToRanking(){
     switchTab('ranking', document.getElementById('tab-ranking') || document.getElementById('nav-ranking'));
   }catch(e){}
   setTimeout(()=>{
-    document.getElementById('my-rank-card')?.scrollIntoView({block:'center', behavior:'smooth'});
+    const me=document.getElementById('my-rank-card');
+    me?.scrollIntoView({block:'center', behavior:'smooth'});
     updateQuickFloatButtons?.();
+    setTimeout(spotlightMyRankCard, 420);
   }, 180);
 }
 
@@ -11513,6 +11530,39 @@ function showSaveBanner(msg){
   };
 })();
 </script>
+
+
+<style id="ajuste-ranking-spotlight-eu-20260628">
+/* Spotlight temporário no ranking: escurece o fundo e destaca somente o card do usuário */
+.rank-spotlight-layer{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.56);
+  opacity:0;
+  pointer-events:none;
+  z-index:255;
+  transition:opacity .22s ease;
+}
+.rank-spotlight-layer.active{opacity:1;}
+#ranking-list .rank-card.rank-spotlight-me{
+  position:relative!important;
+  z-index:280!important;
+  background:#fff!important;
+  transform:scale(1.015);
+  animation:rankSpotlightPulse 1.15s ease-in-out 1;
+  box-shadow:0 10px 34px rgba(0,0,0,.38),0 0 0 3px rgba(0,155,84,.42),0 0 28px rgba(0,155,84,.72)!important;
+}
+@keyframes rankSpotlightPulse{
+  0%{transform:scale(1);}
+  35%{transform:scale(1.025);}
+  70%{transform:scale(1.012);}
+  100%{transform:scale(1.015);}
+}
+@media (prefers-reduced-motion:reduce){
+  #ranking-list .rank-card.rank-spotlight-me{animation:none;transform:none;}
+}
+</style>
+<div id="rank-spotlight-layer" class="rank-spotlight-layer" aria-hidden="true"></div>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
