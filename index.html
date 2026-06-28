@@ -11637,6 +11637,20 @@ function showSaveBanner(msg){
 }
 </style>
 <div id="rank-spotlight-layer" class="rank-spotlight-layer" aria-hidden="true"></div>
+
+<style id="edson-modal-overlay-fix-20260628">
+/* Mantém o fundo do aviso escuro e o card branco, mesmo com a aba Partidas usando fundo verde. */
+body.edson-matches-bg .modal-overlay{
+  background:rgba(0,0,0,.55)!important;
+}
+body.edson-matches-bg .modal-overlay .modal{
+  background:var(--white)!important;
+}
+body.edson-matches-bg #announce-modal .announce-header,
+body.edson-matches-bg #summary-modal .summary-header{
+  background:var(--green)!important;
+}
+</style>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
