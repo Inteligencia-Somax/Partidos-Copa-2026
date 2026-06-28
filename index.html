@@ -8264,7 +8264,12 @@ function renderRanking(){
     const upicks = all[u.name] || {};
     const dots = recent5.map(m=>{
       const pts = calculatePickPoints(upicks[m.id], realResults[m.id], m).pts;
-      return `<span class="fd ${pts>0?'win':'miss'}"></span>`;
+      // Forma dos últimos jogos:
+      // - fase de grupos: pontuou = verde
+      // - fase decisiva/mata-mata: pontuou = laranja
+      // - não pontuou: vermelho
+      const dotClass = pts > 0 ? (isX2Match(m) ? 'x2win' : 'win') : 'miss';
+      return `<span class="fd ${dotClass}"></span>`;
     }).join('');
     const formHtml = dots ? `<span class="form-dots">${dots}</span>` : '';
     const generalHtml = (isRoundRanking && generalRankMap[u.name]) ? (()=>{
@@ -12154,6 +12159,28 @@ body.edson-matches-bg #summary-modal .summary-header{
   #user-detail-modal .ud-sc-in,
   #match-breakdown-modal .ud-sc-in{
     color:var(--text)!important;
+  }
+</style>
+
+
+
+<!-- AJUSTE EDSON: forma dos últimos jogos no ranking com laranja no mata-mata -->
+<style id="edson-v7-forma-ranking-laranja-20260628">
+  /* Nos pontinhos do ranking:
+     verde = pontuou em jogo anterior/fase de grupos;
+     laranja = pontuou em jogo de decisão/mata-mata;
+     vermelho = não pontuou/perdeu. */
+  #ranking-list .fd.win,
+  .rank-card .fd.win{
+    background:var(--green)!important;
+  }
+  #ranking-list .fd.x2win,
+  .rank-card .fd.x2win{
+    background:var(--gold)!important;
+  }
+  #ranking-list .fd.miss,
+  .rank-card .fd.miss{
+    background:var(--red)!important;
   }
 </style>
 
