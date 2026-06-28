@@ -11237,67 +11237,7 @@ function showSaveBanner(msg){
 
 
 <script id="edson-ranking-sticky-real-20260628">
-(function(){
-  function topbarHeight(){
-    var tb=document.querySelector('.topbar');
-    if(!tb) return window.innerWidth<=520 ? 52 : 56;
-    return Math.round(tb.getBoundingClientRect().height) || (window.innerWidth<=520 ? 52 : 56);
-  }
-  function getWrap(){return document.querySelector('#panel-ranking .rank-search-wrap');}
-  function getPanel(){return document.getElementById('panel-ranking');}
-  function ensureSpacer(wrap){
-    var sp=document.getElementById('rank-search-fixed-spacer');
-    if(!sp){
-      sp=document.createElement('div');
-      sp.id='rank-search-fixed-spacer';
-      sp.className='rank-search-fixed-spacer';
-      wrap.parentNode.insertBefore(sp, wrap);
-    }
-    return sp;
-  }
-  function isRankingActive(){
-    var p=getPanel();
-    return p && p.classList.contains('active') && p.offsetParent!==null;
-  }
-  function updateRankingSticky(){
-    var wrap=getWrap();
-    if(!wrap) return;
-    var sp=ensureSpacer(wrap);
-    var top=topbarHeight();
-    wrap.style.setProperty('top', top+'px', 'important');
-
-    if(!isRankingActive()){
-      wrap.classList.remove('rank-sticky-fixed');
-      var p0=getPanel(); if(p0) p0.classList.remove('rank-sticky-on');
-      sp.style.display='none';
-      sp.style.height='0px';
-      return;
-    }
-
-    var wasFixed=wrap.classList.contains('rank-sticky-fixed');
-    if(wasFixed) wrap.classList.remove('rank-sticky-fixed');
-    var trigger=wrap.getBoundingClientRect().top + window.scrollY - top;
-    if(wasFixed) wrap.classList.add('rank-sticky-fixed');
-
-    if(window.scrollY >= trigger){
-      sp.style.display='block';
-      sp.style.height=wrap.offsetHeight+'px';
-      wrap.classList.add('rank-sticky-fixed');
-      var p1=getPanel(); if(p1){ p1.classList.add('rank-sticky-on'); p1.style.setProperty('--rank-sticky-space', (wrap.offsetHeight + 12) + 'px'); }
-      wrap.style.setProperty('top', top+'px', 'important');
-    }else{
-      wrap.classList.remove('rank-sticky-fixed');
-      var p0=getPanel(); if(p0) p0.classList.remove('rank-sticky-on');
-      sp.style.display='none';
-      sp.style.height='0px';
-    }
-  }
-  window.addEventListener('scroll', updateRankingSticky, {passive:true});
-  window.addEventListener('resize', updateRankingSticky);
-  document.addEventListener('click', function(){setTimeout(updateRankingSticky,80);}, true);
-  document.addEventListener('DOMContentLoaded', function(){setTimeout(updateRankingSticky,120);});
-  setInterval(updateRankingSticky, 700);
-})();
+/* Desativado: substituído pelo fix anti-flash no final do arquivo. */
 </script>
 </body></html>
 
@@ -14682,13 +14622,20 @@ function showSaveBanner(msg){
 </style>
 <script id="edson-ranking-sticky-final-fix-20260628">
 (function(){
+  /* Ajuste anti-flash: usa um ponto de corte fixo com folga.
+     Assim, ao chegar no topo, a barra não fica alternando entre fixed/normal. */
+  var state = { fixed:false, trigger:null, ticking:false };
+
   function topbarHeight(){
     var tb=document.querySelector('.topbar');
     return tb ? Math.round(tb.getBoundingClientRect().height || 56) : (window.innerWidth<=520?52:56);
   }
-  function panel(){return document.getElementById('panel-ranking');}
-  function wrap(){return document.querySelector('#panel-ranking .rank-search-wrap');}
-  function active(){var p=panel(); return p && p.classList.contains('active') && p.offsetParent!==null;}
+  function panel(){ return document.getElementById('panel-ranking'); }
+  function wrap(){ return document.querySelector('#panel-ranking .rank-search-wrap'); }
+  function active(){
+    var p=panel();
+    return !!(p && p.classList.contains('active') && p.offsetParent!==null);
+  }
   function spacer(w){
     var sp=document.getElementById('rank-search-fixed-spacer');
     if(!sp){
@@ -14698,48 +14645,81 @@ function showSaveBanner(msg){
     }
     return sp;
   }
-  function originalTop(w, top){
-    var fixed=w.classList.contains('rank-sticky-fixed');
-    if(fixed) w.classList.remove('rank-sticky-fixed');
-    var y=w.getBoundingClientRect().top + window.scrollY;
-    if(fixed) w.classList.add('rank-sticky-fixed');
-    return y - top;
+  function setNormal(w, sp){
+    state.fixed=false;
+    w.classList.remove('rank-sticky-fixed');
+    w.style.removeProperty('top');
+    var p=panel(); if(p) p.classList.remove('rank-sticky-on');
+    if(sp){
+      sp.classList.remove('rank-spacer-on');
+      sp.style.setProperty('height','0px','important');
+    }
   }
-  function update(){
+  function calcTrigger(w, top){
+    var sp=document.getElementById('rank-search-fixed-spacer');
+    var oldFixed=w.classList.contains('rank-sticky-fixed');
+    if(oldFixed) w.classList.remove('rank-sticky-fixed');
+    if(sp){
+      sp.classList.remove('rank-spacer-on');
+      sp.style.setProperty('height','0px','important');
+    }
+    var y=w.getBoundingClientRect().top + window.scrollY - top;
+    if(oldFixed) w.classList.add('rank-sticky-fixed');
+    return y;
+  }
+  function run(){
+    state.ticking=false;
     var w=wrap();
     if(!w) return;
-    var p=panel();
     var sp=spacer(w);
     var top=topbarHeight();
 
     if(!active()){
-      w.classList.remove('rank-sticky-fixed');
-      if(p) p.classList.remove('rank-sticky-on');
-      sp.classList.remove('rank-spacer-on');
-      sp.style.setProperty('height','0px','important');
+      state.trigger=null;
+      setNormal(w, sp);
       return;
     }
 
-    var trigger=originalTop(w, top);
-    if(window.scrollY >= trigger){
+    if(state.trigger===null || !state.fixed){
+      state.trigger=calcTrigger(w, top);
+    }
+
+    var y=window.scrollY || window.pageYOffset || 0;
+    var fixAt=state.trigger + 14;
+    var releaseAt=state.trigger - 14;
+
+    if(!state.fixed && y >= fixAt){
       sp.style.setProperty('height', w.offsetHeight + 'px', 'important');
       sp.classList.add('rank-spacer-on');
       w.classList.add('rank-sticky-fixed');
       w.style.setProperty('top', top + 'px', 'important');
-      if(p) p.classList.add('rank-sticky-on');
-    }else{
-      w.classList.remove('rank-sticky-fixed');
-      w.style.removeProperty('top');
-      if(p) p.classList.remove('rank-sticky-on');
-      sp.classList.remove('rank-spacer-on');
-      sp.style.setProperty('height','0px','important');
+      var p1=panel(); if(p1) p1.classList.add('rank-sticky-on');
+      state.fixed=true;
+      return;
+    }
+
+    if(state.fixed && y <= releaseAt){
+      state.trigger=null;
+      setNormal(w, sp);
+      return;
+    }
+
+    if(state.fixed){
+      sp.style.setProperty('height', w.offsetHeight + 'px', 'important');
+      sp.classList.add('rank-spacer-on');
+      w.style.setProperty('top', top + 'px', 'important');
     }
   }
-  window.addEventListener('scroll', update, {passive:true});
-  window.addEventListener('resize', update);
-  document.addEventListener('click', function(){setTimeout(update,60);}, true);
-  document.addEventListener('DOMContentLoaded', function(){setTimeout(update,100);});
-  setInterval(update, 250);
-  window.__edsonRankingStickyFinalUpdate=update;
+  function request(){
+    if(state.ticking) return;
+    state.ticking=true;
+    requestAnimationFrame(run);
+  }
+
+  window.addEventListener('scroll', request, {passive:true});
+  window.addEventListener('resize', function(){state.trigger=null; request();});
+  document.addEventListener('click', function(){setTimeout(function(){state.trigger=null; request();},80);}, true);
+  document.addEventListener('DOMContentLoaded', function(){setTimeout(request,120);});
+  window.__edsonRankingStickyFinalUpdate=function(){state.trigger=null; request();};
 })();
 </script>
