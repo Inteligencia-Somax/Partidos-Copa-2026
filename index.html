@@ -14723,3 +14723,152 @@ function showSaveBanner(msg){
   window.__edsonRankingStickyFinalUpdate=function(){state.trigger=null; request();};
 })();
 </script>
+
+<style id="edson-matches-filter-sticky-final-20260628">
+/* Fix: filtros de Partidas ficam normais no topo e grudam abaixo do cabeçalho ao rolar */
+#panel-matches .filter-row{
+  position:relative!important;
+  top:auto!important;
+  left:auto!important;
+  transform:none!important;
+  width:auto!important;
+  max-width:680px!important;
+  z-index:160!important;
+  margin:0 0 16px!important;
+  padding:10px 0 8px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#panel-matches .filter-row.matches-sticky-fixed{
+  position:fixed!important;
+  top:56px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:100%!important;
+  max-width:680px!important;
+  z-index:300!important;
+  margin:0!important;
+  padding:10px 12px 8px!important;
+  background:#0E5F34!important;
+  box-shadow:0 8px 16px rgba(0,0,0,.14)!important;
+}
+#matches-filter-fixed-spacer.matches-spacer-on{display:block!important;}
+#matches-filter-fixed-spacer:not(.matches-spacer-on){display:none!important;height:0!important;}
+#panel-matches.matches-sticky-on .date-group:first-of-type{margin-top:0!important;}
+@media(max-width:520px){
+  #panel-matches .filter-row.matches-sticky-fixed{top:52px!important;}
+}
+</style>
+<script id="edson-matches-filter-sticky-final-20260628">
+(function(){
+  var state = { fixed:false, trigger:null, ticking:false };
+
+  function topbarHeight(){
+    var tb=document.querySelector('.topbar');
+    return tb ? Math.round(tb.getBoundingClientRect().height || 56) : (window.innerWidth<=520?52:56);
+  }
+  function panel(){ return document.getElementById('panel-matches'); }
+  function row(){ return document.querySelector('#panel-matches .filter-row'); }
+  function active(){
+    var p=panel();
+    return !!(p && p.classList.contains('active') && p.offsetParent!==null);
+  }
+  function spacer(r){
+    var sp=document.getElementById('matches-filter-fixed-spacer');
+    if(!sp){
+      sp=document.createElement('div');
+      sp.id='matches-filter-fixed-spacer';
+      r.parentNode.insertBefore(sp,r);
+    }
+    return sp;
+  }
+  function currentGreen(r){
+    var el=r.parentElement, bg='';
+    while(el){
+      var c=getComputedStyle(el).backgroundColor;
+      if(c && c!=='rgba(0, 0, 0, 0)' && c!=='transparent'){ bg=c; break; }
+      el=el.parentElement;
+    }
+    return bg || '#0E5F34';
+  }
+  function setNormal(r, sp){
+    state.fixed=false;
+    r.classList.remove('matches-sticky-fixed','stuck');
+    r.style.removeProperty('top');
+    r.style.removeProperty('background');
+    var p=panel(); if(p) p.classList.remove('matches-sticky-on');
+    if(sp){
+      sp.classList.remove('matches-spacer-on');
+      sp.style.setProperty('height','0px','important');
+    }
+  }
+  function calcTrigger(r, top){
+    var sp=document.getElementById('matches-filter-fixed-spacer');
+    var oldFixed=r.classList.contains('matches-sticky-fixed');
+    if(oldFixed) r.classList.remove('matches-sticky-fixed');
+    if(sp){
+      sp.classList.remove('matches-spacer-on');
+      sp.style.setProperty('height','0px','important');
+    }
+    var y=r.getBoundingClientRect().top + window.scrollY - top;
+    if(oldFixed) r.classList.add('matches-sticky-fixed');
+    return y;
+  }
+  function run(){
+    state.ticking=false;
+    var r=row();
+    if(!r) return;
+    var sp=spacer(r);
+    var top=topbarHeight();
+
+    if(!active()){
+      state.trigger=null;
+      setNormal(r, sp);
+      return;
+    }
+
+    if(state.trigger===null || !state.fixed){
+      state.trigger=calcTrigger(r, top);
+    }
+
+    var y=window.scrollY || window.pageYOffset || 0;
+    var fixAt=state.trigger + 14;
+    var releaseAt=state.trigger - 14;
+
+    if(!state.fixed && y >= fixAt){
+      sp.style.setProperty('height', r.offsetHeight + 'px', 'important');
+      sp.classList.add('matches-spacer-on');
+      r.classList.add('matches-sticky-fixed','stuck');
+      r.style.setProperty('top', top + 'px', 'important');
+      r.style.setProperty('background', currentGreen(r), 'important');
+      var p1=panel(); if(p1) p1.classList.add('matches-sticky-on');
+      state.fixed=true;
+      return;
+    }
+
+    if(state.fixed && y <= releaseAt){
+      state.trigger=null;
+      setNormal(r, sp);
+      return;
+    }
+
+    if(state.fixed){
+      sp.style.setProperty('height', r.offsetHeight + 'px', 'important');
+      sp.classList.add('matches-spacer-on');
+      r.style.setProperty('top', top + 'px', 'important');
+      r.style.setProperty('background', currentGreen(r), 'important');
+    }
+  }
+  function request(){
+    if(state.ticking) return;
+    state.ticking=true;
+    requestAnimationFrame(run);
+  }
+
+  window.addEventListener('scroll', request, {passive:true});
+  window.addEventListener('resize', function(){state.trigger=null; request();});
+  document.addEventListener('click', function(){setTimeout(function(){state.trigger=null; request();},80);}, true);
+  document.addEventListener('DOMContentLoaded', function(){setTimeout(request,120);});
+  window.__edsonMatchesStickyFinalUpdate=function(){state.trigger=null; request();};
+})();
+</script>
