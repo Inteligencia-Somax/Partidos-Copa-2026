@@ -9219,7 +9219,15 @@ function toggleUpdateNotice(){
 }
 
 // ══ COMUNICADO / ANUNCIO DE ENTRADA ══
-const APP_ANNOUNCEMENT = null;
+const APP_ANNOUNCEMENT = {
+  id: 'alerta-palpites-20260627',
+  title: '⚠️ Atención',
+  html: `
+    <p><strong>Revisá bien tus palpites antes de confirmar.</strong></p>
+    <p>Después de guardar un palpite, no será posible editarlo cuando el partido esté cerrado.</p>
+    <p>Usá el botón <strong>Ver resumen</strong> para revisar tus últimos resultados.</p>
+  `
+};
 
 function maybeShowAnnouncement(){
   const a = APP_ANNOUNCEMENT;
