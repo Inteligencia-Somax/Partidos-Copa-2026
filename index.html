@@ -7398,7 +7398,7 @@ function recentSummaryHtml({compact=false, share=false}={}){
     const m = g.m, real = g.real;
     const pickTxt = g.myPick ? `${g.myPick.home}:${g.myPick.away}` : 'sin palpite';
     const lab = getRecentSummaryLabel(g.type, g.myPts);
-    return `<div class="rs-game">
+    return `<div class="rs-game ${m.x2?'x2-game':''}">
       <div class="rs-match">
         <div class="rs-teams">${m.hf} ${m.home} ${real.home}:${real.away} ${m.away} ${m.af}</div>
         <div class="rs-sub">Vos palpite: ${pickTxt}<span class="rs-tag ${lab.cls}">${lab.txt}</span></div>
@@ -8765,7 +8765,9 @@ function openMatchBreakdown(matchId){
 
   const myPick = (allPicks[currentUser] || {})[matchId] || null;
   mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null, myPick, myName:currentUser };
-  document.getElementById('match-breakdown-modal').style.display = 'flex';
+  const mbModal = document.getElementById('match-breakdown-modal');
+  mbModal.classList.toggle('x2-mode', !!m.x2);
+  mbModal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   renderMatchBreakdown();
 }
@@ -8940,11 +8942,12 @@ function renderMatchBreakdown(){
 
   let acc = 0;
   const segs = [];
+  const mbTypeColor = (t) => (m.x2 && t.key !== 'wrong') ? '#F59E0B' : t.color;
   MB_TYPE_INFO.forEach(t => {
     const n = groups[t.key].length;
     if(n === 0) return;
     const pct = n / total * 100;
-    segs.push(`${t.color} ${acc}% ${acc + pct}%`);
+    segs.push(`${mbTypeColor(t)} ${acc}% ${acc + pct}%`);
     acc += pct;
   });
   const pie = `<div class="mb-pie" style="background:conic-gradient(${segs.join(',')})"></div>`;
@@ -8960,7 +8963,7 @@ function renderMatchBreakdown(){
     ).join('')}</div>` : '';
     return `
       <div class="mb-leg-item ${isExp ? 'open' : ''}" onclick="toggleMbType('${t.key}')">
-        <span class="mb-dot" style="background:${t.color}"></span>
+        <span class="mb-dot" style="background:${mbTypeColor(t)}"></span>
         <div class="mb-leg-info">
           <div class="mb-leg-label">${t.label}</div>
           <div class="mb-leg-sub">${t.pts * mult} pts</div>
@@ -9000,7 +9003,9 @@ function renderMatchBreakdown(){
     ${legend}`;
 }
 function closeMatchBreakdown(){
-  document.getElementById('match-breakdown-modal').style.display = 'none';
+  const mbModal = document.getElementById('match-breakdown-modal');
+  mbModal.style.display = 'none';
+  mbModal.classList.remove('x2-mode');
   document.body.style.overflow = '';
 }
 function openUserDetailFromMb(name){
@@ -11966,6 +11971,87 @@ body.edson-matches-bg #summary-modal .summary-header{
   background:#fff!important;
   border-color:var(--red)!important;
   color:var(--red)!important;
+}
+</style>
+
+
+
+<style id="decisiones-naranja-20260628">
+/* Decisiones / mata-mata: todos los aciertos pasan de verde a naranja.
+   El rojo de error se mantiene. El verde queda reservado para fase de grupos. */
+.match-card.x2-game.exact-hit{
+  border-color:rgba(245,158,11,.52)!important;
+  box-shadow:0 2px 16px rgba(245,158,11,.18), var(--shadow)!important;
+}
+.match-card.x2-game.exact-hit::after{
+  box-shadow:inset 0 0 0 1px rgba(245,158,11,.22), 0 0 18px rgba(245,158,11,.14)!important;
+}
+.match-card.x2-game.exact-hit::before{
+  background:linear-gradient(110deg,transparent 0%,rgba(245,158,11,.045) 44%,rgba(255,255,255,.24) 50%,rgba(245,158,11,.045) 56%,transparent 100%)!important;
+}
+.match-card.x2-game.exact-hit .mc-badge.center{
+  color:var(--gold)!important;
+  background:rgba(245,158,11,.13)!important;
+  border-color:rgba(245,158,11,.32)!important;
+}
+.match-card.x2-game .mc-status.done{
+  background:transparent!important;
+  color:var(--gold)!important;
+}
+.match-card.x2-game.exact-hit .mc-status.done{
+  background:rgba(245,158,11,.13)!important;
+  color:var(--gold)!important;
+}
+.match-card.x2-game .mc-score.filled{
+  background:#fff!important;
+  border-color:var(--gold)!important;
+  color:var(--gold)!important;
+}
+.match-card.x2-game.exact-hit .mc-score.filled{
+  background:rgba(245,158,11,.13)!important;
+  border-color:var(--gold)!important;
+  color:var(--gold)!important;
+}
+#match-breakdown-modal.x2-mode .ud-tab.active,
+#match-breakdown-modal.x2-mode .mb-sfchip.active{
+  background:var(--gold)!important;
+  border-color:var(--gold)!important;
+  color:#fff!important;
+}
+#match-breakdown-modal.x2-mode .ud-row.mine .mb-pos,
+#match-breakdown-modal.x2-mode .ud-row.mine .ud-teams,
+#match-breakdown-modal.x2-mode .ud-row.mine .ud-mine-tag.me,
+#match-breakdown-modal.x2-mode .ud-pts.win,
+#match-breakdown-modal.x2-mode .mb-stat-card-val,
+#match-breakdown-modal.x2-mode .mb-insight strong{
+  color:var(--gold)!important;
+}
+#match-breakdown-modal.x2-mode .ud-row.exact,
+#match-breakdown-modal.x2-mode .ud-row.mine.exact{
+  background:rgba(245,158,11,.08)!important;
+}
+#match-breakdown-modal.x2-mode .ud-pts.exact,
+#match-breakdown-modal.x2-mode .ud-exact-tag{
+  background:rgba(245,158,11,.13)!important;
+  color:var(--gold)!important;
+  border-color:rgba(245,158,11,.35)!important;
+}
+#match-breakdown-modal.x2-mode .mb-toggle.active{
+  color:var(--gold)!important;
+}
+
+/* Resumen reciente: si el partido es de decisión, aciertos en naranja */
+.recent-summary-card .rs-game.x2-game .rs-tag.exact,
+.recent-summary-card .rs-game.x2-game .rs-tag.good{
+  color:var(--gold)!important;
+}
+.recent-summary-card .rs-game.x2-game .rs-pts:not(.zero){
+  color:var(--gold)!important;
+}
+.recent-summary-card .rs-game.x2-game .rs-pts.exact{
+  background:rgba(245,158,11,.13)!important;
+  color:var(--gold)!important;
+  border-color:rgba(245,158,11,.35)!important;
 }
 </style>
 
