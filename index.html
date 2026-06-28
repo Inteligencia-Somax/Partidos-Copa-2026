@@ -8286,7 +8286,8 @@ function renderRanking(){
     const dots = recent5.map(m=>{
       const calc = calculatePickPoints(upicks[m.id], realResults[m.id], m);
       const dotClass = calc.pts > 0 ? 'win' : 'miss';
-      const dotColor = getScoreTypeColor(calc.type, m);
+      /* Forma do ranking: verde quando pontuou, vermelho quando não pontuou. */
+      const dotColor = calc.pts > 0 ? 'var(--green)' : 'var(--red)';
       return `<span class="fd ${dotClass}" style="background:${dotColor}!important" title="${calc.pts} pts"></span>`;
     }).join('');
     const formHtml = dots ? `<span class="form-dots">${dots}</span>` : '';
@@ -8521,7 +8522,8 @@ function renderUdResumen(){
 
   if(s.form.length){
     const dots = s.form.map(f => {
-      const dotColor = getScoreTypeColor(f.type, f.match);
+      /* Forma do detalhe: verde quando pontuou, vermelho quando não pontuou. */
+      const dotColor = f.scored ? 'var(--green)' : 'var(--red)';
       return `<span class="ud-dot ${f.scored?'on':'off'}" style="background:${dotColor}!important;opacity:1" title="${f.pts} pts"></span>`;
     }).join('');
     html += `<div class="ud-form"><span class="ud-form-lbl">Forma (últimos ${s.form.length})</span><div class="ud-form-dots">${dots}</div></div>`;
@@ -12243,6 +12245,23 @@ body.edson-matches-bg #summary-modal .summary-header{
   }
 </style>
 
+
+<!-- AJUSTE EDSON V13: forma dos últimos jogos simplificada.
+     Verde = pontuou; vermelho = não pontuou. -->
+<style id="edson-v13-forma-verde-vermelho-20260628">
+  #ranking-list .fd.win,
+  .rank-card .fd.win,
+  #user-detail-modal .ud-dot.on{
+    background:var(--green)!important;
+    opacity:1!important;
+  }
+  #ranking-list .fd.miss,
+  .rank-card .fd.miss,
+  #user-detail-modal .ud-dot.off{
+    background:var(--red)!important;
+    opacity:1!important;
+  }
+</style>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
@@ -16180,6 +16199,61 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   #user-detail-modal .ud-mine-tag.me,
   #user-detail-modal.x2-mode .ud-mine-tag,
   #user-detail-modal.x2-mode .ud-mine-tag.me{
+    background:rgba(0,56,168,.10)!important;
+    border-color:rgba(0,56,168,.25)!important;
+    color:var(--blue)!important;
+  }
+</style>
+
+<!-- AJUSTE EDSON V14: no modal de Pontos por participante, cabeçalho e botões ficam verdes mesmo no mata-mata -->
+<style id="edson-v14-breakdown-header-tabs-verdes-20260628">
+  /* O contexto da tela/modal continua com a identidade verde do sistema.
+     O laranja permanece somente nos pontos/acertos/cards/legendas de jogos mata-mata. */
+  #match-breakdown-modal .modal-header,
+  #match-breakdown-modal.x2-mode .modal-header{
+    background:var(--green)!important;
+    border-radius:20px 20px 0 0!important;
+  }
+
+  #match-breakdown-modal .modal-header #mb-title,
+  #match-breakdown-modal.x2-mode .modal-header #mb-title{
+    color:#fff!important;
+  }
+
+  #match-breakdown-modal .modal-header .modal-close,
+  #match-breakdown-modal.x2-mode .modal-header .modal-close{
+    background:rgba(255,255,255,.22)!important;
+    color:#fff!important;
+  }
+
+  #match-breakdown-modal .modal-header .modal-close:hover,
+  #match-breakdown-modal.x2-mode .modal-header .modal-close:hover{
+    background:rgba(255,255,255,.35)!important;
+  }
+
+  #match-breakdown-modal .ud-tab.active,
+  #match-breakdown-modal.x2-mode .ud-tab.active,
+  #match-breakdown-modal .mb-toggle.active,
+  #match-breakdown-modal.x2-mode .mb-toggle.active{
+    background:var(--green)!important;
+    border-color:var(--green)!important;
+    color:#fff!important;
+  }
+
+  #match-breakdown-modal .ud-tab.active svg,
+  #match-breakdown-modal.x2-mode .ud-tab.active svg,
+  #match-breakdown-modal .mb-toggle.active svg,
+  #match-breakdown-modal.x2-mode .mb-toggle.active svg{
+    color:#fff!important;
+    stroke:currentColor!important;
+  }
+
+  /* = Vos segue azul em qualquer fase. */
+  #match-breakdown-modal .ud-mine-tag,
+  #match-breakdown-modal .ud-mine-tag.me,
+  #match-breakdown-modal.x2-mode .ud-mine-tag,
+  #match-breakdown-modal.x2-mode .ud-mine-tag.me,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-mine-tag.me{
     background:rgba(0,56,168,.10)!important;
     border-color:rgba(0,56,168,.25)!important;
     color:var(--blue)!important;
