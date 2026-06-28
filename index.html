@@ -14603,3 +14603,35 @@ function showSaveBanner(msg){
   }, {passive:true});
 })();
 </script>
+
+<style id="fix-ranking-search-sticky-flow-20260628">
+/* Ajuste Edson: Buscar + Ranking grudam no topo sem sair do fluxo, evitando ficar solto por cima do primeiro card ao voltar ao topo. */
+#panel-ranking .rank-search-wrap,
+#panel-ranking .rank-search-wrap.rank-sticky-fixed{
+  position:-webkit-sticky!important;
+  position:sticky!important;
+  top:56px!important;
+  left:auto!important;
+  transform:none!important;
+  width:auto!important;
+  max-width:680px!important;
+  z-index:260!important;
+  margin:0 auto 10px!important;
+  padding:10px 12px 8px!important;
+  background:#0E5F34!important;
+  box-shadow:none!important;
+}
+#rank-search-fixed-spacer{display:none!important;height:0!important;}
+#panel-ranking.rank-sticky-on .ranking-list,
+#panel-ranking.rank-sticky-on #rank-context:not([style*="display:none"]){
+  padding-top:0!important;
+  margin-top:0!important;
+}
+#panel-ranking.rank-sticky-on #rank-context:not([style*="display:none"]) + .ranking-list{
+  padding-top:0!important;
+}
+@media(max-width:520px){
+  #panel-ranking .rank-search-wrap,
+  #panel-ranking .rank-search-wrap.rank-sticky-fixed{top:52px!important;}
+}
+</style>
