@@ -7304,7 +7304,8 @@ function showApp(){
     adminUnlocked = currentUserRole === 'admin';
     if(adminUnlocked) localStorage.setItem('somax_admin_unlocked','1');
   }
-  setTimeout(maybeShowAnnouncement, 600);
+  window.__somaxAppReadyForInitialAnnouncement = true;
+  if(window.__somaxFinishInitialLoad) window.__somaxFinishInitialLoad();
 }
 
 
@@ -9584,6 +9585,10 @@ const APP_ANNOUNCEMENT = {
 };
 
 function maybeShowAnnouncement(){
+  if(document.body.classList.contains('somax-loading')){
+    window.__somaxPendingAnnouncement = true;
+    return;
+  }
   const a = APP_ANNOUNCEMENT;
   if(!a || !a.id) return;
   const titleEl = document.getElementById('announce-title');
@@ -15313,15 +15318,43 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
 
 <script id="edson-initial-loader-20260628">
 (function(){
-  function hideInitialLoader(){
-    // espera um pouco para Firebase/render/imagem começarem a estabilizar e depois mostra tudo de uma vez
+  var pageLoaded = document.readyState === 'complete';
+  var loaderClosed = false;
+
+  function closeLoaderAndShowAnnouncement(){
+    if(loaderClosed) return;
+    if(!pageLoaded || !window.__somaxAppReadyForInitialAnnouncement) return;
+    loaderClosed = true;
+
+    // Mantém o "Cargando..." até a página estar realmente montada.
+    // Depois mostra a página completa e só então abre o aviso.
     setTimeout(function(){
       document.body.classList.remove('somax-loading');
-    }, 450);
+      setTimeout(function(){
+        if(window.__somaxPendingAnnouncement || typeof maybeShowAnnouncement === 'function'){
+          window.__somaxPendingAnnouncement = false;
+          maybeShowAnnouncement();
+        }
+      }, 280);
+    }, 350);
   }
-  if(document.readyState === 'complete') hideInitialLoader();
-  else window.addEventListener('load', hideInitialLoader, {once:true});
-  // segurança: se algum recurso demorar demais, não deixa a tela presa no carregando
-  setTimeout(function(){document.body.classList.remove('somax-loading');}, 3500);
+
+  window.__somaxFinishInitialLoad = closeLoaderAndShowAnnouncement;
+
+  if(!pageLoaded){
+    window.addEventListener('load', function(){
+      pageLoaded = true;
+      closeLoaderAndShowAnnouncement();
+    }, {once:true});
+  }else{
+    closeLoaderAndShowAnnouncement();
+  }
+
+  // Segurança: se algum recurso externo demorar demais, mostra a página pronta assim que possível.
+  setTimeout(function(){
+    pageLoaded = true;
+    if(window.__somaxAppReadyForInitialAnnouncement) closeLoaderAndShowAnnouncement();
+    else document.body.classList.remove('somax-loading');
+  }, 6500);
 })();
 </script>
