@@ -11268,6 +11268,7 @@ function showSaveBanner(msg){
 
     if(!isRankingActive()){
       wrap.classList.remove('rank-sticky-fixed');
+      var p0=getPanel(); if(p0) p0.classList.remove('rank-sticky-on');
       sp.style.display='none';
       sp.style.height='0px';
       return;
@@ -11282,9 +11283,11 @@ function showSaveBanner(msg){
       sp.style.display='block';
       sp.style.height=wrap.offsetHeight+'px';
       wrap.classList.add('rank-sticky-fixed');
+      var p1=getPanel(); if(p1){ p1.classList.add('rank-sticky-on'); p1.style.setProperty('--rank-sticky-space', (wrap.offsetHeight + 12) + 'px'); }
       wrap.style.setProperty('top', top+'px', 'important');
     }else{
       wrap.classList.remove('rank-sticky-fixed');
+      var p0=getPanel(); if(p0) p0.classList.remove('rank-sticky-on');
       sp.style.display='none';
       sp.style.height='0px';
     }
@@ -14540,6 +14543,17 @@ function showSaveBanner(msg){
 @media(max-width:520px){
   #panel-ranking .rank-search-wrap.rank-sticky-fixed{top:52px!important;}
 }
+/* Ajuste: quando Buscar + Ranking ficam fixos, empurra a lista para não ficar por baixo */
+#panel-ranking.rank-sticky-on .ranking-list{
+  padding-top:var(--rank-sticky-space,72px)!important;
+}
+#panel-ranking.rank-sticky-on #rank-context:not([style*="display:none"]){
+  margin-top:var(--rank-sticky-space,72px)!important;
+}
+#panel-ranking.rank-sticky-on #rank-context:not([style*="display:none"]) + .ranking-list{
+  padding-top:8px!important;
+}
+
 </style>
 
 <script id="edson-mb-game-swipe-20260627-2234">
