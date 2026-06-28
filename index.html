@@ -8950,7 +8950,21 @@ function renderMatchBreakdown(){
 
   let acc = 0;
   const segs = [];
-  const mbTypeColor = (t) => (m.x2 && t.key !== 'wrong') ? '#F59E0B' : t.color;
+  const mbTypeColor = (t) => {
+    // En decisiones/mata-mata mantenemos la familia naranja,
+    // pero con tonos diferentes por tipo de puntuación, igual a la lógica verde.
+    if(m.x2 && t.key !== 'wrong'){
+      const x2Palette = {
+        exact:       '#F59E0B',
+        winnerGoals: '#F8A51A',
+        diff:        '#FBBF24',
+        loserGoals:  '#FACC15',
+        winner:      '#F97316'
+      };
+      return x2Palette[t.key] || '#F59E0B';
+    }
+    return t.color;
+  };
   MB_TYPE_INFO.forEach(t => {
     const n = groups[t.key].length;
     if(n === 0) return;
@@ -15916,6 +15930,56 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
 #match-breakdown-modal.x2-mode .ud-exact-tag{
   background:rgba(245,158,11,.13)!important;
   border-color:rgba(245,158,11,.35)!important;
+  color:var(--gold)!important;
+}
+</style>
+
+
+<style id="ajustes-v5-analise-cores-20260628">
+/* Ajuste final:
+   - Botões/tabs principais seguem verdes.
+   - "= Vos" segue azul.
+   - Resultado/placar real segue preto.
+   - Decisões usam família laranja com tons diferentes por categoria de pontuação. */
+
+/* Botões principais sempre verdes, inclusive no mata-mata */
+#user-detail-modal.x2-mode .ud-tab.active,
+#match-breakdown-modal.x2-mode .ud-tab.active,
+#match-breakdown-modal.x2-mode .mb-toggle.active{
+  background:var(--green)!important;
+  border-color:var(--green)!important;
+  color:#fff!important;
+}
+#user-detail-modal.x2-mode .ud-tab.active svg,
+#match-breakdown-modal.x2-mode .ud-tab.active svg{
+  color:#fff!important;
+}
+
+/* = Vos sempre azul */
+#user-detail-modal .ud-row.x2-game .ud-mine-tag,
+#match-breakdown-modal.x2-mode .ud-mine-tag,
+#match-breakdown-modal.x2-mode .ud-row.mine .ud-mine-tag.me{
+  background:rgba(0,56,168,.10)!important;
+  border-color:rgba(0,56,168,.25)!important;
+  color:var(--blue)!important;
+}
+
+/* Placar real/resultado sempre preto normal */
+#user-detail-modal .ud-row.x2-game .ud-sc-in,
+#match-breakdown-modal.x2-mode .modal-match-label{
+  color:var(--text)!important;
+}
+
+/* Chips internos de filtro/lista podem seguir a cor do mata-mata quando ativos */
+#match-breakdown-modal.x2-mode .mb-sfchip.active{
+  background:var(--gold)!important;
+  border-color:var(--gold)!important;
+  color:#fff!important;
+}
+
+/* Cards de resumo do gráfico continuam em destaque laranja */
+#match-breakdown-modal.x2-mode .mb-stat-card-val,
+#match-breakdown-modal.x2-mode .mb-insight strong{
   color:var(--gold)!important;
 }
 </style>
