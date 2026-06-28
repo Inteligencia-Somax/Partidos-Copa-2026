@@ -11540,13 +11540,13 @@ function showSaveBanner(msg){
   background:rgba(0,0,0,.56);
   opacity:0;
   pointer-events:none;
-  z-index:255;
+  z-index:520;
   transition:opacity .22s ease;
 }
 .rank-spotlight-layer.active{opacity:1;}
 #ranking-list .rank-card.rank-spotlight-me{
   position:relative!important;
-  z-index:280!important;
+  z-index:540!important;
   background:#fff!important;
   transform:scale(1.015);
   animation:rankSpotlightPulse 1.15s ease-in-out 1;
@@ -15196,3 +15196,13 @@ function showSaveBanner(msg){
   window.__edsonMatchesStickyFinalUpdate=function(){state.trigger=null; request();};
 })();
 </script>
+
+<style id="edson-spotlight-cover-ranking-filter-20260628">
+/* O fundo escuro do destaque do ranking agora fica acima da barra Buscar/Ranking também. */
+.rank-spotlight-layer{
+  z-index:520!important;
+}
+#ranking-list .rank-card.rank-spotlight-me{
+  z-index:540!important;
+}
+</style>
