@@ -9431,6 +9431,23 @@ function closeAdminResultOutside(e){
 }
 
 // ══ TABS ══
+
+function edsonInstantScrollToY(y){
+  const html = document.documentElement;
+  const old = html.style.scrollBehavior;
+  html.style.scrollBehavior = 'auto';
+  window.scrollTo(0, Math.max(0, y || 0));
+  requestAnimationFrame(()=>{ html.style.scrollBehavior = old; });
+}
+function edsonInstantScrollIntoView(el, block='start'){
+  if(!el) return;
+  const html = document.documentElement;
+  const old = html.style.scrollBehavior;
+  html.style.scrollBehavior = 'auto';
+  el.scrollIntoView({block, inline:'nearest', behavior:'auto'});
+  requestAnimationFrame(()=>{ html.style.scrollBehavior = old; });
+}
+
 function switchTab(tab, btn){
   const __previousPanelBeforeSwitch = document.querySelector('.panel.active');
   const __previousTabBeforeSwitch = (__previousPanelBeforeSwitch && __previousPanelBeforeSwitch.id) ? __previousPanelBeforeSwitch.id.replace('panel-','') : null;
@@ -9449,7 +9466,7 @@ function switchTab(tab, btn){
   if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin' || tab === 'decepcion') ? 'none' : '';
   if(tab==='ranking'){
     renderRanking();
-    requestAnimationFrame(()=>{ const me=document.getElementById('my-rank-card'); me?.scrollIntoView({block:'center'}); updateQuickFloatButtons(); setTimeout(spotlightMyRankCard, 260); });
+    requestAnimationFrame(()=>{ const me=document.getElementById('my-rank-card'); edsonInstantScrollIntoView(me,'center'); updateQuickFloatButtons(); setTimeout(spotlightMyRankCard, 120); });
   } else {
     updateQuickFloatButtons();
   }
@@ -9464,7 +9481,7 @@ function switchTab(tab, btn){
           const filterRow = document.querySelector('#panel-matches .filter-row');
           const filterH = filterRow ? Math.round(filterRow.getBoundingClientRect().height || 0) : 0;
           const y = target.getBoundingClientRect().top + window.pageYOffset - topbarH - filterH - 12;
-          window.scrollTo({top:Math.max(0,y), behavior:'smooth'});
+          edsonInstantScrollToY(y);
           if(window.__edsonMatchesStickyFinalUpdate) setTimeout(window.__edsonMatchesStickyFinalUpdate, 220);
         }, 90);
       });
@@ -9621,7 +9638,7 @@ function scrollToTodayAfterAnnounce(){
     const offset = topbarH + filterH + 12;
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
 
-    window.scrollTo({top: Math.max(0, y), behavior:'smooth'});
+    edsonInstantScrollToY(y);
     setTimeout(()=>{ if(window.__edsonMatchesStickyFinalUpdate) window.__edsonMatchesStickyFinalUpdate(); }, 180);
   };
 
@@ -9648,9 +9665,9 @@ function dismissAnnounceToRanking(){
   }catch(e){}
   setTimeout(()=>{
     const me=document.getElementById('my-rank-card');
-    me?.scrollIntoView({block:'center', behavior:'smooth'});
+    edsonInstantScrollIntoView(me,'center');
     updateQuickFloatButtons?.();
-    setTimeout(spotlightMyRankCard, 420);
+    setTimeout(spotlightMyRankCard, 120);
   }, 180);
 }
 
@@ -11579,7 +11596,7 @@ function showSaveBanner(msg){
     const offset = topbarH + filterH + 12;
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
 
-    window.scrollTo({top: Math.max(0, y), behavior:'smooth'});
+    edsonInstantScrollToY(y);
     setTimeout(function(){
       if(window.__edsonMatchesStickyFinalUpdate) window.__edsonMatchesStickyFinalUpdate();
       if(window.updateQuickFloatButtons) window.updateQuickFloatButtons();
