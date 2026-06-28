@@ -784,14 +784,14 @@ body{
   border-radius:12px;padding:9px 11px;margin-bottom:10px;line-height:1.35;
 }
 .mcf-warn b{color:#92400E;}
-.mcf-actions{display:flex;gap:10px;padding-bottom:2px;}
+.mcf-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:2px;}
 .mcf-btn{
-  flex:1;border-radius:14px;padding:13px 10px;font-family:'Inter',sans-serif;
+  width:100%;border-radius:14px;padding:13px 10px;font-family:'Inter',sans-serif;
   font-size:15px;font-weight:800;cursor:pointer;transition:all .15s;border:1px solid var(--border);
 }
 .mcf-btn:active{transform:scale(.97);}
 .mcf-btn.mcf-back{background:var(--bg);color:var(--sub);}
-.mcf-btn.mcf-go{background:var(--green);color:#fff;border-color:var(--green);flex:1.4;}
+.mcf-btn.mcf-go{background:var(--green);color:#fff;border-color:var(--green);}
 .mcf-btn.mcf-go:active{background:var(--green2);border-color:var(--green2);}
 .modal-num.confirming{
   animation:cfPulse 1s ease infinite;
@@ -6296,8 +6296,8 @@ body{
       <div class="mcf-score" id="mcf-score"></div>
       <div class="mcf-warn" id="mcf-warn">⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.</div>
       <div class="mcf-actions">
-        <button class="mcf-btn mcf-back" onclick="cancelConfirmPick()">‹ Revisar</button>
-        <button class="mcf-btn mcf-go" onclick="commitPick()">Confirmar y guardar</button>
+        <button class="mcf-btn mcf-back" onclick="cancelConfirmPick()">Revisar</button>
+        <button class="mcf-btn mcf-go" onclick="commitPick()">Confirmar</button>
       </div>
     </div>
   </div>
@@ -11164,6 +11164,77 @@ function showSaveBanner(msg){
   }, {passive:true});
 })();
 </script>
+
+
+<script id="swipe-bottom-nav-20260628">
+(function(){
+  const SWIPE_TABS = ['matches','ranking','rules'];
+  const MIN_DISTANCE = 55;
+  const MAX_VERTICAL = 80;
+  let startX = 0;
+  let startY = 0;
+  let startTime = 0;
+
+  function activeSwipeTab(){
+    const active = document.querySelector('.panel.active');
+    if(!active || !active.id) return 'matches';
+    return active.id.replace('panel-','');
+  }
+
+  function canSwipeFrom(target){
+    if(!target) return true;
+    if(target.closest('.modal-overlay')) return false;
+    if(target.closest('input, textarea, select, button, a')) return false;
+    if(target.closest('.numpad, .modal, .rank-filter-menu')) return false;
+    return true;
+  }
+
+  function goToSwipeTab(direction){
+    const current = activeSwipeTab();
+    const idx = SWIPE_TABS.indexOf(current);
+    if(idx === -1) return;
+
+    const nextIdx = idx + direction;
+    if(nextIdx < 0 || nextIdx >= SWIPE_TABS.length) return;
+
+    const nextTab = SWIPE_TABS[nextIdx];
+    const tabBtn = document.getElementById('tab-' + nextTab);
+    switchTab(nextTab, tabBtn);
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if(!e.touches || e.touches.length !== 1) return;
+    if(!canSwipeFrom(e.target)) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startTime = Date.now();
+  }, {passive:true});
+
+  document.addEventListener('touchend', function(e){
+    if(!startTime) return;
+    if(!e.changedTouches || e.changedTouches.length !== 1) return;
+
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const elapsed = Date.now() - startTime;
+
+    startX = 0;
+    startY = 0;
+    startTime = 0;
+
+    if(Math.abs(dx) < MIN_DISTANCE) return;
+    if(Math.abs(dy) > MAX_VERTICAL) return;
+    if(Math.abs(dx) < Math.abs(dy) * 1.25) return;
+    if(elapsed > 900) return;
+
+    // Deslizar para la izquierda avanza; para la derecha vuelve.
+    goToSwipeTab(dx < 0 ? 1 : -1);
+  }, {passive:true});
+})();
+</script>
+
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
