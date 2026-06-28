@@ -2229,6 +2229,19 @@ html, body{scroll-behavior:auto!important;}
   margin-left:4px!important;
 }
 </style>
+
+<style id="mb-pick-info-longpress-20260628">
+  #match-breakdown-modal .ud-row{touch-action:manipulation;}
+  #match-breakdown-modal .ud-row:active{outline:2px solid rgba(0,155,84,.28);outline-offset:-2px;}
+  #mb-pick-info-tip{
+    position:fixed;z-index:9999;transform:translate(-50%,-100%);
+    background:#111114;color:#fff;border-radius:999px;padding:8px 12px;
+    font-size:12px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.22);
+    opacity:0;pointer-events:none;transition:opacity .14s ease, transform .14s ease;
+    white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis;
+  }
+  #mb-pick-info-tip.show{opacity:1;transform:translate(-50%,calc(-100% - 6px));}
+</style>
 </head>
 <body class="somax-loading"><div id="somax-loader-dot" aria-hidden="true"></div><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
@@ -7290,7 +7303,11 @@ async function loadFirebaseState(){
       const d = doc.data();
       const name = d.nombre || d.email || d.uid || 'Usuario';
       if(!all[name]) all[name] = {};
-      all[name][d.partidoId] = {home:Number(d.golesLocal), away:Number(d.golesVisitante)};
+      all[name][d.partidoId] = {
+        home:Number(d.golesLocal),
+        away:Number(d.golesVisitante),
+        savedAt: d.fechaPalpite && typeof d.fechaPalpite.toDate === 'function' ? d.fechaPalpite.toDate().toISOString() : (d.savedAt || '')
+      };
     });
     allPicks = all;
     localStorage.setItem('somax_all_picks', JSON.stringify(allPicks));
@@ -8015,7 +8032,7 @@ async function commitPick(){
   if(hVal==='–'||aVal==='–') return;
 
   const userPicks = loadUserPicks();
-  const savedPick = { home: parseInt(hVal), away: parseInt(aVal) };
+  const savedPick = { home: parseInt(hVal), away: parseInt(aVal), savedAt: new Date().toISOString() };
   userPicks[activeMatchId] = savedPick;
   saveUserPicks(userPicks);
   try{
@@ -8796,7 +8813,7 @@ function openMatchBreakdown(matchId){
     const pick = (allPicks[u.name] || {})[matchId];
     if(pick === undefined) return; // solo quienes palpitaron este partido
     const calc = calculatePickPoints(pick, real, m);
-    parts.push({ name:u.name, pos:idx + 1, pick, pts:calc.pts, type:calc.type, totalScore:u.score });
+    parts.push({ name:u.name, pos:idx + 1, pick, pts:calc.pts, type:calc.type, totalScore:u.score, savedAt:pick.savedAt || pick.fechaPalpite || '' });
   });
 
   const myPick = (allPicks[currentUser] || {})[matchId] || null;
@@ -8845,6 +8862,57 @@ function setMbView(v){
 function setMbScoreFilter(score){
   mbState.filterScore = (mbState.filterScore === score) ? null : score;
   renderMatchBreakdown();
+}
+
+
+let mbPickInfoTimer = null;
+let mbPickInfoFired = false;
+function formatMbPickSavedAt(value){
+  if(!value) return 'Data e hora do palpite não disponível';
+  try{
+    let d = null;
+    if(value && typeof value.toDate === 'function') d = value.toDate();
+    else if(value && typeof value === 'object' && value.seconds) d = new Date(value.seconds * 1000);
+    else d = new Date(value);
+    if(!d || isNaN(d.getTime())) return 'Data e hora do palpite não disponível';
+    return 'Palpite feito em ' + d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  }catch(e){ return 'Data e hora do palpite não disponível'; }
+}
+function clearMbPickInfoTimer(){
+  if(mbPickInfoTimer){ clearTimeout(mbPickInfoTimer); mbPickInfoTimer = null; }
+}
+function startMbPickInfo(event, row){
+  clearMbPickInfoTimer();
+  mbPickInfoFired = false;
+  mbPickInfoTimer = setTimeout(() => {
+    mbPickInfoFired = true;
+    showMbPickInfo(row, row ? row.getAttribute('data-pick-saved') : '');
+  }, 520);
+}
+function cancelMbPickInfo(){ clearMbPickInfoTimer(); }
+function handleMbParticipantClick(event, name){
+  if(mbPickInfoFired){
+    event.preventDefault();
+    event.stopPropagation();
+    setTimeout(()=>{ mbPickInfoFired = false; }, 80);
+    return;
+  }
+  openUserDetailFromMb(name);
+}
+function showMbPickInfo(row, savedAt){
+  if(!row) return;
+  let tip = document.getElementById('mb-pick-info-tip');
+  if(!tip){
+    tip = document.createElement('div');
+    tip.id = 'mb-pick-info-tip';
+    document.body.appendChild(tip);
+  }
+  tip.textContent = formatMbPickSavedAt(savedAt);
+  const r = row.getBoundingClientRect();
+  tip.style.left = Math.min(window.innerWidth - 18, Math.max(18, r.left + r.width/2)) + 'px';
+  tip.style.top = Math.max(80, r.top - 10) + 'px';
+  tip.classList.add('show');
+  setTimeout(()=>tip.classList.remove('show'), 2600);
 }
 
 function buildMbScoreChips(){
@@ -8958,7 +9026,7 @@ function renderMatchBreakdown(){
           const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const pendingScoreHtml = pending ? `<span class="ud-meta-sep">•</span><span class="ud-pending-score">${p.totalScore || 0} pts</span>` : '';
           return `
-        <div class="${rowCls}" onclick="openUserDetailFromMb('${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
+        <div class="${rowCls}" data-pick-saved="${p.savedAt || ''}" onpointerdown="startMbPickInfo(event,this)" onpointerup="cancelMbPickInfo()" onpointerleave="cancelMbPickInfo()" onpointercancel="cancelMbPickInfo()" onclick="handleMbParticipantClick(event,'${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
           <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
             <div class="ud-teams">${p.name}${nameTag}</div>
