@@ -8422,6 +8422,14 @@ function changeUdRound(delta){
 function renderUd(){
   const s = udState.stats;
 
+  // Modo visual de decisiones/mata-mata: cuando ya hay partidos decisivos revelados,
+  // los controles principales del detalle del jugador usan naranja.
+  const udModalEl = document.getElementById('user-detail-modal');
+  if(udModalEl){
+    const hasRevealedX2 = (udState.matches || []).some(m => m.x2);
+    udModalEl.classList.toggle('x2-mode', !!hasRevealedX2);
+  }
+
   // ── hero (siempre) ──
   let delta = '';
   if(s.posDelta !== null){
@@ -15810,3 +15818,56 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }, 6500);
 })();
 </script>
+
+
+<style id="ajustes-finais-decisiones-v2-20260628">
+/* Ajustes solicitados:
+   1) "= Vos" volta ao padrão azul, mesmo nos jogos de decisão.
+   2) O placar real do jogo (ex.: 0 × 1 / 0 × 0) fica preto normal.
+   3) No contexto de decisões, os botões principais Partidos/Resumen ficam laranja. */
+
+/* = Vos sempre azul */
+#user-detail-modal .ud-row.x2-game .ud-mine-tag,
+#match-breakdown-modal.x2-mode .ud-mine-tag{
+  background:rgba(0,56,168,.10)!important;
+  border-color:rgba(0,56,168,.25)!important;
+  color:var(--blue)!important;
+}
+#match-breakdown-modal.x2-mode .ud-row.mine .ud-mine-tag.me{
+  background:rgba(0,56,168,.10)!important;
+  border-color:rgba(0,56,168,.25)!important;
+  color:var(--blue)!important;
+}
+
+/* Placar real do jogo sempre preto/normal, não laranja */
+#user-detail-modal .ud-row.x2-game .ud-sc-in{
+  color:var(--text)!important;
+}
+
+/* Botões principais no contexto de decisões/mata-mata */
+#user-detail-modal.x2-mode .ud-tab.active,
+#match-breakdown-modal.x2-mode .ud-tab.active{
+  background:var(--gold)!important;
+  border-color:var(--gold)!important;
+  color:#fff!important;
+}
+#user-detail-modal.x2-mode .ud-tab.active svg,
+#match-breakdown-modal.x2-mode .ud-tab.active svg{
+  color:#fff!important;
+}
+
+/* Chips de filtros/listas de decisão seguem laranja apenas quando ativos */
+#match-breakdown-modal.x2-mode .mb-sfchip.active{
+  background:var(--gold)!important;
+  border-color:var(--gold)!important;
+  color:#fff!important;
+}
+
+/* Mantém o Exacto laranja nas decisões, sem contaminar o = Vos */
+#user-detail-modal .ud-row.x2-game .ud-exact-tag,
+#match-breakdown-modal.x2-mode .ud-exact-tag{
+  background:rgba(245,158,11,.13)!important;
+  border-color:rgba(245,158,11,.35)!important;
+  color:var(--gold)!important;
+}
+</style>
