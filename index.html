@@ -286,24 +286,11 @@ body{
 
 
 .match-card.x2-game{
-  border-color:rgba(245,158,11,.55);
-  box-shadow:0 2px 12px rgba(245,158,11,.16), var(--shadow);
+  border-color:var(--border);
+  box-shadow:var(--shadow);
 }
-.match-card.x2-game::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(110deg,transparent 0%,rgba(245,158,11,.045) 46%,rgba(255,255,255,.22) 50%,rgba(245,158,11,.045) 54%,transparent 100%);
-  transform:translateX(-130%);
-  animation:x2CardShine 7s ease-in-out infinite;
-  pointer-events:none;
-}
+.match-card.x2-game::before{content:none;}
 .match-card.x2-game::after{content:none;}
-.match-card.x2-game .mc-status.pending{
-  background:rgba(245,158,11,.13);
-  color:#B36B00;
-}
-.match-card.x2-game .mc-score{
-  border-color:rgba(245,158,11,.28);
-}
 .date-x2{
   position:relative;overflow:hidden;
   animation:x2PillPulse 2.8s ease-in-out infinite;
@@ -11732,6 +11719,21 @@ body.edson-matches-bg #summary-modal .summary-header{
   opacity:.7;
 }
 </style>
+<style id="mc-card-height-uniform-20260628">
+/* Cards finalizados ficavam um pouco mais altos por causa do badge de pontos do topo.
+   Compacta o badge de pontos para a altura do topo bater com a dos demais cards
+   (mesmo "tamanho padrão" para todos), sem mexer no resto. */
+.mc-status.done,
+.mc-status.zero{
+  padding-top:1px!important;
+  padding-bottom:1px!important;
+}
+.mc-status.done .mc-pts,
+.mc-status.zero .mc-pts{
+  font-size:15px!important;
+}
+</style>
+
 <style id="mc-status-as-number-20260628">
 /* Jogos sem resultado: a "etiqueta" da direita vira só o número do jogo (texto simples).
    Mantém a classe palp/pending/closed para o seletor :has() seguir pintando a borda do placar. */
