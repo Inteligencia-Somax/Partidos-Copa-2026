@@ -246,7 +246,7 @@ body{
 }
 .date-sep{color:#fff;opacity:.65;font-weight:700;}
 .date-x2{
-  font-size:11px;font-weight:800;letter-spacing:1px;
+  font-size:10px;font-weight:800;letter-spacing:1px;
   color:#fff;background:var(--gold);
   padding:3px 11px;border-radius:20px;white-space:nowrap;flex-shrink:0;
   box-shadow:0 1px 4px rgba(245,158,11,.4);
@@ -309,9 +309,7 @@ body{
   animation:x2PillPulse 1.9s ease-in-out infinite;
 }
 .date-x2::after{
-  content:'';position:absolute;top:-40%;bottom:-40%;width:26px;left:-45%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.78),transparent);
-  transform:rotate(18deg);animation:x2PillShine 3.4s ease-in-out infinite;
+  content:none;
 }
 @keyframes x2CardFloat{
   0%,100%{transform:translateY(0);}
