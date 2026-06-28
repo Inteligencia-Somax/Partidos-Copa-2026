@@ -7075,6 +7075,27 @@ function calculatePickPoints(pick, real, match){
   const multiplier = match && match.x2 ? 2 : 1;
   return {pts:base*multiplier, type};
 }
+function getScoreTypeColor(type, match){
+  const normalPalette = {
+    exact: '#009B54',
+    winnerGoals: '#34A853',
+    diff: '#7CB342',
+    loserGoals: '#C0CA33',
+    winner: '#F59E0B',
+    wrong: '#CE1126'
+  };
+  const x2Palette = {
+    exact: '#F59E0B',
+    winnerGoals: '#F8A51A',
+    diff: '#FBBF24',
+    loserGoals: '#FACC15',
+    winner: '#FDE68A',
+    wrong: '#CE1126'
+  };
+  const palette = (match && match.x2) ? x2Palette : normalPalette;
+  return palette[type] || normalPalette.wrong;
+}
+
 function getMatchDateTime(match){
   const months = { 'Jun.':5, 'Jul.':6, 'Jun':5, 'Jul':6 };
   const clean = match.date.replace(',', '').split(' ');
@@ -7830,7 +7851,7 @@ function renderMatches(filter){
         </div>
         <div class="mc-teams">
           <div class="mc-team">
-            <span class="mc-flag${disp.hc?' clickable':''}"${disp.hc?` onclick="event.stopPropagation();openTeamHistory('${disp.hc}')" role="button" tabindex="0" title="Ver historial" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openTeamHistory('${disp.hc}')}"`:''}>${disp.hf}</span>
+            <span class="mc-flag${disp.hc?' clickable':''}"${disp.hc?` onclick="event.stopPropagation();openTeamHistory('${disp.hc}', '${m.id}')" role="button" tabindex="0" title="Ver historial" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openTeamHistory('${disp.hc}', '${m.id}')}"`:''}>${disp.hf}</span>
             <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${disp.home}</span>
           </div>
           <div class="mc-score-wrap">
@@ -7840,7 +7861,7 @@ function renderMatches(filter){
           </div>
           <div class="mc-team right">
             <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${disp.away}</span>
-            <span class="mc-flag${disp.ac?' clickable':''}"${disp.ac?` onclick="event.stopPropagation();openTeamHistory('${disp.ac}')" role="button" tabindex="0" title="Ver historial" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openTeamHistory('${disp.ac}')}"`:''}>${disp.af}</span>
+            <span class="mc-flag${disp.ac?' clickable':''}"${disp.ac?` onclick="event.stopPropagation();openTeamHistory('${disp.ac}', '${m.id}')" role="button" tabindex="0" title="Ver historial" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openTeamHistory('${disp.ac}', '${m.id}')}"`:''}>${disp.af}</span>
           </div>
         </div>`;
       card.addEventListener('click', ()=>{
@@ -8263,13 +8284,10 @@ function renderRanking(){
     const posCell = (!isRoundRanking && i<3) ? `<span class="rank-medal">${i===0?'🥇':i===1?'🥈':'🥉'}</span>` : `${i+1}º`;
     const upicks = all[u.name] || {};
     const dots = recent5.map(m=>{
-      const pts = calculatePickPoints(upicks[m.id], realResults[m.id], m).pts;
-      // Forma dos últimos jogos:
-      // - fase de grupos: pontuou = verde
-      // - fase decisiva/mata-mata: pontuou = laranja
-      // - não pontuou: vermelho
-      const dotClass = pts > 0 ? (isX2Match(m) ? 'x2win' : 'win') : 'miss';
-      return `<span class="fd ${dotClass}"></span>`;
+      const calc = calculatePickPoints(upicks[m.id], realResults[m.id], m);
+      const dotClass = calc.pts > 0 ? 'win' : 'miss';
+      const dotColor = getScoreTypeColor(calc.type, m);
+      return `<span class="fd ${dotClass}" style="background:${dotColor}!important" title="${calc.pts} pts"></span>`;
     }).join('');
     const formHtml = dots ? `<span class="form-dots">${dots}</span>` : '';
     const generalHtml = (isRoundRanking && generalRankMap[u.name]) ? (()=>{
@@ -8376,8 +8394,8 @@ function openUserDetail(name){
   });
 
   const form = playedMatches.slice(0, 5).map(m => {
-    const pts = calculatePickPoints(picks[m.id], realResults[m.id], m).pts;
-    return { pts, scored: pts > 0 };
+    const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
+    return { pts: calc.pts, type: calc.type, scored: calc.pts > 0, match: m };
   });
 
   let posDelta = null;
@@ -8502,7 +8520,10 @@ function renderUdResumen(){
   }
 
   if(s.form.length){
-    const dots = s.form.map(f => `<span class="ud-dot ${f.scored?'on':'off'}" title="${f.pts} pts"></span>`).join('');
+    const dots = s.form.map(f => {
+      const dotColor = getScoreTypeColor(f.type, f.match);
+      return `<span class="ud-dot ${f.scored?'on':'off'}" style="background:${dotColor}!important;opacity:1" title="${f.pts} pts"></span>`;
+    }).join('');
     html += `<div class="ud-form"><span class="ud-form-lbl">Forma (últimos ${s.form.length})</span><div class="ud-form-dots">${dots}</div></div>`;
   }
   html += renderUdAnalisis();
@@ -8964,7 +8985,7 @@ function renderMatchBreakdown(){
         winnerGoals: '#F8A51A',
         diff:        '#FBBF24',
         loserGoals:  '#FACC15',
-        winner:      '#F97316'
+        winner:      '#FDE68A'
       };
       return x2Palette[t.key] || '#F59E0B';
     }
@@ -9058,8 +9079,12 @@ function teamRegistry(real, standings){
 function teamPhaseLabel(m){
   return (m.phase && /^Grupo/.test(m.phase)) ? m.phase : getRoundLabel(m);
 }
-function openTeamHistory(code){
+function openTeamHistory(code, originMatchId){
   if(!code) return;
+  const thModalEl = document.getElementById('team-history-modal');
+  const originMatch = originMatchId ? MATCHES.find(mm => String(mm.id) === String(originMatchId)) : null;
+  const originIsX2 = originMatch ? isX2Match(originMatch) : false;
+  if(thModalEl) thModalEl.classList.toggle('x2-mode', !!originIsX2);
   const real = loadRealResults();
   const standings = computeStandings(real);
   const reg = teamRegistry(real, standings);
@@ -9130,7 +9155,7 @@ function openTeamHistory(code){
     }).join('');
   }
 
-  document.getElementById('team-history-modal').style.display = 'flex';
+  (thModalEl || document.getElementById('team-history-modal')).style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
 function closeTeamHistory(){
@@ -12181,6 +12206,40 @@ body.edson-matches-bg #summary-modal .summary-header{
   #ranking-list .fd.miss,
   .rank-card .fd.miss{
     background:var(--red)!important;
+  }
+</style>
+
+
+<!-- AJUSTE EDSON V9: Solo ganador correcto em mata-mata usa amarelo mais claro no gráfico/análise para diferenciar do marcador exacto. -->
+
+
+<!-- AJUSTE EDSON V10: histórico da seleção acompanha a cor da fase do card clicado.
+     Grupo = verde; Mata-mata/decisão = laranja. -->
+<style id="edson-v10-team-history-contexto-fase-20260628">
+  #team-history-modal.x2-mode .modal-header{
+    background:var(--gold)!important;
+  }
+  #team-history-modal.x2-mode .modal-close{
+    background:rgba(255,255,255,.22)!important;
+  }
+  #team-history-modal.x2-mode .th-badge.w{
+    background:rgba(245,158,11,.12)!important;
+    color:var(--gold)!important;
+  }
+  #team-history-modal.x2-mode .th-res.win{
+    background:rgba(245,158,11,.12)!important;
+    color:var(--gold)!important;
+    border-color:rgba(245,158,11,.35)!important;
+  }
+</style>
+
+
+<!-- AJUSTE EDSON V12: forma dos últimos 5 usa exatamente a cor da categoria da legenda (grupo e mata-mata). -->
+<style id="edson-v12-forma-cores-legenda-20260628">
+  #ranking-list .fd,
+  .rank-card .fd,
+  #user-detail-modal .ud-dot{
+    opacity:1!important;
   }
 </style>
 
@@ -16080,6 +16139,47 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   #match-breakdown-modal.x2-mode .ud-mine-tag,
   #match-breakdown-modal.x2-mode .ud-mine-tag.me,
   #match-breakdown-modal.x2-mode .ud-row.mine .ud-mine-tag.me{
+    background:rgba(0,56,168,.10)!important;
+    border-color:rgba(0,56,168,.25)!important;
+    color:var(--blue)!important;
+  }
+</style>
+
+<!-- AJUSTE EDSON V11: no detalhe do participante aberto pelo Ranking, botões e cabeçalho permanecem verdes -->
+<style id="edson-v11-user-detail-ranking-verde-20260628">
+  /* Este modal é o detalhe do participante vindo do Ranking.
+     Mesmo quando a lista mostra jogos do mata-mata, a navegação interna continua verde
+     para combinar com o cabeçalho do participante. */
+  #user-detail-modal .modal-header,
+  #user-detail-modal.x2-mode .modal-header{
+    background:var(--green)!important;
+    border-radius:20px 20px 0 0!important;
+  }
+
+  #user-detail-modal .modal-header .modal-close,
+  #user-detail-modal.x2-mode .modal-header .modal-close{
+    background:rgba(255,255,255,.22)!important;
+    color:#fff!important;
+  }
+
+  #user-detail-modal .ud-tab.active,
+  #user-detail-modal.x2-mode .ud-tab.active{
+    background:var(--green)!important;
+    border-color:var(--green)!important;
+    color:#fff!important;
+  }
+
+  #user-detail-modal .ud-tab.active svg,
+  #user-detail-modal.x2-mode .ud-tab.active svg{
+    color:#fff!important;
+    stroke:currentColor!important;
+  }
+
+  /* Mantém o = Vos azul nesta tela. */
+  #user-detail-modal .ud-mine-tag,
+  #user-detail-modal .ud-mine-tag.me,
+  #user-detail-modal.x2-mode .ud-mine-tag,
+  #user-detail-modal.x2-mode .ud-mine-tag.me{
     background:rgba(0,56,168,.10)!important;
     border-color:rgba(0,56,168,.25)!important;
     color:var(--blue)!important;
