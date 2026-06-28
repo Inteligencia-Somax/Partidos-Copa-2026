@@ -2149,8 +2149,57 @@ body.somax-modal-locked{
 @keyframes quickFabIn{from{opacity:0;transform:translateY(6px) scale(.96);}to{opacity:1;transform:none;}}
 </style>
 
+
+<style id="edson-initial-loader-20260628">
+/* Tela de carregamento inicial: evita mostrar banner/regras pela metade antes da aplicação ficar pronta. */
+body.somax-loading{
+  overflow:hidden!important;
+}
+body.somax-loading::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:linear-gradient(180deg,#0E5F34 0%,#0B4F2B 100%);
+  opacity:1;
+}
+body.somax-loading::after{
+  content:'Cargando...';
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:100000;
+  color:#fff;
+  font-family:'Inter',sans-serif;
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.8px;
+  padding:16px 22px 16px 54px;
+  border-radius:999px;
+  background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.25);
+  box-shadow:0 16px 42px rgba(0,0,0,.28);
+}
+#somax-loader-dot{
+  position:fixed;
+  left:calc(50% - 68px);
+  top:50%;
+  width:20px;
+  height:20px;
+  margin-top:-10px;
+  z-index:100001;
+  border-radius:50%;
+  border:3px solid rgba(255,255,255,.35);
+  border-top-color:#fff;
+  animation:somaxLoaderSpin .8s linear infinite;
+  pointer-events:none;
+}
+body:not(.somax-loading) #somax-loader-dot{display:none;}
+@keyframes somaxLoaderSpin{to{transform:rotate(360deg);}}
+</style>
 </head>
-<body><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
+<body class="somax-loading"><div id="somax-loader-dot" aria-hidden="true"></div><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -15226,3 +15275,53 @@ function showSaveBanner(msg){
   z-index:540!important;
 }
 </style>
+
+<style id="edson-matches-bottom-green-20260628">
+/* Ajuste: no fim da aba Partidas, o espaço até a barra inferior continua verde, sem faixa cinza/branca solta. */
+body.edson-matches-bg{
+  background:#0E5F34!important;
+}
+body.edson-matches-bg .topbar,
+body.edson-matches-bg .bottom-nav,
+body.edson-matches-bg .modal,
+body.edson-matches-bg .modal-overlay{
+  background:initial;
+}
+body.edson-matches-bg .topbar{background:#fff!important;}
+body.edson-matches-bg .bottom-nav{background:#fff!important;}
+#panel-matches.active{
+  padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))!important;
+  margin-bottom:calc(-90px - env(safe-area-inset-bottom,0px))!important;
+}
+</style>
+<script id="edson-matches-bottom-green-20260628">
+(function(){
+  function updateMatchesBg(){
+    var p=document.getElementById('panel-matches');
+    var on=!!(p && p.classList.contains('active'));
+    document.body.classList.toggle('edson-matches-bg', on);
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    updateMatchesBg();
+    var main=document.getElementById('main-content') || document.body;
+    new MutationObserver(updateMatchesBg).observe(main,{subtree:true,attributes:true,attributeFilter:['class','style']});
+    document.addEventListener('click', function(){setTimeout(updateMatchesBg,60);}, true);
+  });
+  window.addEventListener('load', updateMatchesBg);
+})();
+</script>
+
+<script id="edson-initial-loader-20260628">
+(function(){
+  function hideInitialLoader(){
+    // espera um pouco para Firebase/render/imagem começarem a estabilizar e depois mostra tudo de uma vez
+    setTimeout(function(){
+      document.body.classList.remove('somax-loading');
+    }, 450);
+  }
+  if(document.readyState === 'complete') hideInitialLoader();
+  else window.addEventListener('load', hideInitialLoader, {once:true});
+  // segurança: se algum recurso demorar demais, não deixa a tela presa no carregando
+  setTimeout(function(){document.body.classList.remove('somax-loading');}, 3500);
+})();
+</script>
