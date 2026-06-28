@@ -13993,3 +13993,96 @@ function showSaveBanner(msg){
     border-bottom:none!important;
   }
 </style>
+
+<!-- AJUSTE EDSON: pontuação sem negrito + swipe nos filtros/conteúdo do modal de palpites -->
+<style id="edson-mb-pending-score-font-and-swipe-20260627-2227">
+  /* Pontuação geral no jogo ainda fechado: mesmo estilo do texto "Palpite" */
+  #match-breakdown-modal .ud-pending-score{
+    color:#6b7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-meta .ud-pending-score{
+    color:#6b7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+  }
+
+  /* Permite gesto horizontal sem brigar com a rolagem vertical */
+  #match-breakdown-modal .ud-tabs.mb-score-filter,
+  #match-breakdown-modal .ud-body{
+    touch-action:pan-y!important;
+  }
+</style>
+
+<script id="edson-mb-score-filter-swipe-20260627-2227">
+(function(){
+  if(window.__edsonMbScoreSwipeApplied) return;
+  window.__edsonMbScoreSwipeApplied = true;
+
+  var startX = 0;
+  var startY = 0;
+  var tracking = false;
+  var startedInMb = false;
+
+  function isSwipeArea(el){
+    return !!(el && el.closest && el.closest('#match-breakdown-modal .ud-tabs.mb-score-filter, #match-breakdown-modal .ud-body'));
+  }
+
+  function isInteractiveButAllowed(el){
+    /* Botões dos filtros também podem receber swipe; demais botões/nav não. */
+    if(el && el.closest && el.closest('#match-breakdown-modal .ud-tabs.mb-score-filter')) return false;
+    return !!(el && el.closest && el.closest('button, a, input, textarea, select'));
+  }
+
+  function getScoreOptions(){
+    var buttons = Array.prototype.slice.call(document.querySelectorAll('#match-breakdown-modal .ud-tabs.mb-score-filter .mb-sfchip'));
+    return buttons.map(function(btn){
+      var on = btn.getAttribute('onclick') || '';
+      var m = on.match(/setMbScoreFilter\((null|'[^']*'|\"[^\"]*\")\)/);
+      if(!m) return null;
+      if(m[1] === 'null') return null;
+      return m[1].slice(1, -1);
+    });
+  }
+
+  function goScoreFilter(dir){
+    if(typeof setMbScoreFilter !== 'function' || !window.mbState || !mbState.pending) return;
+    var options = getScoreOptions();
+    if(!options.length) return;
+    var current = mbState.filterScore || null;
+    var idx = options.indexOf(current);
+    if(idx < 0) idx = 0;
+    var next = idx + dir;
+    if(next < 0) next = 0;
+    if(next >= options.length) next = options.length - 1;
+    if(next === idx) return;
+    setMbScoreFilter(options[next]);
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if(!isSwipeArea(e.target) || isInteractiveButAllowed(e.target) || !e.touches || e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+    startedInMb = true;
+  }, {passive:true});
+
+  document.addEventListener('touchend', function(e){
+    if(!tracking || !startedInMb) return;
+    tracking = false;
+    startedInMb = false;
+    if(!e.changedTouches || e.changedTouches.length !== 1) return;
+
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+
+    if(Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
+    /* Arrastar para esquerda avança para o próximo filtro; para direita volta. */
+    goScoreFilter(dx < 0 ? 1 : -1);
+  }, {passive:true});
+})();
+</script>
