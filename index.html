@@ -2232,7 +2232,7 @@ html, body{scroll-behavior:auto!important;}
 
 <style id="mb-pick-info-longpress-20260628">
   #match-breakdown-modal .ud-row{touch-action:manipulation;}
-  #match-breakdown-modal .ud-row:active{outline:2px solid rgba(0,155,84,.28);outline-offset:-2px;}
+  #match-breakdown-modal.admin-pick-info-enabled .ud-row:active{outline:2px solid rgba(0,155,84,.28);outline-offset:-2px;}
   #mb-pick-info-tip{
     position:fixed;z-index:9999;transform:translate(-50%,-100%);
     background:#111114;color:#fff;border-radius:999px;padding:8px 12px;
@@ -8820,6 +8820,7 @@ function openMatchBreakdown(matchId){
   mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null, myPick, myName:currentUser };
   const mbModal = document.getElementById('match-breakdown-modal');
   mbModal.classList.toggle('x2-mode', !!m.x2);
+  mbModal.classList.toggle('admin-pick-info-enabled', canViewMbPickInfo());
   mbModal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   renderMatchBreakdown();
@@ -8881,7 +8882,11 @@ function formatMbPickSavedAt(value){
 function clearMbPickInfoTimer(){
   if(mbPickInfoTimer){ clearTimeout(mbPickInfoTimer); mbPickInfoTimer = null; }
 }
+function canViewMbPickInfo(){
+  return currentUserRole === 'admin' || adminUnlocked === true;
+}
 function startMbPickInfo(event, row){
+  if(!canViewMbPickInfo()) return;
   clearMbPickInfoTimer();
   mbPickInfoFired = false;
   mbPickInfoTimer = setTimeout(() => {
