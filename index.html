@@ -11732,6 +11732,24 @@ body.edson-matches-bg #summary-modal .summary-header{
   opacity:.7;
 }
 </style>
+<style id="rank-pos-name-gap-match-20260628">
+/* Espaçamento colocação -> nome igual ao espaçamento borda -> colocação (= padding lateral).
+   - número ancorado à esquerda: começa sempre na mesma distância da borda (1 ou 2 dígitos);
+   - largura automática: evita o "▼N" transbordar para dentro do gap;
+   - margin-right completa o gap do flex até o valor do padding lateral. */
+.rank-card:not(.round-mode) .rank-pos{
+  justify-content:flex-start!important;
+  width:auto!important;
+  min-width:46px!important;
+  margin-right:4px!important;   /* 12px (gap) + 4px = 16px = padding lateral (desktop) */
+}
+@media(max-width:430px){
+  .rank-card:not(.round-mode) .rank-pos{
+    min-width:40px!important;
+    margin-right:5px!important; /* 10px (gap) + 5px = 15px = padding lateral (celular) */
+  }
+}
+</style>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
@@ -15389,7 +15407,9 @@ body.edson-matches-bg .modal-overlay{
 }
 body.edson-matches-bg .topbar{background:#fff!important;}
 body.edson-matches-bg .bottom-nav{background:#fff!important;}
-#panel-matches.active{
+#panel-matches.active,
+#panel-ranking.active,
+#panel-rules.active{
   padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))!important;
   margin-bottom:calc(-90px - env(safe-area-inset-bottom,0px))!important;
 }
@@ -15397,8 +15417,8 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
 <script id="edson-matches-bottom-green-20260628">
 (function(){
   function updateMatchesBg(){
-    var p=document.getElementById('panel-matches');
-    var on=!!(p && p.classList.contains('active'));
+    var ids=['panel-matches','panel-ranking','panel-rules'];
+    var on=ids.some(function(id){var p=document.getElementById(id);return !!(p&&p.classList.contains('active'));});
     document.body.classList.toggle('edson-matches-bg', on);
   }
   document.addEventListener('DOMContentLoaded', function(){
