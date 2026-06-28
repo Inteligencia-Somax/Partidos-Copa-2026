@@ -14635,3 +14635,111 @@ function showSaveBanner(msg){
   #panel-ranking .rank-search-wrap.rank-sticky-fixed{top:52px!important;}
 }
 </style>
+
+<style id="edson-ranking-sticky-final-fix-20260628">
+/* Fix final: no topo a barra fica no fluxo normal; ao rolar, fixa abaixo do cabeçalho. */
+#panel-ranking .rank-search-wrap{
+  position:relative!important;
+  top:auto!important;
+  left:auto!important;
+  transform:none!important;
+  width:auto!important;
+  max-width:680px!important;
+  z-index:160!important;
+  margin:0 auto 10px!important;
+  padding:10px 12px 8px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#panel-ranking .rank-search-wrap.rank-sticky-fixed{
+  position:fixed!important;
+  top:56px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:100%!important;
+  max-width:680px!important;
+  z-index:300!important;
+  margin:0!important;
+  padding:10px 12px 8px!important;
+  background:#0E5F34!important;
+  box-shadow:0 8px 16px rgba(0,0,0,.14)!important;
+}
+#rank-search-fixed-spacer.rank-spacer-on{
+  display:block!important;
+}
+#rank-search-fixed-spacer:not(.rank-spacer-on){
+  display:none!important;
+  height:0!important;
+}
+#panel-ranking.rank-sticky-on .ranking-list,
+#panel-ranking.rank-sticky-on #rank-context:not([style*="display:none"]){
+  padding-top:0!important;
+  margin-top:0!important;
+}
+@media(max-width:520px){
+  #panel-ranking .rank-search-wrap.rank-sticky-fixed{top:52px!important;}
+}
+</style>
+<script id="edson-ranking-sticky-final-fix-20260628">
+(function(){
+  function topbarHeight(){
+    var tb=document.querySelector('.topbar');
+    return tb ? Math.round(tb.getBoundingClientRect().height || 56) : (window.innerWidth<=520?52:56);
+  }
+  function panel(){return document.getElementById('panel-ranking');}
+  function wrap(){return document.querySelector('#panel-ranking .rank-search-wrap');}
+  function active(){var p=panel(); return p && p.classList.contains('active') && p.offsetParent!==null;}
+  function spacer(w){
+    var sp=document.getElementById('rank-search-fixed-spacer');
+    if(!sp){
+      sp=document.createElement('div');
+      sp.id='rank-search-fixed-spacer';
+      w.parentNode.insertBefore(sp,w);
+    }
+    return sp;
+  }
+  function originalTop(w, top){
+    var fixed=w.classList.contains('rank-sticky-fixed');
+    if(fixed) w.classList.remove('rank-sticky-fixed');
+    var y=w.getBoundingClientRect().top + window.scrollY;
+    if(fixed) w.classList.add('rank-sticky-fixed');
+    return y - top;
+  }
+  function update(){
+    var w=wrap();
+    if(!w) return;
+    var p=panel();
+    var sp=spacer(w);
+    var top=topbarHeight();
+
+    if(!active()){
+      w.classList.remove('rank-sticky-fixed');
+      if(p) p.classList.remove('rank-sticky-on');
+      sp.classList.remove('rank-spacer-on');
+      sp.style.setProperty('height','0px','important');
+      return;
+    }
+
+    var trigger=originalTop(w, top);
+    if(window.scrollY >= trigger){
+      sp.style.setProperty('height', w.offsetHeight + 'px', 'important');
+      sp.classList.add('rank-spacer-on');
+      w.classList.add('rank-sticky-fixed');
+      w.style.setProperty('top', top + 'px', 'important');
+      if(p) p.classList.add('rank-sticky-on');
+    }else{
+      w.classList.remove('rank-sticky-fixed');
+      w.style.removeProperty('top');
+      if(p) p.classList.remove('rank-sticky-on');
+      sp.classList.remove('rank-spacer-on');
+      sp.style.setProperty('height','0px','important');
+    }
+  }
+  window.addEventListener('scroll', update, {passive:true});
+  window.addEventListener('resize', update);
+  document.addEventListener('click', function(){setTimeout(update,60);}, true);
+  document.addEventListener('DOMContentLoaded', function(){setTimeout(update,100);});
+  setInterval(update, 250);
+  window.__edsonRankingStickyFinalUpdate=update;
+})();
+</script>
