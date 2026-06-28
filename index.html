@@ -11904,6 +11904,71 @@ body.edson-matches-bg #summary-modal .summary-header{
   }
 }
 </style>
+
+
+<style id="edson-estados-resultado-visual-20260628">
+/* Estados visuais dos resultados:
+   - Exato: preenchido verde.
+   - Acerto parcial: somente verde, sem fundo.
+   - Erro: somente vermelho, sem fundo. */
+
+/* Badge Resultado base para jogo finalizado: sem pílula colorida, exceto exato */
+.match-card:has(.mc-status.done):not(.exact-hit) .mc-badge.center{
+  background:transparent!important;
+  border-color:transparent!important;
+  color:var(--green)!important;
+  box-shadow:none!important;
+}
+
+.match-card:has(.mc-status.zero) .mc-badge.center{
+  background:transparent!important;
+  border-color:transparent!important;
+  color:var(--red)!important;
+  box-shadow:none!important;
+}
+
+/* Acerto exato: mantém destaque preenchido verde */
+.match-card.exact-hit .mc-badge.center{
+  color:var(--green)!important;
+  background:rgba(0,155,84,.12)!important;
+  border-color:rgba(0,155,84,.30)!important;
+}
+
+/* Pontos: fundo verde somente no exato; parcial e erro sem fundo */
+.mc-status.done,
+.mc-status.zero{
+  background:transparent!important;
+  border-color:transparent!important;
+}
+.match-card.exact-hit .mc-status.done{
+  background:rgba(0,155,84,.10)!important;
+  color:var(--green)!important;
+}
+.match-card:not(.exact-hit) .mc-status.done{
+  color:var(--green)!important;
+}
+.mc-status.zero{
+  color:var(--red)!important;
+}
+
+/* Placar apostado: fundo verde só no exato; parcial = contorno verde; erro = contorno vermelho */
+.match-card:not(.exact-hit) .mc-score.filled{
+  background:#fff!important;
+  border-color:var(--green)!important;
+  color:var(--green)!important;
+}
+.match-card.exact-hit .mc-score.filled{
+  background:#E8F5EE!important;
+  border-color:var(--green)!important;
+  color:var(--green)!important;
+}
+.mc-score.zero{
+  background:#fff!important;
+  border-color:var(--red)!important;
+  color:var(--red)!important;
+}
+</style>
+
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
