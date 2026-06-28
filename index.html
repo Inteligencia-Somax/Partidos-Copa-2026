@@ -1987,6 +1987,25 @@ body{
 }
 </style>
 
+
+<style id="ajuste-borda-palpite-azul-20260628">
+/* Quando o jogo já está palpitado, a borda do placar também fica azul */
+.match-card:has(.mc-status.palp) .mc-score,
+.match-card:has(.mc-status.palp) .mc-score.pending-score,
+.match-card:has(.mc-status.palp) .mc-score.closed-score{
+  border-color:rgba(0,56,168,.28)!important;
+  background:rgba(0,56,168,.08)!important;
+  color:var(--blue)!important;
+}
+
+/* Mantém pendentes sem palpite em amarelo */
+.match-card:has(.mc-status.pending):not(:has(.mc-status.palp)) .mc-score{
+  border-color:rgba(245,158,11,.28)!important;
+  background:rgba(245,158,11,.10)!important;
+  color:#B36B00!important;
+}
+</style>
+
 </head>
 <body><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
