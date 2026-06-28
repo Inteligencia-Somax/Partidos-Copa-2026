@@ -9385,10 +9385,37 @@ function maybeShowAnnouncement(){
   lockSomaxPageScroll();
 }
 
+function scrollToTodayAfterAnnounce(){
+  // Ao fechar o aviso inicial, leva o usuário até os jogos de hoje
+  // considerando o cabeçalho fixo e a barra de filtros sticky.
+  try{
+    switchTab('matches', document.getElementById('tab-matches') || document.getElementById('nav-matches'));
+    filterMatches('all');
+  }catch(e){}
+
+  const run = ()=>{
+    const target = document.getElementById('today-group') || document.querySelector('#matches-list .date-group, #matches-list .match-card');
+    if(!target) return;
+
+    const topbar = document.querySelector('.topbar');
+    const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height || 56) : 56;
+    const filterRow = document.querySelector('#panel-matches .filter-row');
+    const filterH = filterRow ? Math.round(filterRow.getBoundingClientRect().height || 0) : 0;
+    const offset = topbarH + filterH + 12;
+    const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+    window.scrollTo({top: Math.max(0, y), behavior:'smooth'});
+    setTimeout(()=>{ if(window.__edsonMatchesStickyFinalUpdate) window.__edsonMatchesStickyFinalUpdate(); }, 180);
+  };
+
+  requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(run, 120)));
+}
+
 function dismissAnnounce(){
   const modal = document.getElementById('announce-modal');
   if(modal) modal.style.display = 'none';
   unlockSomaxPageScroll();
+  scrollToTodayAfterAnnounce();
 }
 
 function closeAnnounceOutside(e){
