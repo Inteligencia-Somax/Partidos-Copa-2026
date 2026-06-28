@@ -495,7 +495,10 @@ body.somax-modal-locked{
 .announce-btn{width:100%;padding:13px;border:none;border-radius:14px;background:var(--green);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;}
 .announce-btn svg{width:18px;height:18px;stroke:currentColor;flex-shrink:0;}
 .announce-btn:active{transform:scale(.98);}
-.announce-actions-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.announce-actions-split{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.announce-actions-split .announce-btn{min-width:0;height:56px;padding:0 8px;justify-content:center;}
+.announce-actions-split .announce-btn span{white-space:nowrap;}
+@media(max-width:430px){.announce-actions-split{gap:7px;}.announce-actions-split .announce-btn{height:54px;font-size:13px;padding:0 6px;gap:5px;}.announce-actions-split .announce-btn svg{width:16px;height:16px;}}
 .announce-btn-secondary{background:var(--bg);color:var(--sub);border:1px solid var(--border);}
 .summary-modal-box{border-radius:24px;max-height:86vh;overflow-y:auto;animation:fadeScale .25s ease;box-shadow:0 12px 48px rgba(0,0,0,.28);}
 .summary-modal-body{padding:16px;}
@@ -2227,12 +2230,13 @@ body.somax-modal-locked{
     </div>
     <div class="announce-body" id="announce-body"></div>
     <div class="announce-actions announce-actions-split">
-      <button class="announce-btn announce-btn-secondary" onclick="dismissAnnounce()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-        <span>Entendido</span>
+      <button class="announce-btn announce-btn-secondary" onclick="dismissAnnounceToMatches()">
+        <span>Partidas</span>
+      </button>
+      <button class="announce-btn announce-btn-secondary" onclick="dismissAnnounceToRanking()">
+        <span>Ranking</span>
       </button>
       <button class="announce-btn" onclick="openRecentSummaryModal()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
         <span>Ver resumen</span>
       </button>
     </div>
@@ -9536,10 +9540,27 @@ function scrollToTodayAfterAnnounce(){
 }
 
 function dismissAnnounce(){
+  dismissAnnounceToMatches();
+}
+
+function dismissAnnounceToMatches(){
   const modal = document.getElementById('announce-modal');
   if(modal) modal.style.display = 'none';
   unlockSomaxPageScroll();
   scrollToTodayAfterAnnounce();
+}
+
+function dismissAnnounceToRanking(){
+  const modal = document.getElementById('announce-modal');
+  if(modal) modal.style.display = 'none';
+  unlockSomaxPageScroll();
+  try{
+    switchTab('ranking', document.getElementById('tab-ranking') || document.getElementById('nav-ranking'));
+  }catch(e){}
+  setTimeout(()=>{
+    document.getElementById('my-rank-card')?.scrollIntoView({block:'center', behavior:'smooth'});
+    updateQuickFloatButtons?.();
+  }, 180);
 }
 
 function closeAnnounceOutside(e){
