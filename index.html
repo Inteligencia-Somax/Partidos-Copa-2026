@@ -16033,3 +16033,55 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     background:rgba(255,255,255,.35)!important;
   }
 </style>
+
+
+<!-- AJUSTE EDSON V8: em mata-mata, cabeçalho e botões dos modais ficam laranja; fase de grupos continua verde -->
+<style id="edson-v8-mata-mata-tabs-header-laranja-20260628">
+  /* No mata-mata/decisões, os botões ativos dos modais acompanham o laranja.
+     Na fase de grupos, continuam verdes pelo CSS padrão. */
+  #match-breakdown-modal.x2-mode .ud-tab.active,
+  #match-breakdown-modal.x2-mode .mb-sfchip.active,
+  #match-breakdown-modal.x2-mode .mb-toggle.active,
+  #user-detail-modal.x2-mode .ud-tab.active{
+    background:var(--gold)!important;
+    border-color:var(--gold)!important;
+    color:#fff!important;
+  }
+
+  #match-breakdown-modal.x2-mode .ud-tab.active svg,
+  #match-breakdown-modal.x2-mode .mb-toggle.active svg,
+  #user-detail-modal.x2-mode .ud-tab.active svg{
+    color:#fff!important;
+    stroke:currentColor!important;
+  }
+
+  /* Cabeçalho do modal de pontos por participante também fica laranja no mata-mata. */
+  #match-breakdown-modal.x2-mode .modal-header{
+    background:var(--gold)!important;
+    border-radius:20px 20px 0 0!important;
+  }
+
+  #match-breakdown-modal.x2-mode .modal-header #mb-title{
+    color:#fff!important;
+  }
+
+  #match-breakdown-modal.x2-mode .modal-header .modal-close{
+    background:rgba(255,255,255,.22)!important;
+    color:#fff!important;
+  }
+
+  /* Mantém o = Vos azul, mesmo na decisão. */
+  #user-detail-modal .ud-mine-tag,
+  #user-detail-modal .ud-mine-tag.me,
+  #match-breakdown-modal .ud-mine-tag,
+  #match-breakdown-modal .ud-mine-tag.me,
+  #user-detail-modal.x2-mode .ud-mine-tag,
+  #user-detail-modal.x2-mode .ud-mine-tag.me,
+  #match-breakdown-modal.x2-mode .ud-mine-tag,
+  #match-breakdown-modal.x2-mode .ud-mine-tag.me,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-mine-tag.me{
+    background:rgba(0,56,168,.10)!important;
+    border-color:rgba(0,56,168,.25)!important;
+    color:var(--blue)!important;
+  }
+</style>
