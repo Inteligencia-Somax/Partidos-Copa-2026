@@ -5117,23 +5117,6 @@ html, body{scroll-behavior:auto!important;}
       <h3>👥 Participación</h3>
       <p>El bolão es de uso exclusivo para colaboradores de Somax Agro S.A. Cada participante debe registrarse con su cuenta y será responsable por los palpites cargados en su usuario.</p>
     </div>
-    <div class="rules-section rules-score-section" id="rules-score-section">
-      <div class="rules-head">
-        <h3>🏆 Puntuación</h3>
-        <div class="score-mode">
-          <button id="rules-sm-grupos" onclick="setScoringMode('grupos')">Grupos</button>
-          <button id="rules-sm-decisiva" class="x2 active" onclick="setScoringMode('decisiva')">Decisiva</button>
-        </div>
-      </div>
-      <div class="score-table">
-        <div class="score-row highlight"><span class="score-desc">Marcador exacto</span><span class="score-pts" data-base="25" data-x2="50">25 pts</span></div>
-        <div class="score-row"><span class="score-desc">Ganador + goles del ganador</span><span class="score-pts" data-base="18" data-x2="36">18 pts</span></div>
-        <div class="score-row"><span class="score-desc">Ganador + diferencia de goles</span><span class="score-pts" data-base="15" data-x2="30">15 pts</span></div>
-        <div class="score-row"><span class="score-desc">Ganador + goles del perdedor</span><span class="score-pts" data-base="12" data-x2="24">12 pts</span></div>
-        <div class="score-row"><span class="score-desc">Solo ganador correcto</span><span class="score-pts" data-base="7" data-x2="14">7 pts</span></div>
-        <div class="score-row"><span class="score-desc">Palpite incorrecto</span><span class="score-pts" data-base="0" data-x2="0">0 pts</span></div>
-      </div>
-    </div>
     <div class="rules-section">
       <h3>⏰ Plazo</h3>
       <p>Los palpites se bloquean 30 minutos antes del horario previsto del partido. ¡Atención a los horarios!</p>
@@ -11644,6 +11627,12 @@ function showSaveBanner(msg){
     if(tab === 'matches' && previous !== 'matches' && window.__somaxMatchesReturnTodayEnabled){
       if(window.__edsonGoTodayInstant) window.__edsonGoTodayInstant();
       else scrollMatchesToTodayFixed();
+    }
+
+    // Reglas siempre abre desde el inicio de la página, no a media altura.
+    if(tab === 'rules'){
+      try{ window.scrollTo(0, 0); }catch(e){}
+      requestAnimationFrame(function(){ try{ window.scrollTo(0, 0); }catch(e){} });
     }
     return result;
   };
