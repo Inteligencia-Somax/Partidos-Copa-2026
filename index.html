@@ -2258,8 +2258,8 @@ html, body{scroll-behavior:auto!important;}
     <div class="rules-head">
       <div class="rules-title">Sistema de Puntuación</div>
       <div class="score-mode">
-        <button id="sm-grupos" class="active" onclick="setScoringMode('grupos')">Grupos</button>
-        <button id="sm-decisiva" class="x2" onclick="setScoringMode('decisiva')">Decisiva</button>
+        <button id="sm-grupos" onclick="setScoringMode('grupos')">Grupos</button>
+        <button id="sm-decisiva" class="x2 active" onclick="setScoringMode('decisiva')">Decisiva</button>
       </div>
     </div>
     <div class="rules-grid">
@@ -5121,8 +5121,8 @@ html, body{scroll-behavior:auto!important;}
       <div class="rules-head">
         <h3>🏆 Puntuación</h3>
         <div class="score-mode">
-          <button id="rules-sm-grupos" class="active" onclick="setScoringMode('grupos')">Grupos</button>
-          <button id="rules-sm-decisiva" class="x2" onclick="setScoringMode('decisiva')">Decisiva</button>
+          <button id="rules-sm-grupos" onclick="setScoringMode('grupos')">Grupos</button>
+          <button id="rules-sm-decisiva" class="x2 active" onclick="setScoringMode('decisiva')">Decisiva</button>
         </div>
       </div>
       <div class="score-table">
@@ -7243,7 +7243,7 @@ fbAuth.onAuthStateChanged(async user=>{
 });
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  setScoringMode('grupos');
+  setScoringMode('decisiva');
   ['auth-email','auth-pass','auth-name'].forEach(id=>{
     document.getElementById(id)?.addEventListener('keydown', e=>{
       if(e.key==='Enter') handleAuthAction();
