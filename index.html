@@ -10715,6 +10715,99 @@ function showSaveBanner(msg){
 })();
 </script>
 
+
+
+<!-- AJUSTE EDSON FINAL: aproxima Fecha da linha superior, remove linha inferior e permite arraste na lista -->
+<style id="edson-final-user-detail-roundnav-swipe-body-20260627-2217">
+  #user-detail-modal .ud-body{
+    padding-top:0!important;
+  }
+
+  #user-detail-modal .ud-body > .ud-round-nav:first-child{
+    margin-top:-12px!important;
+  }
+
+  #user-detail-modal .ud-round-nav{
+    height:48px!important;
+    min-height:48px!important;
+    padding:0 12px!important;
+    border-top:0!important;
+    border-bottom:0!important;
+    box-shadow:none!important;
+    background:#fff!important;
+    touch-action:pan-y!important;
+  }
+
+  #user-detail-modal .ud-round-nav::before,
+  #user-detail-modal .ud-round-nav::after{
+    content:none!important;
+    display:none!important;
+  }
+
+  #user-detail-modal .ud-rnav-label{
+    height:48px!important;
+    min-height:48px!important;
+    padding:0!important;
+    margin:0!important;
+    justify-content:center!important;
+  }
+
+  #user-detail-modal .ud-rnav-title{
+    font-size:14px!important;
+    line-height:1.06!important;
+  }
+
+  #user-detail-modal .ud-rnav-sub{
+    font-size:11px!important;
+    margin-top:2px!important;
+    line-height:1.06!important;
+  }
+
+  #user-detail-modal .ud-rnav-btn{
+    width:30px!important;
+    height:30px!important;
+  }
+</style>
+
+<script id="edson-final-user-detail-body-swipe-20260627-2217">
+(function(){
+  if(window.__edsonUdBodySwipeApplied) return;
+  window.__edsonUdBodySwipeApplied = true;
+
+  var startX = 0;
+  var startY = 0;
+  var tracking = false;
+
+  function isSwipeArea(el){
+    return !!(el && el.closest && el.closest('#user-detail-modal .ud-body'));
+  }
+
+  function isInteractive(el){
+    return !!(el && el.closest && el.closest('button, a, input, textarea, select'));
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if(!isSwipeArea(e.target) || isInteractive(e.target) || !e.touches || e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, {passive:true});
+
+  document.addEventListener('touchend', function(e){
+    if(!tracking) return;
+    tracking = false;
+    if(!e.changedTouches || e.changedTouches.length !== 1) return;
+
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+
+    if(Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
+    if(typeof changeUdRound !== 'function') return;
+
+    changeUdRound(dx < 0 ? 1 : -1);
+  }, {passive:true});
+})();
+</script>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
