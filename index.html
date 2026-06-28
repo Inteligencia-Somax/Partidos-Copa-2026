@@ -2072,6 +2072,80 @@ body.somax-modal-locked{
 }
 </style>
 
+
+
+<style id="ajuste-ranking-me-glow-fab-20260628">
+/* Destaque do card do usuário no Ranking: borda dourada com brilho sutil */
+#ranking-list .rank-card.me-glow{
+  position:relative;
+  border:2px solid var(--gold)!important;
+  box-shadow:0 2px 12px rgba(245,158,11,.22),0 0 0 1px rgba(245,158,11,.18),var(--shadow)!important;
+  overflow:hidden;
+}
+#ranking-list .rank-card.me-glow::after{
+  content:'';
+  position:absolute;
+  inset:-2px;
+  border-radius:inherit;
+  pointer-events:none;
+  box-shadow:0 0 18px rgba(245,158,11,.45), inset 0 0 0 1px rgba(255,214,102,.35);
+  opacity:.8;
+}
+#ranking-list .rank-card.me-glow::before{
+  content:'';
+  position:absolute;
+  top:-40%;
+  bottom:-40%;
+  width:36px;
+  left:-60px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.72),transparent);
+  transform:rotate(18deg);
+  animation:meRankShine 4.2s ease-in-out infinite;
+  pointer-events:none;
+  z-index:1;
+}
+#ranking-list .rank-card.me-glow > *{position:relative;z-index:2;}
+@keyframes meRankShine{
+  0%,55%{left:-60px;opacity:0;}
+  66%{opacity:1;}
+  86%,100%{left:calc(100% + 40px);opacity:0;}
+}
+@media (prefers-reduced-motion:reduce){#ranking-list .rank-card.me-glow::before{animation:none;display:none;}}
+
+/* Botões flutuantes pequenos: topo / meu card */
+.quick-float-nav{
+  position:fixed;
+  right:14px;
+  bottom:92px;
+  z-index:260;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  pointer-events:none;
+}
+.quick-float-btn{
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.08);
+  background:#fff;
+  color:var(--green);
+  box-shadow:0 6px 18px rgba(0,0,0,.20);
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  font-weight:950;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  pointer-events:auto;
+}
+.quick-float-btn.show{display:flex;animation:quickFabIn .16s ease;}
+.quick-float-btn:active{transform:scale(.94);}
+.quick-float-btn.top{font-size:19px;}
+@keyframes quickFabIn{from{opacity:0;transform:translateY(6px) scale(.96);}to{opacity:1;transform:none;}}
+</style>
+
 </head>
 <body><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
@@ -6411,6 +6485,12 @@ body.somax-modal-locked{
 </div>
 
 <!-- BOTTOM NAV -->
+
+<div class="quick-float-nav" id="quick-float-nav" aria-hidden="true">
+  <button class="quick-float-btn top" id="quick-top-btn" type="button" onclick="quickScrollTop()" aria-label="Ir al topo">↑</button>
+  <button class="quick-float-btn me" id="quick-me-btn" type="button" onclick="quickScrollMe()" aria-label="Ir a mi posición">Eu</button>
+</div>
+
 <div class="bottom-nav">
   <button class="nav-btn active" id="nav-matches" onclick="switchTab('matches',document.getElementById('tab-matches'))">
     <span class="nav-icon">⚽</span>Partidas
@@ -8078,7 +8158,10 @@ function renderRanking(){
     const card = document.createElement('div');
     card.className = 'rank-card' + (isRoundRanking ? ' round-mode' : (i===0?' top1':i===1?' top2':i===2?' top3':''));
     card.style.cursor='pointer';
-    if(isMe) card.id = 'my-rank-card';
+    if(isMe){
+      card.id = 'my-rank-card';
+      card.classList.add('me-glow');
+    }
     card.addEventListener('click', ()=>openUserDetail(u.name));
     if(isMe) card.style.border='2px solid var(--gold)';
     const posClass = isRoundRanking
@@ -9310,7 +9393,9 @@ function switchTab(tab, btn){
   if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin' || tab === 'decepcion') ? 'none' : '';
   if(tab==='ranking'){
     renderRanking();
-    requestAnimationFrame(()=>{ document.getElementById('my-rank-card')?.scrollIntoView({block:'center'}); });
+    requestAnimationFrame(()=>{ document.getElementById('my-rank-card')?.scrollIntoView({block:'center'}); updateQuickFloatButtons(); });
+  } else {
+    updateQuickFloatButtons();
   }
   if(tab==='decepcion') renderDecepcion();
   if(tab==='admin'){
@@ -9318,6 +9403,44 @@ function switchTab(tab, btn){
     else setTimeout(()=>document.getElementById('admin-pass')?.focus(),100);
   }
 }
+
+
+
+// ══ BOTÕES FLUTUANTES: TOPO / EU ══
+function isRankingActive(){
+  return document.getElementById('panel-ranking')?.classList.contains('active');
+}
+function quickScrollTop(){
+  window.scrollTo({top:0, behavior:'smooth'});
+  setTimeout(updateQuickFloatButtons, 320);
+}
+function quickScrollMe(){
+  const me = document.getElementById('my-rank-card');
+  if(me) me.scrollIntoView({block:'center', behavior:'smooth'});
+  setTimeout(updateQuickFloatButtons, 420);
+}
+function updateQuickFloatButtons(){
+  const topBtn = document.getElementById('quick-top-btn');
+  const meBtn = document.getElementById('quick-me-btn');
+  const wrap = document.getElementById('quick-float-nav');
+  if(!topBtn || !meBtn || !wrap) return;
+  const rankingOn = isRankingActive();
+  wrap.setAttribute('aria-hidden', rankingOn ? 'false' : 'true');
+  const showTop = rankingOn && window.scrollY > 140;
+  topBtn.classList.toggle('show', showTop);
+
+  const me = document.getElementById('my-rank-card');
+  let meVisible = true;
+  if(me){
+    const r = me.getBoundingClientRect();
+    const safeTop = 76;
+    const safeBottom = window.innerHeight - 112;
+    meVisible = r.top >= safeTop && r.bottom <= safeBottom;
+  }
+  meBtn.classList.toggle('show', rankingOn && !!me && !meVisible);
+}
+window.addEventListener('scroll', ()=>requestAnimationFrame(updateQuickFloatButtons), {passive:true});
+window.addEventListener('resize', ()=>requestAnimationFrame(updateQuickFloatButtons));
 
 // ══ TOAST ══
 function toggleNotice(btn){
