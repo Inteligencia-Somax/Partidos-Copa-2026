@@ -14483,3 +14483,21 @@ function showSaveBanner(msg){
   }, {passive:true});
 })();
 </script>
+
+/* Ajuste: barra Buscar + Ranking fija debajo del encabezado al hacer scroll */
+#panel-ranking .rank-search-wrap{
+  position:sticky;
+  top:56px;
+  z-index:160;
+  margin:0 auto 10px;
+  padding:10px 12px 8px;
+  background:transparent;
+}
+#panel-ranking .rank-tools{
+  width:100%;
+}
+@media(max-width:520px){
+  #panel-ranking .rank-search-wrap{
+    top:52px;
+  }
+}
