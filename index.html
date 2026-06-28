@@ -1849,6 +1849,120 @@ body{
 }
 </style>
 
+
+<style id="ajuste-pontos-modal-preto-20260627">
+/* Modal do participante: pontos principais em preto, sem verde */
+#user-detail-modal .ud-hero-num.green,
+#user-detail-modal .ud-summary-pts,
+#user-detail-modal .ud-card.good .ud-card-num{
+  color:var(--text)!important;
+}
+</style>
+
+
+<style id="ajuste-meu-ranking-pontos-verde-20260627">
+/* Ranking: quando o card for do usuário logado, deixa pontos e texto "puntos" em verde também */
+#ranking-list .rank-card.me .rank-score,
+#ranking-list .rank-card.me .rank-points,
+#ranking-list .rank-card.me .rank-pts,
+#ranking-list .rank-card.me .rank-points-num,
+#ranking-list .rank-card.me .rank-points-label,
+#ranking-list .rank-card.me .rank-score-label,
+#ranking-list .rank-card.you .rank-score,
+#ranking-list .rank-card.you .rank-points,
+#ranking-list .rank-card.you .rank-pts,
+#ranking-list .rank-card.you .rank-points-num,
+#ranking-list .rank-card.you .rank-points-label,
+#ranking-list .rank-card.you .rank-score-label,
+#ranking-list .rank-card.current-user .rank-score,
+#ranking-list .rank-card.current-user .rank-points,
+#ranking-list .rank-card.current-user .rank-pts,
+#ranking-list .rank-card.current-user .rank-points-num,
+#ranking-list .rank-card.current-user .rank-points-label,
+#ranking-list .rank-card.current-user .rank-score-label,
+#ranking-list .rank-card.is-me .rank-score,
+#ranking-list .rank-card.is-me .rank-points,
+#ranking-list .rank-card.is-me .rank-pts,
+#ranking-list .rank-card.is-me .rank-points-num,
+#ranking-list .rank-card.is-me .rank-points-label,
+#ranking-list .rank-card.is-me .rank-score-label{
+  color:var(--green)!important;
+}
+
+/* Fallback pelo destaque atual do seu card */
+#ranking-list .rank-card.highlight .rank-score,
+#ranking-list .rank-card.highlight .rank-points,
+#ranking-list .rank-card.highlight .rank-pts,
+#ranking-list .rank-card.highlight .rank-points-num,
+#ranking-list .rank-card.highlight .rank-points-label,
+#ranking-list .rank-card.highlight .rank-score-label,
+#ranking-list .rank-card.my-rank .rank-score,
+#ranking-list .rank-card.my-rank .rank-points,
+#ranking-list .rank-card.my-rank .rank-pts,
+#ranking-list .rank-card.my-rank .rank-points-num,
+#ranking-list .rank-card.my-rank .rank-points-label,
+#ranking-list .rank-card.my-rank .rank-score-label{
+  color:var(--green)!important;
+}
+</style>
+
+
+<style id="ajuste-palpite-incorreto-vermelho-20260627">
+/* Sistema de pontuação: deixa o 0 / Palpite incorrecto em vermelho */
+.rules-card .rule-item:last-child .rule-pts,
+.rules-card .rule-item:last-child .rule-label{
+  color:var(--red)!important;
+}
+</style>
+
+
+<style id="ajuste-remover-grupo-todos-modais-20260627">
+/* Remove a informação de grupo nos cabeçalhos dos modais */
+#match-breakdown-modal .modal-time,
+#match-breakdown-modal .ud-rnav-sub,
+#match-breakdown-modal .mb-sub,
+#match-breakdown-modal .match-subtitle,
+#match-breakdown-modal .modal-subtitle{
+  font-size:0!important;
+}
+
+#match-breakdown-modal .modal-time::before,
+#match-breakdown-modal .ud-rnav-sub::before,
+#match-breakdown-modal .mb-sub::before,
+#match-breakdown-modal .match-subtitle::before,
+#match-breakdown-modal .modal-subtitle::before{
+  content:attr(data-date)!important;
+  font-size:12px!important;
+}
+
+/* Esconde spans/classes de grupo caso existam separados */
+#match-breakdown-modal .mc-phase,
+#match-breakdown-modal .match-group,
+#match-breakdown-modal .modal-group,
+#match-breakdown-modal .mb-group,
+#match-breakdown-modal .group-label{
+  display:none!important;
+}
+</style>
+
+
+<style id="ajuste-remover-cadeado-modal-20260627">
+/* Remove os cadeados na tela "Puntos por participante" */
+#match-breakdown-modal .mb-lock,
+#match-breakdown-modal .lock,
+#match-breakdown-modal .locked,
+#match-breakdown-modal .mc-lock,
+#match-breakdown-modal .ud-lock{
+  display:none!important;
+}
+
+/* Fallback: esconde botões/ícones usados apenas como cadeado no final das linhas */
+#match-breakdown-modal .ud-row > :last-child:has(svg),
+#match-breakdown-modal .mb-name-row > :last-child:has(svg){
+  display:none!important;
+}
+</style>
+
 </head>
 <body><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
@@ -7395,7 +7509,7 @@ function renderMatches(filter){
           <div style="flex:1"></div>
           ${detailI}
           <span class="mc-status ${statusCls}">
-            ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? '🔒 Cerrado' : (hasPick ? 'Palpitado' : 'Pendiente'))}
+            ${real ? `<span class="mc-pts">${points} pts</span>` : (locked ? ' Cerrado' : (hasPick ? 'Palpitado' : 'Pendiente'))}
           </span>
         </div>
         <div class="mc-teams">
@@ -7416,7 +7530,7 @@ function renderMatches(filter){
       card.addEventListener('click', ()=>{
         if(locked){ openMatchBreakdown(m.id); return; } // cerrado o finalizado: ver palpites de todos en orden de ranking
         if(hasPick){
-          showSaveBanner('🔒 Ya palpitaste este partido, no se puede cambiar.');
+          showSaveBanner(' Ya palpitaste este partido, no se puede cambiar.');
           return;
         }
         openModal(m.id);
@@ -7500,7 +7614,7 @@ function numpadClear(){
 function savePick(){
   const match = MATCHES.find(x=>x.id===activeMatchId);
   if(match && !canEditPick(match)){
-    showSaveBanner('🔒 Palpite cerrado: faltan menos de 30 minutos o el partido ya inició');
+    showSaveBanner(' Palpite cerrado: faltan menos de 30 minutos o el partido ya inició');
     return;
   }
   const hEl = document.getElementById('modal-score-home');
@@ -7554,7 +7668,7 @@ function cancelConfirmPick(){
 async function commitPick(){
   const match = MATCHES.find(x=>x.id===activeMatchId);
   if(match && !canEditPick(match)){
-    showSaveBanner('🔒 Palpite cerrado: faltan menos de 30 minutos o el partido ya inició');
+    showSaveBanner(' Palpite cerrado: faltan menos de 30 minutos o el partido ya inició');
     return;
   }
   const hVal = document.getElementById('modal-score-home').textContent;
@@ -8131,7 +8245,7 @@ function renderUdPartidos(){
     if(!pending) shownTotal += pts;
     const pickLabel = pick ? `Palpite: ${pick.home}:${pick.away}` : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
-    const ptsStr = pending ? '🔒' : `${pts > 0 ? '+' : ''}${pts}`;
+    const ptsStr = pending ? '' : `${pts > 0 ? '+' : ''}${pts}`;
 
     const pickTags = [];
     if(pick){
@@ -8211,8 +8325,8 @@ function renderUdComparar(){
     const scoreCell = pending
       ? `<span class="ud-sc-in">·</span> × <span class="ud-sc-in">·</span>`
       : `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>`;
-    const myPtsStr = pending ? '🔒' : `${myPts>0?'+':''}${myPts}<span class="cmp-pts-unit">pts</span>`;
-    const thPtsStr = pending ? '🔒' : `${pts>0?'+':''}${pts}<span class="cmp-pts-unit">pts</span>`;
+    const myPtsStr = pending ? '' : `${myPts>0?'+':''}${myPts}<span class="cmp-pts-unit">pts</span>`;
+    const thPtsStr = pending ? '' : `${pts>0?'+':''}${pts}<span class="cmp-pts-unit">pts</span>`;
     const dm = m.date.replace(/^[^,]+,\s*/, '');
     rows += `
       <div class="cmp-row">
@@ -8491,7 +8605,7 @@ function renderMatchBreakdown(){
             <div class="ud-teams">${p.name}${nameTag}</div>
             <div class="ud-meta"><span class="ud-pick-text">Palpite: ${p.pick.home}:${p.pick.away}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}${pendingScoreHtml}</div>
           </div>
-          <div class="${ptsCls}">${pending ? '🔒' : (p.pts > 0 ? '+' : '') + p.pts}</div>
+          <div class="${ptsCls}">${pending ? '' : (p.pts > 0 ? '+' : '') + p.pts}</div>
         </div>`;
         }).join('')
       : '<div class="ud-empty">Nadie palpitó este marcador.</div>';
