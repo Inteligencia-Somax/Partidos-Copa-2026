@@ -9509,6 +9509,7 @@ function maybeShowAnnouncement(){
 }
 
 function scrollToTodayAfterAnnounce(){
+  window.__somaxMatchesReturnTodayEnabled = true;
   // Ao fechar o aviso inicial, leva o usuário até os jogos de hoje
   // considerando o cabeçalho fixo e a barra de filtros sticky.
   try{
@@ -11442,6 +11443,54 @@ function showSaveBanner(msg){
 
 <script id="edson-ranking-sticky-real-20260628">
 /* Desativado: substituído pelo fix anti-flash no final do arquivo. */
+</script>
+
+
+<script id="edson-restore-matches-today-after-swipe-20260628">
+(function(){
+  if(window.__edsonRestoreMatchesTodayPatch) return;
+  window.__edsonRestoreMatchesTodayPatch = true;
+
+  function activeTabName(){
+    const active = document.querySelector('.panel.active');
+    return active && active.id ? active.id.replace('panel-','') : 'matches';
+  }
+
+  function scrollMatchesToTodayFixed(){
+    const target = document.getElementById('today-group') || document.querySelector('#matches-list .date-group, #matches-list .match-card');
+    if(!target) return;
+
+    const topbar = document.querySelector('.topbar');
+    const topbarH = topbar ? Math.round(topbar.getBoundingClientRect().height || 56) : 56;
+    const filterRow = document.querySelector('#panel-matches .filter-row');
+    const filterH = filterRow ? Math.round(filterRow.getBoundingClientRect().height || 0) : 0;
+    const offset = topbarH + filterH + 12;
+    const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+    window.scrollTo({top: Math.max(0, y), behavior:'smooth'});
+    setTimeout(function(){
+      if(window.__edsonMatchesStickyFinalUpdate) window.__edsonMatchesStickyFinalUpdate();
+      if(window.updateQuickFloatButtons) window.updateQuickFloatButtons();
+    }, 180);
+  }
+
+  const originalSwitchTab = window.switchTab;
+  if(typeof originalSwitchTab !== 'function') return;
+
+  window.switchTab = function(tab, btn){
+    const previous = activeTabName();
+    const result = originalSwitchTab.apply(this, arguments);
+
+    if(tab === 'matches' && previous !== 'matches' && window.__somaxMatchesReturnTodayEnabled){
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          setTimeout(scrollMatchesToTodayFixed, 80);
+        });
+      });
+    }
+    return result;
+  };
+})();
 </script>
 </body></html>
 
