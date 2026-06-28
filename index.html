@@ -11235,6 +11235,67 @@ function showSaveBanner(msg){
 })();
 </script>
 
+
+<script id="edson-ranking-sticky-real-20260628">
+(function(){
+  function topbarHeight(){
+    var tb=document.querySelector('.topbar');
+    if(!tb) return window.innerWidth<=520 ? 52 : 56;
+    return Math.round(tb.getBoundingClientRect().height) || (window.innerWidth<=520 ? 52 : 56);
+  }
+  function getWrap(){return document.querySelector('#panel-ranking .rank-search-wrap');}
+  function getPanel(){return document.getElementById('panel-ranking');}
+  function ensureSpacer(wrap){
+    var sp=document.getElementById('rank-search-fixed-spacer');
+    if(!sp){
+      sp=document.createElement('div');
+      sp.id='rank-search-fixed-spacer';
+      sp.className='rank-search-fixed-spacer';
+      wrap.parentNode.insertBefore(sp, wrap);
+    }
+    return sp;
+  }
+  function isRankingActive(){
+    var p=getPanel();
+    return p && p.classList.contains('active') && p.offsetParent!==null;
+  }
+  function updateRankingSticky(){
+    var wrap=getWrap();
+    if(!wrap) return;
+    var sp=ensureSpacer(wrap);
+    var top=topbarHeight();
+    wrap.style.setProperty('top', top+'px', 'important');
+
+    if(!isRankingActive()){
+      wrap.classList.remove('rank-sticky-fixed');
+      sp.style.display='none';
+      sp.style.height='0px';
+      return;
+    }
+
+    var wasFixed=wrap.classList.contains('rank-sticky-fixed');
+    if(wasFixed) wrap.classList.remove('rank-sticky-fixed');
+    var trigger=wrap.getBoundingClientRect().top + window.scrollY - top;
+    if(wasFixed) wrap.classList.add('rank-sticky-fixed');
+
+    if(window.scrollY >= trigger){
+      sp.style.display='block';
+      sp.style.height=wrap.offsetHeight+'px';
+      wrap.classList.add('rank-sticky-fixed');
+      wrap.style.setProperty('top', top+'px', 'important');
+    }else{
+      wrap.classList.remove('rank-sticky-fixed');
+      sp.style.display='none';
+      sp.style.height='0px';
+    }
+  }
+  window.addEventListener('scroll', updateRankingSticky, {passive:true});
+  window.addEventListener('resize', updateRankingSticky);
+  document.addEventListener('click', function(){setTimeout(updateRankingSticky,80);}, true);
+  document.addEventListener('DOMContentLoaded', function(){setTimeout(updateRankingSticky,120);});
+  setInterval(updateRankingSticky, 700);
+})();
+</script>
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
@@ -14451,6 +14512,33 @@ function showSaveBanner(msg){
   #panel-ranking .rank-search-wrap{
     top:52px;
   }
+}
+
+
+/* Ajuste Edson: Buscar + Ranking realmente fixos abaixo do cabeçalho no painel Ranking */
+#panel-ranking .rank-search-wrap{
+  position:relative!important;
+  top:auto!important;
+  z-index:160!important;
+  margin:0 auto 10px!important;
+  padding:10px 12px 8px!important;
+  background:transparent!important;
+}
+#panel-ranking .rank-search-wrap.rank-sticky-fixed{
+  position:fixed!important;
+  top:56px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:100%!important;
+  max-width:680px!important;
+  z-index:260!important;
+  padding:10px 12px 8px!important;
+  background:#0E5F34!important;
+  box-shadow:0 8px 16px rgba(0,0,0,.16)!important;
+}
+.rank-search-fixed-spacer{display:none;height:0;}
+@media(max-width:520px){
+  #panel-ranking .rank-search-wrap.rank-sticky-fixed{top:52px!important;}
 }
 </style>
 
