@@ -8356,7 +8356,7 @@ function renderMatchBreakdown(){
     <button class="mb-nav-btn" onclick="navigateMbMatch(-1)" ${mbHasPrev ? '' : 'disabled'} aria-label="Partido anterior">‹</button>
     <div class="mb-summary-center">
       <div class="ud-summary-name">${nameLine}</div>
-      <div class="ud-summary-sub">${m.date} · ${m.phase}${pending ? ' · 🔒 esperando resultado' : ''}</div>
+      <div class="ud-summary-sub">${m.date} · ${m.phase}</div>
     </div>
     <button class="mb-nav-btn" onclick="navigateMbMatch(1)" ${mbHasNext ? '' : 'disabled'} aria-label="Próximo partido">›</button>`;
 
@@ -14050,7 +14050,7 @@ function showSaveBanner(msg){
   }
 
   function goScoreFilter(dir){
-    if(typeof setMbScoreFilter !== 'function' || !window.mbState || !mbState.pending) return;
+    if(typeof setMbScoreFilter !== 'function' || typeof mbState === 'undefined' || !mbState || !mbState.pending) return;
     var options = getScoreOptions();
     if(!options.length) return;
     var current = mbState.filterScore || null;
