@@ -9086,11 +9086,11 @@ function parsePickSavedAt(value){
     return (!d || isNaN(d.getTime())) ? null : d;
   }catch(e){ return null; }
 }
-function formatMbRegisteredAt(value){
+function formatMbRegisteredParts(value){
   const d = parsePickSavedAt(value);
-  if(!d) return '';
+  if(!d) return null;
   try{
-    const parts = new Intl.DateTimeFormat('en-GB', {
+    return new Intl.DateTimeFormat('en-GB', {
       timeZone:'America/Sao_Paulo',
       day:'2-digit',
       month:'2-digit',
@@ -9098,12 +9098,26 @@ function formatMbRegisteredAt(value){
       minute:'2-digit',
       hourCycle:'h23'
     }).formatToParts(d).reduce((acc, p) => { acc[p.type] = p.value; return acc; }, {});
-    const formatted = `${parts.day}/${parts.month} ${parts.hour}:${parts.minute}`;
-    return `Reg.: ${formatted}`;
-  }catch(e){ return ''; }
+  }catch(e){ return null; }
+}
+function formatMbRegisteredAt(value){
+  const parts = formatMbRegisteredParts(value);
+  if(!parts) return '';
+  const formatted = `${parts.day}/${parts.month} ${parts.hour}:${parts.minute}`;
+  return `Reg.: ${formatted}`;
+}
+function formatMbRegisteredAtFull(value){
+  const parts = formatMbRegisteredParts(value);
+  if(!parts) return '';
+  const formatted = `${parts.day}/${parts.month} ${parts.hour}:${parts.minute}`;
+  return `Registrado: ${formatted}`;
 }
 function formatMbPickSavedAt(value){
-  return formatMbRegisteredAt(value) || 'Reg. no disponible';
+  return formatMbRegisteredAtFull(value) || 'Registro no disponible';
+}
+function pickInfoHoldAttrs(savedAt){
+  if(!savedAt) return '';
+  return `data-pick-saved="${decEsc(savedAt)}" onpointerdown="startMbPickInfo(event,this)" onpointerup="cancelMbPickInfo()" onpointerleave="cancelMbPickInfo()" onpointercancel="cancelMbPickInfo()"`;
 }
 function pickInfoAttrs(savedAt){
   if(!savedAt) return '';
@@ -9272,8 +9286,9 @@ function renderMatchBreakdown(){
           const pendingTotalHtml = pending ? `<span class="ud-name-sep">•</span><span class="ud-pending-score ud-pending-score-name">${p.totalScore || 0} pts</span>` : '';
           const pickInfoClass = p.savedAt ? ' pick-info-enabled' : '';
           const pickInfoAttr = p.savedAt ? pickInfoAttrs(p.savedAt) : '';
+          const rowPickInfoAttr = (!pending && p.savedAt) ? pickInfoHoldAttrs(p.savedAt) : `data-pick-saved="${decEsc(p.savedAt || '')}"`;
           return `
-        <div class="${rowCls}" data-pick-saved="${p.savedAt || ''}" onclick="handleMbParticipantClick(event,'${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
+        <div class="${rowCls}" ${rowPickInfoAttr} onclick="handleMbParticipantClick(event,'${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
           <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
             <div class="ud-teams${pending ? ' ud-teams-pending' : ''}"><span class="ud-participant-name">${p.name}${nameTag}</span>${pendingTotalHtml}</div>
@@ -12811,6 +12826,11 @@ body.edson-matches-bg #summary-modal .summary-header{
     text-decoration:underline!important;
     text-underline-offset:2px!important;
   }
+
+  #match-breakdown-modal .ud-row:not(.pending-row)[data-pick-saved]{
+    -webkit-user-select:none!important;
+    user-select:none!important;
+  }
 </style>
 
 
@@ -12856,6 +12876,44 @@ body.edson-matches-bg #summary-modal .summary-header{
     line-height:1!important;
     margin-right:5px!important;
     opacity:.7!important;
+  }
+</style>
+
+
+
+<!-- AJUSTE EDSON: separadores discretos no ranking por fecha -->
+<style id="edson-ranking-fecha-separadores-exactos-20260629">
+  /*
+    Ranking filtrado por Fecha:
+    - adiciona separador entre "General" e "exacto";
+    - aproxima o separador entre "exacto" e as bolinhas de forma;
+    - mantém exacto discreto, cinza, sem fundo e sem badge verde.
+  */
+  #ranking-list .rank-card.round-mode .rank-detail{
+    gap:0!important;
+    column-gap:0!important;
+  }
+
+  #ranking-list .rank-card.round-mode .rank-general-pos + .rank-exact-badge::before{
+    content:'•'!important;
+    color:#9CA3AF!important;
+    font-size:13px!important;
+    font-weight:600!important;
+    line-height:1!important;
+    margin:0 7px!important;
+    opacity:.85!important;
+    flex:0 0 auto!important;
+  }
+
+  #ranking-list .rank-card.round-mode .rank-exact-badge + .form-dots{
+    margin-left:5px!important;
+    gap:3px!important;
+  }
+
+  #ranking-list .rank-card.round-mode .rank-exact-badge + .form-dots::before{
+    margin-right:3px!important;
+    font-size:13px!important;
+    opacity:.75!important;
   }
 </style>
 
