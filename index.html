@@ -6991,13 +6991,31 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzjMtUNCncWhn
 
 async function sendPickToGoogleSheets(match, pick){
   if(!GOOGLE_SCRIPT_URL) return;
+
+  // ── Validación de horario antes de enviar a Sheets ──────────────────────────
+  // Calculamos el deadline (kickoff UTC − 30 min) y lo comparamos con el
+  // tiempo actual. Si el usuario logró eludir el bloqueo de la UI (consola,
+  // reloj del sistema modificado, etc.) esta comprobación lo detiene aquí,
+  // evitando que el palpite quede registrado en Google Sheets.
+  if(!canEditPick(match)){
+    console.warn('[Bolão] Palpite bloqueado por validación de horario (sendPickToGoogleSheets). Partido:', match.home, 'vs', match.away);
+    return;
+  }
+
+  // Incluimos kickoffUTC en el payload para que el Google Apps Script pueda
+  // hacer una segunda verificación independiente del lado del servidor.
+  const kickoffUTC = getMatchDateTime(match).toISOString();
+  const deadlineUTC = new Date(getMatchDateTime(match).getTime() - 30*60*1000).toISOString();
+
   const payload = {
     nombre: currentUser,
     partido: `${match.home} vs ${match.away}`,
     local: match.home,
     visitante: match.away,
     golesLocal: pick.home,
-    golesVisitante: pick.away
+    golesVisitante: pick.away,
+    kickoffUTC,
+    deadlineUTC
   };
 
   try{
@@ -7332,6 +7350,15 @@ async function loadFirebaseState(){
 
 async function savePickToFirebase(match, pick){
   if(!currentUserId) return;
+
+  // ── Validación de horario antes de escribir en Firestore ─────────────────────
+  // Segunda línea de defensa: aunque el usuario burle la comprobación de la UI,
+  // esta verificación impide que el documento llegue a Firestore.
+  if(!canEditPick(match)){
+    console.warn('[Bolão] Escritura en Firestore bloqueada por validación de horario. Partido:', match.home, 'vs', match.away);
+    throw new Error('Palpite fora do prazo: o partido já iniciou ou faltam menos de 30 minutos.');
+  }
+
   const docId = `${currentUserId}_${match.id}`;
   await fbDb.collection('palpites').doc(docId).set({
     uid: currentUserId,
@@ -7344,6 +7371,7 @@ async function savePickToFirebase(match, pick){
     golesLocal: Number(pick.home),
     golesVisitante: Number(pick.away),
     fechaPalpite: firebase.firestore.FieldValue.serverTimestamp(),
+    kickoffUTC: getMatchDateTime(match).toISOString(),
     userAgent: navigator.userAgent
   }, {merge:true});
 }
@@ -8023,8 +8051,13 @@ function cancelConfirmPick(){
 
 async function commitPick(){
   const match = MATCHES.find(x=>x.id===activeMatchId);
+  // ── Doble verificación de horario en el momento exacto del commit ────────────
+  // La primera comprobación ocurre en savePick() al presionar "Guardar".
+  // Esta segunda comprobación captura el caso en que el usuario abrió el modal
+  // justo antes del deadline, esperó, y confirmó ya fuera de tiempo.
   if(match && !canEditPick(match)){
     showSaveBanner(' Palpite cerrado: faltan menos de 30 minutos o el partido ya inició');
+    cancelConfirmPick();
     return;
   }
   const hVal = document.getElementById('modal-score-home').textContent;
