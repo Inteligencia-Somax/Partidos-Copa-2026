@@ -2314,6 +2314,38 @@ html, body{scroll-behavior:auto!important;}
   }
 </style>
 
+
+
+<!-- AJUSTE FINAL: segunda linha do palpite com 11px fixo em qualquer aparelho -->
+<style id="final-pick-second-line-11px-fixed-20260629">
+  /* Puntos por participante */
+  #match-breakdown-modal .ud-meta,
+  #match-breakdown-modal .ud-pick-text,
+  #match-breakdown-modal .ud-meta .ud-pick-text,
+  #match-breakdown-modal .ud-pick-registered{
+    font-size:11px!important;
+  }
+
+  /* Detalle del participante > Partidos */
+  #user-detail-modal .ud-pick-line,
+  #user-detail-modal .ud-pick,
+  #user-detail-modal .ud-pick-registered{
+    font-size:11px!important;
+  }
+
+  @media(max-width:430px){
+    #match-breakdown-modal .ud-meta,
+    #match-breakdown-modal .ud-pick-text,
+    #match-breakdown-modal .ud-meta .ud-pick-text,
+    #match-breakdown-modal .ud-pick-registered,
+    #user-detail-modal .ud-pick-line,
+    #user-detail-modal .ud-pick,
+    #user-detail-modal .ud-pick-registered{
+      font-size:11px!important;
+    }
+  }
+</style>
+
 </head>
 <body class="somax-loading"><div id="somax-loader-dot" aria-hidden="true"></div><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
