@@ -13077,7 +13077,64 @@ body.edson-matches-bg #summary-modal .summary-header{
 })();
 </script>
 
-</body></html>
+</body>
+
+<!-- AJUSTE EDSON FINAL: corrigir corte da colocação/variação no modal Puntos por participante -->
+<style id="edson-final-matchbreakdown-pos-nao-corta-20260629">
+  /*
+    O corte da colocação não era por falta do valor escolhido (66px),
+    mas porque regras posteriores no arquivo voltavam a coluna para 45/48/50px
+    e ainda aplicavam overflow:hidden. Este bloco fica no final e vence todas elas.
+  */
+  #match-breakdown-modal .ud-row{
+    grid-template-columns:66px minmax(0,1fr) 52px!important;
+    column-gap:5px!important;
+    overflow:visible!important;
+  }
+
+  #match-breakdown-modal .mb-pos{
+    width:66px!important;
+    min-width:66px!important;
+    max-width:66px!important;
+    flex:0 0 66px!important;
+    overflow:visible!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .mb-pos .rank-pos-delta,
+  #match-breakdown-modal .mb-pos .rank-delta,
+  #match-breakdown-modal .rank-pos-delta,
+  #match-breakdown-modal .rank-delta{
+    flex:0 0 auto!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row{
+    grid-template-columns:66px minmax(0,1fr)!important;
+  }
+
+  @media(max-width:430px){
+    #match-breakdown-modal .ud-row{
+      grid-template-columns:66px minmax(0,1fr) 50px!important;
+      column-gap:5px!important;
+      overflow:visible!important;
+    }
+
+    #match-breakdown-modal .mb-pos{
+      width:66px!important;
+      min-width:66px!important;
+      max-width:66px!important;
+      flex:0 0 66px!important;
+      overflow:visible!important;
+    }
+
+    #match-breakdown-modal .ud-row.pending-row{
+      grid-template-columns:66px minmax(0,1fr)!important;
+    }
+  }
+</style>
+
+</html>
 
 <style id="final-spacing-and-exact-chip-20260627">
 /* Aproxima o card de “Vos momento” do Sistema de puntuación, mantendo respiro visual */
