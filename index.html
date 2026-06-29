@@ -5176,7 +5176,7 @@ html, body{scroll-behavior:auto!important;}
           <button class="admin-copy-btn" onclick="copyUpdatedHTML()">📋 Copiar código</button>
           <button class="admin-report-btn" onclick="downloadAdminPredictionsReport()">📊 Exportar relatório de palpites</button>
         </div>
-        <p class="admin-export-note">Usá estos botones después de cargar o corregir resultados. El HTML guarda una copia actualizada del bolão y el relatório exporta los palpites con horario de inicio, horario del palpite y diferencia hasta el partido.</p>
+        <p class="admin-export-note">Usá estos botones después de cargar o corregir resultados. El HTML guarda una copia actualizada del bolão y el relatório exporta los palpites con resultado, puntos, tipo de puntuación, horario de inicio, horario del palpite y diferencia hasta el partido.</p>
       </div>
 
 
@@ -9540,6 +9540,19 @@ function formatAdminReportDiff(pickDate, kickoffDate){
   else text = '0min no horário do jogo';
   return { text, minutes: diffMinutes };
 }
+function adminReportScoreTypeLabel(type, match){
+  const labels = {
+    pending: 'Sin resultado',
+    exact: 'Marcador exacto',
+    winnerGoals: 'Ganador + goles del ganador',
+    diff: 'Ganador + diferencia de goles',
+    loserGoals: 'Ganador + goles del perdedor',
+    winner: 'Solo ganador correcto',
+    wrong: 'Resultado incorrecto'
+  };
+  const label = labels[type] || 'No disponible';
+  return match && match.x2 && type && !['pending','wrong'].includes(type) ? label + ' (x2)' : label;
+}
 function csvAdminCell(value){
   const txt = String(value ?? '');
   return '"' + txt.replace(/"/g, '""') + '"';
@@ -9588,12 +9601,15 @@ async function downloadAdminPredictionsReport(){
         const pick = picks ? (picks[m.id] || picks[String(m.id)]) : null;
         if(!pick) return;
         const diff = formatAdminReportDiff(pick.savedAt || pick.fechaPalpite || '', kickoff);
+        const calc = calculatePickPoints(pick, real, m);
         rows.push({
           pessoa: name,
           jogo: `${disp.home} vs ${disp.away}`,
           fase: m.phase || '',
           resultadoFinal,
           palpite: `${disp.home} ${pick.home}:${pick.away} ${disp.away}`,
+          pontosPartida: calc.pts || 0,
+          tipoPontuacao: adminReportScoreTypeLabel(calc.type, m),
           inicioJogo: formatAdminReportDateTime(kickoff),
           horarioPalpite: formatAdminReportDateTime(pick.savedAt || pick.fechaPalpite || ''),
           diferenca: diff.text,
@@ -9613,6 +9629,8 @@ async function downloadAdminPredictionsReport(){
     'Fase',
     'Resultado final do jogo',
     'Palpite realizado',
+    'Pontos na partida',
+    'Tipo de pontuação',
     'Horário do início do jogo',
     'Horário do palpite',
     'Diferença do palpite até o jogo',
@@ -9627,6 +9645,8 @@ async function downloadAdminPredictionsReport(){
       r.fase,
       r.resultadoFinal,
       r.palpite,
+      r.pontosPartida,
+      r.tipoPontuacao,
       r.inicioJogo,
       r.horarioPalpite,
       r.diferenca,
