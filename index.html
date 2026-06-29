@@ -9754,6 +9754,19 @@ function formatAdminReportDiff(pickDate, kickoffDate){
   const text = parts.join(' ');
   return { text, minutes: diffMinutes };
 }
+
+function adminReportPhaseLabel(match){
+  const raw = String((match && match.phase) || '').trim();
+  const normalized = raw.toLowerCase();
+  if(normalized === '1/16') return '1/16 avos';
+  if(normalized.includes('octavos')) return 'Octavos';
+  if(normalized.includes('cuartos')) return 'Cuartos';
+  if(normalized.includes('semifinal')) return 'Semifinal';
+  if(normalized.includes('final')) return 'Final';
+  if(normalized.includes('3°') || normalized.includes('3º') || normalized.includes('puesto')) return 'Tercer puesto';
+  if(/^grupo\s+[a-z]$/i.test(raw)) return raw;
+  return raw || 'No disponible';
+}
 function adminReportScoreTypeLabel(type, match){
   const labels = {
     pending: 'Sin resultado',
@@ -9822,7 +9835,7 @@ async function downloadAdminPredictionsReport(){
           pessoa: name,
           posicaoJogador: rankingPosByName[name] || '',
           jogo: `${disp.home} vs ${disp.away}`,
-          fase: m.phase || '',
+          fase: adminReportPhaseLabel(m),
           resultadoFinal,
           palpite: `${pick.home}x${pick.away}`,
           pontosPartida: calc.pts || 0,
@@ -12799,6 +12812,53 @@ body.edson-matches-bg #summary-modal .summary-header{
     text-underline-offset:2px!important;
   }
 </style>
+
+
+<!-- AJUSTE EDSON: exactos do ranking por rodada iguais ao ranking geral -->
+<style id="edson-ranking-round-exactos-cinza-20260629">
+  /*
+    Quando o ranking está filtrado por Fecha/Rodada, o indicador de exactos
+    deve manter o mesmo visual discreto do ranking geral: texto cinza,
+    sem fundo, sem borda e na mesma fonte/tamanho.
+  */
+  #ranking-list .rank-card.round-mode .rank-exact-badge,
+  #ranking-list .rank-exact-badge{
+    font-family:'Inter',sans-serif!important;
+    font-size:12px!important;
+    font-weight:500!important;
+    color:#6B7280!important;
+    background:transparent!important;
+    border:none!important;
+    box-shadow:none!important;
+    padding:0!important;
+    margin:0!important;
+    border-radius:0!important;
+    height:auto!important;
+    min-height:0!important;
+    line-height:1.2!important;
+    white-space:nowrap!important;
+  }
+
+  #ranking-list .rank-card.round-mode .rank-exact-badge + .form-dots,
+  #ranking-list .rank-exact-badge + .form-dots{
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:3px!important;
+    margin-left:8px!important;
+  }
+
+  #ranking-list .rank-card.round-mode .rank-exact-badge + .form-dots::before,
+  #ranking-list .rank-exact-badge + .form-dots::before{
+    content:'•'!important;
+    color:#6B7280!important;
+    font-size:13px!important;
+    font-weight:600!important;
+    line-height:1!important;
+    margin-right:5px!important;
+    opacity:.7!important;
+  }
+</style>
+
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
