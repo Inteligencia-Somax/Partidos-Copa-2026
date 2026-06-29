@@ -7106,6 +7106,13 @@ function calculatePickPoints(pick, real, match){
     else { base=7; type='winner'; }
   }
   const multiplier = match && match.x2 ? 2 : 1;
+  // Regla del bolão: el palpite solo vale si fue hecho más de 30 min antes del inicio.
+  // Si fue hecho dentro del plazo bloqueado (o después), no puntúa — aunque haya acertado.
+  // Se devuelve como un fallo normal (type:'wrong', 0 pts) para que el ajuste sea silencioso:
+  // no aparece como "exacto", no suma en desempates ni contadores, sin sello especial.
+  if(match && real && !isPickOnTime(pick, match)){
+    return {pts:0, type:'wrong'};
+  }
   return {pts:base*multiplier, type};
 }
 function getScoreTypeColor(type, match){
@@ -7143,6 +7150,18 @@ function getMatchDateTime(match){
 function canEditPick(match){
   const limit = new Date(getMatchDateTime(match).getTime() - 30*60*1000);
   return new Date() < limit;
+}
+// Verifica si el palpite fue hecho dentro del plazo (más de 30 min antes del inicio).
+// Usa exactamente la misma ventana que canEditPick para que la regla de puntuación
+// coincida con el bloqueo de escritura. Si no hay horario confiable, no penaliza.
+function isPickOnTime(pick, match){
+  if(!pick || !match) return true;
+  const raw = pick.savedAt || pick.fechaPalpite || '';
+  if(!raw) return true;                       // sin timestamp confiable → no penaliza
+  const t = (raw && typeof raw.toDate === 'function') ? raw.toDate().getTime() : Date.parse(raw);
+  if(isNaN(t)) return true;                    // fecha no parseable → no penaliza
+  const limit = getMatchDateTime(match).getTime() - 30*60*1000;
+  return t < limit;
 }
 // "Hoy" según la fecha oficial del partido (BRT, UTC-3), igual al agrupamiento por fecha.
 function brtDateKey(utcDate){
