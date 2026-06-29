@@ -9031,7 +9031,7 @@ const MB_TYPE_INFO = [
   { key:'winner',      label:'Solo ganador correcto',         pts:7,  color:'#F59E0B' },
   { key:'wrong',       label:'Resultado incorrecto',          pts:0,  color:'#CE1126' },
 ];
-let mbState = { m:null, real:null, parts:[], view:'list', expanded:null, filterScore:null };
+let mbState = { m:null, real:null, parts:[], view:'list', expanded:null, filterScore:null, searchActive:false, searchTerm:'' };
 
 function openMatchBreakdown(matchId){
   const m = MATCHES.find(x => x.id === matchId);
@@ -9054,7 +9054,7 @@ function openMatchBreakdown(matchId){
   });
 
   const myPick = (allPicks[currentUser] || {})[matchId] || null;
-  mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null, myPick, myName:currentUser };
+  mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null, searchActive:false, searchTerm:'', myPick, myName:currentUser };
   const mbModal = document.getElementById('match-breakdown-modal');
   mbModal.classList.toggle('x2-mode', !!m.x2);
   mbModal.classList.remove('admin-pick-info-enabled');
@@ -9095,10 +9095,14 @@ function setMbView(v){
   mbState.view = v;
   mbState.expanded = null;
   mbState.filterScore = null;
+  mbState.searchActive = false;
+  mbState.searchTerm = '';
   renderMatchBreakdown();
 }
 function setMbScoreFilter(score){
   mbState.filterScore = (mbState.filterScore === score) ? null : score;
+  mbState.searchActive = false;
+  mbState.searchTerm = '';
   renderMatchBreakdown();
 }
 
@@ -9201,6 +9205,89 @@ function showMbPickInfo(el, savedAt){
   setTimeout(()=>tip.classList.remove('show'), 2600);
 }
 
+
+let mbScoreSearchTimer = null;
+let mbScoreSearchFired = false;
+function normalizeMbScoreSearch(value){
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[x×–—-]/g, ':')
+    .replace(/\s+/g, '')
+    .replace(/[^0-9:]/g, '');
+}
+function startMbScoreSearchHold(event, el){
+  if(!mbState || !mbState.pending) return;
+  clearMbScoreSearchHold();
+  mbScoreSearchFired = false;
+  mbScoreSearchTimer = setTimeout(() => {
+    mbScoreSearchFired = true;
+    openMbScoreSearch();
+  }, 520);
+}
+function clearMbScoreSearchHold(){
+  if(mbScoreSearchTimer){
+    clearTimeout(mbScoreSearchTimer);
+    mbScoreSearchTimer = null;
+  }
+}
+function cancelMbScoreSearchHold(){ clearMbScoreSearchHold(); }
+function handleMbScoreAllClick(event){
+  if(mbScoreSearchFired){
+    if(event){ event.preventDefault(); event.stopPropagation(); }
+    setTimeout(() => { mbScoreSearchFired = false; }, 80);
+    return true;
+  }
+  return false;
+}
+function openMbScoreSearch(){
+  if(!mbState || !mbState.pending) return;
+  mbState.searchActive = true;
+  mbState.filterScore = null;
+  mbState.searchTerm = mbState.searchTerm || '';
+  renderMatchBreakdown();
+  requestAnimationFrame(() => {
+    const input = document.getElementById('mb-score-search-input');
+    if(input){
+      input.focus({ preventScroll:true });
+      const len = input.value.length;
+      try{ input.setSelectionRange(len, len); }catch(e){}
+    }
+  });
+}
+function closeMbScoreSearch(){
+  if(!mbState) return;
+  mbState.searchActive = false;
+  mbState.searchTerm = '';
+  mbState.filterScore = null;
+  renderMatchBreakdown();
+}
+function setMbScoreSearch(value){
+  if(!mbState) return;
+  mbState.searchActive = true;
+  mbState.filterScore = null;
+  mbState.searchTerm = value || '';
+  renderMatchBreakdown();
+  requestAnimationFrame(() => {
+    const input = document.getElementById('mb-score-search-input');
+    if(input){
+      input.focus({ preventScroll:true });
+      const len = input.value.length;
+      try{ input.setSelectionRange(len, len); }catch(e){}
+    }
+  });
+}
+function buildMbScoreSearchRow(){
+  const value = decEsc(mbState.searchTerm || '');
+  return `<div class="mb-score-search-row">
+    <div class="mb-score-search-box">
+      <span class="mb-score-search-ico">🔎</span>
+      <input id="mb-score-search-input" class="mb-score-search-input" type="text" inputmode="text" value="${value}" placeholder="Buscar pronóstico..." oninput="setMbScoreSearch(this.value)" autocomplete="off" />
+      <button class="mb-score-search-close" type="button" onclick="closeMbScoreSearch()" aria-label="Cerrar búsqueda">×</button>
+    </div>
+  </div>`;
+}
+
 function buildMbScoreChips(){
   const parts = mbState.parts || [];
   const total = parts.length;
@@ -9208,8 +9295,9 @@ function buildMbScoreChips(){
   parts.forEach(p => { const k = `${p.pick.home}:${p.pick.away}`; tally[k] = (tally[k] || 0) + 1; });
   const top3 = Object.entries(tally).sort((a,b) => b[1] - a[1]).slice(0, 3);
   const fs = mbState.filterScore;
+  const searchOn = !!mbState.searchActive;
   let chips = ``;
-  chips += `<button class="mb-sfchip ${!fs ? 'active' : ''}" onclick="setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
+  chips += `<button class="mb-sfchip ${(!fs && !searchOn) || searchOn ? 'active' : ''}" onpointerdown="startMbScoreSearchHold(event,this)" onpointerup="cancelMbScoreSearchHold()" onpointerleave="cancelMbScoreSearchHold()" onpointercancel="cancelMbScoreSearchHold()" oncontextmenu="return false" onclick="if(!handleMbScoreAllClick(event)) setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
   chips += top3.map(([sc, n]) =>
     `<button class="mb-sfchip ${fs === sc ? 'active' : ''}" onclick="setMbScoreFilter('${sc}')">${sc} <span class="mb-sfn">${n}</span></button>`
   ).join('');
@@ -9286,9 +9374,13 @@ function renderMatchBreakdown(){
     if(mbState.filterScore){
       rows = parts.filter(p => `${p.pick.home}:${p.pick.away}` === mbState.filterScore);
     }
+    if(mbState.searchActive && String(mbState.searchTerm || '').trim()){
+      const q = normalizeMbScoreSearch(mbState.searchTerm);
+      rows = rows.filter(p => normalizeMbScoreSearch(`${p.pick.home}:${p.pick.away}`).includes(q));
+    }
     // El filtro por marcador solo sirve mientras se espera el resultado (chips en mb-tabs).
     // Con resultado ya cargado no se muestra esa barra de "Palpites".
-    const chipBar = '';
+    const chipBar = (pending && mbState.searchActive) ? buildMbScoreSearchRow() : '';
     const scoreCounts = {};
     parts.forEach(pp => {
       const sc = `${pp.pick.home}:${pp.pick.away}`;
@@ -13170,6 +13262,62 @@ body.edson-matches-bg #summary-modal .summary-header{
   #match-breakdown-modal.x2-mode .ud-tabs.mb-score-filter .mb-sfchip.active .mb-sfn{
     color:inherit!important;
     opacity:.85!important;
+  }
+</style>
+
+
+<style id="edson-mb-score-search-longpress-20260629">
+  #match-breakdown-modal .mb-score-search-row{
+    padding:0 0 10px!important;
+    background:#fff!important;
+  }
+  #match-breakdown-modal .mb-score-search-box{
+    height:42px!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:0 10px 0 12px!important;
+    border:1px solid var(--border)!important;
+    border-radius:14px!important;
+    background:var(--bg)!important;
+    box-sizing:border-box!important;
+  }
+  #match-breakdown-modal .mb-score-search-ico{
+    font-size:14px!important;
+    line-height:1!important;
+    opacity:.68!important;
+    flex:0 0 auto!important;
+  }
+  #match-breakdown-modal .mb-score-search-input{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    border:none!important;
+    outline:none!important;
+    background:transparent!important;
+    font-family:'Inter',sans-serif!important;
+    font-size:13px!important;
+    font-weight:750!important;
+    color:var(--text)!important;
+  }
+  #match-breakdown-modal .mb-score-search-input::placeholder{
+    color:var(--sub)!important;
+    font-weight:650!important;
+  }
+  #match-breakdown-modal .mb-score-search-close{
+    width:28px!important;
+    height:28px!important;
+    border:none!important;
+    border-radius:999px!important;
+    background:#fff!important;
+    color:var(--sub)!important;
+    font-size:18px!important;
+    font-weight:800!important;
+    line-height:1!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    cursor:pointer!important;
+    flex:0 0 auto!important;
   }
 </style>
 
