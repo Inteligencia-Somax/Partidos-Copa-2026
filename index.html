@@ -9178,7 +9178,7 @@ function renderMatchBreakdown(){
           if(sameAsMine) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
           if(isMostPicked) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
           if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
-          const rowCls = ['ud-row', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
+          const rowCls = ['ud-row', pending ? 'pending-row' : '', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const registeredHtml = pending ? formatMbRegisteredAt(p.savedAt) : '';
           const pendingScoreHtml = pending ? `<span class="ud-meta-sep">•</span><span class="ud-pending-score">${p.totalScore || 0} pts</span>` : '';
@@ -16718,5 +16718,49 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
      El acierto exacto ya era naranja y el error (0 pts) sigue en rojo. */
   .match-card.x2-game:has(.mc-status.done):not(.exact-hit) .mc-badge.center{
     color:var(--gold)!important;
+  }
+</style>
+
+
+<!-- AJUSTE EDSON: jogos cerrados sem pontos usam a largura completa da linha -->
+<style id="edson-mb-cerrado-sem-coluna-pontos-20260629">
+  /*
+    Quando el partido está cerrado y aún no tiene resultado, no existe puntaje
+    del partido para mostrar a la derecha. En ese estado la línea ocupa el
+    espacio completo, evitando cortar "Reg.:", "= Vos" y los puntos generales.
+  */
+  #match-breakdown-modal .ud-row.pending-row{
+    grid-template-columns:48px minmax(0,1fr)!important;
+    column-gap:6px!important;
+    padding-right:8px!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-match{
+    min-width:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    grid-column:2 / 3!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-meta{
+    max-width:100%!important;
+    padding-right:0!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-pts{
+    display:none!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:0!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  @media(max-width:430px){
+    #match-breakdown-modal .ud-row.pending-row{
+      grid-template-columns:50px minmax(0,1fr)!important;
+      column-gap:4px!important;
+      padding-right:6px!important;
+    }
   }
 </style>
