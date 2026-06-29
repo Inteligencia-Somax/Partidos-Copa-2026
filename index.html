@@ -1571,7 +1571,7 @@ body.somax-modal-locked{
 
 /* Expansão do modal de puntos: alinha a largura até o lado direito */
 #match-breakdown-modal .ud-body{padding-left:14px!important;padding-right:14px!important;box-sizing:border-box!important;}
-#match-breakdown-modal .ud-row{width:100%!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important;display:grid!important;grid-template-columns:70px minmax(0,1fr) auto!important;align-items:center!important;}
+#match-breakdown-modal .ud-row{width:100%!important;box-sizing:border-box!important;margin-left:0!important;margin-right:0!important;display:grid!important;grid-template-columns:72px minmax(0,1fr) auto!important;align-items:center!important;}
 #match-breakdown-modal .ud-match{min-width:0!important;}
 #match-breakdown-modal .ud-meta{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;}
 #match-breakdown-modal .ud-pts{justify-self:end!important;margin-left:0!important;}
@@ -16860,6 +16860,28 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   #match-breakdown-modal .ud-row.pending-row .ud-name-sep,
   #match-breakdown-modal .ud-row.pending-row .ud-pending-score-name{
     flex:0 0 auto!important;
+    white-space:nowrap!important;
+  }
+</style>
+
+
+<!-- AJUSTE EDSON: separador bolinha no detalhe do participante -->
+<style id="edson-ud-separador-bolinha-palpite-reg-20260629">
+  /*
+    En el detalle del participante, la línea del palpite vuelve a mostrar
+    el separador visual entre Palpite, Reg. y los sellos.
+    Ejemplo: Palpite: 3:0 • Reg.: 27/06 09:07
+  */
+  #user-detail-modal .ud-pick-line .ud-meta-sep{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    color:#9ca3af!important;
+    font-weight:800!important;
+    font-size:10px!important;
+    line-height:1!important;
+    flex:0 0 auto!important;
+    margin:0 1px!important;
     white-space:nowrap!important;
   }
 </style>
