@@ -16820,3 +16820,46 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     }
   }
 </style>
+
+
+<!-- AJUSTE EDSON: pontos logo após o nome, sem jogar para o canto -->
+<style id="edson-mb-pontos-sequencia-nome-20260629">
+  /*
+    En partidos cerrados sin resultado, el total general queda en la misma
+    línea y justo después del nombre. Si el nombre es largo, solo el nombre
+    corta con "..."; el separador y los puntos permanecen visibles, sin salto.
+  */
+  #match-breakdown-modal .ud-row.pending-row .ud-match{
+    align-items:flex-start!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-teams,
+  #match-breakdown-modal .ud-row.pending-row .ud-teams-pending{
+    display:inline-flex!important;
+    align-items:baseline!important;
+    align-self:flex-start!important;
+    width:auto!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    text-overflow:clip!important;
+    line-height:1.12!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-participant-name{
+    display:block!important;
+    flex:0 1 auto!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-name-sep,
+  #match-breakdown-modal .ud-row.pending-row .ud-pending-score-name{
+    flex:0 0 auto!important;
+    white-space:nowrap!important;
+  }
+</style>
