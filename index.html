@@ -9405,6 +9405,9 @@ function renderMatchBreakdown(){
           const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const registeredHtml = pending ? formatMbRegisteredAt(p.savedAt) : '';
           const pendingTotalHtml = pending ? `<span class="ud-name-sep">•</span><span class="ud-pending-score ud-pending-score-name">${p.totalScore || 0} pts</span>` : '';
+          const pointsInlineHtml = (!pending && pickTags.length)
+            ? `<span class="ud-meta-sep">•</span><span class="ud-pick-points-inline">${(p.pts > 0 ? '+' : '') + p.pts} pts</span>`
+            : '';
           const pickInfoClass = p.savedAt ? ' pick-info-enabled' : '';
           const pickInfoAttr = p.savedAt ? pickInfoAttrs(p.savedAt) : '';
           const rowPickInfoAttr = (!pending && p.savedAt) ? pickInfoHoldAttrs(p.savedAt) : `data-pick-saved="${decEsc(p.savedAt || '')}"`;
@@ -9413,7 +9416,7 @@ function renderMatchBreakdown(){
           <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
             <div class="ud-teams${pending ? ' ud-teams-pending' : ''}"><span class="ud-participant-name">${p.name}${nameTag}</span>${pendingTotalHtml}</div>
-            <div class="ud-meta"><span class="ud-pick-text${pickInfoClass}" ${pickInfoAttr}>Palpite: ${p.pick.home}:${p.pick.away}</span>${registeredHtml ? '<span class="ud-meta-sep">•</span><span class="ud-pick-registered">' + registeredHtml + '</span>' : ''}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
+            <div class="ud-meta"><span class="ud-pick-text${pickInfoClass}" ${pickInfoAttr}>Palpite: ${p.pick.home}:${p.pick.away}</span>${registeredHtml ? '<span class="ud-meta-sep">•</span><span class="ud-pick-registered">' + registeredHtml + '</span>' : ''}${pointsInlineHtml}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
           </div>
           <div class="${ptsCls}">${pending ? '' : (p.pts > 0 ? '+' : '') + p.pts}</div>
         </div>`;
@@ -13318,6 +13321,25 @@ body.edson-matches-bg #summary-modal .summary-header{
     justify-content:center!important;
     cursor:pointer!important;
     flex:0 0 auto!important;
+  }
+</style>
+
+
+<!-- AJUSTE EDSON: pontuação inline antes dos badges no modal Puntos por participante -->
+<style id="final-mb-inline-points-before-badges-20260629">
+  #match-breakdown-modal .ud-pick-points-inline{
+    flex:0 0 auto!important;
+    color:#6b7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+  }
+  @media(max-width:430px){
+    #match-breakdown-modal .ud-pick-points-inline{
+      font-size:11px!important;
+      line-height:1.05!important;
+    }
   }
 </style>
 
