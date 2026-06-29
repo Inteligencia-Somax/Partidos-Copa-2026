@@ -9277,7 +9277,8 @@ function renderMatchBreakdown(){
           const scoreKey = `${p.pick.home}:${p.pick.away}`;
           const isMostPicked = maxScoreCount > 1 && scoreCounts[scoreKey] === maxScoreCount;
           
-          if(sameAsMine) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
+          // En el modal Puntos por participante no mostramos "= Vos";
+          // la fila propia ya se identifica por el destaque verde.
           if(isMostPicked) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
           if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
           const rowCls = ['ud-row', pending ? 'pending-row' : '', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
