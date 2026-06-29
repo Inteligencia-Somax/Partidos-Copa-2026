@@ -9544,6 +9544,19 @@ function csvAdminCell(value){
   const txt = String(value ?? '');
   return '"' + txt.replace(/"/g, '""') + '"';
 }
+function encodeAdminCsvUtf16LE(str){
+  // Excel en Windows puede abrir CSV UTF-8 como ANSI y transformar acentos en "Ã¡/Ã§".
+  // UTF-16 LE con BOM es el formato más seguro para abrir directo con doble clic.
+  const out = new Uint8Array(2 + str.length * 2);
+  out[0] = 0xFF;
+  out[1] = 0xFE;
+  for(let i = 0; i < str.length; i++){
+    const code = str.charCodeAt(i);
+    out[2 + i * 2] = code & 0xFF;
+    out[3 + i * 2] = code >> 8;
+  }
+  return out;
+}
 async function downloadAdminPredictionsReport(){
   if(currentUserRole !== 'admin' || !adminUnlocked){
     showSaveBanner('Acceso reservado para administradores');
@@ -9621,7 +9634,9 @@ async function downloadAdminPredictionsReport(){
     ].map(csvAdminCell).join(';'))
   ];
 
-  const blob = new Blob(['\ufeff' + csvLines.join('\n')], {type:'text/csv;charset=utf-8'});
+  // Importante: usar CRLF e UTF-16LE para que Excel abra acentos corretamente.
+  const csvContent = csvLines.join('\r\n');
+  const blob = new Blob([encodeAdminCsvUtf16LE(csvContent)], {type:'text/csv;charset=utf-16le'});
   const a = document.createElement('a');
   const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
   a.href = URL.createObjectURL(blob);
@@ -9629,7 +9644,7 @@ async function downloadAdminPredictionsReport(){
   document.body.appendChild(a);
   a.click();
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 800);
-  showSaveBanner('📊 Relatório de palpites exportado');
+  showSaveBanner('📊 Relatório de palpites exportado sem problema de acentos');
 }
 
 // ══ ADMIN RESULTADOS ══
