@@ -16400,8 +16400,12 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   #audit-modal .aud-pill{font-size:10.5px;font-weight:800;padding:3px 7px;border-radius:20px;line-height:1;white-space:nowrap;}
   #audit-modal .aud-pill.cnt{background:rgba(10,42,110,.1);color:#0A2A6E;}
   #audit-modal .aud-pill.bad{background:rgba(206,17,38,.12);color:var(--red,#CE1126);}
-  #audit-modal .aud-chev{font-size:12px;color:var(--sub,#6B7280);transition:transform .2s;flex-shrink:0;}
-  #audit-modal .aud-game.open .aud-chev{transform:rotate(180deg);}
+  #audit-modal .aud-seemore{font-size:10.5px;font-weight:700;color:#0A2A6E;margin-top:3px;}
+  #audit-modal .aud-chev-btn{border:none;background:rgba(10,42,110,.08);color:#0A2A6E;width:30px;height:30px;
+    border-radius:50%;font-size:13px;cursor:pointer;flex-shrink:0;transition:transform .2s;line-height:1;
+    display:flex;align-items:center;justify-content:center;padding:0;}
+  #audit-modal .aud-chev-btn:active{background:rgba(10,42,110,.18);}
+  #audit-modal .aud-game.open .aud-chev-btn{transform:rotate(180deg);}
   #audit-modal .aud-rows{display:none;padding:4px 8px 8px;}
   #audit-modal .aud-game.open .aud-rows{display:block;}
   #audit-modal .aud-deadline{font-size:10.5px;color:var(--sub,#6B7280);font-weight:600;padding:6px 6px 8px;border-bottom:1px dashed var(--border,#E8E8EC);margin-bottom:6px;}
@@ -16520,15 +16524,16 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
       var openCls = (auditAllOpen || gbad>0) ? ' open' : '';
       html+=''+
       '<div class="aud-game'+(gbad>0?' has-bad':'')+openCls+'" id="audg-'+g.m.id+'">'+
-        '<div class="aud-ghead" onclick="auditToggleGame('+g.m.id+')">'+
+        '<div class="aud-ghead" onclick="auditOpenGameInfo('+g.m.id+')">'+
           '<div class="aud-gmeta">'+
             '<div class="aud-when">'+esc(g.m.date)+' · '+esc(g.m.time)+' · '+esc(g.m.phase)+'</div>'+
             '<div class="aud-teams">'+esc(d.hf)+' '+esc(d.home)+' <span style="color:var(--sub,#6B7280)">x</span> '+esc(d.away)+' '+esc(d.af)+'</div>'+
+            '<div class="aud-seemore">Tocá para ver los puntos del partido ›</div>'+
           '</div>'+
           '<div class="aud-badges">'+
             '<span class="aud-pill cnt">'+g.entries.length+' 👤</span>'+
             (gbad>0?'<span class="aud-pill bad">'+gbad+' ⚠</span>':'')+
-            '<span class="aud-chev">▾</span>'+
+            '<button type="button" class="aud-chev-btn" aria-label="Mostrar u ocultar palpites" onclick="event.stopPropagation();auditToggleGame('+g.m.id+')">▾</button>'+
           '</div>'+
         '</div>'+
         '<div class="aud-rows">'+
@@ -16549,6 +16554,25 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   };
 
   window.auditToggleGame = function(id){ var el=document.getElementById('audg-'+id); if(el) el.classList.toggle('open'); };
+
+  // Abre el detalle "Puntos por participante" del partido, por encima de la auditoría.
+  window.auditOpenGameInfo = function(id){
+    if(typeof MATCHES==='undefined' || typeof openMatchBreakdown!=='function') return;
+    var m=MATCHES.find(function(x){return x.id===id;});
+    if(!m) return;
+    var real=null;
+    try{ if(typeof loadRealResults==='function') real=loadRealResults()[id]||null; }catch(e){}
+    var cerrado = (typeof canEditPick==='function') ? !canEditPick(m) : true;
+    // El detalle solo está disponible con resultado cargado o con el plazo ya cerrado.
+    if(!real && !cerrado){
+      if(typeof showSaveBanner==='function') showSaveBanner('El detalle estará disponible cuando cierre el plazo del partido');
+      return;
+    }
+    var mb=document.getElementById('match-breakdown-modal');
+    if(mb) mb.style.zIndex='700'; // queda por encima del modal de auditoría
+    openMatchBreakdown(id);
+  };
+
   window.auditToggleAll = function(){
     auditAllOpen=!auditAllOpen;
     var btn=document.getElementById('aud-toggle-all');
@@ -16594,3 +16618,15 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   setTimeout(injectBtn, 1200);
 })();
 </script>
+
+
+<!-- AJUSTE EDSON V15: en mata-mata (×2), el texto "Resultado X:Y" de un acierto NO exacto también va en naranja -->
+<style id="edson-v15-resultado-laranja-matamata-20260628">
+  /* En partidos de mata-mata (×2), un acierto que NO es exacto mostraba el
+     texto "Resultado X:Y" en verde, mientras que los puntos ya salían en naranja.
+     Esto lo unifica: el "Resultado" también queda naranja (var --gold).
+     El acierto exacto ya era naranja y el error (0 pts) sigue en rojo. */
+  .match-card.x2-game:has(.mc-status.done):not(.exact-hit) .mc-badge.center{
+    color:var(--gold)!important;
+  }
+</style>
