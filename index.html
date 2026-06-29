@@ -2258,6 +2258,62 @@ html, body{scroll-behavior:auto!important;}
   }
 </style>
 
+
+
+<!-- AJUSTE EDSON: pontos gerais na linha do nome em jogos cerrados sem resultado -->
+<style id="edson-mb-pontos-no-nome-cerrado-20260629">
+  /*
+    En partidos cerrados sin resultado, los puntos generales del participante
+    suben a la misma línea del nombre. El nombre corta con "..." y los puntos
+    quedan siempre visibles, sin salto de línea.
+  */
+  #match-breakdown-modal .ud-row.pending-row .ud-teams,
+  #match-breakdown-modal .ud-row.pending-row .ud-teams-pending{
+    display:flex!important;
+    align-items:baseline!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    line-height:1.12!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-participant-name{
+    display:block!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-name-sep{
+    flex:0 0 auto!important;
+    margin:0 5px!important;
+    color:#6b7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-pending-score-name{
+    flex:0 0 auto!important;
+    color:#6b7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+  }
+
+  #match-breakdown-modal .ud-row.pending-row .ud-meta{
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+</style>
+
 </head>
 <body class="somax-loading"><div id="somax-loader-dot" aria-hidden="true"></div><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
@@ -9181,15 +9237,15 @@ function renderMatchBreakdown(){
           const rowCls = ['ud-row', pending ? 'pending-row' : '', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const registeredHtml = pending ? formatMbRegisteredAt(p.savedAt) : '';
-          const pendingScoreHtml = pending ? `<span class="ud-meta-sep">•</span><span class="ud-pending-score">${p.totalScore || 0} pts</span>` : '';
+          const pendingTotalHtml = pending ? `<span class="ud-name-sep">•</span><span class="ud-pending-score ud-pending-score-name">${p.totalScore || 0} pts</span>` : '';
           const pickInfoClass = p.savedAt ? ' pick-info-enabled' : '';
           const pickInfoAttr = p.savedAt ? pickInfoAttrs(p.savedAt) : '';
           return `
         <div class="${rowCls}" data-pick-saved="${p.savedAt || ''}" onclick="handleMbParticipantClick(event,'${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
           <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
-            <div class="ud-teams">${p.name}${nameTag}</div>
-            <div class="ud-meta"><span class="ud-pick-text${pickInfoClass}" ${pickInfoAttr}>Palpite: ${p.pick.home}:${p.pick.away}</span>${registeredHtml ? '<span class="ud-meta-sep">•</span><span class="ud-pick-registered">' + registeredHtml + '</span>' : ''}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}${pendingScoreHtml}</div>
+            <div class="ud-teams${pending ? ' ud-teams-pending' : ''}"><span class="ud-participant-name">${p.name}${nameTag}</span>${pendingTotalHtml}</div>
+            <div class="ud-meta"><span class="ud-pick-text${pickInfoClass}" ${pickInfoAttr}>Palpite: ${p.pick.home}:${p.pick.away}</span>${registeredHtml ? '<span class="ud-meta-sep">•</span><span class="ud-pick-registered">' + registeredHtml + '</span>' : ''}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
           </div>
           <div class="${ptsCls}">${pending ? '' : (p.pts > 0 ? '+' : '') + p.pts}</div>
         </div>`;
