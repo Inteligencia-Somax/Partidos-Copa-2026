@@ -9406,7 +9406,7 @@ function renderMatchBreakdown(){
           const registeredHtml = pending ? formatMbRegisteredAt(p.savedAt) : '';
           const pendingTotalHtml = pending ? `<span class="ud-name-sep">•</span><span class="ud-pending-score ud-pending-score-name">${p.totalScore || 0} pts</span>` : '';
           const pointsInlineHtml = (!pending && pickTags.length)
-            ? `<span class="ud-meta-sep">•</span><span class="ud-pick-points-inline">${(p.pts > 0 ? '+' : '') + p.pts} pts</span>`
+            ? `<span class="ud-meta-sep">•</span><span class="ud-pick-points-inline">${p.totalScore || 0} pts</span>`
             : '';
           const pickInfoClass = p.savedAt ? ' pick-info-enabled' : '';
           const pickInfoAttr = p.savedAt ? pickInfoAttrs(p.savedAt) : '';
