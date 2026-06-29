@@ -12918,6 +12918,141 @@ body.edson-matches-bg #summary-modal .summary-header{
   }
 </style>
 
+
+
+<!-- AJUSTE EDSON: rolagem estável em Partidas e Ranking no mobile -->
+<style id="edson-scroll-estavel-partidas-ranking-20260629">
+  /* Evita a sensação de “escapada” quando o dedo solta a tela no Android/Chrome.
+     Não muda fontes, cards, filtros ou funcionamento; só estabiliza o fluxo do scroll. */
+  html,
+  body{
+    scroll-behavior:auto!important;
+    overscroll-behavior-y:none!important;
+  }
+
+  .main,
+  #main-content,
+  #panel-matches,
+  #panel-ranking,
+  #matches-list,
+  #ranking-list{
+    overflow-anchor:none!important;
+  }
+
+  /* Partidas: mantém a barra de filtros no fluxo normal usando sticky nativo,
+     sem spacer/fixed recalculando a posição depois da rolagem. */
+  #panel-matches .filter-row,
+  #panel-matches .filter-row.matches-sticky-fixed{
+    position:-webkit-sticky!important;
+    position:sticky!important;
+    top:56px!important;
+    left:auto!important;
+    transform:none!important;
+    width:auto!important;
+    max-width:680px!important;
+    margin:0 0 4px!important;
+    padding:10px 0 4px!important;
+    z-index:300!important;
+    background:#0E5F34!important;
+    box-shadow:none!important;
+  }
+
+  #matches-filter-fixed-spacer,
+  #matches-filter-fixed-spacer.matches-spacer-on{
+    display:none!important;
+  }
+
+  /* Ranking: mesma correção na barra Buscar + filtro, sem alterar layout dos cards. */
+  #panel-ranking .rank-search-wrap,
+  #panel-ranking .rank-search-wrap.rank-sticky-fixed{
+    position:-webkit-sticky!important;
+    position:sticky!important;
+    top:56px!important;
+    left:auto!important;
+    transform:none!important;
+    width:auto!important;
+    max-width:680px!important;
+    margin:0 auto 10px!important;
+    padding:10px 12px 8px!important;
+    z-index:300!important;
+    background:#0E5F34!important;
+    box-shadow:none!important;
+  }
+
+  #rank-search-fixed-spacer,
+  #rank-search-fixed-spacer.rank-spacer-on{
+    display:none!important;
+  }
+
+  #panel-ranking.rank-sticky-on .ranking-list,
+  #panel-ranking.rank-sticky-on #rank-context:not([style*="display:none"]),
+  #panel-matches.matches-sticky-on .date-group:first-of-type{
+    padding-top:0!important;
+    margin-top:0!important;
+  }
+
+  @media(max-width:520px){
+    #panel-matches .filter-row,
+    #panel-matches .filter-row.matches-sticky-fixed,
+    #panel-ranking .rank-search-wrap,
+    #panel-ranking .rank-search-wrap.rank-sticky-fixed{
+      top:52px!important;
+    }
+  }
+</style>
+
+<script id="edson-scroll-estavel-partidas-ranking-20260629">
+(function(){
+  if(window.__edsonScrollEstavelPartidasRanking) return;
+  window.__edsonScrollEstavelPartidasRanking = true;
+
+  function clearLegacySpacers(){
+    var ids = ['matches-filter-fixed-spacer','rank-search-fixed-spacer'];
+    ids.forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.style.setProperty('display','none','important');
+      el.style.setProperty('height','0px','important');
+      el.classList.remove('matches-spacer-on','rank-spacer-on');
+    });
+  }
+
+  function stabilizeStickyBars(){
+    clearLegacySpacers();
+
+    var matchRow = document.querySelector('#panel-matches .filter-row');
+    if(matchRow){
+      matchRow.style.removeProperty('left');
+      matchRow.style.removeProperty('transform');
+      matchRow.style.removeProperty('width');
+      matchRow.style.removeProperty('max-width');
+    }
+
+    var rankRow = document.querySelector('#panel-ranking .rank-search-wrap');
+    if(rankRow){
+      rankRow.style.removeProperty('left');
+      rankRow.style.removeProperty('transform');
+      rankRow.style.removeProperty('width');
+      rankRow.style.removeProperty('max-width');
+    }
+  }
+
+  window.addEventListener('scroll', function(){
+    requestAnimationFrame(stabilizeStickyBars);
+  }, {passive:true});
+
+  window.addEventListener('resize', function(){
+    requestAnimationFrame(stabilizeStickyBars);
+  });
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(stabilizeStickyBars, 80);
+  });
+
+  setTimeout(stabilizeStickyBars, 120);
+})();
+</script>
+
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
