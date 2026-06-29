@@ -2242,6 +2242,22 @@ html, body{scroll-behavior:auto!important;}
   }
   #mb-pick-info-tip.show{opacity:1;transform:translate(-50%,calc(-100% - 6px));}
 </style>
+
+
+<style id="final-ud-pending-registered-time-20260629">
+  /* Detalle del participante: en partidos sin resultado, muestra el horario registrado junto al palpite. */
+  #user-detail-modal .ud-pick-registered{
+    display:inline-flex!important;
+    align-items:center!important;
+    color:#6b7280!important;
+    font-size:11.8px!important;
+    font-weight:400!important;
+    line-height:1.15!important;
+    white-space:nowrap!important;
+    flex:0 0 auto!important;
+  }
+</style>
+
 </head>
 <body class="somax-loading"><div id="somax-loader-dot" aria-hidden="true"></div><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
@@ -8682,6 +8698,7 @@ function renderUdPartidos(){
     const pickSavedAt = pick ? (pick.savedAt || pick.fechaPalpite || '') : '';
     const pickInfoClass = pickSavedAt ? ' pick-info-enabled' : '';
     const pickInfoAttr = pickSavedAt ? pickInfoAttrs(pickSavedAt) : '';
+    const pendingRegisteredHtml = (pending && pickSavedAt) ? `<span class="ud-meta-sep">•</span><span class="ud-pick-registered">${formatMbRegisteredAt(pickSavedAt)}</span>` : '';
     const cls = pts > 0 ? 'win' : 'zero';
     const ptsStr = pending ? '' : `${pts > 0 ? '+' : ''}${pts}`;
 
@@ -8708,7 +8725,7 @@ function renderUdPartidos(){
           <div class="ud-line-main">
             <span class="ud-teams"><span class="ud-team-name home">${m.hf || ''} ${m.home}</span> ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} <span class="ud-team-name away">${m.away} ${m.af || ''}</span></span>
           </div>
-          <div class="ud-pick-line"><span class="ud-pick${pickInfoClass}" ${pickInfoAttr}>${pickLabel}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
+          <div class="ud-pick-line"><span class="ud-pick${pickInfoClass}" ${pickInfoAttr}>${pickLabel}</span>${pendingRegisteredHtml}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
         </div>
         <div class="ud-pts ${pending ? 'zero' : cls} ${isExact ? 'exact' : ''}">${ptsStr}</div>
       </div>`;
@@ -8994,11 +9011,11 @@ function formatMbRegisteredAt(value){
       hourCycle:'h23'
     }).formatToParts(d).reduce((acc, p) => { acc[p.type] = p.value; return acc; }, {});
     const formatted = `${parts.day}/${parts.month} ${parts.hour}:${parts.minute}`;
-    return `Registrado: ${formatted}`;
+    return `Reg.: ${formatted}`;
   }catch(e){ return ''; }
 }
 function formatMbPickSavedAt(value){
-  return formatMbRegisteredAt(value) || 'Registro no disponible';
+  return formatMbRegisteredAt(value) || 'Reg. no disponible';
 }
 function pickInfoAttrs(savedAt){
   if(!savedAt) return '';
