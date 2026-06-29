@@ -16419,8 +16419,11 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   #audit-modal .aud-row.nodata{background:rgba(107,114,128,.08);}
   #audit-modal .aud-rname{font-size:13px;font-weight:700;color:var(--text,#111);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   #audit-modal .aud-rpick{font-size:11px;font-weight:700;color:var(--sub,#6B7280);}
-  #audit-modal .aud-rtime{font-size:11px;color:var(--sub,#6B7280);font-weight:600;grid-column:1 / -1;line-height:1.35;}
+  #audit-modal .aud-rtime{font-size:11px;color:var(--sub,#6B7280);font-weight:600;grid-column:1 / -1;line-height:1.6;}
   #audit-modal .aud-rtime b{color:var(--text,#111);}
+  #audit-modal .aud-rpts{display:inline-block;font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;
+    border:1px solid transparent;line-height:1.3;margin-right:4px;vertical-align:middle;}
+  #audit-modal .aud-rpts.pend{color:var(--sub,#6B7280);background:rgba(107,114,128,.1);border-color:rgba(107,114,128,.25);}
   #audit-modal .aud-status{justify-self:end;font-size:10.5px;font-weight:800;padding:4px 8px;border-radius:20px;line-height:1;white-space:nowrap;text-align:center;}
   #audit-modal .aud-status.ok{background:rgba(0,155,84,.14);color:var(--green,#009B54);}
   #audit-modal .aud-status.warn,#audit-modal .aud-status.late{background:rgba(206,17,38,.14);color:var(--red,#CE1126);}
@@ -16475,18 +16478,24 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   function buildAudit(){
     if(typeof MATCHES==='undefined' || typeof getMatchDateTime!=='function') return [];
     var picks=getPicks();
+    var reals={}; try{ if(typeof loadRealResults==='function') reals=loadRealResults()||{}; }catch(e){}
     var sorted=MATCHES.slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});
     var games=[];
     sorted.forEach(function(m){
       var kick=getMatchDateTime(m);
       var limit=new Date(kick.getTime()-30*60*1000);
+      var real=reals[m.id]||null;
       var entries=[];
       Object.keys(picks).forEach(function(name){
         var p=picks[name] && picks[name][m.id];
         if(!p || p.home==null || p.away==null) return;
         var status='nodata', mins=null, sd=null;
         if(p.savedAt){ var t=new Date(p.savedAt); if(!isNaN(t.getTime())){ sd=t; mins=(kick-t)/60000; status = sd<limit?'ok':(sd<kick?'warn':'late'); } }
-        entries.push({name:name,home:p.home,away:p.away,sd:sd,mins:mins,status:status});
+        var pts=null, ptype='pending';
+        if(real && typeof calculatePickPoints==='function'){
+          try{ var calc=calculatePickPoints({home:p.home,away:p.away}, real, m); pts=calc.pts; ptype=calc.type; }catch(e){}
+        }
+        entries.push({name:name,home:p.home,away:p.away,sd:sd,mins:mins,status:status,pts:pts,ptype:ptype,x2:!!m.x2});
       });
       if(!entries.length) return;
       var rank=function(s){return s==='late'?0:s==='warn'?1:s==='nodata'?2:3;};
@@ -16497,6 +16506,14 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 
   function statusLabel(s){ return s==='ok'?'✅ OK':s==='warn'?'🚨 Menos de 30m':s==='late'?'⛔ Después':'❓ Sin dato'; }
+
+  // Chip con los puntos que rindió ese palpite (color según tipo de acierto).
+  function ptsChip(e){
+    if(e.pts==null) return '<span class="aud-rpts pend">Pendiente</span>';
+    var color = (typeof getScoreTypeColor==='function') ? getScoreTypeColor(e.ptype, {x2:e.x2}) : (e.pts>0?'#009B54':'#CE1126');
+    var sign = e.pts>0 ? '+' : '';
+    return '<span class="aud-rpts" style="color:'+color+';border-color:'+color+'40;background:'+color+'14;">'+sign+e.pts+' pts</span>';
+  }
 
   window.renderAudit = function(){
     var games=buildAudit();
@@ -16544,7 +16561,7 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
             return '<div class="aud-row '+e.status+'">'+
               '<div class="aud-rname">'+esc(e.name)+'</div>'+
               '<div class="aud-status '+e.status+'">'+statusLabel(e.status)+'</div>'+
-              '<div class="aud-rtime">Palpite: <b>'+e.home+'-'+e.away+'</b> · enviado <b>'+when+'</b> · '+marg+'</div>'+
+              '<div class="aud-rtime">'+ptsChip(e)+' Palpite: <b>'+e.home+'-'+e.away+'</b> · enviado <b>'+when+'</b> · '+marg+'</div>'+
             '</div>';
           }).join('')+
         '</div>'+
