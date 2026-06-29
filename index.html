@@ -7887,6 +7887,9 @@ function renderMatches(filter){
       const points = calc.pts;
       const isExactHit = real && calc.type === 'exact';
       const isZero = real && points === 0;
+      const pickSavedAt = hasPick ? (pick.savedAt || pick.fechaPalpite || '') : '';
+      const scoreInfoClass = pickSavedAt ? ' pick-info-enabled' : '';
+      const scoreInfoAttr = pickSavedAt ? pickInfoAttrs(pickSavedAt) : '';
       const card = document.createElement('div');
       card.className = `match-card ${hasPick?'done':'pending'} ${m.py?'py-game':''} ${m.x2?'x2-game':''} ${isExactHit?'exact-hit':''}`;
       const hScore = hasPick ? pick.home : '–';
@@ -7920,7 +7923,7 @@ function renderMatches(filter){
             <span class="mc-flag${disp.hc?' clickable':''}"${disp.hc?` onclick="event.stopPropagation();openTeamHistory('${disp.hc}', '${m.id}')" role="button" tabindex="0" title="Ver historial" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openTeamHistory('${disp.hc}', '${m.id}')}"`:''}>${disp.hf}</span>
             <span class="mc-name ${m.py&&m.ac==='PY'?'py':''}">${disp.home}</span>
           </div>
-          <div class="mc-score-wrap">
+          <div class="mc-score-wrap${scoreInfoClass}" ${scoreInfoAttr}>
             <div class="mc-score ${scoreCls}">${hScore}</div>
             <div class="mc-colon">:</div>
             <div class="mc-score ${scoreCls}">${aScore}</div>
@@ -8405,6 +8408,10 @@ function renderRanking(){
 // ══ DETALLE DE UN JUGADOR (palpites + puntos por partido) ══
 let udState = { name:'', matches:[], rounds:[], idx:0, picks:{}, real:{} };
 
+// Guarda o modal de 'Puntos por participante' quando abrimos o detalhe de um usuário por ele.
+// Assim, ao fechar o detalhe, o app volta exatamente para a tela anterior.
+let restoreMatchBreakdownContext = null;
+
 function openUserDetail(name){
   const allPicks = loadAllPicks();
   const realResults = loadRealResults();
@@ -8672,6 +8679,9 @@ function renderUdPartidos(){
     const isExact = !pending && calc.type === 'exact';
     if(!pending) shownTotal += pts;
     const pickLabel = pick ? `Palpite: ${pick.home}:${pick.away}` : 'Sin palpite';
+    const pickSavedAt = pick ? (pick.savedAt || pick.fechaPalpite || '') : '';
+    const pickInfoClass = pickSavedAt ? ' pick-info-enabled' : '';
+    const pickInfoAttr = pickSavedAt ? pickInfoAttrs(pickSavedAt) : '';
     const cls = pts > 0 ? 'win' : 'zero';
     const ptsStr = pending ? '' : `${pts > 0 ? '+' : ''}${pts}`;
 
@@ -8698,7 +8708,7 @@ function renderUdPartidos(){
           <div class="ud-line-main">
             <span class="ud-teams"><span class="ud-team-name home">${m.hf || ''} ${m.home}</span> ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} <span class="ud-team-name away">${m.away} ${m.af || ''}</span></span>
           </div>
-          <div class="ud-pick-line"><span class="ud-pick">${pickLabel}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
+          <div class="ud-pick-line"><span class="ud-pick${pickInfoClass}" ${pickInfoAttr}>${pickLabel}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
         </div>
         <div class="ud-pts ${pending ? 'zero' : cls} ${isExact ? 'exact' : ''}">${ptsStr}</div>
       </div>`;
@@ -8720,7 +8730,9 @@ function renderUdPartidos(){
 function openMatchInfoFromUserDetail(matchId){
   const m = MATCHES.find(x => x.id === matchId);
   if(!m) return;
-  closeUserDetail();
+  // Aqui o usuário está navegando para outro partido, então não devemos voltar
+  // automaticamente para o modal anterior de 'Puntos por participante'.
+  closeUserDetail({ restoreMatchBreakdown:false });
   setTimeout(() => {
     const real = loadRealResults()[matchId] || null;
     if(real || !canEditPick(m)) openMatchBreakdown(matchId);
@@ -8831,12 +8843,50 @@ function renderUdAnalisis(){
 
   return `<div class="ud-an-title">Distribución de aciertos (${total} partidos)</div>${bars}`;
 }
-function closeUserDetail(){
+function closeUserDetail(options = {}){
+  const shouldRestoreMatchBreakdown = options.restoreMatchBreakdown !== false && !!restoreMatchBreakdownContext;
+
   document.getElementById('user-detail-modal').style.display = 'none';
-  document.body.style.overflow = '';
+
+  if(shouldRestoreMatchBreakdown){
+    restorePreviousMatchBreakdown();
+  } else {
+    restoreMatchBreakdownContext = null;
+    document.body.style.overflow = '';
+  }
 }
 function closeUserDetailOutside(e){
   if(e.target === document.getElementById('user-detail-modal')) closeUserDetail();
+}
+
+function restorePreviousMatchBreakdown(){
+  const ctx = restoreMatchBreakdownContext;
+  restoreMatchBreakdownContext = null;
+  if(!ctx || !ctx.matchId){
+    document.body.style.overflow = '';
+    return;
+  }
+
+  const m = MATCHES.find(x => x.id === ctx.matchId);
+  if(!m){
+    document.body.style.overflow = '';
+    return;
+  }
+
+  // Recalcula o modal para manter pontos/resultado atualizados, mas devolve a aba, filtro e scroll.
+  openMatchBreakdown(ctx.matchId);
+
+  if(mbState && mbState.m && mbState.m.id === ctx.matchId){
+    mbState.view = ctx.view || 'list';
+    mbState.expanded = ctx.expanded || null;
+    mbState.filterScore = ctx.filterScore || null;
+    renderMatchBreakdown();
+
+    requestAnimationFrame(() => {
+      const body = document.getElementById('mb-body');
+      if(body) body.scrollTop = ctx.bodyScrollTop || 0;
+    });
+  }
 }
 
 // ══ PUNTOS POR PARTICIPANTE EN UN PARTIDO (orden del ranking) ══
@@ -8874,7 +8924,7 @@ function openMatchBreakdown(matchId){
   mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null, myPick, myName:currentUser };
   const mbModal = document.getElementById('match-breakdown-modal');
   mbModal.classList.toggle('x2-mode', !!m.x2);
-  mbModal.classList.toggle('admin-pick-info-enabled', canViewMbPickInfo());
+  mbModal.classList.remove('admin-pick-info-enabled');
   mbModal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   renderMatchBreakdown();
@@ -8922,33 +8972,63 @@ function setMbScoreFilter(score){
 
 let mbPickInfoTimer = null;
 let mbPickInfoFired = false;
-function formatMbPickSavedAt(value){
-  if(!value) return 'Data e hora do palpite não disponível';
+function parsePickSavedAt(value){
+  if(!value) return null;
   try{
-    let d = null;
-    if(value && typeof value.toDate === 'function') d = value.toDate();
-    else if(value && typeof value === 'object' && value.seconds) d = new Date(value.seconds * 1000);
-    else d = new Date(value);
-    if(!d || isNaN(d.getTime())) return 'Data e hora do palpite não disponível';
-    return 'Palpite feito em ' + d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-  }catch(e){ return 'Data e hora do palpite não disponível'; }
+    if(value && typeof value.toDate === 'function') return value.toDate();
+    if(value && typeof value === 'object' && value.seconds) return new Date(value.seconds * 1000);
+    const d = new Date(value);
+    return (!d || isNaN(d.getTime())) ? null : d;
+  }catch(e){ return null; }
+}
+function formatMbRegisteredAt(value){
+  const d = parsePickSavedAt(value);
+  if(!d) return '';
+  try{
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone:'America/Sao_Paulo',
+      day:'2-digit',
+      month:'2-digit',
+      hour:'2-digit',
+      minute:'2-digit',
+      hourCycle:'h23'
+    }).formatToParts(d).reduce((acc, p) => { acc[p.type] = p.value; return acc; }, {});
+    const formatted = `${parts.day}/${parts.month} ${parts.hour}:${parts.minute}`;
+    return `Registrado: ${formatted}`;
+  }catch(e){ return ''; }
+}
+function formatMbPickSavedAt(value){
+  return formatMbRegisteredAt(value) || 'Registro no disponible';
+}
+function pickInfoAttrs(savedAt){
+  if(!savedAt) return '';
+  return `data-pick-saved="${decEsc(savedAt)}" onpointerdown="startMbPickInfo(event,this)" onpointerup="cancelMbPickInfo()" onpointerleave="cancelMbPickInfo()" onpointercancel="cancelMbPickInfo()" onclick="handleMbPickInfoClick(event)"`;
 }
 function clearMbPickInfoTimer(){
   if(mbPickInfoTimer){ clearTimeout(mbPickInfoTimer); mbPickInfoTimer = null; }
 }
 function canViewMbPickInfo(){
-  return currentUserRole === 'admin' || adminUnlocked === true;
+  // Información discreta por presión larga: disponible para cualquier usuario cuando el palpite tiene fecha registrada.
+  return true;
 }
-function startMbPickInfo(event, row){
-  if(!canViewMbPickInfo()) return;
+function startMbPickInfo(event, el){
+  const savedAt = el ? (el.getAttribute('data-pick-saved') || '') : '';
+  if(!savedAt) return;
   clearMbPickInfoTimer();
   mbPickInfoFired = false;
   mbPickInfoTimer = setTimeout(() => {
     mbPickInfoFired = true;
-    showMbPickInfo(row, row ? row.getAttribute('data-pick-saved') : '');
+    showMbPickInfo(el, savedAt);
   }, 520);
 }
 function cancelMbPickInfo(){ clearMbPickInfoTimer(); }
+function handleMbPickInfoClick(event){
+  if(mbPickInfoFired){
+    event.preventDefault();
+    event.stopPropagation();
+    setTimeout(()=>{ mbPickInfoFired = false; }, 80);
+  }
+}
 function handleMbParticipantClick(event, name){
   if(mbPickInfoFired){
     event.preventDefault();
@@ -8958,8 +9038,8 @@ function handleMbParticipantClick(event, name){
   }
   openUserDetailFromMb(name);
 }
-function showMbPickInfo(row, savedAt){
-  if(!row) return;
+function showMbPickInfo(el, savedAt){
+  if(!el) return;
   let tip = document.getElementById('mb-pick-info-tip');
   if(!tip){
     tip = document.createElement('div');
@@ -8967,7 +9047,7 @@ function showMbPickInfo(row, savedAt){
     document.body.appendChild(tip);
   }
   tip.textContent = formatMbPickSavedAt(savedAt);
-  const r = row.getBoundingClientRect();
+  const r = el.getBoundingClientRect();
   tip.style.left = Math.min(window.innerWidth - 18, Math.max(18, r.left + r.width/2)) + 'px';
   tip.style.top = Math.max(80, r.top - 10) + 'px';
   tip.classList.add('show');
@@ -9083,13 +9163,16 @@ function renderMatchBreakdown(){
           if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
           const rowCls = ['ud-row', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
+          const registeredHtml = pending ? formatMbRegisteredAt(p.savedAt) : '';
           const pendingScoreHtml = pending ? `<span class="ud-meta-sep">•</span><span class="ud-pending-score">${p.totalScore || 0} pts</span>` : '';
+          const pickInfoClass = p.savedAt ? ' pick-info-enabled' : '';
+          const pickInfoAttr = p.savedAt ? pickInfoAttrs(p.savedAt) : '';
           return `
-        <div class="${rowCls}" data-pick-saved="${p.savedAt || ''}" onpointerdown="startMbPickInfo(event,this)" onpointerup="cancelMbPickInfo()" onpointerleave="cancelMbPickInfo()" onpointercancel="cancelMbPickInfo()" onclick="handleMbParticipantClick(event,'${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
+        <div class="${rowCls}" data-pick-saved="${p.savedAt || ''}" onclick="handleMbParticipantClick(event,'${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
           <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
           <div class="ud-match">
             <div class="ud-teams">${p.name}${nameTag}</div>
-            <div class="ud-meta"><span class="ud-pick-text">Palpite: ${p.pick.home}:${p.pick.away}</span>${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}${pendingScoreHtml}</div>
+            <div class="ud-meta"><span class="ud-pick-text${pickInfoClass}" ${pickInfoAttr}>Palpite: ${p.pick.home}:${p.pick.away}</span>${registeredHtml ? '<span class="ud-meta-sep">•</span><span class="ud-pick-registered">' + registeredHtml + '</span>' : ''}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}${pendingScoreHtml}</div>
           </div>
           <div class="${ptsCls}">${pending ? '' : (p.pts > 0 ? '+' : '') + p.pts}</div>
         </div>`;
@@ -9187,7 +9270,17 @@ function closeMatchBreakdown(){
 }
 function openUserDetailFromMb(name){
   // Reutiliza exatamente o modal/função de detalhe já usado no Ranking.
-  // Fecha o modal de puntos para que o detalhe fique visível acima da tela.
+  // Guarda o contexto do modal atual para voltar nele ao fechar o detalhe do usuário.
+  const mbBody = document.getElementById('mb-body');
+  restoreMatchBreakdownContext = (mbState && mbState.m) ? {
+    matchId: mbState.m.id,
+    view: mbState.view || 'list',
+    expanded: mbState.expanded || null,
+    filterScore: mbState.filterScore || null,
+    bodyScrollTop: mbBody ? mbBody.scrollTop : 0
+  } : null;
+
+  // Fecha visualmente o modal de pontos para que o detalhe fique limpo na frente.
   closeMatchBreakdown();
   openUserDetail(name);
 }
@@ -12558,6 +12651,48 @@ body.edson-matches-bg #summary-modal .summary-header{
   #user-detail-modal .ud-dot.off{
     background:var(--red)!important;
     opacity:1!important;
+  }
+</style>
+
+
+<style id="final-mb-registered-pick-time-20260629">
+  /* Partido cerrado: muestra cuándo se registró el palpite, junto al marcador. */
+  #match-breakdown-modal .ud-pick-registered{
+    flex:0 0 auto!important;
+    color:#6b7280!important;
+    font-size:inherit!important;
+    font-weight:inherit!important;
+    line-height:inherit!important;
+    white-space:nowrap!important;
+  }
+
+  @media(max-width:430px){
+    #match-breakdown-modal .ud-pick-registered{
+      font-size:inherit!important;
+      font-weight:inherit!important;
+      line-height:inherit!important;
+    }
+  }
+</style>
+
+
+
+<style id="final-longpress-registrado-espanol-20260629">
+  /* Presión larga sobre el texto del palpite: muestra la hora registrada sin abrir otra pantalla. */
+  .match-card .mc-score-wrap.pick-info-enabled,
+  #match-breakdown-modal .ud-pick-text.pick-info-enabled,
+  #user-detail-modal .ud-pick.pick-info-enabled{
+    cursor:pointer!important;
+    -webkit-user-select:none!important;
+    user-select:none!important;
+    touch-action:manipulation!important;
+  }
+
+  .match-card .mc-score-wrap.pick-info-enabled:active,
+  #match-breakdown-modal .ud-pick-text.pick-info-enabled:active,
+  #user-detail-modal .ud-pick.pick-info-enabled:active{
+    text-decoration:underline!important;
+    text-underline-offset:2px!important;
   }
 </style>
 </body></html>
