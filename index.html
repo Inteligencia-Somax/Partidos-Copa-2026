@@ -9751,10 +9751,7 @@ function formatAdminReportDiff(pickDate, kickoffDate){
   if(days) parts.push(days + 'd');
   if(hours) parts.push(hours + 'h');
   if(minutes || !parts.length) parts.push(minutes + 'min');
-  let text = parts.join(' ');
-  if(diffMinutes > 0) text += ' antes do jogo';
-  else if(diffMinutes < 0) text += ' depois do início';
-  else text = '0min no horário do jogo';
+  const text = parts.join(' ');
   return { text, minutes: diffMinutes };
 }
 function adminReportScoreTypeLabel(type, match){
@@ -9804,6 +9801,8 @@ async function downloadAdminPredictionsReport(){
   const results = loadRealResults();
   const standings = computeStandings(results);
   const sortedMatches = MATCHES.slice().sort((a,b)=>getMatchDateTime(a)-getMatchDateTime(b));
+  const rankedUsers = getRankedUsers();
+  const rankingPosByName = Object.fromEntries(rankedUsers.map((u, idx) => [u.name, `${idx + 1}º`]));
   const rows = [];
 
   sortedMatches.forEach(m=>{
@@ -9821,16 +9820,16 @@ async function downloadAdminPredictionsReport(){
         const calc = calculatePickPoints(pick, real, m);
         rows.push({
           pessoa: name,
+          posicaoJogador: rankingPosByName[name] || '',
           jogo: `${disp.home} vs ${disp.away}`,
           fase: m.phase || '',
           resultadoFinal,
-          palpite: `${disp.home} ${pick.home}:${pick.away} ${disp.away}`,
+          palpite: `${pick.home}x${pick.away}`,
           pontosPartida: calc.pts || 0,
           tipoPontuacao: adminReportScoreTypeLabel(calc.type, m),
           inicioJogo: formatAdminReportDateTime(kickoff),
           horarioPalpite: formatAdminReportDateTime(pick.savedAt || pick.fechaPalpite || ''),
-          diferenca: diff.text,
-          diferencaMinutos: diff.minutes
+          diferenca: diff.text
         });
       });
   });
@@ -9842,6 +9841,7 @@ async function downloadAdminPredictionsReport(){
 
   const header = [
     'Nome da pessoa que palpitou',
+    'Posição do jogador',
     'Jogo',
     'Fase',
     'Resultado final do jogo',
@@ -9850,14 +9850,14 @@ async function downloadAdminPredictionsReport(){
     'Tipo de pontuação',
     'Horário do início do jogo',
     'Horário do palpite',
-    'Diferença do palpite até o jogo',
-    'Diferença em minutos'
+    'Diferença do palpite até o jogo'
   ];
   const csvLines = [
     'sep=;',
     header.map(csvAdminCell).join(';'),
     ...rows.map(r=>[
       r.pessoa,
+      r.posicaoJogador,
       r.jogo,
       r.fase,
       r.resultadoFinal,
@@ -9866,8 +9866,7 @@ async function downloadAdminPredictionsReport(){
       r.tipoPontuacao,
       r.inicioJogo,
       r.horarioPalpite,
-      r.diferenca,
-      r.diferencaMinutos
+      r.diferenca
     ].map(csvAdminCell).join(';'))
   ];
 
