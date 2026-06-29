@@ -5174,8 +5174,9 @@ html, body{scroll-behavior:auto!important;}
         <div class="admin-export-box">
           <button class="admin-download-btn" onclick="downloadUpdatedHTML()">⬇ Descargar HTML actualizado</button>
           <button class="admin-copy-btn" onclick="copyUpdatedHTML()">📋 Copiar código</button>
+          <button class="admin-report-btn" onclick="downloadAdminPredictionsReport()">📊 Exportar relatório de palpites</button>
         </div>
-        <p class="admin-export-note">Usá este botón después de cargar o corregir resultados. El archivo descargado ya incluye los resultados reales y los palpites guardados en este navegador.</p>
+        <p class="admin-export-note">Usá estos botones después de cargar o corregir resultados. El HTML guarda una copia actualizada del bolão y el relatório exporta los palpites con horario de inicio, horario del palpite y diferencia hasta el partido.</p>
       </div>
 
 
@@ -6751,9 +6752,10 @@ html, body{scroll-behavior:auto!important;}
 .admin-adv-btn{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;font-family:'Inter',sans-serif;font-size:14px;font-weight:800;color:var(--text);cursor:pointer;transition:all .15s;}
 .admin-adv-btn:active{transform:scale(.97);}
 .admin-adv-btn.sel{background:#E8F5EE;border-color:var(--green);color:var(--green2);box-shadow:0 0 0 3px rgba(0,155,84,.15);}
-.admin-export-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}.admin-download-btn,.admin-copy-btn{border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
+.admin-export-box{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}.admin-download-btn,.admin-copy-btn,.admin-report-btn{border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
 .admin-download-btn{background:var(--green);color:#fff;flex:1;min-width:210px;}
 .admin-copy-btn{background:#F8D45C;color:#173F1F;min-width:140px;}
+.admin-report-btn{background:var(--blue);color:#fff;flex:1;min-width:230px;}
 .admin-export-note{font-size:12px!important;margin-top:10px;color:var(--sub)!important;}
 .decepcion-page-section{border:1px solid rgba(220,90,60,.28);background:linear-gradient(180deg,#fff 0%,#FFF4F0 58%,#FFFFFF 100%);position:relative;overflow:hidden;}
 .decepcion-page-section::before{content:'';position:absolute;top:-70px;right:-70px;width:180px;height:180px;background:radial-gradient(circle,rgba(220,90,60,.14) 0%,transparent 70%);pointer-events:none;}
@@ -9492,6 +9494,142 @@ async function copyUpdatedHTML(){
   }catch(e){
     showSaveBanner('No se pudo copiar. Usá Descargar HTML.');
   }
+}
+
+// ══ ADMIN: RELATÓRIO DE PALPITES ══
+function parseAdminReportDate(value){
+  if(!value) return null;
+  try{
+    if(value && typeof value.toDate === 'function') return value.toDate();
+    if(value && typeof value === 'object' && value.seconds) return new Date(value.seconds * 1000);
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  }catch(e){
+    return null;
+  }
+}
+function formatAdminReportDateTime(value){
+  const d = value instanceof Date ? value : parseAdminReportDate(value);
+  if(!d || isNaN(d.getTime())) return 'No disponible';
+  try{
+    return new Intl.DateTimeFormat('pt-BR', {
+      timeZone:'America/Sao_Paulo',
+      day:'2-digit', month:'2-digit', year:'numeric',
+      hour:'2-digit', minute:'2-digit', hour12:false
+    }).format(d).replace(',', '');
+  }catch(e){
+    return d.toLocaleString('pt-BR');
+  }
+}
+function formatAdminReportDiff(pickDate, kickoffDate){
+  const p = parseAdminReportDate(pickDate);
+  const k = kickoffDate instanceof Date ? kickoffDate : parseAdminReportDate(kickoffDate);
+  if(!p || !k) return { text:'No disponible', minutes:'' };
+  const diffMinutes = Math.round((k.getTime() - p.getTime()) / 60000);
+  const abs = Math.abs(diffMinutes);
+  const days = Math.floor(abs / 1440);
+  const hours = Math.floor((abs % 1440) / 60);
+  const minutes = abs % 60;
+  const parts = [];
+  if(days) parts.push(days + 'd');
+  if(hours) parts.push(hours + 'h');
+  if(minutes || !parts.length) parts.push(minutes + 'min');
+  let text = parts.join(' ');
+  if(diffMinutes > 0) text += ' antes do jogo';
+  else if(diffMinutes < 0) text += ' depois do início';
+  else text = '0min no horário do jogo';
+  return { text, minutes: diffMinutes };
+}
+function csvAdminCell(value){
+  const txt = String(value ?? '');
+  return '"' + txt.replace(/"/g, '""') + '"';
+}
+async function downloadAdminPredictionsReport(){
+  if(currentUserRole !== 'admin' || !adminUnlocked){
+    showSaveBanner('Acceso reservado para administradores');
+    return;
+  }
+
+  // Antes de exportar, intenta sincronizar Firestore para traer los palpites más recientes.
+  try{
+    await loadFirebaseState();
+  }catch(e){
+    console.warn('No fue posible sincronizar antes del relatório:', e);
+  }
+
+  const all = loadAllPicks();
+  const results = loadRealResults();
+  const standings = computeStandings(results);
+  const sortedMatches = MATCHES.slice().sort((a,b)=>getMatchDateTime(a)-getMatchDateTime(b));
+  const rows = [];
+
+  sortedMatches.forEach(m=>{
+    const kickoff = getMatchDateTime(m);
+    const disp = matchDisplay(m, results, standings);
+    const real = results[m.id] || null;
+    const resultadoFinal = real ? `${disp.home} ${real.home}:${real.away} ${disp.away}` : 'Sin resultado';
+
+    Object.entries(all)
+      .sort(([a],[b])=>String(a).localeCompare(String(b), 'pt-BR'))
+      .forEach(([name, picks])=>{
+        const pick = picks ? (picks[m.id] || picks[String(m.id)]) : null;
+        if(!pick) return;
+        const diff = formatAdminReportDiff(pick.savedAt || pick.fechaPalpite || '', kickoff);
+        rows.push({
+          pessoa: name,
+          jogo: `${disp.home} vs ${disp.away}`,
+          fase: m.phase || '',
+          resultadoFinal,
+          palpite: `${disp.home} ${pick.home}:${pick.away} ${disp.away}`,
+          inicioJogo: formatAdminReportDateTime(kickoff),
+          horarioPalpite: formatAdminReportDateTime(pick.savedAt || pick.fechaPalpite || ''),
+          diferenca: diff.text,
+          diferencaMinutos: diff.minutes
+        });
+      });
+  });
+
+  if(!rows.length){
+    showSaveBanner('No hay palpites para exportar');
+    return;
+  }
+
+  const header = [
+    'Nome da pessoa que palpitou',
+    'Jogo',
+    'Fase',
+    'Resultado final do jogo',
+    'Palpite realizado',
+    'Horário do início do jogo',
+    'Horário do palpite',
+    'Diferença do palpite até o jogo',
+    'Diferença em minutos'
+  ];
+  const csvLines = [
+    'sep=;',
+    header.map(csvAdminCell).join(';'),
+    ...rows.map(r=>[
+      r.pessoa,
+      r.jogo,
+      r.fase,
+      r.resultadoFinal,
+      r.palpite,
+      r.inicioJogo,
+      r.horarioPalpite,
+      r.diferenca,
+      r.diferencaMinutos
+    ].map(csvAdminCell).join(';'))
+  ];
+
+  const blob = new Blob(['\ufeff' + csvLines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  a.href = URL.createObjectURL(blob);
+  a.download = `relatorio-palpites-somax-mundial2026_${stamp}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 800);
+  showSaveBanner('📊 Relatório de palpites exportado');
 }
 
 // ══ ADMIN RESULTADOS ══
