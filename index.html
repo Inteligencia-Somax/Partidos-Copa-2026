@@ -8764,7 +8764,7 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:revealedMatches, rounds, idx:rounds.length, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'partidos', sortAsc:false, compare:false, expanded:null,
+    name, matches:revealedMatches, rounds, idx:rounds.length, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'partidos', sortAsc:false, compare:false, expanded:null, tagFilters:[],
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
@@ -8955,12 +8955,13 @@ function renderUdDayDetail(date){
 function renderUdPartidos(){
   const { matches, rounds, idx, picks, real, sortAsc, viewerPicks } = udState;
   const allPicks = loadAllPicks();
+  const activeFilters = Array.isArray(udState.tagFilters) ? udState.tagFilters : [];
   // idx 0..rounds.length-1 = fecha (0 = última jugada). idx === rounds.length = Todas (al final).
   const selected = idx < rounds.length ? rounds[idx] : null;
   let shown = selected ? matches.filter(m => getRoundLabel(m) === selected) : matches.slice();
   if(sortAsc) shown = shown.slice().reverse(); // matches viene "reciente primero"
 
-  let shownTotal = 0, rows = '';
+  let shownTotal = 0, rows = '', renderedCount = 0;
   shown.forEach(m => {
     const pick = picks[m.id], r = real[m.id];
     const pending = !r;
@@ -8977,12 +8978,14 @@ function renderUdPartidos(){
     const ptsStr = pending ? '' : `${pts > 0 ? '+' : ''}${pts}`;
 
     const pickTags = [];
+    let hasMineTag = false, hasMostTag = false, hasExactTag = false;
     if(pick){
       const myPick = viewerPicks && viewerPicks[m.id];
       // Evita bolinha/separador sobrando no próprio detalhe:
       // quando o usuário está vendo o próprio card, não geramos a tag "= Vos".
       const viewingOwnDetail = !!(udState && udState.stats && udState.stats.isMe);
-      if(!viewingOwnDetail && myPick && myPick.home === pick.home && myPick.away === pick.away) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
+      hasMineTag = !!(!viewingOwnDetail && myPick && myPick.home === pick.home && myPick.away === pick.away);
+      if(hasMineTag) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
       const scoreCounts = {};
       Object.values(allPicks).forEach(userPicks => {
         const pp = userPicks && userPicks[m.id];
@@ -8992,10 +8995,22 @@ function renderUdPartidos(){
       });
       const scoreKey = `${pick.home}:${pick.away}`;
       const maxScoreCount = Object.values(scoreCounts).length ? Math.max(...Object.values(scoreCounts)) : 0;
-      if(maxScoreCount > 1 && scoreCounts[scoreKey] === maxScoreCount) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
-      if(isExact) pickTags.push('<span class="ud-exact-tag">Exacto</span>');
+      hasMostTag = !!(maxScoreCount > 1 && scoreCounts[scoreKey] === maxScoreCount);
+      hasExactTag = !!isExact;
+      if(hasMostTag) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
+      if(hasExactTag) pickTags.push('<span class="ud-exact-tag">Exacto</span>');
     }
 
+    if(activeFilters.length){
+      const ok = activeFilters.every(f =>
+        (f === 'mine' && hasMineTag) ||
+        (f === 'most' && hasMostTag) ||
+        (f === 'exact' && hasExactTag)
+      );
+      if(!ok) return;
+    }
+
+    renderedCount++;
     const historicalPositionHtml = formatHistoricalPositionTag(getUserPositionAfterMatch(udState?.name, m));
     const pickTagsHtml = pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : '';
     const historicalPositionSepHtml = historicalPositionHtml ? '<span class="ud-meta-sep">•</span>' + historicalPositionHtml : '';
@@ -9021,7 +9036,34 @@ function renderUdPartidos(){
       <button class="ud-rnav-btn" onclick="changeUdRound(1)" ${idx >= rounds.length ? 'disabled' : ''}>›</button>
     </div>` : '';
 
-  return nav + (shown.length ? rows : '<div class="ud-empty">Aún no hay partidos.</div>');
+  const emptyMsg = activeFilters.length ? 'No hay partidos con los filtros seleccionados.' : 'Aún no hay partidos.';
+  return nav + (renderedCount ? rows : `<div class="ud-empty">${emptyMsg}</div>`) + renderUdFloatingFilters();
+}
+
+function renderUdFloatingFilters(){
+  const active = Array.isArray(udState.tagFilters) ? udState.tagFilters : [];
+  const isActive = key => active.includes(key) ? ' active' : '';
+  return `
+    <div class="ud-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de partidos">
+      <button type="button" class="ud-float-filter${isActive('mine')}" onclick="toggleUdTagFilter('mine', event)"><span class="ud-mine-tag">= Vos</span></button>
+      <button type="button" class="ud-float-filter${isActive('most')}" onclick="toggleUdTagFilter('most', event)"><span class="ud-most-tag">Más palpitado</span></button>
+      <button type="button" class="ud-float-filter${isActive('exact')}" onclick="toggleUdTagFilter('exact', event)"><span class="ud-exact-tag">Exacto</span></button>
+      <button type="button" class="ud-float-clear${active.length ? ' active' : ''}" onclick="clearUdTagFilters(event)">Limpiar</button>
+    </div>`;
+}
+
+function toggleUdTagFilter(key, ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  if(!Array.isArray(udState.tagFilters)) udState.tagFilters = [];
+  if(udState.tagFilters.includes(key)) udState.tagFilters = udState.tagFilters.filter(f => f !== key);
+  else udState.tagFilters = udState.tagFilters.concat(key);
+  renderUd();
+}
+
+function clearUdTagFilters(ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  udState.tagFilters = [];
+  renderUd();
 }
 
 
@@ -13989,6 +14031,84 @@ body.edson-matches-bg #summary-modal .summary-header{
       font-size:10.7px!important;
       padding:1px 6px!important;
       max-width:84px!important;
+    }
+  }
+</style>
+
+
+
+<!-- AJUSTE: filtros flutuantes na aba Partidos do detalhe do participante -->
+<style id="user-detail-floating-tag-filters-20260630">
+  #user-detail-modal .modal{
+    position:relative!important;
+  }
+  #user-detail-modal .ud-floating-filters{
+    position:absolute!important;
+    left:14px!important;
+    right:14px!important;
+    bottom:12px!important;
+    z-index:80!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:6px!important;
+    background:transparent!important;
+    pointer-events:none!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  #user-detail-modal .ud-float-filter,
+  #user-detail-modal .ud-float-clear{
+    pointer-events:auto!important;
+    border:none!important;
+    background:transparent!important;
+    padding:0!important;
+    margin:0!important;
+    font-family:inherit!important;
+    cursor:pointer!important;
+    line-height:1!important;
+    opacity:.96!important;
+    transform:translateZ(0)!important;
+    -webkit-tap-highlight-color:transparent!important;
+  }
+  #user-detail-modal .ud-float-filter span{
+    margin-left:0!important;
+    box-shadow:0 2px 6px rgba(0,0,0,.08)!important;
+  }
+  #user-detail-modal .ud-float-filter.active span{
+    box-shadow:0 0 0 2px rgba(0,155,84,.18),0 2px 8px rgba(0,0,0,.10)!important;
+    filter:saturate(1.08)!important;
+  }
+  #user-detail-modal .ud-float-clear{
+    height:17px!important;
+    padding:1px 7px!important;
+    border-radius:50px!important;
+    border:1px solid rgba(107,114,128,.22)!important;
+    background:rgba(255,255,255,.84)!important;
+    color:#6b7280!important;
+    font-size:10px!important;
+    font-weight:900!important;
+    letter-spacing:.2px!important;
+    box-shadow:0 2px 6px rgba(0,0,0,.08)!important;
+  }
+  #user-detail-modal .ud-float-clear.active{
+    color:#111114!important;
+    border-color:rgba(17,17,20,.26)!important;
+  }
+  #user-detail-modal .ud-body{
+    position:relative!important;
+  }
+  @media(max-width:430px){
+    #user-detail-modal .ud-floating-filters{
+      left:10px!important;
+      right:10px!important;
+      bottom:10px!important;
+      gap:5px!important;
+    }
+    #user-detail-modal .ud-float-clear{
+      height:16px!important;
+      padding:1px 6px!important;
+      font-size:9px!important;
     }
   }
 </style>
