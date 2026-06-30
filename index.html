@@ -8298,6 +8298,14 @@ function isExcludedFromRanking(name){
   const n = normalizeRankingName(name);
   return EXCLUDED_RANKING_NAMES.some(x => normalizeRankingName(x) === n);
 }
+function canCurrentUserSeeExcludedParticipant(name){
+  // Edson fica invisível para todos os demais usuários.
+  // Apenas o próprio Edson pode ver seu nome/palpites nas telas de partida/detalhe.
+  return isExcludedFromRanking(name) && normalizeRankingName(name) === normalizeRankingName(currentUser);
+}
+function isVisibleParticipantName(name){
+  return !isExcludedFromRanking(name) || canCurrentUserSeeExcludedParticipant(name);
+}
 function sortRankStats(a,b){
   return b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount;
 }
@@ -8306,7 +8314,7 @@ function buildRankedUsers(options = {}){
   const all = loadAllPicks();
   const realResults = loadRealResults();
   return Object.entries(all)
-    .filter(([name]) => includeExcluded || !isExcludedFromRanking(name))
+    .filter(([name]) => includeExcluded ? isVisibleParticipantName(name) : !isExcludedFromRanking(name))
     .map(([name, picks])=>{
       const stats = {name, pickCount:0, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
       MATCHES.forEach(m=>{
@@ -8361,7 +8369,7 @@ function getRankFilterOptions(){
 function getRankedUsersExcludingRound(excludeRound){
   const all = loadAllPicks();
   const realResults = loadRealResults();
-  return Object.entries(all).map(([name, picks])=>{
+  return Object.entries(all).filter(([name]) => !isExcludedFromRanking(name)).map(([name, picks])=>{
     const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
     MATCHES.forEach(m=>{
       if(getRoundLabel(m)===excludeRound) return;
@@ -8379,7 +8387,7 @@ function getRankedUsersExcludingRound(excludeRound){
 function getRankedUsersExcludingDate(excludeDate){
   const all = loadAllPicks();
   const realResults = loadRealResults();
-  return Object.entries(all).map(([name, picks])=>{
+  return Object.entries(all).filter(([name]) => !isExcludedFromRanking(name)).map(([name, picks])=>{
     const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
     MATCHES.forEach(m=>{
       if(m.date===excludeDate) return;
@@ -8589,6 +8597,10 @@ let udState = { name:'', matches:[], rounds:[], idx:0, picks:{}, real:{} };
 let restoreMatchBreakdownContext = null;
 
 function openUserDetail(name){
+  if(isExcludedFromRanking(name) && !canCurrentUserSeeExcludedParticipant(name)){
+    showSaveBanner('Participante no disponible');
+    return;
+  }
   const allPicks = loadAllPicks();
   const realResults = loadRealResults();
   const picks = allPicks[name] || {};
@@ -10056,6 +10068,7 @@ async function downloadAdminPredictionsReport(){
     const resultadoFinal = real ? `${disp.home} ${real.home}:${real.away} ${disp.away}` : 'Sin resultado';
 
     Object.entries(all)
+      .filter(([name]) => isVisibleParticipantName(name))
       .sort(([a],[b])=>String(a).localeCompare(String(b), 'pt-BR'))
       .forEach(([name, picks])=>{
         const pick = picks ? (picks[m.id] || picks[String(m.id)]) : null;
