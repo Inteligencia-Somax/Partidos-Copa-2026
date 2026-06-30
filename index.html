@@ -8418,7 +8418,7 @@ function getUserPositionAfterMatch(userName, match){
 }
 
 function formatHistoricalPositionTag(pos){
-  return pos ? `<span class="ud-position-tag">${pos}º posición</span>` : '';
+  return pos ? `<span class="ud-position-tag">${pos}º</span>` : '';
 }
 
 // Mismo ranking pero excluyendo una fecha/ronda (para saber la posición anterior).
@@ -14046,6 +14046,45 @@ body.edson-matches-bg #summary-modal .summary-header{
 
     #match-breakdown-modal .ud-row.pending-row{
       grid-template-columns:66px minmax(0,1fr)!important;
+    }
+  }
+</style>
+
+
+
+<!-- AJUSTE FINAL: posição histórica sem badge/fundo, mesmo padrão do Palpite -->
+<style id="final-user-detail-historical-position-plain-20260630">
+  #user-detail-modal .ud-position-tag{
+    display:inline!important;
+    align-items:initial!important;
+    justify-content:initial!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:0!important;
+    margin:0!important;
+    border-radius:0!important;
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    color:#6b7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+    flex:0 0 auto!important;
+    max-width:none!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    vertical-align:baseline!important;
+  }
+  @media(max-width:430px){
+    #user-detail-modal .ud-position-tag{
+      font-size:10.6px!important;
+      padding:0!important;
+      height:auto!important;
+      min-height:0!important;
+      max-height:none!important;
     }
   }
 </style>
@@ -20387,3 +20426,38 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   document.addEventListener('input', function(){ setTimeout(apply, 40); }, true);
 })();
 </script>
+
+<!-- AJUSTE DEFINITIVO: posição histórica como texto simples, igual ao Palpite -->
+<style id="final-user-detail-historical-position-plain-LAST-20260630">
+  #user-detail-modal .ud-position-tag{
+    display:inline!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:0!important;
+    margin:0!important;
+    border-radius:0!important;
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    color:#6b7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+    flex:0 0 auto!important;
+    max-width:none!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    vertical-align:baseline!important;
+  }
+  @media(max-width:430px){
+    #user-detail-modal .ud-position-tag{
+      font-size:10.6px!important;
+      padding:0!important;
+      height:auto!important;
+      min-height:0!important;
+      max-height:none!important;
+    }
+  }
+</style>
