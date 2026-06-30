@@ -21597,3 +21597,51 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 </style>
 
+
+<script id="edson-ud-floating-filter-active-state-fix-20260630">
+(function(){
+  // Corrige somente os filtros flutuantes da tela Detalhe do participante.
+  // Usa o udState global real, não window.udState, para o botão ativo refletir o filtro aplicado.
+  window.renderUdFloatingFiltersHtml = function(){
+    var active = (typeof udState !== 'undefined' && udState && Array.isArray(udState.tagFilters)) ? udState.tagFilters : [];
+    var isActive = function(key){ return active.indexOf(key) >= 0 ? ' active' : ''; };
+    return '<div class="ud-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de partidos">' +
+      '<button type="button" class="ud-float-filter' + isActive('mine') + '" onclick="toggleUdTagFilter(\'mine\', event)" aria-pressed="' + (active.indexOf('mine') >= 0) + '"><span class="ud-mine-tag">= Vos</span></button>' +
+      '<button type="button" class="ud-float-filter' + isActive('most') + '" onclick="toggleUdTagFilter(\'most\', event)" aria-pressed="' + (active.indexOf('most') >= 0) + '"><span class="ud-most-tag">Más palpitado</span></button>' +
+      '<button type="button" class="ud-float-filter' + isActive('exact') + '" onclick="toggleUdTagFilter(\'exact\', event)" aria-pressed="' + (active.indexOf('exact') >= 0) + '"><span class="ud-exact-tag">Exacto</span></button>' +
+      '<button type="button" class="ud-float-clear" onclick="clearUdTagFilters(event)" aria-pressed="false">Limpiar</button>' +
+    '</div>';
+  };
+})();
+</script>
+
+<style id="edson-ud-floating-filter-active-visual-fix-20260630">
+  /* Só a tela Detalhe do participante: estado normal menor e levemente opaco */
+  #user-detail-modal .ud-floating-filters .ud-float-filter span,
+  #user-detail-modal .ud-floating-filters .ud-float-clear{
+    font-size:12px!important;
+    opacity:.72!important;
+    filter:saturate(.86) contrast(.98)!important;
+    transform:scale(1)!important;
+    transform-origin:center center!important;
+    transition:transform .16s ease, opacity .16s ease, filter .16s ease, box-shadow .16s ease!important;
+  }
+
+  /* Filtro marcado: aumenta um pouco e fica sólido */
+  #user-detail-modal .ud-floating-filters .ud-float-filter.active span{
+    opacity:1!important;
+    filter:saturate(1.10) contrast(1)!important;
+    transform:scale(1.10)!important;
+    box-shadow:0 16px 38px rgba(0,0,0,.60),0 5px 14px rgba(0,0,0,.38)!important;
+  }
+
+  /* Limpiar não fica marcado por padrão; é só ação para limpar */
+  #user-detail-modal .ud-floating-filters .ud-float-clear,
+  #user-detail-modal .ud-floating-filters .ud-float-clear.active{
+    opacity:.72!important;
+    filter:saturate(.86) contrast(.98)!important;
+    transform:scale(1)!important;
+    border:1px solid #D1D5DB!important;
+    box-shadow:0 14px 34px rgba(0,0,0,.54),0 4px 12px rgba(0,0,0,.34)!important;
+  }
+</style>
