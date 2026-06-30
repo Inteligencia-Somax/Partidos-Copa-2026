@@ -19881,3 +19881,86 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     font-weight:900!important;
   }
 </style>
+
+
+<style id="edson-meu-nome-colocacao-laranja-decisiva-20260630">
+  /*
+    Na fase decisiva, o MEU nome e a MINHA colocação ficam laranja/dourado.
+    O ponto do jogo 0 continua vermelho.
+    A pontuação geral, ex.: 753 pts, continua cinza normal.
+  */
+
+  body #match-breakdown-modal.x2-mode .ud-row.mine .mb-pos,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-participant-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-teams{
+    color:#F59E0B!important;
+    font-weight:900!important;
+  }
+
+  /* Mantém 0 vermelho */
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.zero{
+    color:#C8102E!important;
+    font-weight:900!important;
+  }
+
+  /* Pontuação geral, ex.: 753 pts, cinza normal */
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score-name{
+    color:#6B7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+  }
+
+  /* Separadores cinza */
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep{
+    color:#9CA3AF!important;
+    font-weight:700!important;
+  }
+</style>
+
+<script id="edson-forca-meu-nome-colocacao-laranja-decisiva-20260630">
+(function(){
+  if(window.__edsonForcaMeuNomeColocacaoLaranjaDecisiva) return;
+  window.__edsonForcaMeuNomeColocacaoLaranjaDecisiva = true;
+
+  function apply(){
+    var modal = document.getElementById('match-breakdown-modal');
+    if(!modal || !modal.classList.contains('x2-mode')) return;
+
+    modal.querySelectorAll('.ud-row.mine').forEach(function(row){
+      row.querySelectorAll('.mb-pos, .ud-participant-name, .ud-teams').forEach(function(el){
+        el.style.setProperty('color', '#F59E0B', 'important');
+        el.style.setProperty('font-weight', '900', 'important');
+      });
+
+      row.querySelectorAll('.ud-pts.zero').forEach(function(el){
+        el.style.setProperty('color', '#C8102E', 'important');
+        el.style.setProperty('font-weight', '900', 'important');
+      });
+
+      row.querySelectorAll('.ud-pick-points-inline, .ud-pending-score, .ud-pending-score-name').forEach(function(el){
+        el.style.setProperty('color', '#6B7280', 'important');
+        el.style.setProperty('font-size', '11px', 'important');
+        el.style.setProperty('font-weight', '400', 'important');
+      });
+    });
+  }
+
+  var oldRender = window.renderMatchBreakdown;
+  if(typeof oldRender === 'function' && !oldRender.__edsonMyOrangeWrapped){
+    var wrapped = function(){
+      var ret = oldRender.apply(this, arguments);
+      setTimeout(apply, 0);
+      setTimeout(apply, 80);
+      return ret;
+    };
+    wrapped.__edsonMyOrangeWrapped = true;
+    window.renderMatchBreakdown = wrapped;
+  }
+
+  document.addEventListener('click', function(){ setTimeout(apply, 80); }, true);
+  document.addEventListener('input', function(){ setTimeout(apply, 40); }, true);
+})();
+</script>
