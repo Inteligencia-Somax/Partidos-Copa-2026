@@ -19777,3 +19777,88 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 })();
 </script>
+
+
+<style id="edson-pontuacao-geral-cinza-normal-definitivo-20260630">
+  /*
+    Pontuação geral do participante, ex.: "753 pts":
+    sempre cinza e com a mesma fonte/tamanho dos demais.
+    A cor de fase fica apenas no nome, colocação e pontos do jogo.
+  */
+  body #match-breakdown-modal .ud-row.mine .ud-pending-score,
+  body #match-breakdown-modal .ud-row.mine .ud-pending-score-name,
+  body #match-breakdown-modal .ud-row.mine.my-green-card .ud-pending-score,
+  body #match-breakdown-modal .ud-row.mine.my-green-card .ud-pending-score-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-pending-score,
+  body #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-pending-score-name,
+  body #match-breakdown-modal .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal .ud-row.mine.my-green-card .ud-pick-points-inline,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-pick-points-inline{
+    color:#6B7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+  }
+</style>
+
+<script id="edson-pontuacao-geral-cinza-normal-definitivo-20260630">
+(function(){
+  if(window.__edsonPontuacaoGeralCinzaNormalDefinitivo) return;
+  window.__edsonPontuacaoGeralCinzaNormalDefinitivo = true;
+
+  function applyGeneralScoreNeutral(){
+    var modal = document.getElementById('match-breakdown-modal');
+    if(!modal) return;
+
+    modal.querySelectorAll('.ud-row.mine .ud-pending-score, .ud-row.mine .ud-pending-score-name, .ud-row.mine .ud-pick-points-inline').forEach(function(el){
+      el.style.setProperty('color', '#6B7280', 'important');
+      el.style.setProperty('font-size', '11px', 'important');
+      el.style.setProperty('font-weight', '400', 'important');
+      el.style.setProperty('line-height', '1.05', 'important');
+      el.style.setProperty('white-space', 'nowrap', 'important');
+    });
+  }
+
+  var oldRenderMatchBreakdown = window.renderMatchBreakdown;
+  if(typeof oldRenderMatchBreakdown === 'function' && !oldRenderMatchBreakdown.__edsonGeneralScoreNeutralWrapped){
+    var wrapped = function(){
+      var ret = oldRenderMatchBreakdown.apply(this, arguments);
+      setTimeout(applyGeneralScoreNeutral, 0);
+      setTimeout(applyGeneralScoreNeutral, 80);
+      return ret;
+    };
+    wrapped.__edsonGeneralScoreNeutralWrapped = true;
+    window.renderMatchBreakdown = wrapped;
+  }
+
+  document.addEventListener('click', function(){
+    setTimeout(applyGeneralScoreNeutral, 80);
+  }, true);
+
+  document.addEventListener('input', function(){
+    setTimeout(applyGeneralScoreNeutral, 40);
+  }, true);
+
+  var observer = new MutationObserver(function(){
+    applyGeneralScoreNeutral();
+  });
+
+  function start(){
+    var modal = document.getElementById('match-breakdown-modal');
+    if(modal){
+      observer.observe(modal, {childList:true, subtree:true, attributes:true, attributeFilter:['class','style']});
+      applyGeneralScoreNeutral();
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', start);
+  }else{
+    start();
+  }
+})();
+</script>
