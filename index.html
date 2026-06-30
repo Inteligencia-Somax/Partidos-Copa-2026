@@ -13392,6 +13392,112 @@ body.edson-matches-bg #summary-modal .summary-header{
   }
 </style>
 
+
+<style id="final-hide-vos-own-user-detail-strong-css">
+  #user-detail-modal.own-detail .ud-mine-tag,
+  #user-detail-modal.own-detail .ud-mine-tag.me,
+  #user-detail-modal.own-detail .ud-same-tag,
+  #user-detail-modal.own-detail .same-as-me,
+  #user-detail-modal.own-detail .vos-tag{
+    display:none!important;
+  }
+</style>
+<script id="final-hide-vos-own-user-detail-strong-js">
+(function(){
+  if(window.__somaxHideVosOwnDetailStrong) return;
+  window.__somaxHideVosOwnDetailStrong = true;
+
+  function normTxt(v){
+    return String(v || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase().replace(/\s+/g,' ').trim();
+  }
+
+  function getLoggedName(){
+    const keys = ['somaxUserName','userName','playerName','currentUserName','participantName'];
+    for(const k of keys){
+      try{
+        const v = localStorage.getItem(k);
+        if(v && v.trim()) return v.trim();
+      }catch(e){}
+    }
+
+    const topName = document.querySelector('.topbar-name, #topbar-name, [data-user-name], .topbar-title');
+    if(topName && topName.textContent.trim()) return topName.textContent.trim();
+
+    return '';
+  }
+
+  function getDetailTitle(modal){
+    const title = modal && modal.querySelector('.modal-match-label, .modal-header .modal-match-label, .modal-header');
+    return title ? title.textContent.trim() : '';
+  }
+
+  function isOwnDetail(modal){
+    const logged = normTxt(getLoggedName());
+    const detail = normTxt(getDetailTitle(modal));
+    if(!logged || !detail) return false;
+
+    return detail === logged || detail.includes(logged) || logged.includes(detail);
+  }
+
+  function cleanSeparatorsAroundHiddenBadge(badge){
+    const prev = badge.previousElementSibling;
+    if(prev && prev.classList && prev.classList.contains('ud-meta-sep')){
+      prev.style.display = 'none';
+      return;
+    }
+
+    const next = badge.nextElementSibling;
+    if(next && next.classList && next.classList.contains('ud-meta-sep')){
+      next.style.display = 'none';
+    }
+  }
+
+  function apply(){
+    const modal = document.getElementById('user-detail-modal');
+    if(!modal) return;
+
+    const own = isOwnDetail(modal);
+    modal.classList.toggle('own-detail', own);
+    if(!own) return;
+
+    modal.querySelectorAll('span, small, em, b').forEach(el => {
+      const t = normTxt(el.textContent);
+      if(t === '= vos' || t === 'vos' || t.includes('= vos')){
+        el.style.display = 'none';
+        cleanSeparatorsAroundHiddenBadge(el);
+      }
+    });
+  }
+
+  const oldOpenUserDetail = window.openUserDetail;
+  if(typeof oldOpenUserDetail === 'function' && !oldOpenUserDetail.__somaxHideVosWrapped){
+    const wrapped = function(){
+      const ret = oldOpenUserDetail.apply(this, arguments);
+      setTimeout(apply, 0);
+      setTimeout(apply, 80);
+      return ret;
+    };
+    wrapped.__somaxHideVosWrapped = true;
+    window.openUserDetail = wrapped;
+  }
+
+  const obs = new MutationObserver(() => apply());
+  function startObs(){
+    const modal = document.getElementById('user-detail-modal');
+    if(modal) obs.observe(modal, {childList:true, subtree:true, attributes:true, attributeFilter:['style','class']});
+    apply();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', startObs);
+  }else{
+    startObs();
+  }
+})();
+</script>
+
 </body>
 
 <!-- AJUSTE EDSON FINAL: corrigir corte da colocação/variação no modal Puntos por participante -->
