@@ -21564,3 +21564,36 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     filter:saturate(1.05) contrast(1)!important;
   }
 </style>
+
+
+<style id="edson-floating-filter-active-scale-solid-20260630">
+  /* Ajuste final: filtros flutuantes menores em repouso e mais evidentes quando ativos */
+  #user-detail-modal .ud-floating-filters .ud-float-filter span,
+  #user-detail-modal .ud-floating-filters .ud-float-clear,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    font-size:12px!important;
+    opacity:.74!important;
+    filter:saturate(.88) contrast(.98)!important;
+    transform:scale(1)!important;
+    transform-origin:center center!important;
+    transition:transform .16s ease, opacity .16s ease, filter .16s ease, box-shadow .16s ease!important;
+  }
+
+  #user-detail-modal .ud-floating-filters .ud-float-filter.active span,
+  #user-detail-modal .ud-floating-filters .ud-float-clear.active,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear.active{
+    opacity:1!important;
+    filter:saturate(1.08) contrast(1)!important;
+    transform:scale(1.08)!important;
+  }
+
+  #user-detail-modal .ud-floating-filters .ud-float-filter:active span,
+  #user-detail-modal .ud-floating-filters .ud-float-clear:active,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter:active span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear:active{
+    transform:scale(1.04)!important;
+  }
+</style>
+
