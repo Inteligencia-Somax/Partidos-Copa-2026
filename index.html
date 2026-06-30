@@ -9520,20 +9520,62 @@ function renderMatchBreakdown(){
   const total = parts.length;
   const mult = m.x2 ? 2 : 1;
 
-  // Misma lógica del ranking: compara la posición actual con la posición
-  // antes del último día disputado, para mostrar si subió, bajó o quedó igual.
+  // Subió/bajó por partida: compara la posición antes de ESTE partido
+  // con la posición después de ESTE partido, no más por el último día completo.
   const realResultsForDelta = loadRealResults();
-  const nowForDelta = new Date();
-  const playedSortedForDelta = MATCHES.filter(mx => realResultsForDelta[mx.id] && getMatchDateTime(mx) <= nowForDelta)
-    .sort((a,b) => getMatchDateTime(b) - getMatchDateTime(a));
-  const lastDateForDelta = playedSortedForDelta.length ? playedSortedForDelta[0].date : null;
-  const prevIndexForDelta = {};
-  if(lastDateForDelta){
-    getRankedUsersExcludingDate(lastDateForDelta).forEach((u, idx) => { prevIndexForDelta[u.name] = idx; });
+  const matchTimeForDelta = getMatchDateTime(m).getTime();
+  const matchIdForDelta = Number(m.id) || 0;
+
+  function buildRankedUsersUntilThisMatch(includeCurrentMatch){
+    const all = loadAllPicks();
+
+    return Object.entries(all)
+      .filter(([name]) => !isExcludedFromRanking(name))
+      .map(([name, picks]) => {
+        const stats = {name, pickCount:0, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
+
+        MATCHES.forEach(mm => {
+          const realMm = realResultsForDelta[mm.id];
+          if(!realMm) return;
+
+          const mt = getMatchDateTime(mm).getTime();
+          const mid = Number(mm.id) || 0;
+
+          // Antes: só jogos anteriores.
+          // Depois: jogos anteriores + este jogo.
+          if(mt > matchTimeForDelta) return;
+          if(mt === matchTimeForDelta){
+            if(includeCurrentMatch){
+              if(mid > matchIdForDelta) return;
+            }else{
+              if(mid >= matchIdForDelta) return;
+            }
+          }
+
+          if(picks && picks[mm.id]) stats.pickCount++;
+          const calc = calculatePickPoints(picks && picks[mm.id], realMm, mm);
+          stats.score += calc.pts;
+          if(stats[calc.type] !== undefined) stats[calc.type]++;
+        });
+
+        return stats;
+      })
+      .sort(sortRankStats);
   }
+
+  const beforeIndexForMatchDelta = {};
+  const afterIndexForMatchDelta = {};
+  if(realResultsForDelta[m.id]){
+    buildRankedUsersUntilThisMatch(false).forEach((u, idx) => { beforeIndexForMatchDelta[u.name] = idx; });
+    buildRankedUsersUntilThisMatch(true).forEach((u, idx) => { afterIndexForMatchDelta[u.name] = idx; });
+  }
+
   function mbPosDeltaHtml(name, currentPos){
-    if(!lastDateForDelta || prevIndexForDelta[name] === undefined) return '';
-    const d = prevIndexForDelta[name] - (currentPos - 1);
+    if(!realResultsForDelta[m.id]) return '';
+    if(beforeIndexForMatchDelta[name] === undefined || afterIndexForMatchDelta[name] === undefined) return '';
+
+    const d = beforeIndexForMatchDelta[name] - afterIndexForMatchDelta[name];
+
     if(d > 0) return `<span class="rank-pos-delta"><span class="rank-delta up">▲${d}</span></span>`;
     if(d < 0) return `<span class="rank-pos-delta"><span class="rank-delta down">▼${-d}</span></span>`;
     return `<span class="rank-pos-delta"><span class="rank-delta same">=</span></span>`;
