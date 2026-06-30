@@ -19406,3 +19406,74 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 })();
 </script>
+
+
+<style id="edson-meu-card-grupo-verde-decisiva-laranja-20260629">
+  /*
+    Regra correta do destaque do usuário no modal "Puntos por participante":
+    - Fase de grupos: card do usuário fica verde.
+    - Fase decisiva / mata-mata: card do usuário fica laranja/dourado.
+    A bolinha/separador continua cinza.
+  */
+
+  /* Fase de grupos: mantém verde */
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine.my-green-card,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine.exact,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine.my-green-card.exact{
+    background:rgba(0,155,84,.08)!important;
+    border-color:rgba(0,155,84,.32)!important;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,155,84,.20),
+      0 0 0 1px rgba(0,155,84,.08)!important;
+  }
+
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine .mb-pos,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-teams,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-participant-name,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-pick-points-inline,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-pending-score-name,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-pts,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine .mb-points,
+  #match-breakdown-modal:not(.x2-mode) .ud-row.mine .points{
+    color:var(--green)!important;
+    font-weight:900!important;
+  }
+
+  /* Fase decisiva / mata-mata: troca verde por laranja/dourado */
+  #match-breakdown-modal.x2-mode .ud-row.mine,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card,
+  #match-breakdown-modal.x2-mode .ud-row.mine.exact,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card.exact{
+    background:rgba(245,158,11,.10)!important;
+    border-color:rgba(245,158,11,.38)!important;
+    box-shadow:
+      inset 0 0 0 1px rgba(245,158,11,.22),
+      0 0 0 1px rgba(245,158,11,.10)!important;
+  }
+
+  #match-breakdown-modal.x2-mode .ud-row.mine .mb-pos,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-teams,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-participant-name,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score-name,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts,
+  #match-breakdown-modal.x2-mode .ud-row.mine .mb-points,
+  #match-breakdown-modal.x2-mode .ud-row.mine .points{
+    color:#F59E0B!important;
+    font-weight:900!important;
+  }
+
+  /* A bolinha/separador fica cinza em qualquer fase */
+  #match-breakdown-modal .ud-row.mine .ud-name-sep,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-name-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-name-sep,
+  #match-breakdown-modal .ud-row.mine .ud-meta-sep,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-meta-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-meta-sep{
+    color:#9CA3AF!important;
+    font-weight:700!important;
+  }
+</style>
