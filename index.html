@@ -13595,6 +13595,142 @@ body.edson-matches-bg #summary-modal .summary-header{
 })();
 </script>
 
+
+<script id="final-return-to-user-detail-after-match-breakdown-v2">
+(function(){
+  if(window.__somaxReturnUserDetailAfterMbV2) return;
+  window.__somaxReturnUserDetailAfterMbV2 = true;
+
+  function detailModal(){
+    return document.getElementById('user-detail-modal');
+  }
+
+  function detailBody(){
+    const m = detailModal();
+    return m ? m.querySelector('.ud-body') : null;
+  }
+
+  function getDetailName(){
+    const m = detailModal();
+    if(!m) return '';
+    const t = m.querySelector('.modal-match-label, .modal-header .modal-match-label');
+    return t ? String(t.textContent || '').trim() : '';
+  }
+
+  function getActiveDetailTab(){
+    const m = detailModal();
+    if(!m) return '';
+    const active = m.querySelector('.ud-tab.active');
+    return active ? String(active.textContent || '').replace(/\s+/g,' ').trim() : '';
+  }
+
+  function saveCtx(){
+    const body = detailBody();
+    return {
+      name: getDetailName(),
+      tabText: getActiveDetailTab(),
+      scrollTop: body ? body.scrollTop : 0
+    };
+  }
+
+  function restoreCtx(ctx){
+    if(!ctx || !ctx.name) return;
+
+    if(typeof window.openUserDetail === 'function'){
+      window.openUserDetail(ctx.name);
+    }
+
+    setTimeout(function(){
+      const modal = detailModal();
+      if(!modal) return;
+
+      modal.style.display = 'flex';
+
+      if(ctx.tabText){
+        const tabs = Array.from(modal.querySelectorAll('.ud-tab'));
+        const tab = tabs.find(t => String(t.textContent || '').replace(/\s+/g,' ').trim() === ctx.tabText);
+        if(tab && !tab.classList.contains('active')){
+          try{ tab.click(); }catch(e){}
+        }
+      }
+
+      setTimeout(function(){
+        const body = detailBody();
+        if(body && typeof ctx.scrollTop === 'number'){
+          body.scrollTop = ctx.scrollTop;
+        }
+      }, 40);
+    }, 40);
+  }
+
+  // Replace the specific entry function from participant detail -> Puntos por participante.
+  window.openMatchInfoFromUserDetail = function(matchId){
+    const ctx = saveCtx();
+    window.__somaxMbReturnToUserDetailCtx = ctx;
+
+    const m = Array.isArray(window.MATCHES) ? window.MATCHES.find(x => x.id === matchId) : null;
+    if(!m) return;
+
+    if(typeof window.closeUserDetail === 'function'){
+      window.closeUserDetail();
+    }else{
+      const modal = detailModal();
+      if(modal) modal.style.display = 'none';
+    }
+
+    setTimeout(function(){
+      const real = (typeof window.loadRealResults === 'function' ? window.loadRealResults()[matchId] : null) || null;
+      const canEdit = (typeof window.canEditPick === 'function') ? window.canEditPick(m) : false;
+
+      if(real || !canEdit){
+        if(typeof window.openMatchBreakdown === 'function') window.openMatchBreakdown(matchId);
+      }else{
+        if(typeof window.openModal === 'function') window.openModal(matchId);
+      }
+    }, 0);
+  };
+
+  // Wrap close after defining/replacing above. If another patch already wrapped, this still works.
+  if(typeof window.closeMatchBreakdown === 'function' && !window.closeMatchBreakdown.__somaxReturnDetailV2){
+    const originalClose = window.closeMatchBreakdown;
+    const wrappedClose = function(){
+      const ctx = window.__somaxMbReturnToUserDetailCtx || null;
+      window.__somaxMbReturnToUserDetailCtx = null;
+
+      const ret = originalClose.apply(this, arguments);
+
+      if(ctx && ctx.name){
+        restoreCtx(ctx);
+      }
+
+      return ret;
+    };
+    wrappedClose.__somaxReturnDetailV2 = true;
+    window.closeMatchBreakdown = wrappedClose;
+  }
+
+  // Also catch close button clicks if the original close function reference was bound inline
+  // before this script loaded.
+  document.addEventListener('click', function(e){
+    const mb = document.getElementById('match-breakdown-modal');
+    const closeBtn = e.target && e.target.closest ? e.target.closest('#match-breakdown-modal .modal-close') : null;
+    if(!mb || !closeBtn) return;
+
+    const ctx = window.__somaxMbReturnToUserDetailCtx || null;
+    if(!ctx || !ctx.name) return;
+
+    setTimeout(function(){
+      const userModal = detailModal();
+      const mbVisible = mb.style.display !== 'none';
+      if(!mbVisible && (!userModal || userModal.style.display === 'none')){
+        window.__somaxMbReturnToUserDetailCtx = null;
+        restoreCtx(ctx);
+      }
+    }, 120);
+  }, true);
+})();
+</script>
+
 </body>
 
 <!-- AJUSTE EDSON FINAL: corrigir corte da colocação/variação no modal Puntos por participante -->
