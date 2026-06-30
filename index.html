@@ -9095,14 +9095,12 @@ function setMbView(v){
   mbState.view = v;
   mbState.expanded = null;
   mbState.filterScore = null;
-  mbState.searchActive = false;
-  mbState.searchTerm = '';
+  mbState.searchActive = true;
   renderMatchBreakdown();
 }
 function setMbScoreFilter(score){
   mbState.filterScore = (mbState.filterScore === score) ? null : score;
-  mbState.searchActive = false;
-  mbState.searchTerm = '';
+  mbState.searchActive = true;
   renderMatchBreakdown();
 }
 
@@ -9297,7 +9295,7 @@ function buildMbScoreChips(){
   const fs = mbState.filterScore;
   const searchOn = !!mbState.searchActive;
   let chips = ``;
-  chips += `<button class="mb-sfchip ${(!fs && !searchOn) || searchOn ? 'active' : ''}" onpointerdown="startMbScoreSearchHold(event,this)" onpointerup="cancelMbScoreSearchHold()" onpointerleave="cancelMbScoreSearchHold()" onpointercancel="cancelMbScoreSearchHold()" oncontextmenu="return false" onclick="if(!handleMbScoreAllClick(event)) setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
+  chips += `<button class="mb-sfchip ${(!fs && !searchOn) ? 'active' : ''}" onclick="setMbScoreFilter(null)">Todos <span class="mb-sfn">${total}</span></button>`;
   chips += top3.map(([sc, n]) =>
     `<button class="mb-sfchip ${fs === sc ? 'active' : ''}" onclick="setMbScoreFilter('${sc}')">${sc} <span class="mb-sfn">${n}</span></button>`
   ).join('');
@@ -9374,13 +9372,13 @@ function renderMatchBreakdown(){
     if(mbState.filterScore){
       rows = parts.filter(p => `${p.pick.home}:${p.pick.away}` === mbState.filterScore);
     }
-    if(mbState.searchActive && String(mbState.searchTerm || '').trim()){
+    if(String(mbState.searchTerm || '').trim()){
       const q = normalizeMbScoreSearch(mbState.searchTerm);
       rows = rows.filter(p => normalizeMbScoreSearch(`${p.pick.home}:${p.pick.away}`).includes(q));
     }
     // El filtro por marcador solo sirve mientras se espera el resultado (chips en mb-tabs).
     // Con resultado ya cargado no se muestra esa barra de "Palpites".
-    const chipBar = (pending && mbState.searchActive) ? buildMbScoreSearchRow() : '';
+    const chipBar = buildMbScoreSearchRow();
     const scoreCounts = {};
     parts.forEach(pp => {
       const sc = `${pp.pick.home}:${pp.pick.away}`;
@@ -17894,3 +17892,235 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     background:rgba(245,158,11,.08)!important;
   }
 </style>
+
+
+<style id="edson-mb-fixed-search-polish-20260629">
+  #match-breakdown-modal .mb-score-search-row{
+    padding:8px 14px 10px!important;
+    background:#fff!important;
+    border-bottom:1px solid var(--border)!important;
+  }
+
+  #match-breakdown-modal .mb-score-search{
+    height:50px!important;
+    border-radius:18px!important;
+    background:#F8FAFC!important;
+    border:1px solid #E5E7EB!important;
+    box-shadow:inset 0 1px 2px rgba(15,23,42,.04)!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:10px!important;
+    padding:0 10px 0 14px!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-ico{
+    width:21px!important;
+    height:21px!important;
+    flex:0 0 21px!important;
+    color:#6B7280!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:0!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-ico::before{
+    content:''!important;
+    width:20px!important;
+    height:20px!important;
+    display:block!important;
+    background:currentColor!important;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M10.5 4a6.5 6.5 0 0 1 5.15 10.46l4.45 4.44a1 1 0 0 1-1.42 1.42l-4.44-4.45A6.5 6.5 0 1 1 10.5 4Zm0 2a4.5 4.5 0 1 0 0 9a4.5 4.5 0 0 0 0-9Z'/%3E%3C/svg%3E") center/contain no-repeat!important;
+    mask:url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' d='M10.5 4a6.5 6.5 0 0 1 5.15 10.46l4.45 4.44a1 1 0 0 1-1.42 1.42l-4.44-4.45A6.5 6.5 0 1 1 10.5 4Zm0 2a4.5 4.5 0 1 0 0 9a4.5 4.5 0 0 0 0-9Z'/%3E%3C/svg%3E") center/contain no-repeat!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-input{
+    min-width:0!important;
+    flex:1 1 auto!important;
+    height:100%!important;
+    border:0!important;
+    outline:none!important;
+    background:transparent!important;
+    color:#111827!important;
+    font-size:15px!important;
+    font-weight:800!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-input::placeholder{
+    color:#6B7280!important;
+    opacity:.9!important;
+    font-weight:800!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-clear{
+    width:36px!important;
+    height:36px!important;
+    border-radius:999px!important;
+    border:0!important;
+    background:#fff!important;
+    color:#6B7280!important;
+    font-size:22px!important;
+    font-weight:900!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-shadow:0 1px 4px rgba(15,23,42,.08)!important;
+  }
+</style>
+
+<script id="edson-mb-fixed-search-filter-20260629">
+(function(){
+  if(window.__edsonMbFixedSearchFilter) return;
+  window.__edsonMbFixedSearchFilter = true;
+
+  function normalizeText(v){
+    return String(v || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  window.normalizeMbFlexibleSearch = function(v){
+    return normalizeText(v)
+      .replace(/[x×]/g, ':')
+      .replace(/\s/g, '');
+  };
+
+  window.matchMbParticipantSearch = function(p, q, scoreCounts, maxScoreCount, pending){
+    const raw = String(q || '').trim();
+    if(!raw) return true;
+
+    const textQ = normalizeText(raw);
+    const flexQ = window.normalizeMbFlexibleSearch(raw);
+
+    const score = `${p.pick.home}:${p.pick.away}`;
+    const scoreAlt = `${p.pick.home}x${p.pick.away}`;
+    const points = `${p.totalScore || 0} pts`;
+    const pos = `${p.pos}º`;
+    const gamePts = pending ? '' : `${p.pts > 0 ? '+' : ''}${p.pts}`;
+
+    const labels = [];
+    if(maxScoreCount > 1 && scoreCounts && scoreCounts[score] === maxScoreCount) labels.push('Más palpitado');
+    if(!pending && p.type === 'exact') labels.push('Exacto');
+
+    const haystack = normalizeText([
+      p.name,
+      score,
+      scoreAlt,
+      points,
+      pos,
+      gamePts,
+      labels.join(' ')
+    ].join(' '));
+
+    const flexHaystack = window.normalizeMbFlexibleSearch([
+      p.name,
+      score,
+      scoreAlt,
+      points,
+      pos,
+      gamePts,
+      labels.join(' ')
+    ].join(' '));
+
+    return haystack.includes(textQ) || flexHaystack.includes(flexQ);
+  };
+
+  // Substitui a busca antiga por uma busca sempre ativa e flexível.
+  const oldNormalize = window.normalizeMbScoreSearch;
+  window.normalizeMbScoreSearch = function(v){
+    return window.normalizeMbFlexibleSearch ? window.normalizeMbFlexibleSearch(v) : (oldNormalize ? oldNormalize(v) : String(v || ''));
+  };
+
+  // Substitui a linha de busca para ficar sempre com ícone de lupa profissional.
+  window.buildMbScoreSearchRow = function(){
+    const value = (window.mbState && mbState.searchTerm) ? mbState.searchTerm : '';
+    return `
+      <div class="mb-score-search-row">
+        <div class="mb-score-search">
+          <span class="mb-score-search-ico" aria-hidden="true"></span>
+          <input class="mb-score-search-input"
+                 type="text"
+                 inputmode="search"
+                 autocomplete="off"
+                 placeholder="Buscar nombre, pronóstico o puntos..."
+                 value="${String(value || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}"
+                 oninput="setMbScoreSearchTerm(this.value)">
+          <button class="mb-score-search-clear" type="button" onclick="setMbScoreSearchTerm('')" aria-label="Limpiar búsqueda">×</button>
+        </div>
+      </div>`;
+  };
+
+  window.setMbScoreSearchTerm = function(value){
+    if(window.mbState){
+      mbState.searchActive = true;
+      mbState.searchTerm = value || '';
+    }
+    if(typeof renderMatchBreakdown === 'function') renderMatchBreakdown();
+
+    // Mantém o foco depois do re-render.
+    requestAnimationFrame(function(){
+      const input = document.querySelector('#match-breakdown-modal .mb-score-search-input');
+      if(input && document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('mb-score-search-input')){
+        input.focus();
+        const len = input.value.length;
+        try{ input.setSelectionRange(len, len); }catch(e){}
+      }
+    });
+  };
+
+  // Reescreve apenas a parte de filtro após o render original, usando monkey patch leve.
+  if(typeof window.renderMatchBreakdown === 'function' && !window.renderMatchBreakdown.__edsonFixedSearchWrapped){
+    const original = window.renderMatchBreakdown;
+    const wrapped = function(){
+      const ret = original.apply(this, arguments);
+
+      const modal = document.getElementById('match-breakdown-modal');
+      const body = document.getElementById('mb-body');
+      if(!modal || !body || !window.mbState || mbState.view !== 'list') return ret;
+
+      const q = String(mbState.searchTerm || '').trim();
+      if(!q) return ret;
+
+      const m = mbState.m;
+      const pending = !!mbState.pending;
+      const parts = mbState.parts || [];
+      const scoreCounts = {};
+      parts.forEach(pp => {
+        if(pp && pp.pick){
+          const sc = `${pp.pick.home}:${pp.pick.away}`;
+          scoreCounts[sc] = (scoreCounts[sc] || 0) + 1;
+        }
+      });
+      const maxScoreCount = Object.values(scoreCounts).length ? Math.max(...Object.values(scoreCounts)) : 0;
+
+      body.querySelectorAll('.ud-row').forEach(row => {
+        const nameEl = row.querySelector('.ud-participant-name, .ud-teams');
+        const name = nameEl ? String(nameEl.textContent || '').trim().replace(/•.*$/,'').trim() : '';
+        const p = parts.find(x => x.name === name);
+        if(!p) return;
+        const ok = window.matchMbParticipantSearch(p, q, scoreCounts, maxScoreCount, pending);
+        row.style.display = ok ? '' : 'none';
+      });
+
+      const visibleRows = Array.from(body.querySelectorAll('.ud-row')).filter(r => r.style.display !== 'none');
+      let empty = body.querySelector('.mb-search-empty');
+      if(!visibleRows.length){
+        if(!empty){
+          empty = document.createElement('div');
+          empty.className = 'ud-empty mb-search-empty';
+          empty.textContent = 'No se encontró ningún participante.';
+          body.appendChild(empty);
+        }
+      }else if(empty){
+        empty.remove();
+      }
+
+      return ret;
+    };
+    wrapped.__edsonFixedSearchWrapped = true;
+    window.renderMatchBreakdown = wrapped;
+  }
+})();
+</script>
