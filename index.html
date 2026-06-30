@@ -13343,6 +13343,48 @@ body.edson-matches-bg #summary-modal .summary-header{
   }
 </style>
 
+
+<style id="final-disable-copy-selection-everywhere">
+  html, body, body *{
+    -webkit-user-select:none!important;
+    user-select:none!important;
+    -webkit-touch-callout:none!important;
+  }
+
+  input, textarea, [contenteditable="true"]{
+    -webkit-user-select:text!important;
+    user-select:text!important;
+    -webkit-touch-callout:default!important;
+  }
+</style>
+<script id="final-disable-copy-actions-everywhere">
+(function(){
+  if(window.__somaxCopyDisabledEverywhere) return;
+  window.__somaxCopyDisabledEverywhere = true;
+
+  const isEditable = (el) => {
+    if(!el) return false;
+    return !!el.closest('input, textarea, [contenteditable="true"]');
+  };
+
+  document.addEventListener('copy', function(e){
+    if(!isEditable(e.target)) e.preventDefault();
+  }, true);
+
+  document.addEventListener('cut', function(e){
+    if(!isEditable(e.target)) e.preventDefault();
+  }, true);
+
+  document.addEventListener('contextmenu', function(e){
+    if(!isEditable(e.target)) e.preventDefault();
+  }, true);
+
+  document.addEventListener('selectstart', function(e){
+    if(!isEditable(e.target)) e.preventDefault();
+  }, true);
+})();
+</script>
+
 </body>
 
 <!-- AJUSTE EDSON FINAL: corrigir corte da colocação/variação no modal Puntos por participante -->
