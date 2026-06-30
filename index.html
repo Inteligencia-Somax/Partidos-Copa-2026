@@ -21645,3 +21645,169 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     box-shadow:0 14px 34px rgba(0,0,0,.54),0 4px 12px rgba(0,0,0,.34)!important;
   }
 </style>
+
+<!-- AJUSTE 20260630: Puntos por participante - remover Limpiar, centralizar 3 filtros e aplicar filtro real -->
+<style id="edson-mb-floating-filter-no-clear-functional-20260630">
+  /* Somente no modal Puntos por participante */
+  #match-breakdown-modal .mb-floating-filters{
+    justify-content:center!important;
+    gap:14px!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    display:none!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span{
+    font-size:12px!important;
+    opacity:.72!important;
+    filter:saturate(.86) contrast(.98)!important;
+    transform:scale(1)!important;
+    transform-origin:center center!important;
+    transition:transform .16s ease, opacity .16s ease, filter .16s ease, box-shadow .16s ease!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span{
+    opacity:1!important;
+    filter:saturate(1.10) contrast(1)!important;
+    transform:scale(1.10)!important;
+    box-shadow:0 16px 38px rgba(0,0,0,.60),0 5px 14px rgba(0,0,0,.38)!important;
+  }
+</style>
+
+<script id="edson-mb-floating-filter-no-clear-functional-20260630-script">
+(function(){
+  if(window.__edsonMbNoClearFunctional20260630) return;
+  window.__edsonMbNoClearFunctional20260630 = true;
+
+  function getMbState(){
+    try{ if(typeof mbState !== 'undefined' && mbState) return mbState; }catch(e){}
+    return window.mbState || null;
+  }
+  function activeTags(){
+    var st = getMbState();
+    if(!st) return [];
+    if(!Array.isArray(st.tagFilters)) st.tagFilters = [];
+    return st.tagFilters;
+  }
+  function setActiveTags(next){
+    var st = getMbState();
+    if(!st) return;
+    st.tagFilters = Array.from(new Set(next || []));
+  }
+  function isActive(key){ return activeTags().indexOf(key) >= 0; }
+
+  // Renderiza só os 3 botões no modal Puntos por participante, sem Limpiar.
+  window.renderMbFloatingFiltersHtml = function(){
+    return '<div class="mb-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de participantes">' +
+      '<button type="button" data-filter-key="mine" class="mb-float-filter' + (isActive('mine') ? ' active' : '') + '" onclick="toggleMbTagFilter(\'mine\', event)" aria-pressed="' + isActive('mine') + '"><span class="ud-mine-tag">= Vos</span></button>' +
+      '<button type="button" data-filter-key="most" class="mb-float-filter' + (isActive('most') ? ' active' : '') + '" onclick="toggleMbTagFilter(\'most\', event)" aria-pressed="' + isActive('most') + '"><span class="ud-most-tag">Más palpitado</span></button>' +
+      '<button type="button" data-filter-key="exact" class="mb-float-filter' + (isActive('exact') ? ' active' : '') + '" onclick="toggleMbTagFilter(\'exact\', event)" aria-pressed="' + isActive('exact') + '"><span class="ud-exact-tag">Exacto</span></button>' +
+    '</div>';
+  };
+
+  function readPickFromRow(row){
+    var meta = row ? row.querySelector('.ud-meta') : null;
+    var txt = String(meta ? meta.textContent || '' : row ? row.textContent || '' : '');
+    var m = txt.match(/Palpite:\s*(\d+)\s*:\s*(\d+)/i);
+    return m ? {home:Number(m[1]), away:Number(m[2])} : null;
+  }
+  function rowMatches(row, key){
+    var st = getMbState();
+    if(!row) return false;
+    if(key === 'most') return !!row.querySelector('.ud-most-tag') || /Más\s+palpitado/i.test(row.textContent || '');
+    if(key === 'exact') return row.classList.contains('exact') || !!row.querySelector('.ud-exact-tag') || /Exacto/i.test(row.textContent || '');
+    if(key === 'mine'){
+      var myPick = st && st.myPick;
+      var rp = readPickFromRow(row);
+      return !!(myPick && rp && Number(myPick.home) === rp.home && Number(myPick.away) === rp.away);
+    }
+    return true;
+  }
+
+  function syncMbButtons(){
+    var wrap = document.querySelector('#match-breakdown-modal .mb-floating-filters');
+    if(!wrap) return;
+    var active = activeTags();
+    wrap.querySelectorAll('.mb-float-filter').forEach(function(btn){
+      var key = btn.getAttribute('data-filter-key');
+      var on = active.indexOf(key) >= 0;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    wrap.querySelectorAll('.mb-float-clear').forEach(function(btn){ btn.remove(); });
+  }
+
+  window.applyMbFloatingFilters = function(){
+    var st = getMbState();
+    var body = document.getElementById('mb-body');
+    if(!st || !body || st.view !== 'list') return;
+
+    var active = activeTags();
+    var oldEmpty = body.querySelector('.mb-filtered-empty');
+    if(oldEmpty) oldEmpty.remove();
+
+    var rows = Array.prototype.slice.call(body.querySelectorAll(':scope > .ud-row'));
+    var visible = 0;
+    rows.forEach(function(row){
+      var ok = !active.length || active.every(function(k){ return rowMatches(row, k); });
+      row.style.display = ok ? '' : 'none';
+      if(ok) visible++;
+    });
+
+    if(active.length && rows.length && visible === 0){
+      var div = document.createElement('div');
+      div.className = 'mb-filtered-empty';
+      div.textContent = 'No hay participantes con los filtros seleccionados.';
+      body.appendChild(div);
+    }
+    syncMbButtons();
+  };
+
+  window.toggleMbTagFilter = function(key, ev){
+    if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+    var active = activeTags().slice();
+    var idx = active.indexOf(key);
+    if(idx >= 0) active.splice(idx, 1);
+    else active.push(key);
+    setActiveTags(active);
+    if(typeof renderMatchBreakdown === 'function') renderMatchBreakdown();
+    setTimeout(window.applyMbFloatingFilters, 0);
+  };
+
+  // Mantém compatibilidade caso algum código antigo chame limpiar, mas sem botão visual.
+  window.clearMbTagFilters = function(ev){
+    if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+    setActiveTags([]);
+    if(typeof renderMatchBreakdown === 'function') renderMatchBreakdown();
+    setTimeout(window.applyMbFloatingFilters, 0);
+  };
+
+  // Garante filtro real após qualquer renderização do modal.
+  var oldRender = window.renderMatchBreakdown || (typeof renderMatchBreakdown === 'function' ? renderMatchBreakdown : null);
+  if(typeof oldRender === 'function' && !oldRender.__edsonMbNoClearWrapped){
+    var wrapped = function(){
+      var ret = oldRender.apply(this, arguments);
+      try{
+        if(typeof window.renderMbFloatingFiltersIntoModal === 'function') window.renderMbFloatingFiltersIntoModal();
+      }catch(e){}
+      setTimeout(window.applyMbFloatingFilters, 0);
+      return ret;
+    };
+    wrapped.__edsonMbNoClearWrapped = true;
+    window.renderMatchBreakdown = wrapped;
+    try{ renderMatchBreakdown = wrapped; }catch(e){}
+  }
+
+  document.addEventListener('click', function(ev){
+    var btn = ev.target.closest && ev.target.closest('#match-breakdown-modal .mb-float-filter');
+    if(!btn) return;
+    var key = btn.getAttribute('data-filter-key');
+    if(key){ window.toggleMbTagFilter(key, ev); }
+  }, true);
+
+  setTimeout(function(){
+    try{
+      if(typeof window.renderMbFloatingFiltersIntoModal === 'function') window.renderMbFloatingFiltersIntoModal();
+      window.applyMbFloatingFilters();
+    }catch(e){}
+  }, 0);
+})();
+</script>
