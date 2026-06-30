@@ -19006,90 +19006,6 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
 </script>
 
 
-<script id="edson-remove-separador-final-vazio-20260629">
-(function(){
-  if(window.__edsonRemoveSeparadorFinalVazio) return;
-  window.__edsonRemoveSeparadorFinalVazio = true;
-
-  function isHidden(el){
-    if(!el) return true;
-    try{
-      var st = window.getComputedStyle(el);
-      return st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0';
-    }catch(e){
-      return !!(el.style && el.style.display === 'none');
-    }
-  }
-
-  function cleanupLine(line){
-    if(!line) return;
-
-    Array.prototype.slice.call(line.querySelectorAll('.ud-meta-sep')).forEach(function(sep){
-      var next = sep.nextElementSibling;
-
-      // Pula elementos escondidos, como "= Vos" quando não deve aparecer.
-      while(next && isHidden(next)){
-        next = next.nextElementSibling;
-      }
-
-      // Se não existe nada visível depois da bolinha, ela não deve aparecer.
-      if(!next){
-        sep.style.display = 'none';
-      }else{
-        sep.style.display = '';
-      }
-    });
-  }
-
-  function cleanup(){
-    document.querySelectorAll('#user-detail-modal .ud-pick-line, #match-breakdown-modal .ud-meta').forEach(cleanupLine);
-  }
-
-  var oldRenderUd = window.renderUd;
-  if(typeof oldRenderUd === 'function' && !oldRenderUd.__edsonSepCleanupWrapped){
-    var wrappedRenderUd = function(){
-      var ret = oldRenderUd.apply(this, arguments);
-      setTimeout(cleanup, 0);
-      setTimeout(cleanup, 80);
-      return ret;
-    };
-    wrappedRenderUd.__edsonSepCleanupWrapped = true;
-    window.renderUd = wrappedRenderUd;
-  }
-
-  var oldRenderMatchBreakdown = window.renderMatchBreakdown;
-  if(typeof oldRenderMatchBreakdown === 'function' && !oldRenderMatchBreakdown.__edsonSepCleanupWrapped){
-    var wrappedRenderMatchBreakdown = function(){
-      var ret = oldRenderMatchBreakdown.apply(this, arguments);
-      setTimeout(cleanup, 0);
-      setTimeout(cleanup, 80);
-      return ret;
-    };
-    wrappedRenderMatchBreakdown.__edsonSepCleanupWrapped = true;
-    window.renderMatchBreakdown = wrappedRenderMatchBreakdown;
-  }
-
-  document.addEventListener('DOMContentLoaded', cleanup);
-  document.addEventListener('click', function(){ setTimeout(cleanup, 80); }, true);
-
-  var observer = new MutationObserver(function(){ cleanup(); });
-  function startObserver(){
-    var a = document.getElementById('user-detail-modal');
-    var b = document.getElementById('match-breakdown-modal');
-    if(a) observer.observe(a, {childList:true, subtree:true, attributes:true, attributeFilter:['style','class']});
-    if(b) observer.observe(b, {childList:true, subtree:true, attributes:true, attributeFilter:['style','class']});
-    cleanup();
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', startObserver);
-  }else{
-    startObserver();
-  }
-})();
-</script>
-
-
 <style id="edson-busca-puntos-foco-funcionando-20260629">
   /*
     Correção da busca no modal "Puntos por participante":
@@ -19564,77 +19480,6 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 </style>
 
-<script id="edson-regra-final-meu-card-inline-20260629">
-(function(){
-  if(window.__edsonRegraFinalMeuCardInline) return;
-  window.__edsonRegraFinalMeuCardInline = true;
-
-  function applyMyCardColorRule(){
-    var modal = document.getElementById('match-breakdown-modal');
-    if(!modal) return;
-
-    var isX2 = modal.classList.contains('x2-mode');
-    var mainColor = isX2 ? '#F59E0B' : 'var(--green)';
-
-    modal.querySelectorAll('.ud-row.mine').forEach(function(row){
-      row.querySelectorAll('.mb-pos, .ud-participant-name, .ud-pts').forEach(function(el){
-        el.style.setProperty('color', mainColor, 'important');
-        el.style.setProperty('font-weight', '900', 'important');
-      });
-
-      row.querySelectorAll('.ud-pick-points-inline').forEach(function(el){
-        el.style.setProperty('color', '#6B7280', 'important');
-        el.style.setProperty('font-weight', '700', 'important');
-      });
-
-      row.querySelectorAll('.ud-name-sep, .ud-meta-sep').forEach(function(el){
-        el.style.setProperty('color', '#9CA3AF', 'important');
-        el.style.setProperty('font-weight', '700', 'important');
-      });
-    });
-  }
-
-  var oldRenderMatchBreakdown = window.renderMatchBreakdown;
-  if(typeof oldRenderMatchBreakdown === 'function' && !oldRenderMatchBreakdown.__edsonMyCardColorRuleWrapped){
-    var wrapped = function(){
-      var ret = oldRenderMatchBreakdown.apply(this, arguments);
-      setTimeout(applyMyCardColorRule, 0);
-      setTimeout(applyMyCardColorRule, 80);
-      return ret;
-    };
-    wrapped.__edsonMyCardColorRuleWrapped = true;
-    window.renderMatchBreakdown = wrapped;
-  }
-
-  document.addEventListener('click', function(){
-    setTimeout(applyMyCardColorRule, 80);
-  }, true);
-
-  document.addEventListener('input', function(){
-    setTimeout(applyMyCardColorRule, 40);
-  }, true);
-
-  var observer = new MutationObserver(function(){
-    applyMyCardColorRule();
-  });
-
-  function start(){
-    var modal = document.getElementById('match-breakdown-modal');
-    if(modal){
-      observer.observe(modal, {childList:true, subtree:true, attributes:true, attributeFilter:['class','style']});
-      applyMyCardColorRule();
-    }
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', start);
-  }else{
-    start();
-  }
-})();
-</script>
-
-
 <style id="edson-fundo-colorido-so-exacto-20260629">
   /*
     Regra final do fundo dos cards no modal "Puntos por participante":
@@ -19708,77 +19553,6 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 </style>
 
-<script id="edson-fundo-colorido-so-exacto-inline-20260629">
-(function(){
-  if(window.__edsonFundoColoridoSoExacto) return;
-  window.__edsonFundoColoridoSoExacto = true;
-
-  function applyExactBackgroundRule(){
-    var modal = document.getElementById('match-breakdown-modal');
-    if(!modal) return;
-
-    var isX2 = modal.classList.contains('x2-mode');
-
-    modal.querySelectorAll('.ud-row.mine').forEach(function(row){
-      var exact = row.classList.contains('exact');
-
-      if(!exact){
-        row.style.setProperty('background', '#fff', 'important');
-        row.style.setProperty('border-color', 'transparent', 'important');
-        row.style.setProperty('box-shadow', 'none', 'important');
-      }else if(isX2){
-        row.style.setProperty('background', 'rgba(245,158,11,.10)', 'important');
-        row.style.setProperty('border-color', 'rgba(245,158,11,.38)', 'important');
-        row.style.setProperty('box-shadow', 'inset 0 0 0 1px rgba(245,158,11,.22), 0 0 0 1px rgba(245,158,11,.10)', 'important');
-      }else{
-        row.style.setProperty('background', 'rgba(0,155,84,.08)', 'important');
-        row.style.setProperty('border-color', 'rgba(0,155,84,.32)', 'important');
-        row.style.setProperty('box-shadow', 'inset 0 0 0 1px rgba(0,155,84,.20), 0 0 0 1px rgba(0,155,84,.08)', 'important');
-      }
-    });
-  }
-
-  var oldRenderMatchBreakdown = window.renderMatchBreakdown;
-  if(typeof oldRenderMatchBreakdown === 'function' && !oldRenderMatchBreakdown.__edsonExactBgWrapped){
-    var wrapped = function(){
-      var ret = oldRenderMatchBreakdown.apply(this, arguments);
-      setTimeout(applyExactBackgroundRule, 0);
-      setTimeout(applyExactBackgroundRule, 80);
-      return ret;
-    };
-    wrapped.__edsonExactBgWrapped = true;
-    window.renderMatchBreakdown = wrapped;
-  }
-
-  document.addEventListener('click', function(){
-    setTimeout(applyExactBackgroundRule, 80);
-  }, true);
-
-  document.addEventListener('input', function(){
-    setTimeout(applyExactBackgroundRule, 40);
-  }, true);
-
-  var observer = new MutationObserver(function(){
-    applyExactBackgroundRule();
-  });
-
-  function start(){
-    var modal = document.getElementById('match-breakdown-modal');
-    if(modal){
-      observer.observe(modal, {childList:true, subtree:true, attributes:true, attributeFilter:['class','style']});
-      applyExactBackgroundRule();
-    }
-  }
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', start);
-  }else{
-    start();
-  }
-})();
-</script>
-
-
 <style id="edson-pontuacao-geral-cinza-normal-definitivo-20260630">
   /*
     Pontuação geral do participante, ex.: "753 pts":
@@ -19805,60 +19579,144 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 </style>
 
-<script id="edson-pontuacao-geral-cinza-normal-definitivo-20260630">
+
+
+<style id="edson-estabilidade-click-jogos-20260630">
+  /*
+    Correção de estabilidade:
+    remove a necessidade de scripts observando/mutando style sem parar.
+    Mantém o clique nos jogos livre e normal.
+  */
+  #user-detail-modal .ud-row,
+  #match-breakdown-modal .ud-row{
+    pointer-events:auto!important;
+  }
+
+  #user-detail-modal .ud-row[onclick],
+  #match-breakdown-modal .ud-row[onclick]{
+    cursor:pointer;
+  }
+
+  /* Pontuação geral, ex.: 753 pts, sempre cinza e no padrão dos demais */
+  body #match-breakdown-modal .ud-row.mine .ud-pending-score,
+  body #match-breakdown-modal .ud-row.mine .ud-pending-score-name,
+  body #match-breakdown-modal .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline{
+    color:#6B7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+  }
+
+  /* Separadores/bolinhas sempre cinza */
+  body #match-breakdown-modal .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal .ud-row.mine .ud-meta-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep{
+    color:#9CA3AF!important;
+    font-weight:700!important;
+  }
+
+  /* Fundo colorido só quando for Exacto */
+  body #match-breakdown-modal .ud-row.mine:not(.exact),
+  body #match-breakdown-modal.x2-mode .ud-row.mine:not(.exact){
+    background:#fff!important;
+    border-color:transparent!important;
+    box-shadow:none!important;
+  }
+
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine.exact{
+    background:rgba(0,155,84,.08)!important;
+    border-color:rgba(0,155,84,.32)!important;
+    box-shadow:inset 0 0 0 1px rgba(0,155,84,.20), 0 0 0 1px rgba(0,155,84,.08)!important;
+  }
+
+  body #match-breakdown-modal.x2-mode .ud-row.mine.exact{
+    background:rgba(245,158,11,.10)!important;
+    border-color:rgba(245,158,11,.38)!important;
+    box-shadow:inset 0 0 0 1px rgba(245,158,11,.22), 0 0 0 1px rgba(245,158,11,.10)!important;
+  }
+
+  /* Cor da fase no destaque principal */
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .mb-pos,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-participant-name,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-pts{
+    color:var(--green)!important;
+    font-weight:900!important;
+  }
+
+  body #match-breakdown-modal.x2-mode .ud-row.mine .mb-pos,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-participant-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts{
+    color:#F59E0B!important;
+    font-weight:900!important;
+  }
+</style>
+
+<script id="edson-separador-sem-travar-20260630">
 (function(){
-  if(window.__edsonPontuacaoGeralCinzaNormalDefinitivo) return;
-  window.__edsonPontuacaoGeralCinzaNormalDefinitivo = true;
+  if(window.__edsonSeparadorSemTravar) return;
+  window.__edsonSeparadorSemTravar = true;
 
-  function applyGeneralScoreNeutral(){
-    var modal = document.getElementById('match-breakdown-modal');
-    if(!modal) return;
-
-    modal.querySelectorAll('.ud-row.mine .ud-pending-score, .ud-row.mine .ud-pending-score-name, .ud-row.mine .ud-pick-points-inline').forEach(function(el){
-      el.style.setProperty('color', '#6B7280', 'important');
-      el.style.setProperty('font-size', '11px', 'important');
-      el.style.setProperty('font-weight', '400', 'important');
-      el.style.setProperty('line-height', '1.05', 'important');
-      el.style.setProperty('white-space', 'nowrap', 'important');
-    });
-  }
-
-  var oldRenderMatchBreakdown = window.renderMatchBreakdown;
-  if(typeof oldRenderMatchBreakdown === 'function' && !oldRenderMatchBreakdown.__edsonGeneralScoreNeutralWrapped){
-    var wrapped = function(){
-      var ret = oldRenderMatchBreakdown.apply(this, arguments);
-      setTimeout(applyGeneralScoreNeutral, 0);
-      setTimeout(applyGeneralScoreNeutral, 80);
-      return ret;
-    };
-    wrapped.__edsonGeneralScoreNeutralWrapped = true;
-    window.renderMatchBreakdown = wrapped;
-  }
-
-  document.addEventListener('click', function(){
-    setTimeout(applyGeneralScoreNeutral, 80);
-  }, true);
-
-  document.addEventListener('input', function(){
-    setTimeout(applyGeneralScoreNeutral, 40);
-  }, true);
-
-  var observer = new MutationObserver(function(){
-    applyGeneralScoreNeutral();
-  });
-
-  function start(){
-    var modal = document.getElementById('match-breakdown-modal');
-    if(modal){
-      observer.observe(modal, {childList:true, subtree:true, attributes:true, attributeFilter:['class','style']});
-      applyGeneralScoreNeutral();
+  function isHidden(el){
+    if(!el) return true;
+    try{
+      var st = window.getComputedStyle(el);
+      return st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0';
+    }catch(e){
+      return false;
     }
   }
 
+  function cleanupSeparators(){
+    document.querySelectorAll('#user-detail-modal .ud-pick-line, #match-breakdown-modal .ud-meta').forEach(function(line){
+      line.querySelectorAll('.ud-meta-sep').forEach(function(sep){
+        var next = sep.nextElementSibling;
+        while(next && isHidden(next)){
+          next = next.nextElementSibling;
+        }
+        sep.style.display = next ? '' : 'none';
+      });
+    });
+  }
+
+  function runLater(){
+    setTimeout(cleanupSeparators, 0);
+    setTimeout(cleanupSeparators, 80);
+  }
+
+  var oldRenderUd = window.renderUd;
+  if(typeof oldRenderUd === 'function' && !oldRenderUd.__edsonSepSafeWrapped){
+    var wrappedUd = function(){
+      var ret = oldRenderUd.apply(this, arguments);
+      runLater();
+      return ret;
+    };
+    wrappedUd.__edsonSepSafeWrapped = true;
+    window.renderUd = wrappedUd;
+  }
+
+  var oldRenderMatchBreakdown = window.renderMatchBreakdown;
+  if(typeof oldRenderMatchBreakdown === 'function' && !oldRenderMatchBreakdown.__edsonSepSafeWrapped){
+    var wrappedMb = function(){
+      var ret = oldRenderMatchBreakdown.apply(this, arguments);
+      runLater();
+      return ret;
+    };
+    wrappedMb.__edsonSepSafeWrapped = true;
+    window.renderMatchBreakdown = wrappedMb;
+  }
+
+  document.addEventListener('click', runLater, true);
+  document.addEventListener('input', runLater, true);
+
   if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', start);
+    document.addEventListener('DOMContentLoaded', runLater);
   }else{
-    start();
+    runLater();
   }
 })();
 </script>
