@@ -8855,7 +8855,10 @@ function renderUdPartidos(){
     const pickTags = [];
     if(pick){
       const myPick = viewerPicks && viewerPicks[m.id];
-      if(myPick && myPick.home === pick.home && myPick.away === pick.away) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
+      // Evita bolinha/separador sobrando no próprio detalhe:
+      // quando o usuário está vendo o próprio card, não geramos a tag "= Vos".
+      const viewingOwnDetail = !!(udState && udState.stats && udState.stats.isMe);
+      if(!viewingOwnDetail && myPick && myPick.home === pick.home && myPick.away === pick.away) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
       const scoreCounts = {};
       Object.values(allPicks).forEach(userPicks => {
         const pp = userPicks && userPicks[m.id];
@@ -9403,22 +9406,42 @@ function renderMatchBreakdown(){
 
   if(view === 'list'){
     let rows = parts;
-    if(mbState.filterScore){
-      rows = parts.filter(p => `${p.pick.home}:${p.pick.away}` === mbState.filterScore);
-    }
-    if(String(mbState.searchTerm || '').trim()){
-      const q = normalizeMbScoreSearch(mbState.searchTerm);
-      rows = rows.filter(p => normalizeMbScoreSearch(`${p.pick.home}:${p.pick.away}`).includes(q));
-    }
-    // El filtro por marcador solo sirve mientras se espera el resultado (chips en mb-tabs).
-    // Con resultado ya cargado no se muestra esa barra de "Palpites".
-    const chipBar = buildMbScoreSearchRow();
+
     const scoreCounts = {};
     parts.forEach(pp => {
       const sc = `${pp.pick.home}:${pp.pick.away}`;
       scoreCounts[sc] = (scoreCounts[sc] || 0) + 1;
     });
     const maxScoreCount = Object.values(scoreCounts).length ? Math.max(...Object.values(scoreCounts)) : 0;
+
+    if(mbState.filterScore){
+      rows = parts.filter(p => `${p.pick.home}:${p.pick.away}` === mbState.filterScore);
+    }
+
+    if(String(mbState.searchTerm || '').trim()){
+      const q = String(mbState.searchTerm || '').trim();
+
+      // Busca real: nome, placar/pronóstico, pontos, posição e badges.
+      // Antes filtrava só por marcador, por isso parecia que o campo não funcionava.
+      if(typeof matchMbParticipantSearch === 'function'){
+        rows = rows.filter(p => matchMbParticipantSearch(p, q, scoreCounts, maxScoreCount, pending));
+      }else{
+        const nq = normalizeMbScoreSearch(q);
+        rows = rows.filter(p => normalizeMbScoreSearch([
+          p.name,
+          `${p.pick.home}:${p.pick.away}`,
+          `${p.pick.home}x${p.pick.away}`,
+          `${p.totalScore || 0} pts`,
+          `${p.pos}º`,
+          !pending && p.type === 'exact' ? 'Exacto' : '',
+          maxScoreCount > 1 && scoreCounts[`${p.pick.home}:${p.pick.away}`] === maxScoreCount ? 'Más palpitado' : ''
+        ].join(' ')).includes(nq));
+      }
+    }
+
+    // El filtro por marcador solo sirve mientras se espera el resultado (chips en mb-tabs).
+    // Con resultado ya cargado no se muestra esa barra de "Palpites".
+    const chipBar = buildMbScoreSearchRow();
     const rowsHtml = rows.length
       ? rows.map(p => {
           const mp = mbState.myPick;
@@ -18981,3 +19004,234 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }catch(e){}
 })();
 </script>
+
+
+<script id="edson-remove-separador-final-vazio-20260629">
+(function(){
+  if(window.__edsonRemoveSeparadorFinalVazio) return;
+  window.__edsonRemoveSeparadorFinalVazio = true;
+
+  function isHidden(el){
+    if(!el) return true;
+    try{
+      var st = window.getComputedStyle(el);
+      return st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0';
+    }catch(e){
+      return !!(el.style && el.style.display === 'none');
+    }
+  }
+
+  function cleanupLine(line){
+    if(!line) return;
+
+    Array.prototype.slice.call(line.querySelectorAll('.ud-meta-sep')).forEach(function(sep){
+      var next = sep.nextElementSibling;
+
+      // Pula elementos escondidos, como "= Vos" quando não deve aparecer.
+      while(next && isHidden(next)){
+        next = next.nextElementSibling;
+      }
+
+      // Se não existe nada visível depois da bolinha, ela não deve aparecer.
+      if(!next){
+        sep.style.display = 'none';
+      }else{
+        sep.style.display = '';
+      }
+    });
+  }
+
+  function cleanup(){
+    document.querySelectorAll('#user-detail-modal .ud-pick-line, #match-breakdown-modal .ud-meta').forEach(cleanupLine);
+  }
+
+  var oldRenderUd = window.renderUd;
+  if(typeof oldRenderUd === 'function' && !oldRenderUd.__edsonSepCleanupWrapped){
+    var wrappedRenderUd = function(){
+      var ret = oldRenderUd.apply(this, arguments);
+      setTimeout(cleanup, 0);
+      setTimeout(cleanup, 80);
+      return ret;
+    };
+    wrappedRenderUd.__edsonSepCleanupWrapped = true;
+    window.renderUd = wrappedRenderUd;
+  }
+
+  var oldRenderMatchBreakdown = window.renderMatchBreakdown;
+  if(typeof oldRenderMatchBreakdown === 'function' && !oldRenderMatchBreakdown.__edsonSepCleanupWrapped){
+    var wrappedRenderMatchBreakdown = function(){
+      var ret = oldRenderMatchBreakdown.apply(this, arguments);
+      setTimeout(cleanup, 0);
+      setTimeout(cleanup, 80);
+      return ret;
+    };
+    wrappedRenderMatchBreakdown.__edsonSepCleanupWrapped = true;
+    window.renderMatchBreakdown = wrappedRenderMatchBreakdown;
+  }
+
+  document.addEventListener('DOMContentLoaded', cleanup);
+  document.addEventListener('click', function(){ setTimeout(cleanup, 80); }, true);
+
+  var observer = new MutationObserver(function(){ cleanup(); });
+  function startObserver(){
+    var a = document.getElementById('user-detail-modal');
+    var b = document.getElementById('match-breakdown-modal');
+    if(a) observer.observe(a, {childList:true, subtree:true, attributes:true, attributeFilter:['style','class']});
+    if(b) observer.observe(b, {childList:true, subtree:true, attributes:true, attributeFilter:['style','class']});
+    cleanup();
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', startObserver);
+  }else{
+    startObserver();
+  }
+})();
+</script>
+
+
+<style id="edson-busca-puntos-foco-funcionando-20260629">
+  /*
+    Correção da busca no modal "Puntos por participante":
+    mantém o input clicável/focável no celular e não deixa o toque vazar para a lista.
+  */
+  #match-breakdown-modal .mb-score-search-row,
+  #match-breakdown-modal .mb-score-search,
+  #match-breakdown-modal .mb-score-search-input,
+  #match-breakdown-modal .mb-score-search-clear{
+    pointer-events:auto!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-input{
+    -webkit-user-select:text!important;
+    user-select:text!important;
+    caret-color:var(--green)!important;
+  }
+
+  #match-breakdown-modal .mb-score-search:focus-within{
+    border-color:rgba(0,155,84,.42)!important;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,155,84,.16),
+      0 2px 8px rgba(15,23,42,.08)!important;
+  }
+</style>
+
+<script id="edson-busca-puntos-funcionando-definitivo-20260629">
+(function(){
+  if(window.__edsonBuscaPuntosFuncionandoDefinitivo) return;
+  window.__edsonBuscaPuntosFuncionandoDefinitivo = true;
+
+  function escAttr(v){
+    return String(v || '')
+      .replace(/&/g,'&amp;')
+      .replace(/"/g,'&quot;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
+
+  // Linha de busca em espanhol e com eventos seguros para mobile.
+  window.buildMbScoreSearchRow = function(){
+    var value = (window.mbState && mbState.searchTerm) ? mbState.searchTerm : '';
+    return `
+      <div class="mb-score-search-row">
+        <div class="mb-score-search" onclick="var i=this.querySelector('input'); if(i) i.focus({preventScroll:true});">
+          <span class="mb-score-search-ico" aria-hidden="true"></span>
+          <input class="mb-score-search-input"
+                 type="search"
+                 inputmode="search"
+                 autocomplete="off"
+                 autocapitalize="none"
+                 spellcheck="false"
+                 placeholder="Buscar nombre, pronóstico o puntos..."
+                 value="${escAttr(value)}"
+                 oninput="setMbScoreSearchTerm(this.value)"
+                 onclick="event.stopPropagation(); this.focus({preventScroll:true});"
+                 onpointerdown="event.stopPropagation();">
+          <button class="mb-score-search-clear"
+                  type="button"
+                  onclick="event.stopPropagation(); setMbScoreSearchTerm('');"
+                  aria-label="Limpiar búsqueda">×</button>
+        </div>
+      </div>`;
+  };
+
+  // Re-renderiza filtrando, mas devolve o foco ao input para o teclado não fechar no celular.
+  window.setMbScoreSearchTerm = function(value){
+    var cursor = String(value || '').length;
+
+    if(window.mbState){
+      mbState.searchActive = true;
+      mbState.filterScore = null;
+      mbState.searchTerm = value || '';
+    }
+
+    if(typeof window.renderMatchBreakdown === 'function'){
+      window.renderMatchBreakdown();
+    }
+
+    requestAnimationFrame(function(){
+      var input = document.querySelector('#match-breakdown-modal .mb-score-search-input');
+      if(input){
+        try{ input.focus({preventScroll:true}); }catch(e){ input.focus(); }
+        try{ input.setSelectionRange(cursor, cursor); }catch(e){}
+      }
+    });
+  };
+
+  // Segurança: se algum inline antigo falhar, este listener garante a busca.
+  document.addEventListener('input', function(event){
+    var input = event.target && event.target.closest
+      ? event.target.closest('#match-breakdown-modal .mb-score-search-input')
+      : null;
+
+    if(!input) return;
+
+    if(window.mbState && mbState.searchTerm !== input.value){
+      window.setMbScoreSearchTerm(input.value);
+    }
+  }, true);
+
+  document.addEventListener('click', function(event){
+    var box = event.target && event.target.closest
+      ? event.target.closest('#match-breakdown-modal .mb-score-search')
+      : null;
+
+    if(!box) return;
+
+    event.stopPropagation();
+    var input = box.querySelector('.mb-score-search-input');
+    if(input){
+      try{ input.focus({preventScroll:true}); }catch(e){ input.focus(); }
+    }
+  }, true);
+
+  document.addEventListener('pointerdown', function(event){
+    if(event.target && event.target.closest && event.target.closest('#match-breakdown-modal .mb-score-search')){
+      event.stopPropagation();
+    }
+  }, true);
+})();
+</script>
+
+
+<style id="edson-separador-meu-card-cinza-20260629">
+  /*
+    No card do usuário logado, mantém nome e pontos verdes,
+    mas o separador/bolinha fica cinza igual aos demais participantes.
+  */
+  #match-breakdown-modal .ud-row.mine .ud-name-sep,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-name-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-name-sep{
+    color:#9CA3AF!important;
+    font-weight:700!important;
+  }
+
+  #match-breakdown-modal .ud-row.mine .ud-meta-sep,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-meta-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-meta-sep{
+    color:#9CA3AF!important;
+    font-weight:700!important;
+  }
+</style>
