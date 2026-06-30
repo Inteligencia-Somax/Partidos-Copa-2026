@@ -19964,3 +19964,167 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   document.addEventListener('input', function(){ setTimeout(apply, 40); }, true);
 })();
 </script>
+
+<style id="edson-meu-card-fase-grupo-verde-decisao-laranja-20260630-final">
+  /*
+    Regra final solicitada:
+    No modal "Puntos por participante", a linha do usuário logado muda por fase:
+    - Fase de grupos: verde.
+    - Decisões / mata-mata: laranja.
+    Mantém a pontuação geral da linha de baixo em cinza para não confundir com os pontos do jogo.
+  */
+
+  /* FASE DE GRUPOS: meu card em verde */
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine.my-green-card,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine:not(.exact),
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine.my-green-card:not(.exact){
+    background:rgba(0,155,84,.08)!important;
+    border-color:rgba(0,155,84,.30)!important;
+    border-radius:12px!important;
+    box-shadow:inset 0 0 0 1px rgba(0,155,84,.18)!important;
+  }
+
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .mb-pos,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-teams,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-participant-name,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-pts,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-pts.zero,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-pts.win,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-pts.exact{
+    color:var(--green)!important;
+    font-weight:900!important;
+  }
+
+  /* DECISÕES / MATA-MATA: meu card em laranja */
+  body #match-breakdown-modal.x2-mode .ud-row.mine,
+  body #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card,
+  body #match-breakdown-modal.x2-mode .ud-row.mine:not(.exact),
+  body #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card:not(.exact){
+    background:rgba(245,158,11,.10)!important;
+    border-color:rgba(245,158,11,.40)!important;
+    border-radius:12px!important;
+    box-shadow:inset 0 0 0 1px rgba(245,158,11,.24)!important;
+  }
+
+  body #match-breakdown-modal.x2-mode .ud-row.mine .mb-pos,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-teams,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-participant-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.zero,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.win,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.exact{
+    color:#F59E0B!important;
+    font-weight:900!important;
+  }
+
+  /* Pontuação geral e informações secundárias continuam cinza, como nos demais participantes */
+  body #match-breakdown-modal .ud-row.mine .ud-meta,
+  body #match-breakdown-modal .ud-row.mine .ud-pick-text,
+  body #match-breakdown-modal .ud-row.mine .ud-pick-registered,
+  body #match-breakdown-modal .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal .ud-row.mine .ud-pending-score,
+  body #match-breakdown-modal .ud-row.mine .ud-pending-score-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-text,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-registered,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score-name{
+    color:#6B7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+  }
+
+  body #match-breakdown-modal .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal .ud-row.mine .ud-meta-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep{
+    color:#9CA3AF!important;
+    font-weight:700!important;
+  }
+</style>
+
+<script id="edson-forca-meu-card-fase-grupo-verde-decisao-laranja-20260630-final">
+(function(){
+  if(window.__edsonMeuCardFaseGrupoVerdeDecisaoLaranjaFinal) return;
+  window.__edsonMeuCardFaseGrupoVerdeDecisaoLaranjaFinal = true;
+
+  function isDecisiveModal(){
+    try{
+      var modal = document.getElementById('match-breakdown-modal');
+      if(!modal) return false;
+      if(modal.classList.contains('x2-mode')) return true;
+      if(window.mbState && mbState.m){
+        return typeof edsonIsFaseDecisivaVisual === 'function'
+          ? edsonIsFaseDecisivaVisual(mbState.m)
+          : !!mbState.m.x2;
+      }
+    }catch(e){}
+    return false;
+  }
+
+  function apply(){
+    var modal = document.getElementById('match-breakdown-modal');
+    if(!modal) return;
+
+    var decisive = isDecisiveModal();
+    modal.classList.toggle('x2-mode', decisive);
+
+    var mainColor = decisive ? '#F59E0B' : 'var(--green)';
+    var bgColor = decisive ? 'rgba(245,158,11,.10)' : 'rgba(0,155,84,.08)';
+    var borderColor = decisive ? 'rgba(245,158,11,.40)' : 'rgba(0,155,84,.30)';
+    var insetColor = decisive ? 'rgba(245,158,11,.24)' : 'rgba(0,155,84,.18)';
+
+    modal.querySelectorAll('.ud-row.mine').forEach(function(row){
+      row.style.setProperty('background', bgColor, 'important');
+      row.style.setProperty('border-color', borderColor, 'important');
+      row.style.setProperty('border-radius', '12px', 'important');
+      row.style.setProperty('box-shadow', 'inset 0 0 0 1px ' + insetColor, 'important');
+
+      row.querySelectorAll('.mb-pos, .ud-teams, .ud-participant-name, .ud-pts, .ud-pts.zero, .ud-pts.win, .ud-pts.exact').forEach(function(el){
+        el.style.setProperty('color', mainColor, 'important');
+        el.style.setProperty('font-weight', '900', 'important');
+      });
+
+      row.querySelectorAll('.ud-meta, .ud-pick-text, .ud-pick-registered, .ud-pick-points-inline, .ud-pending-score, .ud-pending-score-name').forEach(function(el){
+        el.style.setProperty('color', '#6B7280', 'important');
+        el.style.setProperty('font-size', '11px', 'important');
+        el.style.setProperty('font-weight', '400', 'important');
+      });
+
+      row.querySelectorAll('.ud-name-sep, .ud-meta-sep').forEach(function(el){
+        el.style.setProperty('color', '#9CA3AF', 'important');
+        el.style.setProperty('font-weight', '700', 'important');
+      });
+    });
+  }
+
+  var oldRender = window.renderMatchBreakdown;
+  if(typeof oldRender === 'function' && !oldRender.__edsonMeuCardFaseFinalWrapped){
+    var wrapped = function(){
+      var ret = oldRender.apply(this, arguments);
+      setTimeout(apply, 0);
+      setTimeout(apply, 80);
+      return ret;
+    };
+    wrapped.__edsonMeuCardFaseFinalWrapped = true;
+    window.renderMatchBreakdown = wrapped;
+  }
+
+  var oldOpen = window.openMatchBreakdown;
+  if(typeof oldOpen === 'function' && !oldOpen.__edsonMeuCardFaseFinalWrapped){
+    var wrappedOpen = function(){
+      var ret = oldOpen.apply(this, arguments);
+      setTimeout(apply, 0);
+      setTimeout(apply, 80);
+      return ret;
+    };
+    wrappedOpen.__edsonMeuCardFaseFinalWrapped = true;
+    window.openMatchBreakdown = wrappedOpen;
+  }
+
+  document.addEventListener('click', function(){ setTimeout(apply, 80); }, true);
+  document.addEventListener('input', function(){ setTimeout(apply, 40); }, true);
+})();
+</script>
