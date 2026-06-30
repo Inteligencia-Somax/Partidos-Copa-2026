@@ -19524,3 +19524,112 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     font-weight:700!important;
   }
 </style>
+
+
+<style id="edson-regra-final-meu-card-grupo-verde-x2-laranja-20260629">
+  /*
+    Regra final do card do usuário no modal "Puntos por participante":
+    - Fase de grupos: colocação, nome e pontuação do jogo em verde.
+    - Fase decisiva: colocação, nome e pontuação do jogo em laranja/dourado.
+    - Pontuação geral da linha de baixo, ex.: 753 pts, sempre cinza normal.
+    - Bolinhas/separadores sempre cinza.
+  */
+
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .mb-pos,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-participant-name,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine .ud-pts{
+    color:var(--green)!important;
+    font-weight:900!important;
+  }
+
+  body #match-breakdown-modal.x2-mode .ud-row.mine .mb-pos,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-participant-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts{
+    color:#F59E0B!important;
+    font-weight:900!important;
+  }
+
+  body #match-breakdown-modal .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline{
+    color:#6B7280!important;
+    font-weight:700!important;
+  }
+
+  body #match-breakdown-modal .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal .ud-row.mine .ud-meta-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep{
+    color:#9CA3AF!important;
+    font-weight:700!important;
+  }
+</style>
+
+<script id="edson-regra-final-meu-card-inline-20260629">
+(function(){
+  if(window.__edsonRegraFinalMeuCardInline) return;
+  window.__edsonRegraFinalMeuCardInline = true;
+
+  function applyMyCardColorRule(){
+    var modal = document.getElementById('match-breakdown-modal');
+    if(!modal) return;
+
+    var isX2 = modal.classList.contains('x2-mode');
+    var mainColor = isX2 ? '#F59E0B' : 'var(--green)';
+
+    modal.querySelectorAll('.ud-row.mine').forEach(function(row){
+      row.querySelectorAll('.mb-pos, .ud-participant-name, .ud-pts').forEach(function(el){
+        el.style.setProperty('color', mainColor, 'important');
+        el.style.setProperty('font-weight', '900', 'important');
+      });
+
+      row.querySelectorAll('.ud-pick-points-inline').forEach(function(el){
+        el.style.setProperty('color', '#6B7280', 'important');
+        el.style.setProperty('font-weight', '700', 'important');
+      });
+
+      row.querySelectorAll('.ud-name-sep, .ud-meta-sep').forEach(function(el){
+        el.style.setProperty('color', '#9CA3AF', 'important');
+        el.style.setProperty('font-weight', '700', 'important');
+      });
+    });
+  }
+
+  var oldRenderMatchBreakdown = window.renderMatchBreakdown;
+  if(typeof oldRenderMatchBreakdown === 'function' && !oldRenderMatchBreakdown.__edsonMyCardColorRuleWrapped){
+    var wrapped = function(){
+      var ret = oldRenderMatchBreakdown.apply(this, arguments);
+      setTimeout(applyMyCardColorRule, 0);
+      setTimeout(applyMyCardColorRule, 80);
+      return ret;
+    };
+    wrapped.__edsonMyCardColorRuleWrapped = true;
+    window.renderMatchBreakdown = wrapped;
+  }
+
+  document.addEventListener('click', function(){
+    setTimeout(applyMyCardColorRule, 80);
+  }, true);
+
+  document.addEventListener('input', function(){
+    setTimeout(applyMyCardColorRule, 40);
+  }, true);
+
+  var observer = new MutationObserver(function(){
+    applyMyCardColorRule();
+  });
+
+  function start(){
+    var modal = document.getElementById('match-breakdown-modal');
+    if(modal){
+      observer.observe(modal, {childList:true, subtree:true, attributes:true, attributeFilter:['class','style']});
+      applyMyCardColorRule();
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', start);
+  }else{
+    start();
+  }
+})();
+</script>
