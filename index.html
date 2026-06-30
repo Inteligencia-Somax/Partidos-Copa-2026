@@ -8756,6 +8756,14 @@ function openUserDetail(name){
     return { pts: calc.pts, type: calc.type, scored: calc.pts > 0, match: m };
   });
 
+  // Mejor posición histórica del participante dentro del bolão.
+  // Considera la posición oficial después de cada partido ya disputado y guarda la mejor (menor número).
+  let bestPosition = null;
+  playedMatches.forEach(m => {
+    const pos = getUserPositionAfterMatch(name, m);
+    if(pos && (!bestPosition || pos < bestPosition)) bestPosition = pos;
+  });
+
   let posDelta = null;
   const lastRound = playedMatches.length ? getRoundLabel(playedMatches[0]) : null;
   const lastDate = playedMatches.length ? playedMatches[0].date : null; // día más reciente disputado
@@ -8771,7 +8779,7 @@ function openUserDetail(name){
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === currentUser,
       aprov, exact: typeCounts.exact, media, typeCounts, played: playedMatches.length,
-      bestDay, suFuerte, bestStreak, form, posDelta, lastRound, lastDate, best
+      bestDay, suFuerte, bestStreak, form, bestPosition, posDelta, lastRound, lastDate, best
     }
   };
 
@@ -8892,14 +8900,17 @@ function renderUdResumen(){
     else if(rachaOpen) html += renderUdStreakDetail();
   }
 
-  if(s.form.length){
-    const dots = s.form.map(f => {
-      /* Forma do detalhe: verde quando pontuou, vermelho quando não pontuou. */
-      const dotColor = f.scored ? 'var(--green)' : 'var(--red)';
-      return `<span class="ud-dot ${f.scored?'on':'off'}" style="background:${dotColor}!important;opacity:1" title="${f.pts} pts"></span>`;
-    }).join('');
-    html += `<div class="ud-form"><span class="ud-form-lbl">Forma (últimos ${s.form.length})</span><div class="ud-form-dots">${dots}</div></div>`;
-  }
+  const dots = s.form.length ? s.form.map(f => {
+    /* Forma do detalhe: verde quando pontuou, vermelho quando não pontuou. */
+    const dotColor = f.scored ? 'var(--green)' : 'var(--red)';
+    return `<span class="ud-dot ${f.scored?'on':'off'}" style="background:${dotColor}!important;opacity:1" title="${f.pts} pts"></span>`;
+  }).join('') : '<span class="ud-empty-mini">–</span>';
+
+  html += `<div class="ud-cards ud-cards-extra">
+    <div class="ud-card ud-card-form"><div class="ud-card-num ud-card-form-dots">${dots}</div><div class="ud-card-lbl">Forma (últimos ${s.form.length || 0})</div></div>
+    <div class="ud-card"><div class="ud-card-num">${s.bestPosition ? s.bestPosition + 'º' : '–'}</div><div class="ud-card-lbl">Mejor posición</div></div>
+  </div>`;
+
   html += renderUdAnalisis();
   return html;
 }
@@ -20997,3 +21008,75 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 })();
 </script>
+
+
+<!-- AJUSTE 20260630: resumo do participante com Forma em card + Mejor posición e sombra/alinhamento dos filtros -->
+<style id="edson-user-summary-cards-and-floating-shadow-final-20260630">
+  #user-detail-modal .ud-cards-extra{
+    margin-top:9px!important;
+  }
+  #user-detail-modal .ud-card-form .ud-card-num,
+  #user-detail-modal .ud-card-form-dots{
+    min-height:20px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:7px!important;
+    line-height:1!important;
+  }
+  #user-detail-modal .ud-card-form .ud-dot{
+    width:14px!important;
+    height:14px!important;
+    flex:0 0 14px!important;
+  }
+  #user-detail-modal .ud-empty-mini{
+    font-size:20px!important;
+    font-weight:900!important;
+    color:var(--text)!important;
+    line-height:1!important;
+  }
+
+  /* Sombra mais evidente e Limpiar alinhado nas duas janelas */
+  #user-detail-modal .ud-floating-filters,
+  #match-breakdown-modal .mb-floating-filters{
+    align-items:center!important;
+  }
+  #user-detail-modal .ud-floating-filters-slot::before,
+  #match-breakdown-modal .mb-floating-filters-slot::before{
+    height:104px!important;
+    background:linear-gradient(to top,rgba(0,0,0,.40),rgba(0,0,0,.23) 54%,rgba(0,0,0,0))!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter,
+  #user-detail-modal .ud-floating-filters .ud-float-clear,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    align-self:center!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    vertical-align:middle!important;
+    transform:none!important;
+    top:auto!important;
+    position:relative!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter span,
+  #user-detail-modal .ud-floating-filters .ud-float-clear,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    box-shadow:0 11px 28px rgba(0,0,0,.42),0 3px 9px rgba(0,0,0,.25)!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter.active span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span{
+    box-shadow:0 0 0 2px rgba(0,155,84,.30),0 12px 30px rgba(0,0,0,.46),0 3px 10px rgba(0,0,0,.27)!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-clear,
+  #user-detail-modal .ud-floating-filters .ud-float-clear.active,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear.active{
+    border:1px solid #D1D5DB!important;
+    outline:none!important;
+    background:#FFFFFF!important;
+    color:#6B7280!important;
+    box-shadow:0 11px 28px rgba(0,0,0,.42),0 3px 9px rgba(0,0,0,.25)!important;
+  }
+</style>
