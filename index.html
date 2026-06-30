@@ -22500,3 +22500,218 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 </style>
 
+
+<!-- AJUSTE FINAL REAL 20260630: filtros do Puntos por participante por badge visível na linha -->
+<script id="edson-mb-visible-row-filter-final-20260630">
+(function(){
+  if(window.__edsonMbVisibleRowFilterFinalInstalled) return;
+  window.__edsonMbVisibleRowFilterFinalInstalled = true;
+
+  var active = [];
+  var currentMatch = null;
+
+  function norm(s){
+    return String(s || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase();
+  }
+
+  function getMatchKey(){
+    try{
+      if(typeof mbState !== 'undefined' && mbState && mbState.m) return String(mbState.m.id);
+    }catch(e){}
+    return '';
+  }
+
+  function syncMatch(){
+    var k = getMatchKey();
+    if(k && k !== currentMatch){
+      currentMatch = k;
+      active = [];
+    }
+  }
+
+  function rows(){
+    var body = document.getElementById('mb-body');
+    if(!body) return [];
+    return Array.prototype.slice.call(body.querySelectorAll(':scope > .ud-row')).filter(function(row){
+      var t = norm(row.textContent);
+      return t.indexOf('palpite:') >= 0 || t.indexOf('sin palpite') >= 0;
+    });
+  }
+
+  function hasExact(row){
+    return !!row.querySelector('.ud-exact-tag') || norm(row.textContent).indexOf('exacto') >= 0;
+  }
+
+  function hasMost(row){
+    return !!row.querySelector('.ud-most-tag') || norm(row.textContent).indexOf('mas palpitado') >= 0;
+  }
+
+  function hasMine(row){
+    return !!row.querySelector('.ud-mine-tag') || norm(row.textContent).indexOf('= vos') >= 0;
+  }
+
+  function passes(row, key){
+    if(key === 'exact') return hasExact(row);
+    if(key === 'most') return hasMost(row);
+    if(key === 'mine') return hasMine(row);
+    return true;
+  }
+
+  function updateButtons(){
+    var wrap = document.querySelector('#match-breakdown-modal .mb-floating-filters');
+    if(!wrap) return;
+
+    wrap.querySelectorAll('.mb-float-filter').forEach(function(btn){
+      var key = btn.getAttribute('data-filter') || btn.getAttribute('data-filter-key');
+      var on = active.indexOf(key) >= 0;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
+    wrap.querySelectorAll('.mb-float-clear').forEach(function(btn){
+      btn.style.display = 'none';
+      btn.classList.remove('active');
+      btn.setAttribute('aria-pressed','false');
+    });
+  }
+
+  function apply(){
+    syncMatch();
+
+    var body = document.getElementById('mb-body');
+    if(!body) return;
+
+    var old = body.querySelector('.mb-filtered-empty-visible-final');
+    if(old) old.remove();
+
+    var list = rows();
+    var visible = 0;
+
+    list.forEach(function(row){
+      // Multi-seletor com regra E: se marcar Más palpitado + Exacto, precisa ter os dois badges.
+      var ok = !active.length || active.every(function(key){ return passes(row, key); });
+      row.style.display = ok ? '' : 'none';
+      row.classList.toggle('mb-hidden-by-visible-filter', !ok);
+      if(ok) visible++;
+    });
+
+    if(active.length && list.length && visible === 0){
+      var empty = document.createElement('div');
+      empty.className = 'ud-empty mb-filtered-empty-visible-final';
+      empty.textContent = 'No hay participantes con los filtros seleccionados.';
+      body.appendChild(empty);
+    }
+
+    updateButtons();
+  }
+
+  function doToggle(key, ev){
+    if(ev){
+      if(ev.__edsonMbVisibleFilterHandled) return false;
+      ev.__edsonMbVisibleFilterHandled = true;
+      ev.preventDefault();
+      ev.stopPropagation();
+      if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    }
+
+    syncMatch();
+
+    var idx = active.indexOf(key);
+    if(idx >= 0) active.splice(idx, 1);
+    else active.push(key);
+
+    apply();
+    return false;
+  }
+
+  window.toggleMbTagFilter = doToggle;
+  window.clearMbTagFilters = function(ev){
+    if(ev){
+      if(ev.__edsonMbVisibleFilterHandled) return false;
+      ev.__edsonMbVisibleFilterHandled = true;
+      ev.preventDefault();
+      ev.stopPropagation();
+      if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    }
+    active = [];
+    apply();
+    return false;
+  };
+
+  window.renderMbFloatingFiltersHtml = function(){
+    syncMatch();
+    function cls(key){ return active.indexOf(key) >= 0 ? ' active' : ''; }
+    return '<div class="mb-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de participantes">' +
+      '<button type="button" data-filter="mine" data-filter-key="mine" class="mb-float-filter' + cls('mine') + '" aria-pressed="' + (active.indexOf('mine') >= 0) + '"><span class="ud-mine-tag">= Vos</span></button>' +
+      '<button type="button" data-filter="most" data-filter-key="most" class="mb-float-filter' + cls('most') + '" aria-pressed="' + (active.indexOf('most') >= 0) + '"><span class="ud-most-tag">Más palpitado</span></button>' +
+      '<button type="button" data-filter="exact" data-filter-key="exact" class="mb-float-filter' + cls('exact') + '" aria-pressed="' + (active.indexOf('exact') >= 0) + '"><span class="ud-exact-tag">Exacto</span></button>' +
+    '</div>';
+  };
+
+  document.addEventListener('click', function(ev){
+    var btn = ev.target && ev.target.closest ? ev.target.closest('#match-breakdown-modal .mb-float-filter') : null;
+    if(!btn) return;
+
+    var key = btn.getAttribute('data-filter') || btn.getAttribute('data-filter-key');
+    if(!key) return;
+
+    return doToggle(key, ev);
+  }, true);
+
+  // Sempre que a lista for refeita por busca, troca de aba ou troca de jogo, reaplica o filtro visual.
+  var oldRender = window.renderMatchBreakdown;
+  if(typeof oldRender === 'function' && !oldRender.__edsonVisibleRowFilterWrapped){
+    window.renderMatchBreakdown = function(){
+      var result = oldRender.apply(this, arguments);
+      setTimeout(apply, 0);
+      return result;
+    };
+    window.renderMatchBreakdown.__edsonVisibleRowFilterWrapped = true;
+    try{ renderMatchBreakdown = window.renderMatchBreakdown; }catch(e){}
+  }
+
+  var obs = null;
+  function startObs(){
+    var body = document.getElementById('mb-body');
+    if(!body || obs) return;
+    obs = new MutationObserver(function(){
+      clearTimeout(window.__edsonMbVisibleFilterTimer);
+      window.__edsonMbVisibleFilterTimer = setTimeout(apply, 40);
+    });
+    obs.observe(body, {childList:true, subtree:false});
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(function(){ startObs(); apply(); }, 200); });
+  setTimeout(function(){ startObs(); apply(); }, 600);
+})();
+</script>
+
+<style id="edson-mb-visible-row-filter-final-visual-20260630">
+  #match-breakdown-modal .mb-floating-filters{
+    justify-content:center!important;
+    gap:16px!important;
+  }
+
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    display:none!important;
+  }
+
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span{
+    font-size:12px!important;
+    opacity:.74!important;
+    transform:scale(1)!important;
+    transform-origin:center center!important;
+    filter:saturate(.88) contrast(.98)!important;
+    transition:transform .16s ease, opacity .16s ease, filter .16s ease, box-shadow .16s ease!important;
+  }
+
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span{
+    opacity:1!important;
+    transform:scale(1.08)!important;
+    filter:saturate(1.08) contrast(1)!important;
+  }
+</style>
+
