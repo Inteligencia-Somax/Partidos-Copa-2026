@@ -19633,3 +19633,147 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 })();
 </script>
+
+
+<style id="edson-fundo-colorido-so-exacto-20260629">
+  /*
+    Regra final do fundo dos cards no modal "Puntos por participante":
+    - Fundo/borda colorida só quando o palpite foi Exacto.
+    - Se NÃO foi Exacto, o card do usuário não recebe fundo verde nem laranja.
+    - Fase de grupos + Exacto: fundo verde suave.
+    - Fase decisiva + Exacto: fundo laranja/dourado suave.
+    - Mantém cor de nome/colocação/pontos conforme a fase.
+  */
+
+  /* Usuário sem acerto exato: sem fundo colorido */
+  body #match-breakdown-modal .ud-row.mine:not(.exact),
+  body #match-breakdown-modal .ud-row.mine.my-green-card:not(.exact),
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine:not(.exact),
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine.my-green-card:not(.exact),
+  body #match-breakdown-modal.x2-mode .ud-row.mine:not(.exact),
+  body #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card:not(.exact){
+    background:#fff!important;
+    border-color:transparent!important;
+    box-shadow:none!important;
+  }
+
+  /* Grupo + Exacto: fundo verde */
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine.exact,
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine.my-green-card.exact{
+    background:rgba(0,155,84,.08)!important;
+    border-color:rgba(0,155,84,.32)!important;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,155,84,.20),
+      0 0 0 1px rgba(0,155,84,.08)!important;
+  }
+
+  /* Fase decisiva + Exacto: fundo laranja/dourado */
+  body #match-breakdown-modal.x2-mode .ud-row.mine.exact,
+  body #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card.exact{
+    background:rgba(245,158,11,.10)!important;
+    border-color:rgba(245,158,11,.38)!important;
+    box-shadow:
+      inset 0 0 0 1px rgba(245,158,11,.22),
+      0 0 0 1px rgba(245,158,11,.10)!important;
+  }
+
+  /*
+    Segurança extra para qualquer linha Exacto:
+    em fase de grupos, exacto pode ter fundo verde suave;
+    em fase decisiva, exacto pode ter fundo laranja suave.
+  */
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.exact{
+    background:rgba(0,155,84,.07)!important;
+    border-color:rgba(0,155,84,.24)!important;
+  }
+
+  body #match-breakdown-modal.x2-mode .ud-row.exact{
+    background:rgba(245,158,11,.09)!important;
+    border-color:rgba(245,158,11,.30)!important;
+  }
+
+  /* Mantém separadores e pontuação geral cinza */
+  body #match-breakdown-modal .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline{
+    color:#6B7280!important;
+    font-weight:700!important;
+  }
+
+  body #match-breakdown-modal .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal .ud-row.mine .ud-meta-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep{
+    color:#9CA3AF!important;
+    font-weight:700!important;
+  }
+</style>
+
+<script id="edson-fundo-colorido-so-exacto-inline-20260629">
+(function(){
+  if(window.__edsonFundoColoridoSoExacto) return;
+  window.__edsonFundoColoridoSoExacto = true;
+
+  function applyExactBackgroundRule(){
+    var modal = document.getElementById('match-breakdown-modal');
+    if(!modal) return;
+
+    var isX2 = modal.classList.contains('x2-mode');
+
+    modal.querySelectorAll('.ud-row.mine').forEach(function(row){
+      var exact = row.classList.contains('exact');
+
+      if(!exact){
+        row.style.setProperty('background', '#fff', 'important');
+        row.style.setProperty('border-color', 'transparent', 'important');
+        row.style.setProperty('box-shadow', 'none', 'important');
+      }else if(isX2){
+        row.style.setProperty('background', 'rgba(245,158,11,.10)', 'important');
+        row.style.setProperty('border-color', 'rgba(245,158,11,.38)', 'important');
+        row.style.setProperty('box-shadow', 'inset 0 0 0 1px rgba(245,158,11,.22), 0 0 0 1px rgba(245,158,11,.10)', 'important');
+      }else{
+        row.style.setProperty('background', 'rgba(0,155,84,.08)', 'important');
+        row.style.setProperty('border-color', 'rgba(0,155,84,.32)', 'important');
+        row.style.setProperty('box-shadow', 'inset 0 0 0 1px rgba(0,155,84,.20), 0 0 0 1px rgba(0,155,84,.08)', 'important');
+      }
+    });
+  }
+
+  var oldRenderMatchBreakdown = window.renderMatchBreakdown;
+  if(typeof oldRenderMatchBreakdown === 'function' && !oldRenderMatchBreakdown.__edsonExactBgWrapped){
+    var wrapped = function(){
+      var ret = oldRenderMatchBreakdown.apply(this, arguments);
+      setTimeout(applyExactBackgroundRule, 0);
+      setTimeout(applyExactBackgroundRule, 80);
+      return ret;
+    };
+    wrapped.__edsonExactBgWrapped = true;
+    window.renderMatchBreakdown = wrapped;
+  }
+
+  document.addEventListener('click', function(){
+    setTimeout(applyExactBackgroundRule, 80);
+  }, true);
+
+  document.addEventListener('input', function(){
+    setTimeout(applyExactBackgroundRule, 40);
+  }, true);
+
+  var observer = new MutationObserver(function(){
+    applyExactBackgroundRule();
+  });
+
+  function start(){
+    var modal = document.getElementById('match-breakdown-modal');
+    if(modal){
+      observer.observe(modal, {childList:true, subtree:true, attributes:true, attributeFilter:['class','style']});
+      applyExactBackgroundRule();
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', start);
+  }else{
+    start();
+  }
+})();
+</script>
