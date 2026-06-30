@@ -13498,6 +13498,103 @@ body.edson-matches-bg #summary-modal .summary-header{
 })();
 </script>
 
+
+<script id="final-return-to-user-detail-after-match-breakdown">
+(function(){
+  if(window.__somaxReturnUserDetailAfterMb) return;
+  window.__somaxReturnUserDetailAfterMb = true;
+
+  function getUserDetailModal(){
+    return document.getElementById('user-detail-modal');
+  }
+
+  function getMbModal(){
+    return document.getElementById('match-breakdown-modal');
+  }
+
+  function getDetailName(){
+    const modal = getUserDetailModal();
+    if(!modal) return '';
+    const title = modal.querySelector('.modal-match-label, .modal-header .modal-match-label');
+    return title ? String(title.textContent || '').trim() : '';
+  }
+
+  function rememberUserDetailContext(){
+    const modal = getUserDetailModal();
+    if(!modal || modal.style.display === 'none') return null;
+
+    const body = modal.querySelector('.ud-body');
+    const activeTab = modal.querySelector('.ud-tab.active');
+    const activeTabText = activeTab ? String(activeTab.textContent || '').trim() : '';
+
+    return {
+      name: getDetailName(),
+      scrollTop: body ? body.scrollTop : 0,
+      activeTabText: activeTabText
+    };
+  }
+
+  function restoreUserDetailContext(ctx){
+    if(!ctx || !ctx.name) return;
+
+    if(typeof window.openUserDetail === 'function'){
+      window.openUserDetail(ctx.name);
+    }
+
+    setTimeout(function(){
+      const modal = getUserDetailModal();
+      if(!modal) return;
+
+      modal.style.display = 'flex';
+
+      const body = modal.querySelector('.ud-body');
+      if(body && typeof ctx.scrollTop === 'number'){
+        body.scrollTop = ctx.scrollTop;
+      }
+
+      // If the detail view has been re-rendered, preserve the visible tab when possible.
+      if(ctx.activeTabText){
+        const tabs = Array.from(modal.querySelectorAll('.ud-tab'));
+        const target = tabs.find(t => String(t.textContent || '').trim() === ctx.activeTabText);
+        if(target && !target.classList.contains('active')){
+          try{ target.click(); }catch(e){}
+        }
+      }
+    }, 60);
+  }
+
+  const oldOpenMatchInfoFromUserDetail = window.openMatchInfoFromUserDetail;
+  if(typeof oldOpenMatchInfoFromUserDetail === 'function' && !oldOpenMatchInfoFromUserDetail.__somaxReturnWrapped){
+    const wrappedOpen = function(matchId){
+      window.__somaxMbReturnToUserDetail = rememberUserDetailContext();
+
+      // Keep original behavior: it closes detail and opens Puntos por participante.
+      return oldOpenMatchInfoFromUserDetail.apply(this, arguments);
+    };
+    wrappedOpen.__somaxReturnWrapped = true;
+    window.openMatchInfoFromUserDetail = wrappedOpen;
+  }
+
+  const oldCloseMatchBreakdown = window.closeMatchBreakdown;
+  if(typeof oldCloseMatchBreakdown === 'function' && !oldCloseMatchBreakdown.__somaxReturnWrapped){
+    const wrappedClose = function(){
+      const returnCtx = window.__somaxMbReturnToUserDetail || null;
+      window.__somaxMbReturnToUserDetail = null;
+
+      const ret = oldCloseMatchBreakdown.apply(this, arguments);
+
+      if(returnCtx && returnCtx.name){
+        restoreUserDetailContext(returnCtx);
+      }
+
+      return ret;
+    };
+    wrappedClose.__somaxReturnWrapped = true;
+    window.closeMatchBreakdown = wrappedClose;
+  }
+})();
+</script>
+
 </body>
 
 <!-- AJUSTE EDSON FINAL: corrigir corte da colocação/variação no modal Puntos por participante -->
