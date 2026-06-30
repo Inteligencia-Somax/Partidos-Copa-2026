@@ -8899,9 +8899,14 @@ function renderUdResumen(){
   }
 
   const dots = s.form.length ? s.form.map(f => {
-    /* Forma do detalhe: verde quando pontuou, vermelho quando não pontuou. */
+    /* Forma do detalhe:
+       - verde quando pontuou;
+       - vermelho quando não pontuou;
+       - quando foi Exacto, mantém o verde e adiciona brilho dourado/laranja. */
+    const isExact = f.type === 'exact';
     const dotColor = f.scored ? 'var(--green)' : 'var(--red)';
-    return `<span class="ud-dot ${f.scored?'on':'off'}" style="background:${dotColor}!important;opacity:1" title="${f.pts} pts"></span>`;
+    const dotCls = ['ud-dot', f.scored ? 'on' : 'off', isExact ? 'exact-glow' : ''].filter(Boolean).join(' ');
+    return `<span class="${dotCls}" style="background:${dotColor}!important;opacity:1" title="${f.pts} pts${isExact ? ' · Exacto' : ''}"></span>`;
   }).join('') : '<span class="ud-empty-mini">–</span>';
 
   html += `<div class="ud-cards ud-cards-extra">
@@ -20989,6 +20994,23 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       padding-right:6px!important;
       max-width:88px!important;
     }
+  }
+</style>
+
+
+<style id="edson-form-exact-gold-glow-20260630">
+  /* Ranking / Resumen: quando a bolinha da forma for Exacto,
+     mantém verde, mas adiciona brilho dourado/laranja. */
+  .ud-dot.exact-glow,
+  .rank-form-dot.exact-glow,
+  .form-dot.exact-glow{
+    background:var(--green)!important;
+    opacity:1!important;
+    box-shadow:
+      0 0 0 2px rgba(245,158,11,.72),
+      0 0 8px rgba(245,158,11,.82),
+      0 0 14px rgba(245,158,11,.42)!important;
+    outline:1px solid rgba(255,255,255,.75)!important;
   }
 </style>
 
