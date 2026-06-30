@@ -19477,3 +19477,50 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     font-weight:700!important;
   }
 </style>
+
+
+<style id="edson-ajuste-cor-card-eu-x2-pontos-linha-baixo-20260629">
+  /*
+    Ajuste fino do card do usuário no modal "Puntos por participante":
+    - Fase decisiva: nome, posição e pontos do jogo ficam laranja/dourado.
+    - A pontuação geral na linha de baixo, ex.: "753 pts", fica cinza normal igual aos demais.
+    - Separadores continuam cinza.
+  */
+
+  /* Fase decisiva: destaque principal em laranja */
+  #match-breakdown-modal.x2-mode .ud-row.mine .mb-pos,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-participant-name,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.win,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.exact{
+    color:#F59E0B!important;
+    font-weight:900!important;
+  }
+
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.exact{
+    background:rgba(245,158,11,.13)!important;
+    border-color:rgba(245,158,11,.35)!important;
+  }
+
+  /* Pontuação geral na linha de baixo volta para cinza normal */
+  #match-breakdown-modal .ud-row.mine .ud-pick-points-inline,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-pick-points-inline,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-pick-points-inline{
+    color:#6B7280!important;
+    font-weight:700!important;
+  }
+
+  /* Separadores/bolinhas sempre cinza */
+  #match-breakdown-modal .ud-row.mine .ud-name-sep,
+  #match-breakdown-modal .ud-row.mine .ud-meta-sep,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-name-sep,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-meta-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-name-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-meta-sep{
+    color:#9CA3AF!important;
+    font-weight:700!important;
+  }
+</style>
