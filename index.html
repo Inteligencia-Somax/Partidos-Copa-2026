@@ -23014,3 +23014,288 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 </style>
 
+
+<!-- AJUSTE 20260630: remover mal contato dos filtros do Puntos por participante -->
+<script id="edson-mb-filter-no-malcontato-20260630">
+(function(){
+  if(window.__edsonMbNoMalContatoInstalled) return;
+  window.__edsonMbNoMalContatoInstalled = true;
+
+  var active = [];
+  var currentMatch = null;
+  var lastTapAt = 0;
+  var lastTapKey = '';
+  var isApplying = false;
+
+  function norm(v){
+    return String(v || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function getMatchKey(){
+    try{
+      if(typeof mbState !== 'undefined' && mbState && mbState.m && mbState.m.id != null){
+        return String(mbState.m.id);
+      }
+    }catch(e){}
+    var title = document.querySelector('#match-breakdown-modal .ud-summary-name');
+    return norm(title ? title.textContent : '');
+  }
+
+  function syncMatch(){
+    var key = getMatchKey();
+    if(key && key !== currentMatch){
+      currentMatch = key;
+      active = [];
+    }
+  }
+
+  function getBody(){
+    return document.getElementById('mb-body');
+  }
+
+  function getRows(){
+    var body = getBody();
+    if(!body) return [];
+    return Array.prototype.slice.call(body.children || []).filter(function(el){
+      if(!el || !el.classList) return false;
+      if(el.classList.contains('ud-empty')) return false;
+      if(el.classList.contains('mb-stable-filter-empty')) return false;
+      if(el.classList.contains('mb-filtered-empty')) return false;
+
+      var text = norm(el.textContent);
+      return el.classList.contains('ud-row') && (text.indexOf('palpite:') >= 0 || text.indexOf('sin palpite') >= 0);
+    });
+  }
+
+  function getPick(row){
+    var pickEl = row ? row.querySelector('.ud-pick-text') : null;
+    var text = norm(pickEl ? pickEl.textContent : (row ? row.textContent : ''));
+    var found = text.match(/palpite:\s*([0-9]+)\s*[:x]\s*([0-9]+)/);
+    return found ? found[1] + ':' + found[2] : '';
+  }
+
+  function getMyPick(){
+    try{
+      if(typeof mbState !== 'undefined' && mbState && mbState.myPick){
+        return String(mbState.myPick.home) + ':' + String(mbState.myPick.away);
+      }
+    }catch(e){}
+
+    var mineRow = document.querySelector('#match-breakdown-modal #mb-body .ud-row.mine, #match-breakdown-modal #mb-body .ud-row.my-green-card');
+    return mineRow ? getPick(mineRow) : '';
+  }
+
+  function rowPasses(row, key){
+    var text = norm(row ? row.textContent : '');
+
+    if(key === 'exact'){
+      return !!(row && row.querySelector('.ud-exact-tag')) || text.indexOf('exacto') >= 0;
+    }
+
+    if(key === 'most'){
+      return !!(row && row.querySelector('.ud-most-tag')) || text.indexOf('mas palpitado') >= 0;
+    }
+
+    if(key === 'mine'){
+      if((row && row.querySelector('.ud-mine-tag')) || text.indexOf('= vos') >= 0) return true;
+      var myPick = getMyPick();
+      return !!myPick && getPick(row) === myPick;
+    }
+
+    return true;
+  }
+
+  function updateButtons(){
+    var wrap = document.querySelector('#match-breakdown-modal .mb-floating-filters');
+    if(!wrap) return;
+
+    wrap.querySelectorAll('.mb-float-clear').forEach(function(btn){
+      btn.style.display = 'none';
+      btn.classList.remove('active');
+      btn.setAttribute('aria-pressed','false');
+    });
+
+    wrap.querySelectorAll('.mb-float-filter').forEach(function(btn){
+      var key = btn.getAttribute('data-filter') || btn.getAttribute('data-filter-key') || '';
+      var on = active.indexOf(key) >= 0;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  function apply(){
+    if(isApplying) return;
+    isApplying = true;
+
+    try{
+      syncMatch();
+
+      var body = getBody();
+      if(!body) return;
+
+      body.querySelectorAll('.mb-stable-filter-empty, .mb-filtered-empty-visible-final, .mb-filtered-empty-final, .mb-filtered-empty-domfix').forEach(function(el){
+        el.remove();
+      });
+
+      var rows = getRows();
+      var visible = 0;
+
+      rows.forEach(function(row){
+        var show = !active.length || active.every(function(key){
+          return rowPasses(row, key);
+        });
+
+        row.style.setProperty('display', show ? '' : 'none', 'important');
+        row.classList.toggle('mb-stable-filter-hidden', !show);
+        if(show) visible++;
+      });
+
+      if(active.length && rows.length && visible === 0){
+        var empty = document.createElement('div');
+        empty.className = 'ud-empty mb-stable-filter-empty';
+        empty.textContent = 'No hay participantes con los filtros seleccionados.';
+        body.appendChild(empty);
+      }
+
+      updateButtons();
+    }finally{
+      isApplying = false;
+    }
+  }
+
+  function toggle(key, ev){
+    if(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    }
+
+    syncMatch();
+
+    var now = Date.now();
+    if(lastTapKey === key && now - lastTapAt < 420){
+      apply();
+      return false;
+    }
+    lastTapKey = key;
+    lastTapAt = now;
+
+    var idx = active.indexOf(key);
+    if(idx >= 0) active.splice(idx, 1);
+    else active.push(key);
+
+    apply();
+    return false;
+  }
+
+  window.toggleMbTagFilter = toggle;
+  window.applyMbFloatingFilters = apply;
+  window.clearMbTagFilters = function(ev){
+    if(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    }
+    active = [];
+    apply();
+    return false;
+  };
+
+  window.renderMbFloatingFiltersHtml = function(){
+    syncMatch();
+    function cls(key){ return active.indexOf(key) >= 0 ? ' active' : ''; }
+
+    return '<div class="mb-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de participantes">' +
+      '<button type="button" data-filter="mine" data-filter-key="mine" class="mb-float-filter' + cls('mine') + '" aria-pressed="' + (active.indexOf('mine') >= 0) + '"><span class="ud-mine-tag">= Vos</span></button>' +
+      '<button type="button" data-filter="most" data-filter-key="most" class="mb-float-filter' + cls('most') + '" aria-pressed="' + (active.indexOf('most') >= 0) + '"><span class="ud-most-tag">Más palpitado</span></button>' +
+      '<button type="button" data-filter="exact" data-filter-key="exact" class="mb-float-filter' + cls('exact') + '" aria-pressed="' + (active.indexOf('exact') >= 0) + '"><span class="ud-exact-tag">Exacto</span></button>' +
+    '</div>';
+  };
+
+  function handleEvent(ev){
+    var btn = ev.target && ev.target.closest ? ev.target.closest('#match-breakdown-modal .mb-float-filter') : null;
+    if(!btn) return;
+
+    var key = btn.getAttribute('data-filter') || btn.getAttribute('data-filter-key');
+    if(!key) return;
+
+    return toggle(key, ev);
+  }
+
+  // Usar somente click evita o efeito de "duplo toque" causado por pointerdown + click.
+  document.addEventListener('click', handleEvent, true);
+
+  var observer = null;
+  function startObserver(){
+    var body = getBody();
+    if(!body) return;
+
+    if(observer) observer.disconnect();
+
+    observer = new MutationObserver(function(){
+      clearTimeout(window.__edsonMbNoMalContatoTimer);
+      window.__edsonMbNoMalContatoTimer = setTimeout(apply, 80);
+    });
+
+    observer.observe(body, {childList:true, subtree:false});
+  }
+
+  var oldRender = window.renderMatchBreakdown;
+  if(typeof oldRender === 'function' && !oldRender.__edsonNoMalContatoWrapped){
+    window.renderMatchBreakdown = function(){
+      var result = oldRender.apply(this, arguments);
+      setTimeout(function(){
+        startObserver();
+        apply();
+      }, 0);
+      return result;
+    };
+    window.renderMatchBreakdown.__edsonNoMalContatoWrapped = true;
+    try{ renderMatchBreakdown = window.renderMatchBreakdown; }catch(e){}
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(function(){
+      startObserver();
+      apply();
+    }, 300);
+  });
+
+  setTimeout(function(){
+    startObserver();
+    apply();
+  }, 800);
+})();
+</script>
+
+<style id="edson-mb-filter-no-malcontato-visual-20260630">
+  #match-breakdown-modal .mb-floating-filters{
+    justify-content:center!important;
+    gap:16px!important;
+  }
+
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    display:none!important;
+  }
+
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span{
+    font-size:12px!important;
+    opacity:.74!important;
+    transform:scale(1)!important;
+    transform-origin:center center!important;
+    filter:saturate(.88) contrast(.98)!important;
+    transition:transform .16s ease, opacity .16s ease, filter .16s ease, box-shadow .16s ease!important;
+  }
+
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span{
+    opacity:1!important;
+    transform:scale(1.08)!important;
+    filter:saturate(1.08) contrast(1)!important;
+  }
+</style>
+
