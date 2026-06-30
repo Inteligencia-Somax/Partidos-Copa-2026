@@ -9626,8 +9626,10 @@ function renderMatchBreakdown(){
           const scoreKey = `${p.pick.home}:${p.pick.away}`;
           const isMostPicked = maxScoreCount > 1 && scoreCounts[scoreKey] === maxScoreCount;
           
-          // En el modal Puntos por participante no mostramos "= Vos";
-          // la fila propia ya se identifica por el destaque verde.
+          // En el modal Puntos por participante, mostramos "= Vos" cuando
+          // el palpite del participante é igual ao palpite do usuário logado.
+          // Na própria linha do usuário não repetimos o badge, pois ela já fica destacada.
+          if(sameAsMine && !isMe) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
           if(isMostPicked) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
           if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
           const rowCls = ['ud-row', pending ? 'pending-row' : '', isMe ? 'mine my-green-card' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
