@@ -20698,3 +20698,43 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     }
   }
 </style>
+
+<!-- AJUSTE 20260630: filtros flutuantes com fundo sólido e sombra mais evidente -->
+<style id="edson-floating-filters-solid-bg-20260630">
+  #user-detail-modal .ud-floating-filters-slot::before{
+    height:96px!important;
+    background:linear-gradient(to top,rgba(0,0,0,.30),rgba(0,0,0,.16) 52%,rgba(0,0,0,0))!important;
+    filter:none!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter span,
+  #user-detail-modal .ud-floating-filters .ud-float-clear{
+    box-shadow:0 8px 22px rgba(0,0,0,.30),0 2px 6px rgba(0,0,0,.18)!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter.active span,
+  #user-detail-modal .ud-floating-filters .ud-float-clear.active{
+    box-shadow:0 0 0 2px rgba(0,155,84,.30),0 9px 24px rgba(0,0,0,.34),0 2px 7px rgba(0,0,0,.20)!important;
+  }
+
+  /* Fundo sólido nos filtros flutuantes, sem transparência */
+  #user-detail-modal .ud-floating-filters .ud-mine-tag,
+  #user-detail-modal .ud-floating-filters .ud-mine-tag.me{
+    background:#EAF1FF!important;
+    border:1px solid #BFD2F5!important;
+    color:var(--blue)!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-most-tag{
+    background:#FFF3D6!important;
+    border:1px solid #E8C878!important;
+    color:#8A5A00!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-exact-tag{
+    background:#E8F5EE!important;
+    border:1px solid #9FDCC0!important;
+    color:var(--green)!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-clear{
+    background:#FFFFFF!important;
+    border:1px solid #D1D5DB!important;
+    color:#6B7280!important;
+  }
+</style>
