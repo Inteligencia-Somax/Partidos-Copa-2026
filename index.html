@@ -8574,6 +8574,16 @@ function openUserDetail(name){
   const rounds = [];
   revealedMatches.forEach(m => { const r = getRoundLabel(m); if(!rounds.includes(r)) rounds.push(r); });
 
+  // Orden oficial das fechas/fases:
+  // assim, em "Todas las fechas" + seta esquerda vai para a última fase disponível
+  // e depois segue voltando fase por fase: última → anterior → anterior...
+  const udRoundOrder = ['Fecha 1','Fecha 2','Fecha 3','Dieciseisavos','Octavos','Cuartos','Semifinal','3° Puesto','Final'];
+  rounds.sort((a,b) => {
+    const ia = udRoundOrder.indexOf(a);
+    const ib = udRoundOrder.indexOf(b);
+    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+  });
+
   // ── estadísticas ──
   const rankedNow = getRankedUsers();
   const viewedIdx = rankedNow.findIndex(u => u.name === name);
@@ -8657,8 +8667,7 @@ function setUdTab(tab){
 }
 
 function changeUdRound(delta){
-  // Correção: em "Todas las fechas", seta esquerda deve ir para a última fecha/fase,
-  // não para a primeira.
+  // Em "Todas las fechas", seta esquerda entra na última fecha/fase disponível.
   if(
     delta < 0 &&
     udState &&
