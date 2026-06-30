@@ -21970,3 +21970,263 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   setTimeout(function(){ startObserver(); window.__applyMbFloatingFiltersFinal(); }, 800);
 })();
 </script>
+
+
+<!-- AJUSTE FINAL 20260630: Puntos por participante - filtro flutuante sem duplo clique e com aplicação real -->
+<script id="edson-mb-filter-authoritative-click-and-apply-20260630">
+(function(){
+  if(window.__edsonMbFilterAuthoritativeInstalled) return;
+  window.__edsonMbFilterAuthoritativeInstalled = true;
+
+  window.__mbFloatActiveFilters = window.__mbFloatActiveFilters || [];
+  window.__mbFloatLastMatchId = null;
+
+  function normalize(s){
+    return (s || '')
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase();
+  }
+
+  function getMatchId(){
+    try{
+      if(window.mbState && window.mbState.m && window.mbState.m.id !== undefined) return String(window.mbState.m.id);
+    }catch(e){}
+    return '';
+  }
+
+  function ensureMatchContext(){
+    var id = getMatchId();
+    if(id && window.__mbFloatLastMatchId !== id){
+      window.__mbFloatLastMatchId = id;
+      window.__mbFloatActiveFilters = [];
+    }
+  }
+
+  function getActive(){
+    ensureMatchContext();
+    return Array.isArray(window.__mbFloatActiveFilters) ? window.__mbFloatActiveFilters.slice() : [];
+  }
+
+  function setActive(arr){
+    window.__mbFloatActiveFilters = Array.isArray(arr) ? arr.slice() : [];
+    if(window.mbState) window.mbState.tagFilters = window.__mbFloatActiveFilters.slice();
+  }
+
+  function rowMatches(row, key){
+    var text = normalize(row ? row.textContent : '');
+
+    if(key === 'mine'){
+      return text.indexOf('= vos') >= 0;
+    }
+    if(key === 'most'){
+      return text.indexOf('mas palpitado') >= 0;
+    }
+    if(key === 'exact'){
+      return text.indexOf('exacto') >= 0;
+    }
+    return true;
+  }
+
+  function getRows(){
+    var body = document.getElementById('mb-body');
+    if(!body) return [];
+
+    var rows = Array.prototype.slice.call(body.children || []).filter(function(el){
+      if(!el || !el.classList) return false;
+      if(el.classList.contains('mb-filtered-empty') || el.classList.contains('mb-filtered-empty-final')) return false;
+      var txt = normalize(el.textContent || '');
+      return txt.indexOf('palpite:') >= 0 || txt.indexOf('sin palpite') >= 0;
+    });
+
+    if(!rows.length){
+      rows = Array.prototype.slice.call(body.querySelectorAll('.ud-row,.mb-row,.mb-name-row')).filter(function(el){
+        var txt = normalize(el.textContent || '');
+        return txt.indexOf('palpite:') >= 0 || txt.indexOf('sin palpite') >= 0;
+      });
+    }
+
+    return rows;
+  }
+
+  function updateButtons(){
+    var active = getActive();
+    var wrap = document.querySelector('#match-breakdown-modal .mb-floating-filters');
+    if(!wrap) return;
+
+    wrap.querySelectorAll('.mb-float-filter').forEach(function(btn){
+      var key = btn.getAttribute('data-filter') || btn.getAttribute('data-filter-key') || '';
+      if(!key){
+        var t = normalize(btn.textContent || '');
+        if(t.indexOf('vos') >= 0) key = 'mine';
+        else if(t.indexOf('mas palpitado') >= 0) key = 'most';
+        else if(t.indexOf('exacto') >= 0) key = 'exact';
+        if(key) btn.setAttribute('data-filter', key);
+      }
+      var on = active.indexOf(key) >= 0;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+
+    wrap.querySelectorAll('.mb-float-clear').forEach(function(btn){
+      btn.style.display = 'none';
+      btn.classList.remove('active');
+      btn.setAttribute('aria-pressed','false');
+    });
+  }
+
+  function applyFilter(){
+    ensureMatchContext();
+
+    var body = document.getElementById('mb-body');
+    if(!body) return;
+
+    var active = getActive();
+    var rows = getRows();
+    var visible = 0;
+
+    var old = body.querySelector('.mb-filtered-empty-final');
+    if(old) old.remove();
+
+    rows.forEach(function(row){
+      var show = true;
+      if(active.length){
+        // Multi-seletor como união: mostra linhas que tenham pelo menos um filtro selecionado.
+        show = active.some(function(key){ return rowMatches(row, key); });
+      }
+      row.style.display = show ? '' : 'none';
+      row.classList.toggle('mb-filter-hidden-by-floating', !show);
+      if(show) visible++;
+    });
+
+    if(active.length && rows.length && visible === 0){
+      var empty = document.createElement('div');
+      empty.className = 'mb-filtered-empty mb-filtered-empty-final';
+      empty.textContent = 'No hay participantes con los filtros seleccionados.';
+      body.appendChild(empty);
+    }
+
+    updateButtons();
+  }
+
+  function toggle(key){
+    var active = getActive();
+    var idx = active.indexOf(key);
+    if(idx >= 0) active.splice(idx, 1);
+    else active.push(key);
+    setActive(active);
+    applyFilter();
+  }
+
+  window.toggleMbTagFilter = function(key, ev){
+    if(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    }
+    toggle(key);
+    return false;
+  };
+
+  window.clearMbTagFilters = function(ev){
+    if(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    }
+    setActive([]);
+    applyFilter();
+    return false;
+  };
+
+  window.applyMbFloatingFilters = applyFilter;
+
+  window.renderMbFloatingFiltersHtml = function(){
+    var active = getActive();
+    function cls(key){ return active.indexOf(key) >= 0 ? ' active' : ''; }
+    return '<div class="mb-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de participantes">' +
+      '<button type="button" data-filter="mine" data-filter-key="mine" class="mb-float-filter' + cls('mine') + '" aria-pressed="' + (active.indexOf('mine') >= 0) + '"><span class="ud-mine-tag">= Vos</span></button>' +
+      '<button type="button" data-filter="most" data-filter-key="most" class="mb-float-filter' + cls('most') + '" aria-pressed="' + (active.indexOf('most') >= 0) + '"><span class="ud-most-tag">Más palpitado</span></button>' +
+      '<button type="button" data-filter="exact" data-filter-key="exact" class="mb-float-filter' + cls('exact') + '" aria-pressed="' + (active.indexOf('exact') >= 0) + '"><span class="ud-exact-tag">Exacto</span></button>' +
+    '</div>';
+  };
+
+  document.addEventListener('click', function(ev){
+    var btn = ev.target && ev.target.closest ? ev.target.closest('#match-breakdown-modal .mb-float-filter') : null;
+    if(!btn) return;
+
+    ev.preventDefault();
+    ev.stopPropagation();
+    if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+
+    var key = btn.getAttribute('data-filter') || btn.getAttribute('data-filter-key');
+    if(!key){
+      var t = normalize(btn.textContent || '');
+      if(t.indexOf('vos') >= 0) key = 'mine';
+      else if(t.indexOf('mas palpitado') >= 0) key = 'most';
+      else if(t.indexOf('exacto') >= 0) key = 'exact';
+    }
+    if(key) toggle(key);
+    return false;
+  }, true);
+
+  // Observa re-renderizações e reaplica o filtro sem desmarcar.
+  var observer = null;
+  function startObserver(){
+    var body = document.getElementById('mb-body');
+    if(!body || observer) return;
+    observer = new MutationObserver(function(){
+      clearTimeout(window.__mbFloatingFilterApplyTimer);
+      window.__mbFloatingFilterApplyTimer = setTimeout(applyFilter, 40);
+    });
+    observer.observe(body, {childList:true, subtree:false});
+  }
+
+  var previousRender = window.renderMatchBreakdown;
+  if(typeof previousRender === 'function' && !previousRender.__edsonMbFilterAuthoritativeWrapped){
+    window.renderMatchBreakdown = function(){
+      var result = previousRender.apply(this, arguments);
+      setTimeout(function(){
+        startObserver();
+        applyFilter();
+      }, 0);
+      return result;
+    };
+    window.renderMatchBreakdown.__edsonMbFilterAuthoritativeWrapped = true;
+    try{ renderMatchBreakdown = window.renderMatchBreakdown; }catch(e){}
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(function(){ startObserver(); applyFilter(); }, 200);
+  });
+  setTimeout(function(){ startObserver(); applyFilter(); }, 400);
+})();
+</script>
+
+<style id="edson-mb-filter-authoritative-visual-state-20260630">
+  #match-breakdown-modal .mb-floating-filters{
+    justify-content:center!important;
+    gap:16px!important;
+  }
+
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    display:none!important;
+  }
+
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span{
+    font-size:12px!important;
+    opacity:.74!important;
+    transform:scale(1)!important;
+    transform-origin:center center!important;
+    filter:saturate(.88) contrast(.98)!important;
+    transition:transform .16s ease, opacity .16s ease, filter .16s ease, box-shadow .16s ease!important;
+  }
+
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span{
+    opacity:1!important;
+    transform:scale(1.08)!important;
+    filter:saturate(1.08) contrast(1)!important;
+  }
+</style>
+
