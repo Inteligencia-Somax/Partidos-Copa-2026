@@ -17894,3 +17894,626 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     background:rgba(245,158,11,.08)!important;
   }
 </style>
+
+
+<!-- EDSON: modal de comparativo por pressão longa no card do ranking -->
+<div class="modal-overlay" id="ranking-compare-modal" style="display:none" onclick="closeRankingCompareModalOutside(event)">
+  <div class="modal rcmp-modal">
+    <div class="modal-header rcmp-header">
+      <div class="rcmp-header-copy">
+        <span class="modal-match-label" id="rcmp-title">Comparar participantes</span>
+        <span class="rcmp-subtitle">Mantené apretado un participante para abrir este duelo.</span>
+      </div>
+      <button class="modal-close" onclick="closeRankingCompareModal()">✕</button>
+    </div>
+    <div class="rcmp-hero" id="rcmp-hero"></div>
+    <div class="rcmp-search-area" id="rcmp-search-area"></div>
+    <div class="rcmp-suggestions" id="rcmp-suggestions"></div>
+    <div class="rcmp-roundnav" id="rcmp-roundnav"></div>
+    <div class="rcmp-tabs" id="rcmp-tabs"></div>
+    <div class="ud-body rcmp-body" id="rcmp-body"></div>
+  </div>
+</div>
+
+<style id="edson-ranking-compare-modal-20260629">
+  #ranking-compare-modal{align-items:center;padding:16px;z-index:1200;}
+  #ranking-compare-modal .modal{border-radius:22px;width:100%;max-width:468px;max-height:88vh;display:flex;flex-direction:column;padding:0;overflow:hidden;background:#fff;}
+  #ranking-compare-modal .modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  #ranking-compare-modal .modal-close{flex:0 0 auto;}
+  #ranking-compare-modal .rcmp-header-copy{min-width:0;display:flex;flex-direction:column;gap:3px;}
+  #ranking-compare-modal .rcmp-subtitle{font-size:12px;line-height:1.25;color:rgba(255,255,255,.85);font-weight:600;}
+  #ranking-compare-modal .rcmp-hero{padding:14px 14px 10px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#F8FBFA 0%,#fff 100%);}
+  #ranking-compare-modal .rcmp-duel{display:grid;grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);gap:10px;align-items:stretch;}
+  #ranking-compare-modal .rcmp-player{border:1px solid var(--border);border-radius:18px;padding:12px 12px 10px;background:#fff;box-shadow:0 6px 18px rgba(17,24,39,.05);min-width:0;}
+  #ranking-compare-modal .rcmp-player.primary{border-color:rgba(0,155,84,.25);background:linear-gradient(180deg,rgba(0,155,84,.05),#fff 58%);}
+  #ranking-compare-modal .rcmp-player.secondary{border-color:rgba(245,158,11,.22);background:linear-gradient(180deg,rgba(245,158,11,.07),#fff 58%);}
+  #ranking-compare-modal .rcmp-player-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+  #ranking-compare-modal .rcmp-rank{display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:28px;padding:0 8px;border-radius:999px;background:#F3F4F6;color:#111827;font-size:14px;font-weight:900;}
+  #ranking-compare-modal .rcmp-player.primary .rcmp-rank{background:rgba(0,155,84,.12);color:var(--green);}
+  #ranking-compare-modal .rcmp-player.secondary .rcmp-rank{background:rgba(245,158,11,.14);color:#B45309;}
+  #ranking-compare-modal .rcmp-points{font-size:12px;color:var(--sub);font-weight:800;white-space:nowrap;}
+  #ranking-compare-modal .rcmp-name{font-size:16px;line-height:1.15;font-weight:900;color:#111827;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px;}
+  #ranking-compare-modal .rcmp-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px;}
+  #ranking-compare-modal .rcmp-metric{border-radius:12px;background:#F8FAFC;padding:8px 6px;text-align:center;}
+  #ranking-compare-modal .rcmp-metric-num{display:block;font-size:18px;font-weight:900;color:#111827;line-height:1;}
+  #ranking-compare-modal .rcmp-metric-lbl{display:block;margin-top:3px;font-size:10px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.02em;}
+  #ranking-compare-modal .rcmp-vs-wrap{display:flex;align-items:center;justify-content:center;}
+  #ranking-compare-modal .rcmp-vs-btn{width:42px;height:42px;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#374151;box-shadow:0 6px 18px rgba(17,24,39,.08);}
+  #ranking-compare-modal .rcmp-vs-btn:active{transform:scale(.98);}
+  #ranking-compare-modal .rcmp-search-area{padding:12px 14px 8px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;background:#fff;}
+  #ranking-compare-modal .rcmp-searchbox{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:16px;padding:0 12px;height:48px;background:#F9FAFB;}
+  #ranking-compare-modal .rcmp-searchbox svg{width:18px;height:18px;color:#6B7280;flex:0 0 auto;}
+  #ranking-compare-modal .rcmp-searchbox input{border:none;outline:none;background:transparent;width:100%;font-size:16px;font-weight:700;color:#111827;}
+  #ranking-compare-modal .rcmp-searchhint{font-size:12px;color:var(--sub);font-weight:700;}
+  #ranking-compare-modal .rcmp-suggestions{padding:0 14px 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--border);}
+  #ranking-compare-modal .rcmp-section-label{font-size:12px;font-weight:900;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;}
+  #ranking-compare-modal .rcmp-candidates{display:flex;flex-direction:column;gap:8px;max-height:172px;overflow:auto;padding-right:2px;}
+  #ranking-compare-modal .rcmp-candidate{width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 12px;border:1px solid var(--border);border-radius:14px;background:#fff;color:#111827;text-align:left;}
+  #ranking-compare-modal .rcmp-candidate.active{border-color:rgba(0,155,84,.32);background:rgba(0,155,84,.06);}
+  #ranking-compare-modal .rcmp-candidate-pos{font-size:14px;font-weight:900;color:#111827;min-width:32px;}
+  #ranking-compare-modal .rcmp-candidate-main{min-width:0;display:flex;flex-direction:column;gap:2px;}
+  #ranking-compare-modal .rcmp-candidate-name{font-size:15px;font-weight:900;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #ranking-compare-modal .rcmp-candidate-meta{font-size:12px;font-weight:700;color:var(--sub);}
+  #ranking-compare-modal .rcmp-candidate-score{font-size:14px;font-weight:900;color:#111827;white-space:nowrap;}
+  #ranking-compare-modal .rcmp-roundnav{padding:10px 14px;border-bottom:1px solid var(--border);background:#fff;}
+  #ranking-compare-modal .rcmp-rnav{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;gap:10px;}
+  #ranking-compare-modal .rcmp-rnav-btn{width:48px;height:48px;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:28px;line-height:1;color:#111827;display:flex;align-items:center;justify-content:center;}
+  #ranking-compare-modal .rcmp-rnav-btn:disabled{opacity:.35;}
+  #ranking-compare-modal .rcmp-rnav-label{text-align:center;display:flex;flex-direction:column;gap:2px;min-width:0;}
+  #ranking-compare-modal .rcmp-rnav-title{font-size:16px;font-weight:900;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #ranking-compare-modal .rcmp-rnav-sub{font-size:12px;font-weight:700;color:var(--sub);}
+  #ranking-compare-modal .rcmp-tabs{padding:12px 14px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#fff;}
+  #ranking-compare-modal .rcmp-tab{height:52px;border-radius:999px;border:1px solid var(--border);background:#fff;color:#111827;font-size:17px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:8px;}
+  #ranking-compare-modal .rcmp-tab.active{background:var(--green);border-color:var(--green);color:#fff;}
+  #ranking-compare-modal .rcmp-body{padding:0 14px 16px;display:flex;flex-direction:column;gap:12px;}
+  #ranking-compare-modal .rcmp-summary-card{border:1px solid var(--border);border-radius:18px;padding:14px;background:#fff;box-shadow:0 6px 18px rgba(17,24,39,.04);}
+  #ranking-compare-modal .rcmp-scoreboard{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;}
+  #ranking-compare-modal .rcmp-score-side{text-align:center;min-width:0;}
+  #ranking-compare-modal .rcmp-score-name{font-size:13px;font-weight:900;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #ranking-compare-modal .rcmp-score-num{font-size:34px;font-weight:900;line-height:1;color:#111827;margin-top:4px;}
+  #ranking-compare-modal .rcmp-score-side.lead .rcmp-score-num,#ranking-compare-modal .rcmp-score-side.lead .rcmp-score-name{color:var(--green);}
+  #ranking-compare-modal .rcmp-score-side.trail .rcmp-score-num,#ranking-compare-modal .rcmp-score-side.trail .rcmp-score-name{color:#B45309;}
+  #ranking-compare-modal .rcmp-score-unit{font-size:12px;font-weight:800;color:var(--sub);margin-top:3px;text-transform:uppercase;letter-spacing:.04em;}
+  #ranking-compare-modal .rcmp-score-vs{display:flex;flex-direction:column;align-items:center;gap:2px;}
+  #ranking-compare-modal .rcmp-score-vs-badge{min-width:42px;height:42px;padding:0 10px;border-radius:999px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#374151;}
+  #ranking-compare-modal .rcmp-score-vs-sub{font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;}
+  #ranking-compare-modal .rcmp-pill-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+  #ranking-compare-modal .rcmp-pill{border-radius:14px;background:#F8FAFC;padding:10px 8px;text-align:center;}
+  #ranking-compare-modal .rcmp-pill .n{display:block;font-size:18px;font-weight:900;color:#111827;line-height:1;}
+  #ranking-compare-modal .rcmp-pill .l{display:block;margin-top:4px;font-size:10px;font-weight:900;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;}
+  #ranking-compare-modal .rcmp-insights{display:flex;flex-direction:column;gap:8px;}
+  #ranking-compare-modal .rcmp-insight{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border-radius:14px;background:#F9FAFB;}
+  #ranking-compare-modal .rcmp-insight-ico{width:24px;height:24px;border-radius:999px;background:#E8F5EE;color:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex:0 0 auto;}
+  #ranking-compare-modal .rcmp-insight-copy{font-size:13px;line-height:1.35;color:#374151;font-weight:700;}
+  #ranking-compare-modal .rcmp-insight-copy b{color:#111827;}
+  #ranking-compare-modal .rcmp-filter-row{display:flex;gap:8px;overflow:auto;padding-bottom:2px;}
+  #ranking-compare-modal .rcmp-filter{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:#fff;color:#111827;font-size:13px;font-weight:900;white-space:nowrap;}
+  #ranking-compare-modal .rcmp-filter.active{background:#F2FFF8;border-color:rgba(0,155,84,.28);color:var(--green);}
+  #ranking-compare-modal .rcmp-match-card{border:1px solid var(--border);border-radius:18px;padding:12px;background:#fff;box-shadow:0 6px 18px rgba(17,24,39,.04);}
+  #ranking-compare-modal .rcmp-match-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+  #ranking-compare-modal .rcmp-match-teams{font-size:16px;font-weight:900;color:#111827;line-height:1.2;}
+  #ranking-compare-modal .rcmp-match-status{font-size:12px;font-weight:900;color:var(--sub);white-space:nowrap;}
+  #ranking-compare-modal .rcmp-match-status.done{color:#B45309;}
+  #ranking-compare-modal .rcmp-side-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;}
+  #ranking-compare-modal .rcmp-side{border-radius:14px;background:#F9FAFB;padding:10px 10px 9px;min-width:0;}
+  #ranking-compare-modal .rcmp-side.win{background:rgba(0,155,84,.08);border:1px solid rgba(0,155,84,.18);}
+  #ranking-compare-modal .rcmp-side.tie{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.18);}
+  #ranking-compare-modal .rcmp-side-name{font-size:12px;font-weight:900;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #ranking-compare-modal .rcmp-side-line{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;}
+  #ranking-compare-modal .rcmp-pick{font-size:18px;font-weight:900;color:#111827;}
+  #ranking-compare-modal .rcmp-pts{font-size:16px;font-weight:900;white-space:nowrap;color:#111827;}
+  #ranking-compare-modal .rcmp-pts.good{color:var(--green);}
+  #ranking-compare-modal .rcmp-pts.zero{color:#D11A2A;}
+  #ranking-compare-modal .rcmp-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  #ranking-compare-modal .rcmp-badge{height:24px;padding:0 10px;border-radius:999px;background:#F3F4F6;border:1px solid #E5E7EB;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#4B5563;}
+  #ranking-compare-modal .rcmp-badge.diff{background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.22);color:#B45309;}
+  #ranking-compare-modal .rcmp-badge.same{background:rgba(0,155,84,.08);border-color:rgba(0,155,84,.20);color:var(--green);}
+  #ranking-compare-modal .rcmp-empty{padding:22px 12px;text-align:center;color:var(--sub);font-size:14px;font-weight:700;}
+  #ranking-compare-modal .rcmp-cta-note{padding:0 2px;color:var(--sub);font-size:12px;font-weight:700;line-height:1.4;}
+  @media(max-width:430px){
+    #ranking-compare-modal .modal{max-height:90vh;}
+    #ranking-compare-modal .rcmp-duel{grid-template-columns:minmax(0,1fr) 36px minmax(0,1fr);gap:8px;}
+    #ranking-compare-modal .rcmp-vs-btn{width:36px;height:36px;font-size:16px;}
+    #ranking-compare-modal .rcmp-player{padding:10px;}
+    #ranking-compare-modal .rcmp-name{font-size:15px;min-height:34px;}
+    #ranking-compare-modal .rcmp-metrics{gap:5px;}
+    #ranking-compare-modal .rcmp-metric-num{font-size:16px;}
+    #ranking-compare-modal .rcmp-pill-row{grid-template-columns:repeat(2,minmax(0,1fr));}
+    #ranking-compare-modal .rcmp-score-num{font-size:30px;}
+    #ranking-compare-modal .rcmp-match-teams{font-size:15px;}
+    #ranking-compare-modal .rcmp-pick{font-size:17px;}
+  }
+</style>
+
+<script id="edson-ranking-compare-modal-script-20260629">
+(function(){
+  const HOLD_MS = 460;
+  const MOVE_TOLERANCE = 12;
+  let holdTimer = null;
+  let holdStartX = 0;
+  let holdStartY = 0;
+  let holdTargetName = '';
+  let suppressClickUntil = 0;
+
+  const state = {
+    primary: '',
+    secondary: '',
+    search: '',
+    tab: 'summary',
+    filter: 'all',
+    roundIdx: 0
+  };
+  window.rankingCompareState = state;
+
+  function esc(v){
+    return String(v == null ? '' : v)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+  function shortName(name){
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if(parts.length <= 2) return parts.join(' ');
+    return parts.slice(0,2).join(' ');
+  }
+  function getRankedMap(){
+    const ranked = (typeof getRankedUsers === 'function') ? getRankedUsers() : [];
+    const map = {};
+    ranked.forEach((u,i)=>{ map[u.name] = { ...u, pos:i+1 }; });
+    return { ranked, map };
+  }
+  function getResolvedMatches(){
+    const real = (typeof loadRealResults === 'function') ? loadRealResults() : {};
+    const now = new Date();
+    return (window.MATCHES || []).filter(m => real[m.id] && getMatchDateTime(m) <= now);
+  }
+  function getRevealedMatches(){
+    const real = (typeof loadRealResults === 'function') ? loadRealResults() : {};
+    return (window.MATCHES || []).filter(m => real[m.id] || !canEditPick(m)).slice().sort((a,b)=>getMatchDateTime(b)-getMatchDateTime(a));
+  }
+  function getCompareRounds(){
+    const rounds = [];
+    getRevealedMatches().forEach(m=>{
+      const r = getRoundLabel(m);
+      if(!rounds.includes(r)) rounds.push(r);
+    });
+    return rounds;
+  }
+  function getPlayerMeta(name){
+    const { ranked, map } = getRankedMap();
+    const item = map[name] || { name, score:0, exact:0, pos:null };
+    const allPicks = (typeof loadAllPicks === 'function') ? loadAllPicks() : {};
+    const real = (typeof loadRealResults === 'function') ? loadRealResults() : {};
+    const picks = allPicks[name] || {};
+    const played = getResolvedMatches();
+    let total = 0, possible = 0, exact = 0;
+    played.forEach(m=>{
+      const calc = calculatePickPoints(picks[m.id], real[m.id], m);
+      total += calc.pts;
+      possible += 25 * (m.x2 ? 2 : 1);
+      if(calc.type === 'exact') exact++;
+    });
+    const lastDate = played.length ? played[0].date : null;
+    let delta = 0;
+    if(lastDate && typeof getRankedUsersExcludingDate === 'function'){
+      const before = getRankedUsersExcludingDate(lastDate);
+      const prevIdx = before.findIndex(u=>u.name === name);
+      const nowIdx = ranked.findIndex(u=>u.name === name);
+      if(prevIdx >= 0 && nowIdx >= 0) delta = (prevIdx + 1) - (nowIdx + 1);
+    }
+    return {
+      name,
+      short: shortName(name),
+      pos: item.pos || null,
+      score: typeof item.score === 'number' ? item.score : total,
+      exact: typeof item.exact === 'number' ? item.exact : exact,
+      aprov: possible ? Math.round(total / possible * 100) : 0,
+      delta
+    };
+  }
+  function getSuggestedOpponents(primary){
+    const { ranked } = getRankedMap();
+    const idx = ranked.findIndex(u=>u.name === primary);
+    const names = [];
+    const push = (n) => { if(n && n !== primary && !names.includes(n)) names.push(n); };
+    if(window.currentUser && currentUser !== primary) push(currentUser);
+    [1,-1,2,-2,3,-3].forEach(off=>{ if(idx >= 0 && ranked[idx+off]) push(ranked[idx+off].name); });
+    ranked.slice(0,5).forEach(u=>push(u.name));
+    return names;
+  }
+  function buildCompareData(){
+    if(!state.primary || !state.secondary) return null;
+    const allPicks = loadAllPicks();
+    const real = loadRealResults();
+    const aMeta = getPlayerMeta(state.primary);
+    const bMeta = getPlayerMeta(state.secondary);
+    const rounds = getCompareRounds();
+    if(state.roundIdx == null || state.roundIdx > rounds.length) state.roundIdx = rounds.length;
+    const selectedRound = state.roundIdx < rounds.length ? rounds[state.roundIdx] : null;
+    let matches = getRevealedMatches();
+    if(selectedRound) matches = matches.filter(m=>getRoundLabel(m) === selectedRound);
+
+    const aPicks = allPicks[state.primary] || {};
+    const bPicks = allPicks[state.secondary] || {};
+    const baseRows = matches.map(m=>{
+      const result = real[m.id] || null;
+      const pending = !result;
+      const aPick = aPicks[m.id] || aPicks[String(m.id)] || null;
+      const bPick = bPicks[m.id] || bPicks[String(m.id)] || null;
+      const aCalc = calculatePickPoints(aPick, result, m);
+      const bCalc = calculatePickPoints(bPick, result, m);
+      const samePick = !!(aPick && bPick && Number(aPick.home) === Number(bPick.home) && Number(aPick.away) === Number(bPick.away));
+      const bothHavePick = !!(aPick && bPick);
+      const winner = pending ? 'pending' : (aCalc.pts > bCalc.pts ? 'a' : (bCalc.pts > aCalc.pts ? 'b' : 'tie'));
+      return {
+        m,
+        result,
+        pending,
+        aPick,
+        bPick,
+        aCalc,
+        bCalc,
+        samePick,
+        bothHavePick,
+        winner,
+        diffPts: Math.abs(aCalc.pts - bCalc.pts)
+      };
+    }).filter(r => r.aPick || r.bPick || r.result);
+
+    let shownRows = baseRows.slice();
+    if(state.filter === 'diff') shownRows = shownRows.filter(r=>!r.samePick || !r.bothHavePick);
+    if(state.filter === 'scored') shownRows = shownRows.filter(r=>!r.pending && (r.aCalc.pts > 0 || r.bCalc.pts > 0));
+
+    const resolved = baseRows.filter(r=>!r.pending);
+    let aTotal=0, bTotal=0, aWins=0, bWins=0, ties=0, aExact=0, bExact=0, same=0, diff=0;
+    resolved.forEach(r=>{
+      aTotal += r.aCalc.pts;
+      bTotal += r.bCalc.pts;
+      if(r.winner === 'a') aWins++;
+      else if(r.winner === 'b') bWins++;
+      else ties++;
+      if(r.aCalc.type === 'exact') aExact++;
+      if(r.bCalc.type === 'exact') bExact++;
+    });
+    baseRows.forEach(r=>{
+      if(r.samePick && r.bothHavePick) same++;
+      else if(r.bothHavePick) diff++;
+    });
+    const biggestSwing = resolved.slice().sort((x,y)=>y.diffPts - x.diffPts)[0] || null;
+    return { aMeta, bMeta, rounds, selectedRound, baseRows, shownRows, resolved, aTotal, bTotal, aWins, bWins, ties, aExact, bExact, same, diff, biggestSwing };
+  }
+  function renderCompareHero(){
+    const hero = document.getElementById('rcmp-hero');
+    if(!hero) return;
+    const a = state.primary ? getPlayerMeta(state.primary) : null;
+    const b = state.secondary ? getPlayerMeta(state.secondary) : null;
+    if(!a){ hero.innerHTML = ''; return; }
+    const deltaA = a.delta > 0 ? `▲${a.delta}` : a.delta < 0 ? `▼${Math.abs(a.delta)}` : '=';
+    const deltaB = b ? (b.delta > 0 ? `▲${b.delta}` : b.delta < 0 ? `▼${Math.abs(b.delta)}` : '=') : '—';
+    hero.innerHTML = `
+      <div class="rcmp-duel">
+        <div class="rcmp-player primary">
+          <div class="rcmp-player-top">
+            <span class="rcmp-rank">${a.pos ? a.pos + 'º' : '—'}</span>
+            <span class="rcmp-points">${a.score} pts · ${deltaA}</span>
+          </div>
+          <div class="rcmp-name">${esc(a.name)}</div>
+          <div class="rcmp-metrics">
+            <div class="rcmp-metric"><span class="rcmp-metric-num">${a.exact}</span><span class="rcmp-metric-lbl">Exactos</span></div>
+            <div class="rcmp-metric"><span class="rcmp-metric-num">${a.aprov}%</span><span class="rcmp-metric-lbl">Aprovech.</span></div>
+            <div class="rcmp-metric"><span class="rcmp-metric-num">${a.pos || '—'}</span><span class="rcmp-metric-lbl">Posición</span></div>
+          </div>
+        </div>
+        <div class="rcmp-vs-wrap">
+          <button class="rcmp-vs-btn" type="button" onclick="swapComparePlayers()" aria-label="Intercambiar participantes">⇄</button>
+        </div>
+        <div class="rcmp-player secondary">
+          <div class="rcmp-player-top">
+            <span class="rcmp-rank">${b && b.pos ? b.pos + 'º' : 'Rival'}</span>
+            <span class="rcmp-points">${b ? (b.score + ' pts · ' + deltaB) : 'Elegí un rival'}</span>
+          </div>
+          <div class="rcmp-name">${b ? esc(b.name) : 'Elegí otro adversario'}</div>
+          <div class="rcmp-metrics">
+            <div class="rcmp-metric"><span class="rcmp-metric-num">${b ? b.exact : '—'}</span><span class="rcmp-metric-lbl">Exactos</span></div>
+            <div class="rcmp-metric"><span class="rcmp-metric-num">${b ? (b.aprov + '%') : '—'}</span><span class="rcmp-metric-lbl">Aprovech.</span></div>
+            <div class="rcmp-metric"><span class="rcmp-metric-num">${b && b.pos ? b.pos : '—'}</span><span class="rcmp-metric-lbl">Posición</span></div>
+          </div>
+        </div>
+      </div>`;
+  }
+  function renderCompareSearch(){
+    const area = document.getElementById('rcmp-search-area');
+    if(!area) return;
+    area.innerHTML = `
+      <div class="rcmp-searchbox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="rcmp-search-input" placeholder="Buscar otro adversario para comparar..." value="${esc(state.search)}" oninput="updateRankingCompareSearch(this.value)">
+      </div>
+      <div class="rcmp-searchhint">Compará rápido con vos, con vecinos del ranking o con cualquier participante.</div>`;
+  }
+  function renderCompareSuggestions(){
+    const wrap = document.getElementById('rcmp-suggestions');
+    if(!wrap) return;
+    const { ranked, map } = getRankedMap();
+    let pool = [];
+    const query = (state.search || '').trim().toLowerCase();
+    if(query){
+      pool = ranked.filter(u=>u.name !== state.primary && u.name.toLowerCase().includes(query)).slice(0,10).map(u=>u.name);
+    }else{
+      pool = getSuggestedOpponents(state.primary);
+      const rankedFallback = ranked.filter(u=>u.name !== state.primary).map(u=>u.name);
+      rankedFallback.forEach(n=>{ if(pool.length < 10 && !pool.includes(n)) pool.push(n); });
+      pool = pool.slice(0,10);
+    }
+    const items = pool.map(name=>{
+      const item = map[name] || getPlayerMeta(name);
+      const active = name === state.secondary;
+      return `<button class="rcmp-candidate ${active ? 'active' : ''}" type="button" onclick="setRankingCompareSecondary('${esc(name)}')">
+        <span class="rcmp-candidate-pos">${item.pos ? item.pos + 'º' : '—'}</span>
+        <span class="rcmp-candidate-main"><span class="rcmp-candidate-name">${esc(name)}</span><span class="rcmp-candidate-meta">${item.exact || 0} exactos · ${item.aprov != null ? item.aprov + '%' : '—'}</span></span>
+        <span class="rcmp-candidate-score">${item.score || 0} pts</span>
+      </button>`;
+    }).join('');
+    wrap.innerHTML = `<div class="rcmp-section-label">Elegir rival</div><div class="rcmp-candidates">${items || '<div class="rcmp-empty">No se encontró ningún participante.</div>'}</div>`;
+  }
+  function renderCompareRoundNav(data){
+    const nav = document.getElementById('rcmp-roundnav');
+    if(!nav) return;
+    if(!data || !state.secondary){ nav.innerHTML = ''; return; }
+    const rounds = data.rounds || [];
+    const title = data.selectedRound || 'Todas las fechas';
+    const sub = `${data.baseRows.length} partido(s)`;
+    nav.innerHTML = `
+      <div class="rcmp-rnav">
+        <button class="rcmp-rnav-btn" type="button" onclick="changeRankingCompareRound(-1)" ${state.roundIdx <= 0 ? 'disabled' : ''}>‹</button>
+        <div class="rcmp-rnav-label"><span class="rcmp-rnav-title">${esc(title)}</span><span class="rcmp-rnav-sub">${sub}</span></div>
+        <button class="rcmp-rnav-btn" type="button" onclick="changeRankingCompareRound(1)" ${state.roundIdx >= rounds.length ? 'disabled' : ''}>›</button>
+      </div>`;
+  }
+  function buildSummaryHtml(data){
+    const leadA = data.aTotal > data.bTotal ? 'lead' : (data.aTotal < data.bTotal ? 'trail' : '');
+    const leadB = data.bTotal > data.aTotal ? 'lead' : (data.bTotal < data.aTotal ? 'trail' : '');
+    const diffPts = data.aTotal - data.bTotal;
+    const insightLead = diffPts === 0 ? `Empate total: ambos sumaron <b>${data.aTotal} pts</b> en los partidos resueltos de este recorte.`
+      : (diffPts > 0
+        ? `<b>${esc(data.aMeta.short)}</b> lleva ventaja de <b>${diffPts} pts</b> en el duelo directo.`
+        : `<b>${esc(data.bMeta.short)}</b> lleva ventaja de <b>${Math.abs(diffPts)} pts</b> en el duelo directo.`);
+    const insightWins = data.aWins === data.bWins
+      ? `Los dos ganaron <b>${data.aWins}</b> partidos comparados y empataron <b>${data.ties}</b>.`
+      : (data.aWins > data.bWins
+        ? `<b>${esc(data.aMeta.short)}</b> ganó más duelos partido a partido: <b>${data.aWins}</b> contra <b>${data.bWins}</b>.`
+        : `<b>${esc(data.bMeta.short)}</b> ganó más duelos partido a partido: <b>${data.bWins}</b> contra <b>${data.aWins}</b>.`);
+    const swing = data.biggestSwing
+      ? `Mayor diferencia en un partido: <b>${esc(data.biggestSwing.m.home)} × ${esc(data.biggestSwing.m.away)}</b> con <b>${data.biggestSwing.diffPts} pts</b> de brecha.`
+      : `Todavía no hay diferencia de puntos entre ambos en partidos resueltos.`;
+    const sameVsDiff = data.diff > data.same
+      ? `Se diferenciaron en <b>${data.diff}</b> palpites y coincidieron en <b>${data.same}</b>.`
+      : `Coincidieron en <b>${data.same}</b> palpites y se diferenciaron en <b>${data.diff}</b>.`;
+    return `
+      <div class="rcmp-summary-card">
+        <div class="rcmp-scoreboard">
+          <div class="rcmp-score-side ${leadA}">
+            <div class="rcmp-score-name">${esc(data.aMeta.short)}</div>
+            <div class="rcmp-score-num">${data.aTotal}</div>
+            <div class="rcmp-score-unit">pts en duelo</div>
+          </div>
+          <div class="rcmp-score-vs">
+            <div class="rcmp-score-vs-badge">VS</div>
+            <div class="rcmp-score-vs-sub">cara a cara</div>
+          </div>
+          <div class="rcmp-score-side ${leadB}">
+            <div class="rcmp-score-name">${esc(data.bMeta.short)}</div>
+            <div class="rcmp-score-num">${data.bTotal}</div>
+            <div class="rcmp-score-unit">pts en duelo</div>
+          </div>
+        </div>
+      </div>
+      <div class="rcmp-pill-row">
+        <div class="rcmp-pill"><span class="n">${data.resolved.length}</span><span class="l">Partidos resueltos</span></div>
+        <div class="rcmp-pill"><span class="n">${data.aExact} · ${data.bExact}</span><span class="l">Exactos</span></div>
+        <div class="rcmp-pill"><span class="n">${data.aWins} · ${data.bWins}</span><span class="l">Duelo ganado</span></div>
+        <div class="rcmp-pill"><span class="n">${data.same} / ${data.diff}</span><span class="l">Iguales / distintos</span></div>
+      </div>
+      <div class="rcmp-insights">
+        <div class="rcmp-insight"><div class="rcmp-insight-ico">⚡</div><div class="rcmp-insight-copy">${insightLead}</div></div>
+        <div class="rcmp-insight"><div class="rcmp-insight-ico">🏁</div><div class="rcmp-insight-copy">${insightWins}</div></div>
+        <div class="rcmp-insight"><div class="rcmp-insight-ico">📌</div><div class="rcmp-insight-copy">${sameVsDiff}</div></div>
+        <div class="rcmp-insight"><div class="rcmp-insight-ico">🎯</div><div class="rcmp-insight-copy">${swing}</div></div>
+      </div>`;
+  }
+  function buildMatchesHtml(data){
+    const filters = `
+      <div class="rcmp-filter-row">
+        <button class="rcmp-filter ${state.filter === 'all' ? 'active' : ''}" type="button" onclick="setRankingCompareFilter('all')">Todos</button>
+        <button class="rcmp-filter ${state.filter === 'diff' ? 'active' : ''}" type="button" onclick="setRankingCompareFilter('diff')">Sólo diferencias</button>
+        <button class="rcmp-filter ${state.filter === 'scored' ? 'active' : ''}" type="button" onclick="setRankingCompareFilter('scored')">Sólo con puntos</button>
+      </div>`;
+    const rows = data.shownRows.map(r=>{
+      const resultLabel = r.pending ? 'Pendiente' : `Resultado ${r.result.home}:${r.result.away}`;
+      const statusClass = r.pending ? '' : 'done';
+      const aCls = r.winner === 'a' ? 'win' : (r.winner === 'tie' ? 'tie' : '');
+      const bCls = r.winner === 'b' ? 'win' : (r.winner === 'tie' ? 'tie' : '');
+      const aPick = r.aPick ? `${r.aPick.home}:${r.aPick.away}` : '—';
+      const bPick = r.bPick ? `${r.bPick.home}:${r.bPick.away}` : '—';
+      const aPts = r.pending ? '—' : `${r.aCalc.pts > 0 ? '+' : ''}${r.aCalc.pts}`;
+      const bPts = r.pending ? '—' : `${r.bCalc.pts > 0 ? '+' : ''}${r.bCalc.pts}`;
+      const badgeDiff = r.samePick && r.bothHavePick ? `<span class="rcmp-badge same">Mismo palpite</span>` : `<span class="rcmp-badge diff">Palpites distintos</span>`;
+      const badgeWinner = !r.pending ? (r.winner === 'a' ? `<span class="rcmp-badge">${esc(data.aMeta.short)} ganó este duelo</span>` : (r.winner === 'b' ? `<span class="rcmp-badge">${esc(data.bMeta.short)} ganó este duelo</span>` : `<span class="rcmp-badge">Empate</span>`)) : '';
+      return `
+        <div class="rcmp-match-card">
+          <div class="rcmp-match-head">
+            <div class="rcmp-match-teams">${esc(r.m.hf || '')} ${esc(r.m.home)} × ${esc(r.m.away)} ${esc(r.m.af || '')}</div>
+            <div class="rcmp-match-status ${statusClass}">${resultLabel}</div>
+          </div>
+          <div class="rcmp-side-grid">
+            <div class="rcmp-side ${aCls}">
+              <div class="rcmp-side-name">${esc(data.aMeta.short)}</div>
+              <div class="rcmp-side-line"><span class="rcmp-pick">${aPick}</span><span class="rcmp-pts ${r.pending ? '' : (r.aCalc.pts > 0 ? 'good' : 'zero')}">${aPts}</span></div>
+            </div>
+            <div class="rcmp-side ${bCls}">
+              <div class="rcmp-side-name">${esc(data.bMeta.short)}</div>
+              <div class="rcmp-side-line"><span class="rcmp-pick">${bPick}</span><span class="rcmp-pts ${r.pending ? '' : (r.bCalc.pts > 0 ? 'good' : 'zero')}">${bPts}</span></div>
+            </div>
+          </div>
+          <div class="rcmp-badges">${badgeDiff}${badgeWinner}</div>
+        </div>`;
+    }).join('');
+    return filters + (rows || '<div class="rcmp-empty">No hay partidos para mostrar con este filtro.</div>');
+  }
+  function renderCompareBody(){
+    const body = document.getElementById('rcmp-body');
+    const tabs = document.getElementById('rcmp-tabs');
+    if(!body || !tabs) return;
+    if(!state.secondary){
+      tabs.innerHTML = '';
+      body.innerHTML = '<div class="rcmp-empty">Elegí un rival para empezar la comparación.</div><div class="rcmp-cta-note">Tip: por defecto ya dejamos una sugerencia útil. Podés cambiarla con el buscador de arriba.</div>';
+      return;
+    }
+    const data = buildCompareData();
+    if(!data){
+      tabs.innerHTML = '';
+      body.innerHTML = '<div class="rcmp-empty">No se pudo cargar el comparativo.</div>';
+      return;
+    }
+    tabs.innerHTML = `
+      <button class="rcmp-tab ${state.tab === 'summary' ? 'active' : ''}" type="button" onclick="setRankingCompareTab('summary')">Resumen</button>
+      <button class="rcmp-tab ${state.tab === 'matches' ? 'active' : ''}" type="button" onclick="setRankingCompareTab('matches')">Confrontos</button>`;
+    renderCompareRoundNav(data);
+    body.innerHTML = state.tab === 'summary' ? buildSummaryHtml(data) : buildMatchesHtml(data);
+  }
+  function renderCompareModal(){
+    renderCompareHero();
+    renderCompareSearch();
+    renderCompareSuggestions();
+    renderCompareBody();
+  }
+
+  window.openRankingCompare = function(name){
+    const { ranked } = getRankedMap();
+    const fallback = (window.currentUser && currentUser !== name)
+      ? currentUser
+      : ((ranked.find(u=>u.name !== name) || {}).name || '');
+    state.primary = name;
+    state.secondary = fallback;
+    state.search = '';
+    state.tab = 'summary';
+    state.filter = 'all';
+    state.roundIdx = getCompareRounds().length;
+    const modal = document.getElementById('ranking-compare-modal');
+    if(modal) modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    renderCompareModal();
+    requestAnimationFrame(()=>{
+      const input = document.getElementById('rcmp-search-input');
+      if(input) input.blur();
+    });
+  };
+  window.closeRankingCompareModal = function(){
+    const modal = document.getElementById('ranking-compare-modal');
+    if(modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+  };
+  window.closeRankingCompareModalOutside = function(event){
+    if(event.target === document.getElementById('ranking-compare-modal')) closeRankingCompareModal();
+  };
+  window.swapComparePlayers = function(){
+    if(!state.primary || !state.secondary) return;
+    const a = state.primary;
+    state.primary = state.secondary;
+    state.secondary = a;
+    state.search = '';
+    renderCompareModal();
+  };
+  window.updateRankingCompareSearch = function(value){
+    state.search = value || '';
+    renderCompareSuggestions();
+  };
+  window.setRankingCompareSecondary = function(name){
+    state.secondary = name;
+    state.tab = 'summary';
+    state.filter = 'all';
+    state.search = '';
+    renderCompareModal();
+  };
+  window.setRankingCompareTab = function(tab){
+    state.tab = tab;
+    renderCompareBody();
+  };
+  window.setRankingCompareFilter = function(filter){
+    state.filter = filter;
+    renderCompareBody();
+  };
+  window.changeRankingCompareRound = function(delta){
+    const rounds = getCompareRounds();
+    let next = state.roundIdx + delta;
+    if(next < 0) next = 0;
+    if(next > rounds.length) next = rounds.length;
+    state.roundIdx = next;
+    renderCompareBody();
+  };
+
+  function clearHoldTimer(){
+    if(holdTimer){ clearTimeout(holdTimer); holdTimer = null; }
+  }
+  function startHold(event, name){
+    if(!name) return;
+    clearHoldTimer();
+    holdStartX = event.clientX || 0;
+    holdStartY = event.clientY || 0;
+    holdTargetName = name;
+    holdTimer = setTimeout(()=>{
+      holdTimer = null;
+      suppressClickUntil = Date.now() + 800;
+      try{ if(navigator.vibrate) navigator.vibrate(18); }catch(e){}
+      window.openRankingCompare(holdTargetName);
+    }, HOLD_MS);
+  }
+  function moveHold(event){
+    if(!holdTimer) return;
+    const dx = Math.abs((event.clientX || 0) - holdStartX);
+    const dy = Math.abs((event.clientY || 0) - holdStartY);
+    if(dx > MOVE_TOLERANCE || dy > MOVE_TOLERANCE) clearHoldTimer();
+  }
+  function endHold(){ clearHoldTimer(); }
+
+  function attachRankingCompareLongPress(){
+    const list = document.getElementById('ranking-list');
+    if(!list) return;
+    list.querySelectorAll('.rank-card').forEach(card=>{
+      if(card.dataset.compareHoldBound === '1') return;
+      const nameEl = card.querySelector('.rank-name-txt');
+      const name = nameEl ? nameEl.textContent.trim() : '';
+      if(!name) return;
+      card.dataset.compareHoldBound = '1';
+      card.addEventListener('pointerdown', (event)=>startHold(event, name));
+      card.addEventListener('pointermove', moveHold);
+      card.addEventListener('pointerup', endHold);
+      card.addEventListener('pointerleave', endHold);
+      card.addEventListener('pointercancel', endHold);
+      card.addEventListener('contextmenu', (event)=>event.preventDefault());
+      card.addEventListener('click', function(event){
+        if(Date.now() < suppressClickUntil){
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return false;
+        }
+      }, true);
+    });
+  }
+
+  if(typeof window.renderRanking === 'function'){
+    const originalRenderRanking = window.renderRanking;
+    window.renderRanking = function(){
+      const result = originalRenderRanking.apply(this, arguments);
+      requestAnimationFrame(attachRankingCompareLongPress);
+      return result;
+    };
+  }
+  document.addEventListener('DOMContentLoaded', ()=>{
+    requestAnimationFrame(attachRankingCompareLongPress);
+  });
+  setTimeout(attachRankingCompareLongPress, 600);
+})();
+</script>
