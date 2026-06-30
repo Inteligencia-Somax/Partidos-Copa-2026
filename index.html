@@ -18517,3 +18517,139 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   setTimeout(attachRankingCompareLongPress, 600);
 })();
 </script>
+
+
+<script id="edson-ranking-compare-longpress-delegado-v2-20260629">
+(function(){
+  if(window.__somaxRankingCompareDelegatedV2) return;
+  window.__somaxRankingCompareDelegatedV2 = true;
+
+  const HOLD_MS = 520;
+  const MOVE_TOLERANCE = 26;
+  let timer = null;
+  let startX = 0;
+  let startY = 0;
+  let targetCard = null;
+  let targetName = '';
+  let fired = false;
+
+  function clearTimer(){
+    if(timer){
+      clearTimeout(timer);
+      timer = null;
+    }
+  }
+
+  function findCard(el){
+    return el && el.closest ? el.closest('#ranking-list .rank-card') : null;
+  }
+
+  function getNameFromCard(card){
+    if(!card) return '';
+    const nameEl =
+      card.querySelector('.rank-name-txt') ||
+      card.querySelector('.rank-name') ||
+      card.querySelector('[data-name]');
+    return nameEl ? String(nameEl.textContent || nameEl.getAttribute('data-name') || '').trim() : '';
+  }
+
+  function getPoint(evt){
+    const e = evt.touches && evt.touches[0] ? evt.touches[0] : evt;
+    return { x: e.clientX || 0, y: e.clientY || 0 };
+  }
+
+  function start(evt){
+    const card = findCard(evt.target);
+    if(!card) return;
+
+    const name = getNameFromCard(card);
+    if(!name) return;
+
+    clearTimer();
+
+    const p = getPoint(evt);
+    startX = p.x;
+    startY = p.y;
+    targetCard = card;
+    targetName = name;
+    fired = false;
+
+    timer = setTimeout(function(){
+      timer = null;
+      fired = true;
+
+      try{ if(navigator.vibrate) navigator.vibrate(18); }catch(e){}
+
+      if(typeof window.openRankingCompare === 'function'){
+        window.openRankingCompare(targetName);
+      }else{
+        console.warn('openRankingCompare no disponible');
+      }
+    }, HOLD_MS);
+  }
+
+  function move(evt){
+    if(!timer) return;
+
+    const p = getPoint(evt);
+    const dx = Math.abs(p.x - startX);
+    const dy = Math.abs(p.y - startY);
+
+    if(dx > MOVE_TOLERANCE || dy > MOVE_TOLERANCE){
+      clearTimer();
+    }
+  }
+
+  function end(evt){
+    clearTimer();
+
+    if(fired){
+      evt.preventDefault();
+      evt.stopPropagation();
+      if(evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+
+      setTimeout(function(){
+        fired = false;
+        targetCard = null;
+        targetName = '';
+      }, 120);
+
+      return false;
+    }
+  }
+
+  function cancel(){
+    clearTimer();
+    fired = false;
+    targetCard = null;
+    targetName = '';
+  }
+
+  document.addEventListener('pointerdown', start, true);
+  document.addEventListener('pointermove', move, true);
+  document.addEventListener('pointerup', end, true);
+  document.addEventListener('pointercancel', cancel, true);
+
+  document.addEventListener('touchstart', start, {capture:true, passive:true});
+  document.addEventListener('touchmove', move, {capture:true, passive:true});
+  document.addEventListener('touchend', end, true);
+  document.addEventListener('touchcancel', cancel, true);
+
+  document.addEventListener('click', function(evt){
+    if(fired){
+      evt.preventDefault();
+      evt.stopPropagation();
+      if(evt.stopImmediatePropagation) evt.stopImmediatePropagation();
+      return false;
+    }
+  }, true);
+
+  document.addEventListener('contextmenu', function(evt){
+    const card = findCard(evt.target);
+    if(card){
+      evt.preventDefault();
+      return false;
+    }
+  }, true);
+})();
+</script>
