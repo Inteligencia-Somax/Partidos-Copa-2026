@@ -19235,3 +19235,174 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     font-weight:700!important;
   }
 </style>
+
+
+<style id="edson-busca-puntos-digitacao-real-20260629">
+  /*
+    Correção definitiva da busca:
+    - Não recria o modal a cada tecla.
+    - Mantém o teclado aberto no celular.
+    - Filtra as linhas visualmente enquanto digita.
+  */
+  #match-breakdown-modal .mb-score-search-input{
+    pointer-events:auto!important;
+    -webkit-user-select:text!important;
+    user-select:text!important;
+    touch-action:manipulation!important;
+    caret-color:var(--green)!important;
+  }
+
+  #match-breakdown-modal .ud-row.mb-live-search-hidden{
+    display:none!important;
+  }
+</style>
+
+<script id="edson-busca-puntos-digitacao-real-20260629">
+(function(){
+  if(window.__edsonBuscaPuntosDigitacaoReal) return;
+  window.__edsonBuscaPuntosDigitacaoReal = true;
+
+  function escAttr(v){
+    return String(v || '')
+      .replace(/&/g,'&amp;')
+      .replace(/"/g,'&quot;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
+
+  function normalizePlain(v){
+    return String(v || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/\s+/g,' ')
+      .trim();
+  }
+
+  function normalizeScore(v){
+    return normalizePlain(v)
+      .replace(/[×x]/g, ':')
+      .replace(/\s+/g,'')
+      .replace(/[^a-z0-9:º°]/g,'');
+  }
+
+  function rowMatches(row, query){
+    if(!query) return true;
+
+    var text = row ? row.textContent || '' : '';
+    var qPlain = normalizePlain(query);
+    var tPlain = normalizePlain(text);
+
+    if(tPlain.indexOf(qPlain) !== -1) return true;
+
+    var qScore = normalizeScore(query);
+    var tScore = normalizeScore(text);
+
+    return qScore && tScore.indexOf(qScore) !== -1;
+  }
+
+  window.applyMbLiveSearch = function(value){
+    var term = String(value || '');
+
+    if(window.mbState){
+      mbState.searchActive = true;
+      mbState.searchTerm = term;
+      mbState.filterScore = null;
+    }
+
+    var rows = document.querySelectorAll('#match-breakdown-modal .ud-body .ud-row');
+    rows.forEach(function(row){
+      row.classList.toggle('mb-live-search-hidden', !rowMatches(row, term));
+    });
+
+    var input = document.querySelector('#match-breakdown-modal .mb-score-search-input');
+    if(input && input.value !== term){
+      input.value = term;
+    }
+  };
+
+  /*
+    Mantém compatibilidade com os handlers antigos.
+    Agora digitar NÃO chama renderMatchBreakdown(), então o input não é destruído
+    e o teclado não fecha.
+  */
+  window.setMbScoreSearchTerm = function(value){
+    window.applyMbLiveSearch(value);
+  };
+
+  window.setMbScoreSearch = function(value){
+    window.applyMbLiveSearch(value);
+  };
+
+  window.buildMbScoreSearchRow = function(){
+    var value = (window.mbState && mbState.searchTerm) ? mbState.searchTerm : '';
+    return `
+      <div class="mb-score-search-row">
+        <div class="mb-score-search" onclick="var i=this.querySelector('input'); if(i) i.focus({preventScroll:true});">
+          <span class="mb-score-search-ico" aria-hidden="true"></span>
+          <input class="mb-score-search-input"
+                 type="text"
+                 inputmode="search"
+                 autocomplete="off"
+                 autocapitalize="none"
+                 spellcheck="false"
+                 placeholder="Buscar nombre, pronóstico o puntos..."
+                 value="${escAttr(value)}"
+                 oninput="applyMbLiveSearch(this.value)"
+                 onclick="event.stopPropagation();"
+                 onpointerdown="event.stopPropagation();">
+          <button class="mb-score-search-clear"
+                  type="button"
+                  onclick="event.stopPropagation(); var i=this.closest('.mb-score-search').querySelector('input'); if(i){i.value=''; i.focus({preventScroll:true});} applyMbLiveSearch('');"
+                  aria-label="Limpiar búsqueda">×</button>
+        </div>
+      </div>`;
+  };
+
+  document.addEventListener('input', function(event){
+    var input = event.target && event.target.closest
+      ? event.target.closest('#match-breakdown-modal .mb-score-search-input')
+      : null;
+
+    if(!input) return;
+    window.applyMbLiveSearch(input.value);
+  }, true);
+
+  document.addEventListener('click', function(event){
+    var box = event.target && event.target.closest
+      ? event.target.closest('#match-breakdown-modal .mb-score-search')
+      : null;
+
+    if(!box) return;
+
+    event.stopPropagation();
+    var input = box.querySelector('.mb-score-search-input');
+    if(input){
+      setTimeout(function(){
+        try{ input.focus({preventScroll:true}); }catch(e){ input.focus(); }
+      }, 0);
+    }
+  }, true);
+
+  /*
+    Quando o modal renderiza por troca de jogo/filtro, reaplica o termo atual sem recriar no input.
+  */
+  var observer = new MutationObserver(function(){
+    if(window.mbState && mbState.searchTerm){
+      window.applyMbLiveSearch(mbState.searchTerm);
+    }
+  });
+
+  function start(){
+    var modal = document.getElementById('match-breakdown-modal');
+    if(modal){
+      observer.observe(modal, {childList:true, subtree:true});
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', start);
+  }else{
+    start();
+  }
+})();
+</script>
