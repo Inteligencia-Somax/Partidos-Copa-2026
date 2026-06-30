@@ -8374,6 +8374,53 @@ function getRankedUsersByRoundIncludingExcluded(roundLabel){
   return buildRankedUsers({ includeExcluded:true, roundLabel });
 }
 
+// Posición histórica del participante después de un partido específico.
+// Se usa en el detalle del participante > Partidos para mostrar en qué puesto estaba
+// en aquel momento, sin cambiar el ranking general ni las reglas de privacidad.
+function getUserPositionAfterMatch(userName, match){
+  if(!userName || !match || isExcludedFromRanking(userName)) return null;
+
+  const all = loadAllPicks();
+  const realResults = loadRealResults();
+  if(!realResults[match.id]) return null;
+
+  const targetTime = getMatchDateTime(match).getTime();
+  const targetId = Number(match.id) || 0;
+
+  const ranked = Object.entries(all)
+    .filter(([name]) => !isExcludedFromRanking(name))
+    .map(([name, picks]) => {
+      const stats = {name, pickCount:0, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
+
+      MATCHES.forEach(mm => {
+        const real = realResults[mm.id];
+        if(!real) return;
+
+        const mt = getMatchDateTime(mm).getTime();
+        const mid = Number(mm.id) || 0;
+        // Incluye solo resultados hasta este partido.
+        // Si dos partidos tienen el mismo horario, usa el id como desempate estable.
+        if(mt > targetTime) return;
+        if(mt === targetTime && mid > targetId) return;
+
+        if(picks && picks[mm.id]) stats.pickCount++;
+        const calc = calculatePickPoints(picks && picks[mm.id], real, mm);
+        stats.score += calc.pts;
+        if(stats[calc.type] !== undefined) stats[calc.type]++;
+      });
+
+      return stats;
+    })
+    .sort(sortRankStats);
+
+  const idx = ranked.findIndex(u => u.name === userName);
+  return idx >= 0 ? idx + 1 : null;
+}
+
+function formatHistoricalPositionTag(pos){
+  return pos ? `<span class="ud-position-tag">${pos}º posición</span>` : '';
+}
+
 // Mismo ranking pero excluyendo una fecha/ronda (para saber la posición anterior).
 function getRankedUsersExcludingRound(excludeRound){
   return buildRankedUsers({ excludeRound });
@@ -8949,13 +8996,17 @@ function renderUdPartidos(){
       if(isExact) pickTags.push('<span class="ud-exact-tag">Exacto</span>');
     }
 
+    const historicalPositionHtml = formatHistoricalPositionTag(getUserPositionAfterMatch(udState?.stats?.name, m));
+    const pickTagsHtml = pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : '';
+    const historicalPositionSepHtml = historicalPositionHtml ? '<span class="ud-meta-sep">•</span>' + historicalPositionHtml : '';
+
     rows += `
       <div class="ud-row ${m.x2 ? 'x2-game' : ''} ${isExact ? 'exact' : ''}" onclick="openMatchInfoFromUserDetail(${m.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMatchInfoFromUserDetail(${m.id})}">
         <div class="ud-match">
           <div class="ud-line-main">
             <span class="ud-teams"><span class="ud-team-name home">${m.hf || ''} ${m.home}</span> ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} <span class="ud-team-name away">${m.away} ${m.af || ''}</span></span>
           </div>
-          <div class="ud-pick-line"><span class="ud-pick${pickInfoClass}" ${pickInfoAttr}>${pickLabel}</span>${pendingRegisteredHtml}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
+          <div class="ud-pick-line"><span class="ud-pick${pickInfoClass}" ${pickInfoAttr}>${pickLabel}</span>${pendingRegisteredHtml}${pickTagsHtml}${historicalPositionSepHtml}</div>
         </div>
         <div class="ud-pts ${pending ? 'zero' : cls} ${isExact ? 'exact' : ''}">${ptsStr}</div>
       </div>`;
@@ -11641,7 +11692,8 @@ function showSaveBanner(msg){
 
   #user-detail-modal .ud-mine-tag,
   #user-detail-modal .ud-most-tag,
-  #user-detail-modal .ud-exact-tag{
+  #user-detail-modal .ud-exact-tag,
+  #user-detail-modal .ud-position-tag{
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
@@ -11790,7 +11842,8 @@ function showSaveBanner(msg){
 
   #user-detail-modal .ud-mine-tag,
   #user-detail-modal .ud-most-tag,
-  #user-detail-modal .ud-exact-tag{
+  #user-detail-modal .ud-exact-tag,
+  #user-detail-modal .ud-position-tag{
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
@@ -11837,7 +11890,8 @@ function showSaveBanner(msg){
     #user-detail-modal .ud-pick{font-size:11.8px!important;}
     #user-detail-modal .ud-mine-tag,
     #user-detail-modal .ud-most-tag,
-    #user-detail-modal .ud-exact-tag{
+    #user-detail-modal .ud-exact-tag,
+    #user-detail-modal .ud-position-tag{
       height:17px!important;
       min-height:17px!important;
       font-size:11.6px!important;
@@ -11954,7 +12008,8 @@ function showSaveBanner(msg){
 
   #user-detail-modal .ud-mine-tag,
   #user-detail-modal .ud-most-tag,
-  #user-detail-modal .ud-exact-tag{
+  #user-detail-modal .ud-exact-tag,
+  #user-detail-modal .ud-position-tag{
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
@@ -12020,7 +12075,8 @@ function showSaveBanner(msg){
     #user-detail-modal .ud-pick{font-size:11.2px!important;}
     #user-detail-modal .ud-mine-tag,
     #user-detail-modal .ud-most-tag,
-    #user-detail-modal .ud-exact-tag{
+    #user-detail-modal .ud-exact-tag,
+    #user-detail-modal .ud-position-tag{
       height:17px!important;
       min-height:17px!important;
       font-size:10.7px!important;
@@ -13900,6 +13956,42 @@ body.edson-matches-bg #summary-modal .summary-header{
   setTimeout(run, 120);
 })();
 </script>
+
+
+
+<!-- AJUSTE: posición histórica en detalle del participante -->
+<style id="ajuste-user-detail-posicion-historica-20260630">
+  #user-detail-modal .ud-position-tag{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    height:18px!important;
+    min-height:18px!important;
+    padding:1px 7px!important;
+    border-radius:999px!important;
+    font-size:11.2px!important;
+    font-weight:800!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    flex:0 0 auto!important;
+    max-width:92px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    margin:0!important;
+    color:#6B7280!important;
+    background:#F3F4F6!important;
+    border:1px solid #E5E7EB!important;
+  }
+  @media(max-width:430px){
+    #user-detail-modal .ud-position-tag{
+      height:17px!important;
+      min-height:17px!important;
+      font-size:10.7px!important;
+      padding:1px 6px!important;
+      max-width:84px!important;
+    }
+  }
+</style>
 
 </body>
 
@@ -16325,7 +16417,8 @@ body.edson-matches-bg #summary-modal .summary-header{
 
   #user-detail-modal .ud-mine-tag,
   #user-detail-modal .ud-most-tag,
-  #user-detail-modal .ud-exact-tag{
+  #user-detail-modal .ud-exact-tag,
+  #user-detail-modal .ud-position-tag{
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
@@ -16599,7 +16692,8 @@ body.edson-matches-bg #summary-modal .summary-header{
 
   #user-detail-modal .ud-mine-tag,
   #user-detail-modal .ud-most-tag,
-  #user-detail-modal .ud-exact-tag{
+  #user-detail-modal .ud-exact-tag,
+  #user-detail-modal .ud-position-tag{
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
