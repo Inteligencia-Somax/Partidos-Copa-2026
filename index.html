@@ -6704,6 +6704,7 @@ html, body{scroll-behavior:auto!important;}
     <div class="ud-summary" id="mb-summary"></div>
     <div class="ud-tabs" id="mb-tabs"></div>
     <div class="ud-body" id="mb-body"></div>
+    <div class="mb-floating-filters-slot" id="mb-floating-filters-slot"></div>
   </div>
 </div>
 
@@ -20738,3 +20739,261 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     color:#6B7280!important;
   }
 </style>
+
+
+<!-- AJUSTE 20260630: filtros flutuantes também no modal Puntos por participante -->
+<style id="mb-floating-tag-filters-20260630-final">
+  /* Corrige o Limpiar do detalhe do participante: sem borda/anel verde quando ativo */
+  #user-detail-modal .ud-floating-filters .ud-float-clear,
+  #user-detail-modal .ud-floating-filters .ud-float-clear.active{
+    border:1px solid #D1D5DB!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.30),0 2px 6px rgba(0,0,0,.18)!important;
+    background:#FFFFFF!important;
+    color:#6B7280!important;
+  }
+
+  /* Mesma solução visual dos filtros flutuantes no modal do jogador, agora no modal do jogo */
+  #match-breakdown-modal .modal{
+    position:relative!important;
+    overflow:hidden!important;
+  }
+  #match-breakdown-modal .mb-floating-filters-slot{
+    position:absolute!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    z-index:120!important;
+    display:none!important;
+    pointer-events:none!important;
+    padding:18px 14px 16px!important;
+    background:transparent!important;
+  }
+  #match-breakdown-modal .mb-floating-filters-slot.show{
+    display:block!important;
+  }
+  #match-breakdown-modal .mb-floating-filters-slot::before{
+    content:''!important;
+    position:absolute!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    height:96px!important;
+    pointer-events:none!important;
+    background:linear-gradient(to top,rgba(0,0,0,.30),rgba(0,0,0,.16) 52%,rgba(0,0,0,0))!important;
+  }
+  #match-breakdown-modal .mb-floating-filters{
+    position:relative!important;
+    z-index:2!important;
+    width:100%!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    background:transparent!important;
+    pointer-events:auto!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  #match-breakdown-modal .mb-float-filter,
+  #match-breakdown-modal .mb-float-clear{
+    pointer-events:auto!important;
+    border:none!important;
+    background:transparent!important;
+    padding:0!important;
+    margin:0!important;
+    font-family:inherit!important;
+    cursor:pointer!important;
+    line-height:1!important;
+    opacity:.98!important;
+    transform:translateZ(0)!important;
+    -webkit-tap-highlight-color:transparent!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span,
+  #match-breakdown-modal .mb-floating-filters .ud-mine-tag,
+  #match-breakdown-modal .mb-floating-filters .ud-most-tag,
+  #match-breakdown-modal .mb-floating-filters .ud-exact-tag,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    height:25px!important;
+    min-height:25px!important;
+    padding:4px 10px!important;
+    font-size:13px!important;
+    line-height:1!important;
+    font-weight:900!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-sizing:border-box!important;
+    transform:none!important;
+    border-radius:50px!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.30),0 2px 6px rgba(0,0,0,.18)!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span{
+    box-shadow:0 0 0 2px rgba(0,155,84,.30),0 9px 24px rgba(0,0,0,.34),0 2px 7px rgba(0,0,0,.20)!important;
+    filter:saturate(1.12)!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear.active{
+    border:1px solid #D1D5DB!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.30),0 2px 6px rgba(0,0,0,.18)!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .ud-mine-tag,
+  #match-breakdown-modal .mb-floating-filters .ud-mine-tag.me{
+    background:#EAF1FF!important;
+    border:1px solid #BFD2F5!important;
+    color:var(--blue)!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .ud-most-tag{
+    background:#FFF3D6!important;
+    border:1px solid #E8C878!important;
+    color:#8A5A00!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .ud-exact-tag{
+    background:#E8F5EE!important;
+    border:1px solid #9FDCC0!important;
+    color:var(--green)!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    background:#FFFFFF!important;
+    border:1px solid #D1D5DB!important;
+    color:#6B7280!important;
+  }
+  #match-breakdown-modal.has-mb-floating-filters #mb-body{
+    padding-bottom:58px!important;
+  }
+  .mb-filtered-empty{
+    text-align:center;
+    padding:34px 20px;
+    color:var(--sub);
+    font-size:14px;
+    font-weight:600;
+    line-height:1.45;
+  }
+  @media(max-width:430px){
+    #match-breakdown-modal .mb-floating-filters-slot{
+      padding:18px 10px 14px!important;
+    }
+    #match-breakdown-modal .mb-floating-filters{
+      gap:7px!important;
+    }
+    #match-breakdown-modal .mb-floating-filters .mb-float-filter,
+    #match-breakdown-modal .mb-floating-filters .mb-float-clear,
+    #match-breakdown-modal .mb-floating-filters .mb-float-filter span,
+    #match-breakdown-modal .mb-floating-filters .ud-mine-tag,
+    #match-breakdown-modal .mb-floating-filters .ud-most-tag,
+    #match-breakdown-modal .mb-floating-filters .ud-exact-tag{
+      height:24px!important;
+      min-height:24px!important;
+      padding:4px 8px!important;
+      font-size:12.5px!important;
+      transform:none!important;
+    }
+  }
+</style>
+
+<script id="mb-floating-tag-filters-20260630-final-script">
+(function(){
+  function mbActiveTags(){
+    if(typeof mbState === 'undefined' || !mbState) return [];
+    if(!Array.isArray(mbState.tagFilters)) mbState.tagFilters = [];
+    return mbState.tagFilters;
+  }
+
+  window.renderMbFloatingFiltersHtml = function(){
+    const active = mbActiveTags();
+    const isActive = key => active.includes(key) ? ' active' : '';
+    return `
+      <div class="mb-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de participantes">
+        <button type="button" class="mb-float-filter${isActive('mine')}" onclick="toggleMbTagFilter('mine', event)" aria-pressed="${active.includes('mine')}"><span class="ud-mine-tag">= Vos</span></button>
+        <button type="button" class="mb-float-filter${isActive('most')}" onclick="toggleMbTagFilter('most', event)" aria-pressed="${active.includes('most')}"><span class="ud-most-tag">Más palpitado</span></button>
+        <button type="button" class="mb-float-filter${isActive('exact')}" onclick="toggleMbTagFilter('exact', event)" aria-pressed="${active.includes('exact')}"><span class="ud-exact-tag">Exacto</span></button>
+        <button type="button" class="mb-float-clear${active.length ? ' active' : ''}" onclick="clearMbTagFilters(event)">Limpiar</button>
+      </div>`;
+  };
+
+  window.renderMbFloatingFiltersIntoModal = function(){
+    const modal = document.getElementById('match-breakdown-modal');
+    const modalBox = modal ? modal.querySelector('.modal') : null;
+    if(!modalBox) return;
+    let slot = document.getElementById('mb-floating-filters-slot');
+    if(!slot){
+      slot = document.createElement('div');
+      slot.id = 'mb-floating-filters-slot';
+      slot.className = 'mb-floating-filters-slot';
+      modalBox.appendChild(slot);
+    }
+    if(typeof mbState === 'undefined' || !mbState || mbState.view !== 'list'){
+      slot.innerHTML = '';
+      slot.classList.remove('show');
+      modal.classList.remove('has-mb-floating-filters');
+      return;
+    }
+    slot.innerHTML = window.renderMbFloatingFiltersHtml();
+    slot.classList.add('show');
+    modal.classList.add('has-mb-floating-filters');
+  };
+
+  function getRowPick(row){
+    const txt = (row.querySelector('.ud-meta')?.textContent || '');
+    const m = txt.match(/Palpite:\s*(\d+)\s*:\s*(\d+)/i);
+    return m ? {home:Number(m[1]), away:Number(m[2])} : null;
+  }
+
+  function rowMatchesMbTag(row, key){
+    if(key === 'most') return !!row.querySelector('.ud-most-tag');
+    if(key === 'exact') return row.classList.contains('exact') || !!row.querySelector('.ud-exact-tag');
+    if(key === 'mine'){
+      const myPick = typeof mbState !== 'undefined' && mbState && mbState.myPick;
+      const rp = getRowPick(row);
+      return !!(myPick && rp && Number(myPick.home) === rp.home && Number(myPick.away) === rp.away);
+    }
+    return true;
+  }
+
+  window.applyMbFloatingFilters = function(){
+    const body = document.getElementById('mb-body');
+    if(!body || typeof mbState === 'undefined' || !mbState || mbState.view !== 'list') return;
+    const active = mbActiveTags();
+    const oldEmpty = body.querySelector('.mb-filtered-empty');
+    if(oldEmpty) oldEmpty.remove();
+
+    const rows = Array.from(body.children).filter(el => el.classList && el.classList.contains('ud-row'));
+    let visible = 0;
+    rows.forEach(row => {
+      const ok = !active.length || active.every(key => rowMatchesMbTag(row, key));
+      row.style.display = ok ? '' : 'none';
+      if(ok) visible++;
+    });
+
+    if(active.length && rows.length && !visible){
+      const div = document.createElement('div');
+      div.className = 'mb-filtered-empty';
+      div.textContent = 'No hay participantes con los filtros seleccionados.';
+      body.appendChild(div);
+    }
+  };
+
+  window.toggleMbTagFilter = function(key, ev){
+    if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+    const active = mbActiveTags();
+    if(active.includes(key)) mbState.tagFilters = active.filter(f => f !== key);
+    else mbState.tagFilters = active.concat(key);
+    renderMatchBreakdown();
+  };
+
+  window.clearMbTagFilters = function(ev){
+    if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+    if(typeof mbState !== 'undefined' && mbState) mbState.tagFilters = [];
+    renderMatchBreakdown();
+  };
+
+  if(typeof renderMatchBreakdown === 'function' && !window.__mbFloatingFiltersWrapped){
+    window.__mbFloatingFiltersWrapped = true;
+    const originalRenderMatchBreakdown = renderMatchBreakdown;
+    renderMatchBreakdown = function(){
+      const ret = originalRenderMatchBreakdown.apply(this, arguments);
+      window.renderMbFloatingFiltersIntoModal();
+      window.applyMbFloatingFilters();
+      return ret;
+    };
+  }
+})();
+</script>
