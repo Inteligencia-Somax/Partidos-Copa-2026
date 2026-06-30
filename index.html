@@ -13499,42 +13499,53 @@ body.edson-matches-bg #summary-modal .summary-header{
 </script>
 
 
-<script id="final-return-to-user-detail-after-match-breakdown">
+<script id="final-safe-return-user-detail-after-puntos">
 (function(){
-  if(window.__somaxReturnUserDetailAfterMb) return;
-  window.__somaxReturnUserDetailAfterMb = true;
+  if(window.__somaxSafeReturnUserDetailAfterPuntos) return;
+  window.__somaxSafeReturnUserDetailAfterPuntos = true;
 
-  function getUserDetailModal(){
+  function modalDetail(){
     return document.getElementById('user-detail-modal');
   }
 
-  function getMbModal(){
+  function modalPuntos(){
     return document.getElementById('match-breakdown-modal');
   }
 
-  function getDetailName(){
-    const modal = getUserDetailModal();
-    if(!modal) return '';
-    const title = modal.querySelector('.modal-match-label, .modal-header .modal-match-label');
-    return title ? String(title.textContent || '').trim() : '';
+  function detailName(){
+    const m = modalDetail();
+    if(!m) return '';
+    const el = m.querySelector('.modal-match-label, .modal-header .modal-match-label');
+    return el ? String(el.textContent || '').trim() : '';
   }
 
-  function rememberUserDetailContext(){
-    const modal = getUserDetailModal();
-    if(!modal || modal.style.display === 'none') return null;
+  function detailScroll(){
+    const m = modalDetail();
+    const body = m ? m.querySelector('.ud-body') : null;
+    return body ? body.scrollTop : 0;
+  }
 
-    const body = modal.querySelector('.ud-body');
-    const activeTab = modal.querySelector('.ud-tab.active');
-    const activeTabText = activeTab ? String(activeTab.textContent || '').trim() : '';
+  function detailActiveTabText(){
+    const m = modalDetail();
+    const tab = m ? m.querySelector('.ud-tab.active') : null;
+    return tab ? String(tab.textContent || '').replace(/\s+/g,' ').trim() : '';
+  }
+
+  function saveDetailContext(){
+    const m = modalDetail();
+    if(!m || m.style.display === 'none') return null;
+
+    const name = detailName();
+    if(!name) return null;
 
     return {
-      name: getDetailName(),
-      scrollTop: body ? body.scrollTop : 0,
-      activeTabText: activeTabText
+      name: name,
+      scrollTop: detailScroll(),
+      tabText: detailActiveTabText()
     };
   }
 
-  function restoreUserDetailContext(ctx){
+  function restoreDetailContext(ctx){
     if(!ctx || !ctx.name) return;
 
     if(typeof window.openUserDetail === 'function'){
@@ -13542,191 +13553,120 @@ body.edson-matches-bg #summary-modal .summary-header{
     }
 
     setTimeout(function(){
-      const modal = getUserDetailModal();
-      if(!modal) return;
+      const m = modalDetail();
+      if(!m) return;
 
-      modal.style.display = 'flex';
-
-      const body = modal.querySelector('.ud-body');
-      if(body && typeof ctx.scrollTop === 'number'){
-        body.scrollTop = ctx.scrollTop;
-      }
-
-      // If the detail view has been re-rendered, preserve the visible tab when possible.
-      if(ctx.activeTabText){
-        const tabs = Array.from(modal.querySelectorAll('.ud-tab'));
-        const target = tabs.find(t => String(t.textContent || '').trim() === ctx.activeTabText);
-        if(target && !target.classList.contains('active')){
-          try{ target.click(); }catch(e){}
-        }
-      }
-    }, 60);
-  }
-
-  const oldOpenMatchInfoFromUserDetail = window.openMatchInfoFromUserDetail;
-  if(typeof oldOpenMatchInfoFromUserDetail === 'function' && !oldOpenMatchInfoFromUserDetail.__somaxReturnWrapped){
-    const wrappedOpen = function(matchId){
-      window.__somaxMbReturnToUserDetail = rememberUserDetailContext();
-
-      // Keep original behavior: it closes detail and opens Puntos por participante.
-      return oldOpenMatchInfoFromUserDetail.apply(this, arguments);
-    };
-    wrappedOpen.__somaxReturnWrapped = true;
-    window.openMatchInfoFromUserDetail = wrappedOpen;
-  }
-
-  const oldCloseMatchBreakdown = window.closeMatchBreakdown;
-  if(typeof oldCloseMatchBreakdown === 'function' && !oldCloseMatchBreakdown.__somaxReturnWrapped){
-    const wrappedClose = function(){
-      const returnCtx = window.__somaxMbReturnToUserDetail || null;
-      window.__somaxMbReturnToUserDetail = null;
-
-      const ret = oldCloseMatchBreakdown.apply(this, arguments);
-
-      if(returnCtx && returnCtx.name){
-        restoreUserDetailContext(returnCtx);
-      }
-
-      return ret;
-    };
-    wrappedClose.__somaxReturnWrapped = true;
-    window.closeMatchBreakdown = wrappedClose;
-  }
-})();
-</script>
-
-
-<script id="final-return-to-user-detail-after-match-breakdown-v2">
-(function(){
-  if(window.__somaxReturnUserDetailAfterMbV2) return;
-  window.__somaxReturnUserDetailAfterMbV2 = true;
-
-  function detailModal(){
-    return document.getElementById('user-detail-modal');
-  }
-
-  function detailBody(){
-    const m = detailModal();
-    return m ? m.querySelector('.ud-body') : null;
-  }
-
-  function getDetailName(){
-    const m = detailModal();
-    if(!m) return '';
-    const t = m.querySelector('.modal-match-label, .modal-header .modal-match-label');
-    return t ? String(t.textContent || '').trim() : '';
-  }
-
-  function getActiveDetailTab(){
-    const m = detailModal();
-    if(!m) return '';
-    const active = m.querySelector('.ud-tab.active');
-    return active ? String(active.textContent || '').replace(/\s+/g,' ').trim() : '';
-  }
-
-  function saveCtx(){
-    const body = detailBody();
-    return {
-      name: getDetailName(),
-      tabText: getActiveDetailTab(),
-      scrollTop: body ? body.scrollTop : 0
-    };
-  }
-
-  function restoreCtx(ctx){
-    if(!ctx || !ctx.name) return;
-
-    if(typeof window.openUserDetail === 'function'){
-      window.openUserDetail(ctx.name);
-    }
-
-    setTimeout(function(){
-      const modal = detailModal();
-      if(!modal) return;
-
-      modal.style.display = 'flex';
+      m.style.display = 'flex';
 
       if(ctx.tabText){
-        const tabs = Array.from(modal.querySelectorAll('.ud-tab'));
-        const tab = tabs.find(t => String(t.textContent || '').replace(/\s+/g,' ').trim() === ctx.tabText);
-        if(tab && !tab.classList.contains('active')){
-          try{ tab.click(); }catch(e){}
+        const tabs = Array.from(m.querySelectorAll('.ud-tab'));
+        const found = tabs.find(t => String(t.textContent || '').replace(/\s+/g,' ').trim() === ctx.tabText);
+        if(found && !found.classList.contains('active')){
+          try{ found.click(); }catch(e){}
         }
       }
 
       setTimeout(function(){
-        const body = detailBody();
+        const body = m.querySelector('.ud-body');
         if(body && typeof ctx.scrollTop === 'number'){
           body.scrollTop = ctx.scrollTop;
         }
-      }, 40);
-    }, 40);
+      }, 60);
+    }, 60);
   }
 
-  // Replace the specific entry function from participant detail -> Puntos por participante.
-  window.openMatchInfoFromUserDetail = function(matchId){
-    const ctx = saveCtx();
-    window.__somaxMbReturnToUserDetailCtx = ctx;
-
-    const m = Array.isArray(window.MATCHES) ? window.MATCHES.find(x => x.id === matchId) : null;
-    if(!m) return;
-
-    if(typeof window.closeUserDetail === 'function'){
-      window.closeUserDetail();
-    }else{
-      const modal = detailModal();
-      if(modal) modal.style.display = 'none';
+  function markReturnContext(){
+    const ctx = saveDetailContext();
+    if(ctx && ctx.name){
+      window.__somaxReturnToDetailAfterPuntosCtx = ctx;
     }
+  }
 
-    setTimeout(function(){
-      const real = (typeof window.loadRealResults === 'function' ? window.loadRealResults()[matchId] : null) || null;
-      const canEdit = (typeof window.canEditPick === 'function') ? window.canEditPick(m) : false;
+  // Guarda o contexto antes do clique sair do detalhe do participante.
+  document.addEventListener('click', function(e){
+    const detail = modalDetail();
+    if(!detail || detail.style.display === 'none') return;
+    if(!e.target || !detail.contains(e.target)) return;
 
-      if(real || !canEdit){
-        if(typeof window.openMatchBreakdown === 'function') window.openMatchBreakdown(matchId);
-      }else{
-        if(typeof window.openModal === 'function') window.openModal(matchId);
-      }
-    }, 0);
-  };
+    const row = e.target.closest ? e.target.closest('.ud-row') : null;
+    if(row && row.closest('#user-detail-modal')){
+      markReturnContext();
+    }
+  }, true);
 
-  // Wrap close after defining/replacing above. If another patch already wrapped, this still works.
-  if(typeof window.closeMatchBreakdown === 'function' && !window.closeMatchBreakdown.__somaxReturnDetailV2){
+  // Também guarda antes de Enter/Espaço em uma linha do detalhe.
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    const detail = modalDetail();
+    if(!detail || detail.style.display === 'none') return;
+    if(!e.target || !detail.contains(e.target)) return;
+
+    const row = e.target.closest ? e.target.closest('.ud-row') : null;
+    if(row && row.closest('#user-detail-modal')){
+      markReturnContext();
+    }
+  }, true);
+
+  // Envolve a função original sem trocar a lógica dela.
+  if(typeof window.openMatchInfoFromUserDetail === 'function' && !window.openMatchInfoFromUserDetail.__somaxSafeReturnWrapped){
+    const originalOpen = window.openMatchInfoFromUserDetail;
+    const wrappedOpen = function(){
+      markReturnContext();
+      return originalOpen.apply(this, arguments);
+    };
+    wrappedOpen.__somaxSafeReturnWrapped = true;
+    window.openMatchInfoFromUserDetail = wrappedOpen;
+  }
+
+  function shouldRestore(){
+    const ctx = window.__somaxReturnToDetailAfterPuntosCtx;
+    if(!ctx || !ctx.name) return null;
+    window.__somaxReturnToDetailAfterPuntosCtx = null;
+    return ctx;
+  }
+
+  function closeOnlyPuntosFallback(){
+    const mb = modalPuntos();
+    if(mb) mb.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // Envolve o fechamento do Puntos por participante.
+  if(typeof window.closeMatchBreakdown === 'function' && !window.closeMatchBreakdown.__somaxSafeReturnWrapped){
     const originalClose = window.closeMatchBreakdown;
     const wrappedClose = function(){
-      const ctx = window.__somaxMbReturnToUserDetailCtx || null;
-      window.__somaxMbReturnToUserDetailCtx = null;
-
+      const ctx = shouldRestore();
       const ret = originalClose.apply(this, arguments);
 
-      if(ctx && ctx.name){
-        restoreCtx(ctx);
+      if(ctx){
+        setTimeout(function(){ restoreDetailContext(ctx); }, 40);
       }
 
       return ret;
     };
-    wrappedClose.__somaxReturnDetailV2 = true;
+    wrappedClose.__somaxSafeReturnWrapped = true;
     window.closeMatchBreakdown = wrappedClose;
   }
 
-  // Also catch close button clicks if the original close function reference was bound inline
-  // before this script loaded.
+  // Segurança extra para o botão X, caso algum onclick antigo chame a função original.
   document.addEventListener('click', function(e){
-    const mb = document.getElementById('match-breakdown-modal');
     const closeBtn = e.target && e.target.closest ? e.target.closest('#match-breakdown-modal .modal-close') : null;
-    if(!mb || !closeBtn) return;
+    if(!closeBtn) return;
 
-    const ctx = window.__somaxMbReturnToUserDetailCtx || null;
+    const ctx = window.__somaxReturnToDetailAfterPuntosCtx;
     if(!ctx || !ctx.name) return;
 
     setTimeout(function(){
-      const userModal = detailModal();
-      const mbVisible = mb.style.display !== 'none';
-      if(!mbVisible && (!userModal || userModal.style.display === 'none')){
-        window.__somaxMbReturnToUserDetailCtx = null;
-        restoreCtx(ctx);
+      const mb = modalPuntos();
+      const detail = modalDetail();
+      const mbClosed = !mb || mb.style.display === 'none';
+      const detailClosed = !detail || detail.style.display === 'none';
+
+      if(mbClosed && detailClosed){
+        window.__somaxReturnToDetailAfterPuntosCtx = null;
+        restoreDetailContext(ctx);
       }
-    }, 120);
+    }, 160);
   }, true);
 })();
 </script>
