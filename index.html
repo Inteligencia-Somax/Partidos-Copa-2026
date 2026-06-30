@@ -20626,3 +20626,75 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     }
   }
 </style>
+
+<!-- AJUSTE 20260630: filtros flutuantes maiores e loader sem realce -->
+<style id="edson-floating-filters-loader-final-20260630">
+  /* Loader inicial: mantém o fundo verde, spinner e texto, mas remove o card/transparência/borda atrás do "Cargando" */
+  .somax-loader-card{
+    background:transparent!important;
+    border:none!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    padding:0!important;
+    min-width:0!important;
+    border-radius:0!important;
+    overflow:visible!important;
+  }
+  .somax-loader-card::before{
+    content:none!important;
+    display:none!important;
+    animation:none!important;
+  }
+
+  /* Filtros flutuantes do detalhe do participante: todos com o mesmo tamanho do Limpiar ajustado */
+  #user-detail-modal .ud-floating-filters{
+    gap:9px!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter,
+  #user-detail-modal .ud-floating-filters .ud-float-clear{
+    height:25px!important;
+    min-height:25px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter span,
+  #user-detail-modal .ud-floating-filters .ud-mine-tag,
+  #user-detail-modal .ud-floating-filters .ud-most-tag,
+  #user-detail-modal .ud-floating-filters .ud-exact-tag,
+  #user-detail-modal .ud-floating-filters .ud-float-clear{
+    height:25px!important;
+    min-height:25px!important;
+    padding:4px 10px!important;
+    font-size:13px!important;
+    line-height:1!important;
+    font-weight:900!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-sizing:border-box!important;
+    transform:none!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-clear{
+    border-radius:50px!important;
+  }
+
+  @media(max-width:430px){
+    #user-detail-modal .ud-floating-filters{
+      gap:7px!important;
+    }
+    #user-detail-modal .ud-floating-filters .ud-float-filter,
+    #user-detail-modal .ud-floating-filters .ud-float-clear,
+    #user-detail-modal .ud-floating-filters .ud-float-filter span,
+    #user-detail-modal .ud-floating-filters .ud-mine-tag,
+    #user-detail-modal .ud-floating-filters .ud-most-tag,
+    #user-detail-modal .ud-floating-filters .ud-exact-tag{
+      height:24px!important;
+      min-height:24px!important;
+      padding:4px 8px!important;
+      font-size:12.5px!important;
+      transform:none!important;
+    }
+  }
+</style>
