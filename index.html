@@ -8646,6 +8646,20 @@ function setUdTab(tab){
 }
 
 function changeUdRound(delta){
+  // Correção: em "Todas las fechas", seta esquerda deve ir para a última fecha/fase,
+  // não para a primeira.
+  if(
+    delta < 0 &&
+    udState &&
+    Array.isArray(udState.rounds) &&
+    udState.rounds.length &&
+    udState.idx === udState.rounds.length
+  ){
+    udState.idx = udState.rounds.length - 1;
+    renderUd();
+    return;
+  }
+
   let i = udState.idx + delta;
   if(i < 0) i = 0;
   if(i > udState.rounds.length) i = udState.rounds.length;
@@ -9399,7 +9413,7 @@ function renderMatchBreakdown(){
           // la fila propia ya se identifica por el destaque verde.
           if(isMostPicked) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
           if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
-          const rowCls = ['ud-row', pending ? 'pending-row' : '', isMe ? 'mine' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
+          const rowCls = ['ud-row', pending ? 'pending-row' : '', isMe ? 'mine my-green-card' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const registeredHtml = pending ? formatMbRegisteredAt(p.savedAt) : '';
           const pendingTotalHtml = pending ? `<span class="ud-name-sep">•</span><span class="ud-pending-score ud-pending-score-name">${p.totalScore || 0} pts</span>` : '';
@@ -18512,6 +18526,52 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   /* Mantém separadores do card do usuário em verde suave */
   #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
   #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep{
+    color:rgba(0,155,84,.75)!important;
+  }
+</style>
+
+
+<style id="edson-correcoes-1-e-4-forca-card-verde-20260629">
+  /*
+    Correção 1:
+    No modal "Puntos por participante", o card do usuário logado fica verde,
+    inclusive em fase decisiva, substituindo o amarelo do card.
+    A flexinha verde lateral continua normal.
+  */
+
+  #match-breakdown-modal .ud-row.mine.my-green-card,
+  #match-breakdown-modal .ud-row.mine.my-green-card.exact,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card.exact{
+    background:rgba(0,155,84,.08)!important;
+    border:1px solid rgba(0,155,84,.32)!important;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,155,84,.22),
+      0 0 0 1px rgba(0,155,84,.08)!important;
+  }
+
+  #match-breakdown-modal .ud-row.mine.my-green-card .mb-pos,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-teams,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-participant-name,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-pick-points-inline,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-pending-score-name,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-pts,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .mb-pos,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-teams,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-participant-name,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-pick-points-inline,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-pending-score-name,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-pts{
+    color:var(--green)!important;
+    font-weight:900!important;
+  }
+
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-meta-sep,
+  #match-breakdown-modal .ud-row.mine.my-green-card .ud-name-sep,
+  #match-breakdown-modal .ud-row.mine.my-green-card .cmp-dot,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-meta-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .ud-name-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine.my-green-card .cmp-dot{
     color:rgba(0,155,84,.75)!important;
   }
 </style>
