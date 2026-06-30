@@ -18124,3 +18124,146 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 })();
 </script>
+
+
+<style id="edson-mb-search-proporcional-20260629">
+  /* Ajuste visual da busca fixa para ficar proporcional ao modal Puntos por participante */
+  #match-breakdown-modal .mb-score-search-row{
+    padding:6px 12px 7px!important;
+    background:#fff!important;
+    border-bottom:1px solid #E5E7EB!important;
+  }
+
+  #match-breakdown-modal .mb-score-search{
+    height:42px!important;
+    min-height:42px!important;
+    max-height:42px!important;
+    border-radius:14px!important;
+    background:#F8FAFC!important;
+    border:1px solid #E5E7EB!important;
+    box-shadow:none!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    padding:0 8px 0 11px!important;
+    box-sizing:border-box!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-ico{
+    width:17px!important;
+    height:17px!important;
+    flex:0 0 17px!important;
+    color:#6B7280!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:0!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-ico::before{
+    width:17px!important;
+    height:17px!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-input{
+    height:100%!important;
+    min-width:0!important;
+    flex:1 1 auto!important;
+    border:0!important;
+    outline:none!important;
+    background:transparent!important;
+    color:#111827!important;
+    font-size:13px!important;
+    line-height:1!important;
+    font-weight:700!important;
+    padding:0!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-input::placeholder{
+    color:#6B7280!important;
+    opacity:.85!important;
+    font-size:13px!important;
+    font-weight:700!important;
+  }
+
+  #match-breakdown-modal .mb-score-search-clear{
+    width:30px!important;
+    height:30px!important;
+    min-width:30px!important;
+    max-width:30px!important;
+    border-radius:999px!important;
+    border:0!important;
+    background:#fff!important;
+    color:#6B7280!important;
+    font-size:18px!important;
+    line-height:1!important;
+    font-weight:900!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-shadow:0 1px 3px rgba(15,23,42,.08)!important;
+    padding:0!important;
+  }
+
+  @media(max-width:430px){
+    #match-breakdown-modal .mb-score-search-row{
+      padding:6px 12px 7px!important;
+    }
+
+    #match-breakdown-modal .mb-score-search{
+      height:40px!important;
+      min-height:40px!important;
+      max-height:40px!important;
+      border-radius:13px!important;
+      padding-left:10px!important;
+      gap:7px!important;
+    }
+
+    #match-breakdown-modal .mb-score-search-input,
+    #match-breakdown-modal .mb-score-search-input::placeholder{
+      font-size:12px!important;
+      font-weight:700!important;
+    }
+
+    #match-breakdown-modal .mb-score-search-clear{
+      width:28px!important;
+      height:28px!important;
+      min-width:28px!important;
+      max-width:28px!important;
+      font-size:17px!important;
+    }
+  }
+</style>
+
+<script id="edson-mb-search-placeholder-curto-20260629">
+(function(){
+  if(window.__edsonMbSearchPlaceholderCurto) return;
+  window.__edsonMbSearchPlaceholderCurto = true;
+
+  function escAttr(v){
+    return String(v || '')
+      .replace(/&/g,'&amp;')
+      .replace(/"/g,'&quot;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
+
+  window.buildMbScoreSearchRow = function(){
+    const value = (window.mbState && mbState.searchTerm) ? mbState.searchTerm : '';
+    return `
+      <div class="mb-score-search-row">
+        <div class="mb-score-search">
+          <span class="mb-score-search-ico" aria-hidden="true"></span>
+          <input class="mb-score-search-input"
+                 type="text"
+                 inputmode="search"
+                 autocomplete="off"
+                 placeholder="Buscar nombre, palpite o puntos..."
+                 value="${escAttr(value)}"
+                 oninput="setMbScoreSearchTerm(this.value)">
+          <button class="mb-score-search-clear" type="button" onclick="setMbScoreSearchTerm('')" aria-label="Limpiar búsqueda">×</button>
+        </div>
+      </div>`;
+  };
+})();
+</script>
