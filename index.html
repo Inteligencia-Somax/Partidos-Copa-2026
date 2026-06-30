@@ -18882,3 +18882,102 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }, 1150);
 })();
 </script>
+
+
+<script id="edson-navegacao-fechas-definitiva-20260629">
+(function(){
+  if(window.__edsonNavegacaoFechasDefinitiva) return;
+  window.__edsonNavegacaoFechasDefinitiva = true;
+
+  function rankFecha(label){
+    var order = {
+      'Fecha 1': 1,
+      'Fecha 2': 2,
+      'Fecha 3': 3,
+      'Dieciseisavos': 4,
+      'Octavos': 5,
+      'Cuartos': 6,
+      'Semifinal': 7,
+      '3° Puesto': 8,
+      'Final': 9
+    };
+    return order[label] || 0;
+  }
+
+  function ordenarFechas(){
+    try{
+      if(!udState || !Array.isArray(udState.rounds)) return;
+      udState.rounds.sort(function(a,b){
+        return rankFecha(a) - rankFecha(b);
+      });
+    }catch(e){}
+  }
+
+  function indiceUltimaFechaDisponible(){
+    ordenarFechas();
+
+    try{
+      if(!udState || !Array.isArray(udState.rounds) || !udState.rounds.length) return 0;
+
+      var melhorIdx = 0;
+      var melhorRank = -1;
+
+      udState.rounds.forEach(function(label, idx){
+        var r = rankFecha(label);
+        if(r > melhorRank){
+          melhorRank = r;
+          melhorIdx = idx;
+        }
+      });
+
+      return melhorIdx;
+    }catch(e){
+      return 0;
+    }
+  }
+
+  /*
+    Regra definitiva:
+    - Em "Todas las fechas", clicar na seta esquerda entra na última fecha/fase disponível.
+    - Depois continua navegando para trás: última → anterior → anterior.
+    - A seta direita volta para frente e, depois da última fecha, retorna a "Todas las fechas".
+  */
+  try{
+    changeUdRound = function(delta){
+      ordenarFechas();
+
+      if(
+        delta < 0 &&
+        udState &&
+        Array.isArray(udState.rounds) &&
+        udState.rounds.length &&
+        udState.idx >= udState.rounds.length
+      ){
+        udState.idx = indiceUltimaFechaDisponible();
+        renderUd();
+        return;
+      }
+
+      var i = udState.idx + delta;
+
+      if(i < 0) i = 0;
+      if(i > udState.rounds.length) i = udState.rounds.length;
+
+      udState.idx = i;
+      renderUd();
+    };
+  }catch(e){}
+
+  /*
+    Segurança extra: ao renderizar o detalhe, mantém as fechas na ordem correta.
+    Isso evita que "Todas las fechas" volte para "Fecha 1" por causa da ordem de carregamento dos jogos.
+  */
+  try{
+    var originalRenderUd = renderUd;
+    renderUd = function(){
+      ordenarFechas();
+      return originalRenderUd.apply(this, arguments);
+    };
+  }catch(e){}
+})();
+</script>
