@@ -21811,3 +21811,204 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }, 0);
 })();
 </script>
+
+
+<script id="edson-mb-floating-filters-real-dom-filter-fix-20260630">
+(function(){
+  function getMbActiveFilters(){
+    if(window.mbState && Array.isArray(window.mbState.tagFilters)) return window.mbState.tagFilters.slice();
+    return [];
+  }
+
+  function setMbActiveFilters(filters){
+    window.mbState = window.mbState || {};
+    window.mbState.tagFilters = filters.slice();
+  }
+
+  function rowHasTag(row, key){
+    if(!row) return false;
+    var txt = (row.textContent || '').toLowerCase();
+
+    if(key === 'mine'){
+      return txt.indexOf('= vos') >= 0;
+    }
+
+    if(key === 'most'){
+      return txt.indexOf('más palpitado') >= 0 || txt.indexOf('mas palpitado') >= 0;
+    }
+
+    if(key === 'exact'){
+      return txt.indexOf('exacto') >= 0;
+    }
+
+    return true;
+  }
+
+  function findMbRows(){
+    var body = document.getElementById('mb-body');
+    if(!body) return [];
+
+    var selectors = [
+      '.mb-row',
+      '.mb-name-row',
+      '.rank-row',
+      '.ud-row',
+      '[data-mb-row]',
+      '[data-pick-row]'
+    ];
+
+    var rows = [];
+    selectors.forEach(function(sel){
+      body.querySelectorAll(sel).forEach(function(el){
+        if(rows.indexOf(el) < 0) rows.push(el);
+      });
+    });
+
+    // Fallback: in this modal, the participant list rows are direct div children with visible text.
+    if(!rows.length){
+      Array.prototype.forEach.call(body.children || [], function(el){
+        var txt = (el.textContent || '').trim();
+        if(txt && /palpite/i.test(txt) && !/buscar nombre/i.test(txt)){
+          rows.push(el);
+        }
+      });
+    }
+
+    return rows;
+  }
+
+  function applyMbFloatingTagFilters(){
+    var active = getMbActiveFilters();
+    var rows = findMbRows();
+    var visible = 0;
+
+    rows.forEach(function(row){
+      var show = true;
+      if(active.length){
+        // Multi-seletor em modo OR: mostra quem tem qualquer filtro selecionado.
+        // Isso é o esperado para "Más palpitado" + "Exacto", sem sumir quem tem só um deles.
+        show = active.some(function(key){ return rowHasTag(row, key); });
+      }
+      row.style.display = show ? '' : 'none';
+      if(show) visible++;
+    });
+
+    var body = document.getElementById('mb-body');
+    if(body){
+      var old = body.querySelector('.mb-filtered-empty-domfix');
+      if(old) old.remove();
+      if(active.length && rows.length && !visible){
+        var empty = document.createElement('div');
+        empty.className = 'mb-filtered-empty mb-filtered-empty-domfix';
+        empty.textContent = 'Sin participantes para este filtro.';
+        body.appendChild(empty);
+      }
+    }
+
+    updateMbFloatingButtonsActiveState();
+  }
+
+  function updateMbFloatingButtonsActiveState(){
+    var active = getMbActiveFilters();
+    var wrap = document.querySelector('#match-breakdown-modal .mb-floating-filters');
+    if(!wrap) return;
+
+    wrap.querySelectorAll('.mb-float-filter').forEach(function(btn){
+      var key = btn.getAttribute('data-filter');
+      var on = active.indexOf(key) >= 0;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  window.toggleMbTagFilter = function(key, ev){
+    if(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+
+    var active = getMbActiveFilters();
+    var idx = active.indexOf(key);
+    if(idx >= 0) active.splice(idx, 1);
+    else active.push(key);
+
+    setMbActiveFilters(active);
+    applyMbFloatingTagFilters();
+  };
+
+  window.clearMbTagFilters = function(ev){
+    if(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+    setMbActiveFilters([]);
+    applyMbFloatingTagFilters();
+  };
+
+  window.renderMbFloatingFiltersHtml = function(){
+    var active = getMbActiveFilters();
+    function isActive(key){ return active.indexOf(key) >= 0 ? ' active' : ''; }
+
+    return '<div class="mb-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de participantes">' +
+      '<button type="button" data-filter="mine" class="mb-float-filter' + isActive('mine') + '" onclick="toggleMbTagFilter(\'mine\', event)" aria-pressed="' + (active.indexOf('mine') >= 0) + '"><span class="ud-mine-tag">= Vos</span></button>' +
+      '<button type="button" data-filter="most" class="mb-float-filter' + isActive('most') + '" onclick="toggleMbTagFilter(\'most\', event)" aria-pressed="' + (active.indexOf('most') >= 0) + '"><span class="ud-most-tag">Más palpitado</span></button>' +
+      '<button type="button" data-filter="exact" class="mb-float-filter' + isActive('exact') + '" onclick="toggleMbTagFilter(\'exact\', event)" aria-pressed="' + (active.indexOf('exact') >= 0) + '"><span class="ud-exact-tag">Exacto</span></button>' +
+    '</div>';
+  };
+
+  // Reaplica após renderizações internas do modal.
+  var mbObserver = null;
+  function watchMbBody(){
+    var body = document.getElementById('mb-body');
+    if(!body || mbObserver) return;
+    mbObserver = new MutationObserver(function(){
+      if(getMbActiveFilters().length){
+        clearTimeout(window.__mbFilterDomFixTimer);
+        window.__mbFilterDomFixTimer = setTimeout(applyMbFloatingTagFilters, 30);
+      }
+    });
+    mbObserver.observe(body, {childList:true, subtree:true});
+  }
+
+  var oldRender = window.renderMbFloatingFilters;
+  window.renderMbFloatingFilters = function(){
+    if(typeof oldRender === 'function'){
+      oldRender.apply(this, arguments);
+    }else{
+      var slot = document.getElementById('mb-floating-filters-slot');
+      if(slot){
+        slot.innerHTML = window.renderMbFloatingFiltersHtml();
+        slot.classList.add('show');
+      }
+    }
+
+    setTimeout(function(){
+      updateMbFloatingButtonsActiveState();
+      watchMbBody();
+      applyMbFloatingTagFilters();
+    }, 0);
+  };
+
+  document.addEventListener('click', function(){
+    setTimeout(function(){
+      var modal = document.getElementById('match-breakdown-modal');
+      if(modal && modal.style.display !== 'none'){
+        watchMbBody();
+        updateMbFloatingButtonsActiveState();
+        if(getMbActiveFilters().length) applyMbFloatingTagFilters();
+      }
+    }, 80);
+  }, true);
+})();
+</script>
+
+<style id="edson-mb-floating-filters-centered-no-clear-final-20260630">
+  #match-breakdown-modal .mb-floating-filters{
+    justify-content:center!important;
+    gap:16px!important;
+  }
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    display:none!important;
+  }
+</style>
+
