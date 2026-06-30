@@ -2371,7 +2371,18 @@ html, body{scroll-behavior:auto!important;}
 }
 </style>
 </head>
-<body class="somax-loading"><div id="somax-loader-dot" aria-hidden="true"></div><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
+<body class="somax-loading">
+<div id="somax-loader-shell" aria-live="polite" aria-label="Cargando aplicación">
+  <div class="somax-loader-bg" aria-hidden="true"></div>
+  <div class="somax-loader-card" role="status">
+    <span class="somax-loader-spinner" aria-hidden="true"></span>
+    <span class="somax-loader-title">
+      Cargando<span class="somax-loader-dotchar">.</span><span class="somax-loader-dotchar">.</span><span class="somax-loader-dotchar">.</span>
+    </span>
+  </div>
+  <div id="somax-loader-phrase" class="somax-loader-phrase">Preparando partidos...</div>
+</div>
+<div id="somax-loader-dot" aria-hidden="true"></div><script id="somax-bootstrap-data">(function(){try{localStorage.removeItem('somax_user');localStorage.removeItem('somax_admin_unlocked');localStorage.removeItem('somax_all_picks');}catch(e){console.warn('No fue posible limpiar datos iniciales Somax',e);}})();</script>
 
 <!-- TOP BAR -->
 <div class="topbar">
@@ -18575,3 +18586,290 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     color:rgba(0,155,84,.75)!important;
   }
 </style>
+
+
+<style id="edson-loading-premium-animado-20260629">
+  /*
+    Loading premium:
+    1. Fundo verde com movimento sutil
+    2. Card com entrada suave
+    3. Spinner mais fluido
+    4. Pontinhos de "Cargando..." animados
+    5. Frases rotativas em espanhol
+    6. Saída suave para a tela principal
+  */
+
+  /* Desativa o loading antigo feito por pseudo-elementos para não duplicar visual */
+  body.somax-loading::before,
+  body.somax-loading::after{
+    display:none!important;
+    content:none!important;
+  }
+
+  body.somax-loading{
+    overflow:hidden!important;
+    background:#0B4F2B!important;
+  }
+
+  #somax-loader-dot{
+    display:none!important;
+  }
+
+  #somax-loader-shell{
+    position:fixed;
+    inset:0;
+    z-index:999999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .38s ease, visibility 0s linear .38s;
+  }
+
+  body.somax-loading #somax-loader-shell{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+    transition:opacity .38s ease;
+  }
+
+  .somax-loader-bg{
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(circle at 22% 18%, rgba(255,255,255,.08), transparent 28%),
+      radial-gradient(circle at 80% 78%, rgba(0,155,84,.42), transparent 34%),
+      linear-gradient(145deg,#0E6B3B 0%,#0A542E 48%,#084626 100%);
+    background-size:160% 160%, 170% 170%, 100% 100%;
+    animation:somaxLoaderBgMove 6.5s ease-in-out infinite alternate;
+  }
+
+  .somax-loader-bg::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(115deg, transparent 0%, rgba(255,255,255,.055) 42%, transparent 72%);
+    transform:translateX(-42%);
+    animation:somaxLoaderSoftShine 4.8s ease-in-out infinite;
+  }
+
+  .somax-loader-card{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    min-width:210px;
+    padding:16px 24px;
+    border-radius:999px;
+    color:#fff;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.26);
+    box-shadow:
+      0 22px 58px rgba(0,0,0,.30),
+      inset 0 1px 0 rgba(255,255,255,.18);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    animation:somaxLoaderCardIn .46s cubic-bezier(.2,.8,.2,1) both;
+    overflow:hidden;
+  }
+
+  .somax-loader-card::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.16) 46%, transparent 72%);
+    transform:translateX(-120%);
+    animation:somaxLoaderCardSweep 2.8s ease-in-out infinite;
+    pointer-events:none;
+  }
+
+  .somax-loader-spinner{
+    width:24px;
+    height:24px;
+    flex:0 0 24px;
+    border-radius:50%;
+    background:
+      conic-gradient(from 0deg, rgba(255,255,255,.12), rgba(255,255,255,.22), #fff, rgba(255,255,255,.12));
+    -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 4px), #000 0);
+    mask:radial-gradient(farthest-side, transparent calc(100% - 4px), #000 0);
+    animation:somaxLoaderSpinPremium .72s linear infinite;
+    filter:drop-shadow(0 0 8px rgba(255,255,255,.18));
+  }
+
+  .somax-loader-title{
+    position:relative;
+    z-index:1;
+    font-family:'Inter',sans-serif;
+    font-size:18px;
+    line-height:1;
+    font-weight:900;
+    letter-spacing:.25px;
+    white-space:nowrap;
+    text-shadow:0 1px 0 rgba(0,0,0,.12);
+  }
+
+  .somax-loader-dotchar{
+    display:inline-block;
+    animation:somaxLoaderDots 1.25s ease-in-out infinite;
+  }
+
+  .somax-loader-dotchar:nth-child(1){animation-delay:0s;}
+  .somax-loader-dotchar:nth-child(2){animation-delay:.16s;}
+  .somax-loader-dotchar:nth-child(3){animation-delay:.32s;}
+
+  .somax-loader-phrase{
+    position:relative;
+    z-index:1;
+    margin-top:15px;
+    min-height:20px;
+    color:rgba(255,255,255,.82);
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:750;
+    letter-spacing:.18px;
+    text-align:center;
+    opacity:.88;
+    transform:translateY(0);
+    transition:opacity .22s ease, transform .22s ease;
+    text-shadow:0 1px 0 rgba(0,0,0,.10);
+  }
+
+  .somax-loader-phrase.is-changing{
+    opacity:0;
+    transform:translateY(4px);
+  }
+
+  body:not(.somax-loading) #somax-loader-shell{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+
+  body:not(.somax-loading) #main-content,
+  body:not(.somax-loading) .topbar,
+  body:not(.somax-loading) .bottom-nav{
+    animation:somaxAppEnterAfterLoad .34s ease-out both;
+  }
+
+  @keyframes somaxLoaderBgMove{
+    0%{background-position:0% 0%, 100% 100%, 0 0;}
+    100%{background-position:100% 40%, 20% 10%, 0 0;}
+  }
+
+  @keyframes somaxLoaderSoftShine{
+    0%,35%{transform:translateX(-48%); opacity:.08;}
+    62%{transform:translateX(34%); opacity:.28;}
+    100%{transform:translateX(48%); opacity:.08;}
+  }
+
+  @keyframes somaxLoaderCardIn{
+    from{opacity:0; transform:translateY(10px) scale(.94);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+
+  @keyframes somaxLoaderCardSweep{
+    0%,42%{transform:translateX(-130%);}
+    68%{transform:translateX(130%);}
+    100%{transform:translateX(130%);}
+  }
+
+  @keyframes somaxLoaderSpinPremium{
+    to{transform:rotate(360deg);}
+  }
+
+  @keyframes somaxLoaderDots{
+    0%,22%{opacity:.25; transform:translateY(0);}
+    46%{opacity:1; transform:translateY(-1px);}
+    80%,100%{opacity:.45; transform:translateY(0);}
+  }
+
+  @keyframes somaxAppEnterAfterLoad{
+    from{opacity:.92; transform:translateY(5px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  @media (max-width:480px){
+    .somax-loader-card{
+      min-width:188px;
+      padding:15px 22px;
+      gap:13px;
+    }
+
+    .somax-loader-title{
+      font-size:17px;
+    }
+
+    .somax-loader-spinner{
+      width:23px;
+      height:23px;
+      flex-basis:23px;
+    }
+
+    .somax-loader-phrase{
+      font-size:12.5px;
+      margin-top:13px;
+    }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .somax-loader-bg,
+    .somax-loader-bg::after,
+    .somax-loader-card,
+    .somax-loader-card::before,
+    .somax-loader-spinner,
+    .somax-loader-dotchar,
+    body:not(.somax-loading) #main-content,
+    body:not(.somax-loading) .topbar,
+    body:not(.somax-loading) .bottom-nav{
+      animation:none!important;
+    }
+
+    #somax-loader-shell,
+    .somax-loader-phrase{
+      transition:none!important;
+    }
+  }
+</style>
+
+<script id="edson-loading-frases-rotativas-20260629">
+(function(){
+  if(window.__edsonLoadingFrasesRotativas) return;
+  window.__edsonLoadingFrasesRotativas = true;
+
+  var frases = [
+    'Preparando partidos...',
+    'Actualizando ranking...',
+    'Cargando tus pronósticos...',
+    'Sincronizando resultados...',
+    'Organizando fechas...'
+  ];
+
+  var index = 0;
+
+  function trocarFrase(){
+    var el = document.getElementById('somax-loader-phrase');
+    if(!el || !document.body.classList.contains('somax-loading')) return;
+
+    el.classList.add('is-changing');
+
+    setTimeout(function(){
+      index = (index + 1) % frases.length;
+      el.textContent = frases[index];
+      el.classList.remove('is-changing');
+    }, 180);
+  }
+
+  var timer = setInterval(function(){
+    if(!document.body.classList.contains('somax-loading')){
+      clearInterval(timer);
+      return;
+    }
+    trocarFrase();
+  }, 1150);
+})();
+</script>
