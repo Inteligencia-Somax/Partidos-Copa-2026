@@ -8284,41 +8284,64 @@ function updateCounts(){
 
   // All users for ranking count
   const all = loadAllPicks();
-  document.getElementById('cnt-rank').textContent = Object.keys(all).length;
+  document.getElementById('cnt-rank').textContent = Object.keys(all).filter(name => !isExcludedFromRanking(name)).length;
 }
 
 // ══ RANKING ══
-function getRankedUsers(){
+const EXCLUDED_RANKING_NAMES = ['Edson Queiroz Rodrigues Junior','Edson Queiroz Junior'];
+function normalizeRankingName(name){
+  return String(name || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .trim().toLowerCase().replace(/\s+/g,' ');
+}
+function isExcludedFromRanking(name){
+  const n = normalizeRankingName(name);
+  return EXCLUDED_RANKING_NAMES.some(x => normalizeRankingName(x) === n);
+}
+function sortRankStats(a,b){
+  return b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount;
+}
+function buildRankedUsers(options = {}){
+  const { includeExcluded = false, roundLabel = null, excludeRound = null, excludeDate = null } = options;
   const all = loadAllPicks();
   const realResults = loadRealResults();
-  return Object.entries(all).map(([name, picks])=>{
-    const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
-    MATCHES.forEach(m=>{
-      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
-      stats.score += calc.pts;
-      if(stats[calc.type]!==undefined) stats[calc.type]++;
-    });
-    return stats;
-  }).sort((a,b)=>
-    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
-  );
+  return Object.entries(all)
+    .filter(([name]) => includeExcluded || !isExcludedFromRanking(name))
+    .map(([name, picks])=>{
+      const stats = {name, pickCount:0, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
+      MATCHES.forEach(m=>{
+        if(roundLabel && getRoundLabel(m) !== roundLabel) return;
+        if(excludeRound && getRoundLabel(m) === excludeRound) return;
+        if(excludeDate && m.date === excludeDate) return;
+        if(picks[m.id]) stats.pickCount++;
+        const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
+        stats.score += calc.pts;
+        if(stats[calc.type]!==undefined) stats[calc.type]++;
+      });
+      return stats;
+    }).sort(sortRankStats);
+}
+function getRankedUsers(){
+  return buildRankedUsers();
+}
+function getRankedUsersIncludingExcluded(){
+  return buildRankedUsers({ includeExcluded:true });
 }
 function getRankedUsersByRound(roundLabel){
-  const all = loadAllPicks();
-  const realResults = loadRealResults();
-  const roundMatches = MATCHES.filter(m => getRoundLabel(m) === roundLabel);
-  return Object.entries(all).map(([name, picks])=>{
-    const stats = {name, pickCount:0, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
-    roundMatches.forEach(m=>{
-      if(picks[m.id]) stats.pickCount++;
-      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
-      stats.score += calc.pts;
-      if(stats[calc.type]!==undefined) stats[calc.type]++;
-    });
-    return stats;
-  }).sort((a,b)=>
-    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
-  );
+  return buildRankedUsers({ roundLabel });
+}
+function getRankedUsersByRoundIncludingExcluded(roundLabel){
+  return buildRankedUsers({ includeExcluded:true, roundLabel });
+}
+
+// Mismo ranking pero excluyendo una fecha/ronda (para saber la posición anterior).
+function getRankedUsersExcludingRound(excludeRound){
+  return buildRankedUsers({ excludeRound });
+}
+
+// Mismo ranking pero excluyendo un día (fecha del calendario) — para el "subió/bajó" del último día.
+function getRankedUsersExcludingDate(excludeDate){
+  return buildRankedUsers({ excludeDate });
 }
 
 function getRankFilterOptions(){
@@ -9090,14 +9113,18 @@ function openMatchBreakdown(matchId){
   const pending = !real;
 
   const allPicks = loadAllPicks();
-  const ranked = getRankedUsers(); // orden del ranking (mejor a peor)
+  const publicRanked = getRankedUsers(); // clasificación oficial, sin usuarios excluidos
+  const ranked = getRankedUsersIncludingExcluded(); // para mantener a todos en la aba del partido
+  const publicPosMap = {};
+  publicRanked.forEach((u, idx) => { publicPosMap[u.name] = idx + 1; });
 
   const parts = [];
-  ranked.forEach((u, idx) => {
+  ranked.forEach((u) => {
     const pick = (allPicks[u.name] || {})[matchId];
     if(pick === undefined) return; // solo quienes palpitaron este partido
     const calc = calculatePickPoints(pick, real, m);
-    parts.push({ name:u.name, pos:idx + 1, pick, pts:calc.pts, type:calc.type, totalScore:u.score, savedAt:pick.savedAt || pick.fechaPalpite || '' });
+    const excluded = isExcludedFromRanking(u.name);
+    parts.push({ name:u.name, pos: excluded ? null : publicPosMap[u.name], excludedFromRanking: excluded, pick, pts:calc.pts, type:calc.type, totalScore:u.score, savedAt:pick.savedAt || pick.fechaPalpite || '' });
   });
 
   const myPick = (allPicks[currentUser] || {})[matchId] || null;
@@ -9442,7 +9469,7 @@ function renderMatchBreakdown(){
           `${p.pick.home}:${p.pick.away}`,
           `${p.pick.home}x${p.pick.away}`,
           `${p.totalScore || 0} pts`,
-          `${p.pos}º`,
+          p.pos ? `${p.pos}º` : '',
           !pending && p.type === 'exact' ? 'Exacto' : '',
           maxScoreCount > 1 && scoreCounts[`${p.pick.home}:${p.pick.away}`] === maxScoreCount ? 'Más palpitado' : ''
         ].join(' ')).includes(nq));
@@ -9478,7 +9505,7 @@ function renderMatchBreakdown(){
           const rowPickInfoAttr = (!pending && p.savedAt) ? pickInfoHoldAttrs(p.savedAt) : `data-pick-saved="${decEsc(p.savedAt || '')}"`;
           return `
         <div class="${rowCls}" ${rowPickInfoAttr} onclick="handleMbParticipantClick(event,'${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
-          <span class="mb-pos">${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}</span>
+          <span class="mb-pos">${p.pos ? `${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}` : ''}</span>
           <div class="ud-match">
             <div class="ud-teams${pending ? ' ud-teams-pending' : ''}"><span class="ud-participant-name">${p.name}${nameTag}</span>${pendingTotalHtml}</div>
             <div class="ud-meta"><span class="ud-pick-text${pickInfoClass}" ${pickInfoAttr}>Palpite: ${p.pick.home}:${p.pick.away}</span>${registeredHtml ? '<span class="ud-meta-sep">•</span><span class="ud-pick-registered">' + registeredHtml + '</span>' : ''}${pointsInlineHtml}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}</div>
@@ -9528,7 +9555,7 @@ function renderMatchBreakdown(){
     const pct = (n / total * 100);
     const isExp = expanded === t.key;
     const names = isExp ? `<div class="mb-names">${list.map(p =>
-      `<div class="mb-name-row"><span class="mb-name-txt">${p.pos}º · ${p.name}</span><span class="mb-name-pick">${p.pick.home}:${p.pick.away}</span></div>`
+      `<div class="mb-name-row"><span class="mb-name-txt">${p.pos ? `${p.pos}º · ` : ''}${p.name}</span><span class="mb-name-pick">${p.pick.home}:${p.pick.away}</span></div>`
     ).join('')}</div>` : '';
     return `
       <div class="mb-leg-item ${isExp ? 'open' : ''}" onclick="toggleMbType('${t.key}')">
@@ -18064,7 +18091,7 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     const score = `${p.pick.home}:${p.pick.away}`;
     const scoreAlt = `${p.pick.home}x${p.pick.away}`;
     const points = `${p.totalScore || 0} pts`;
-    const pos = `${p.pos}º`;
+    const pos = p.pos ? `${p.pos}º` : '';
     const gamePts = pending ? '' : `${p.pts > 0 ? '+' : ''}${p.pts}`;
 
     const labels = [];
