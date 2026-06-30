@@ -8902,7 +8902,7 @@ function renderUdComparar(){
     const thPtsStr = pending ? '' : `${pts>0?'+':''}${pts}<span class="cmp-pts-unit">pts</span>`;
     const dm = m.date.replace(/^[^,]+,\s*/, '');
     rows += `
-      <div class="cmp-row">
+      <div class="cmp-row ${m.x2 ? 'x2-row' : ''}">
         <div class="cmp-head">
           <span class="cmp-teams">${m.hf || ''} ${m.home} ${scoreCell} ${m.away} ${m.af || ''}</span>
         </div>
@@ -18267,3 +18267,251 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   };
 })();
 </script>
+
+
+<style id="edson-hide-modal-scrollbar-visual-20260629">
+  /* Oculta visualmente a barra de rolagem, mantendo a rolagem funcionando normalmente */
+  #user-detail-modal .ud-body,
+  #match-breakdown-modal .ud-body,
+  #team-history-modal .ud-body{
+    scrollbar-width:none!important;
+    -ms-overflow-style:none!important;
+  }
+
+  #user-detail-modal .ud-body::-webkit-scrollbar,
+  #match-breakdown-modal .ud-body::-webkit-scrollbar,
+  #team-history-modal .ud-body::-webkit-scrollbar{
+    width:0!important;
+    height:0!important;
+    display:none!important;
+  }
+
+  #user-detail-modal .modal,
+  #match-breakdown-modal .modal,
+  #team-history-modal .modal{
+    scrollbar-width:none!important;
+    -ms-overflow-style:none!important;
+  }
+
+  #user-detail-modal .modal::-webkit-scrollbar,
+  #match-breakdown-modal .modal::-webkit-scrollbar,
+  #team-history-modal .modal::-webkit-scrollbar{
+    width:0!important;
+    height:0!important;
+    display:none!important;
+  }
+</style>
+
+
+<script id="edson-nav-todas-fechas-para-ultima-20260629">
+(function(){
+  if(window.__edsonNavTodasFechasParaUltima) return;
+  window.__edsonNavTodasFechasParaUltima = true;
+
+  /*
+    Ajuste:
+    Quando estiver em "Todas las fechas" (idx === rounds.length)
+    e clicar na seta esquerda, vai para a última fecha/fase disponível,
+    não para a primeira.
+  */
+  if(typeof window.changeUdRound === 'function'){
+    const originalChangeUdRound = window.changeUdRound;
+
+    window.changeUdRound = function(delta){
+      try{
+        if(
+          window.udState &&
+          Array.isArray(udState.rounds) &&
+          udState.rounds.length &&
+          udState.idx === udState.rounds.length &&
+          delta < 0
+        ){
+          udState.idx = udState.rounds.length - 1;
+          if(typeof window.renderUd === 'function') renderUd();
+          return;
+        }
+      }catch(e){}
+
+      return originalChangeUdRound.apply(this, arguments);
+    };
+  }
+
+  if(typeof window.changeRankingCompareRound === 'function'){
+    const originalChangeRankingCompareRound = window.changeRankingCompareRound;
+
+    window.changeRankingCompareRound = function(delta){
+      try{
+        if(
+          window.rankingCompareState &&
+          typeof getCompareRounds === 'function'
+        ){
+          const rounds = getCompareRounds();
+          if(
+            Array.isArray(rounds) &&
+            rounds.length &&
+            rankingCompareState.roundIdx === rounds.length &&
+            delta < 0
+          ){
+            rankingCompareState.roundIdx = rounds.length - 1;
+            if(typeof renderCompareBody === 'function') renderCompareBody();
+            return;
+          }
+        }
+      }catch(e){}
+
+      return originalChangeRankingCompareRound.apply(this, arguments);
+    };
+  }
+})();
+</script>
+
+
+<style id="edson-comparar-decisiva-amarelo-20260629">
+  /*
+    Aba Comparar:
+    - Fase de grupos: mantém o verde atual.
+    - Fase decisiva/mata-mata (jogos x2): destaques do confronto ficam amarelo/dourado.
+  */
+
+  #user-detail-modal.x2-mode .cmp-row.x2-row .cmp-cell.win{
+    background:rgba(245,158,11,.10)!important;
+    border-color:rgba(245,158,11,.38)!important;
+  }
+
+  #user-detail-modal.x2-mode .cmp-row.x2-row .cmp-cell.win .cmp-pts,
+  #user-detail-modal.x2-mode .cmp-row.x2-row .cmp-cell.win .cmp-pick,
+  #user-detail-modal.x2-mode .cmp-row.x2-row .cmp-cell.win .cmp-who{
+    color:#F59E0B!important;
+  }
+
+  #user-detail-modal.x2-mode .cmp-row.x2-row .cmp-pts.win{
+    color:#F59E0B!important;
+  }
+
+  #user-detail-modal.x2-mode .cmp-row.x2-row .cmp-cell.win{
+    box-shadow:inset 0 0 0 1px rgba(245,158,11,.18)!important;
+  }
+
+  /* Cards de resumo do duelo quando o recorte atual tiver jogos decisivos */
+  #user-detail-modal.x2-mode .cmp-summary.x2-summary .cmp-sum-cell.lead{
+    background:rgba(245,158,11,.10)!important;
+    border-color:rgba(245,158,11,.35)!important;
+  }
+
+  #user-detail-modal.x2-mode .cmp-summary.x2-summary .cmp-sum-cell.lead .cmp-sum-num,
+  #user-detail-modal.x2-mode .cmp-summary.x2-summary .cmp-sum-cell.lead .cmp-sum-lbl{
+    color:#F59E0B!important;
+  }
+</style>
+
+<script id="edson-comparar-decisiva-summary-marker-20260629">
+(function(){
+  if(window.__edsonCompararDecisivaAmarelo) return;
+  window.__edsonCompararDecisivaAmarelo = true;
+
+  function markCompareSummary(){
+    try{
+      if(!window.udState || udState.tab !== 'comparar') return;
+      const modal = document.getElementById('user-detail-modal');
+      if(!modal) return;
+
+      const rounds = udState.rounds || [];
+      const selected = udState.idx < rounds.length ? rounds[udState.idx] : null;
+      let shown = selected
+        ? (udState.matches || []).filter(m => getRoundLabel(m) === selected)
+        : (udState.matches || []).slice();
+
+      const hasX2 = shown.some(m => !!m.x2);
+      const summary = modal.querySelector('.cmp-summary');
+      if(summary) summary.classList.toggle('x2-summary', hasX2);
+    }catch(e){}
+  }
+
+  if(typeof window.renderUd === 'function' && !window.renderUd.__edsonCompararX2Wrapped){
+    const originalRenderUd = window.renderUd;
+    const wrappedRenderUd = function(){
+      const ret = originalRenderUd.apply(this, arguments);
+      setTimeout(markCompareSummary, 0);
+      return ret;
+    };
+    wrappedRenderUd.__edsonCompararX2Wrapped = true;
+    window.renderUd = wrappedRenderUd;
+  }
+
+  document.addEventListener('click', function(){
+    setTimeout(markCompareSummary, 80);
+  }, true);
+})();
+</script>
+
+
+<style id="edson-meus-pontos-verdes-20260629">
+  /*
+    Onde o usuário logado aparece destacado em verde, a pontuação dele
+    também fica verde para manter o mesmo padrão visual do nome.
+  */
+
+  /* Card do usuário logado no Ranking */
+  #ranking-list .rank-card#my-rank-card .rank-pts,
+  #ranking-list .rank-card#my-rank-card .rank-pts-label,
+  #ranking-list .rank-card.me-glow .rank-pts,
+  #ranking-list .rank-card.me-glow .rank-pts-label,
+  #ranking-list .rank-card.me .rank-pts,
+  #ranking-list .rank-card.me .rank-pts-label,
+  #ranking-list .rank-card.is-me .rank-pts,
+  #ranking-list .rank-card.is-me .rank-pts-label{
+    color:var(--green)!important;
+  }
+
+  /* Linha do usuário logado no modal Puntos por participante */
+  #match-breakdown-modal .ud-row.mine .ud-pick-points-inline,
+  #match-breakdown-modal .ud-row.mine .ud-player-total,
+  #match-breakdown-modal .ud-row.mine .ud-total-score,
+  #match-breakdown-modal .ud-row.mine .ud-meta .ud-pick-points-inline{
+    color:var(--green)!important;
+    font-weight:700!important;
+  }
+
+  /* Caso a pontuação geral esteja como texto simples dentro da primeira linha */
+  #match-breakdown-modal .ud-row.mine .ud-teams .ud-points-inline,
+  #match-breakdown-modal .ud-row.mine .ud-participant-name + .ud-name-sep + .ud-pending-score-name,
+  #match-breakdown-modal .ud-row.mine .ud-name-sep,
+  #match-breakdown-modal .ud-row.mine .ud-pending-score-name{
+    color:var(--green)!important;
+  }
+</style>
+
+
+<style id="edson-card-eu-verde-no-lugar-amarelo-20260629">
+  /*
+    Ajuste: manter a flexinha verde normal e trocar o destaque amarelo do card do usuário logado
+    pelo destaque verde no card inteiro.
+  */
+
+  /* Remove o amarelo/dourado anterior do usuário logado em fase decisiva */
+  #match-breakdown-modal.x2-mode .ud-row.mine,
+  #match-breakdown-modal.x2-mode .ud-row.mine:not(.exact),
+  #match-breakdown-modal.x2-mode .ud-row.mine.exact{
+    background:rgba(0,155,84,.08)!important;
+    border-color:rgba(0,155,84,.28)!important;
+    box-shadow:inset 0 0 0 1px rgba(0,155,84,.18)!important;
+  }
+
+  /* Nome, colocação e pontos do usuário voltam para verde */
+  #match-breakdown-modal.x2-mode .ud-row.mine .mb-pos,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-teams,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-participant-name,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-name,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-player-name,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score-name{
+    color:var(--green)!important;
+    font-weight:900!important;
+  }
+
+  /* Mantém separadores do card do usuário em verde suave */
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep{
+    color:rgba(0,155,84,.75)!important;
+  }
+</style>
