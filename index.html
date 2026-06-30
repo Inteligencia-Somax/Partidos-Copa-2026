@@ -21353,3 +21353,141 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   setTimeout(hideInitialAnnouncementAndRecentSummary, 1200);
 })();
 </script>
+
+<!-- AJUSTE 20260630: gradiente mais forte nos filtros flutuantes + abertura imediata do detalhe do participante -->
+<style id="edson-floating-filter-backdrop-and-user-open-loading-20260630">
+  /* Camada escura atrás dos filtros flutuantes, aplicada nas duas janelas */
+  #user-detail-modal .ud-floating-filters-slot::before,
+  #match-breakdown-modal .mb-floating-filters-slot::before{
+    height:132px!important;
+    background:linear-gradient(
+      to top,
+      rgba(0,0,0,.62) 0%,
+      rgba(0,0,0,.48) 28%,
+      rgba(0,0,0,.28) 62%,
+      rgba(0,0,0,0) 100%
+    )!important;
+    filter:none!important;
+  }
+  #user-detail-modal .ud-floating-filters-slot,
+  #match-breakdown-modal .mb-floating-filters-slot{
+    padding-bottom:18px!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter span,
+  #user-detail-modal .ud-floating-filters .ud-float-clear,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    box-shadow:0 14px 34px rgba(0,0,0,.54),0 4px 12px rgba(0,0,0,.34)!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter.active span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span{
+    box-shadow:0 15px 36px rgba(0,0,0,.58),0 4px 13px rgba(0,0,0,.36)!important;
+  }
+
+  /* Estado rápido de carregamento dentro do modal do participante */
+  #user-detail-modal .ud-loading-state{
+    min-height:260px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:12px!important;
+    color:var(--sub)!important;
+    font-size:14px!important;
+    font-weight:800!important;
+    text-align:center!important;
+  }
+  #user-detail-modal .ud-loading-spinner{
+    width:28px!important;
+    height:28px!important;
+    border-radius:50%!important;
+    border:3px solid rgba(0,155,84,.18)!important;
+    border-top-color:var(--green)!important;
+    animation:udQuickSpin .72s linear infinite!important;
+  }
+  @keyframes udQuickSpin{to{transform:rotate(360deg)}}
+</style>
+
+<script id="edson-instant-user-detail-open-20260630">
+(function(){
+  if(window.__edsonInstantUserDetailOpenApplied) return;
+  window.__edsonInstantUserDetailOpenApplied = true;
+
+  function showUserDetailLoading(name){
+    var modal = document.getElementById('user-detail-modal');
+    if(!modal) return;
+    var title = document.getElementById('ud-title');
+    var hero = document.getElementById('ud-hero');
+    var tabs = document.getElementById('ud-tabs');
+    var body = document.getElementById('ud-body');
+    var slot = document.getElementById('ud-floating-filters-slot');
+
+    if(title) title.textContent = name || 'Detalle';
+    if(hero){
+      hero.innerHTML =
+        '<div class="ud-hero-stat"><span class="ud-hero-num">–</span><span class="ud-hero-lbl">puntos</span></div>' +
+        '<div class="ud-hero-sep"></div>' +
+        '<div class="ud-hero-stat"><span class="ud-hero-num">–</span><span class="ud-hero-lbl">posición</span></div>' +
+        '<div class="ud-hero-sep"></div>' +
+        '<div class="ud-hero-stat"><span class="ud-hero-num">–</span><span class="ud-hero-lbl">aprovecham.</span></div>';
+    }
+    if(tabs) tabs.innerHTML = '';
+    if(body){
+      body.innerHTML = '<div class="ud-loading-state"><span class="ud-loading-spinner" aria-hidden="true"></span><span>Cargando datos...</span></div>';
+      body.scrollTop = 0;
+    }
+    if(slot){
+      slot.innerHTML = '';
+      slot.classList.remove('show');
+    }
+    modal.classList.remove('has-ud-floating-filters');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function install(){
+    var original = window.openUserDetail;
+    if(typeof original !== 'function' || original.__edsonInstantWrapped) return false;
+
+    var opening = false;
+    var wrapped = function(){
+      var args = arguments;
+      var name = args && args.length ? args[0] : '';
+
+      if(opening) return;
+
+      try{
+        if(typeof window.isExcludedFromRanking === 'function' &&
+           typeof window.canCurrentUserSeeExcludedParticipant === 'function' &&
+           window.isExcludedFromRanking(name) &&
+           !window.canCurrentUserSeeExcludedParticipant(name)){
+          return original.apply(this, args);
+        }
+      }catch(e){}
+
+      opening = true;
+      showUserDetailLoading(name);
+
+      var self = this;
+      setTimeout(function(){
+        try{
+          original.apply(self, args);
+        }finally{
+          setTimeout(function(){ opening = false; }, 180);
+        }
+      }, 35);
+    };
+    wrapped.__edsonInstantWrapped = true;
+
+    window.openUserDetail = wrapped;
+    try{ openUserDetail = wrapped; }catch(e){}
+    return true;
+  }
+
+  if(!install()){
+    document.addEventListener('DOMContentLoaded', install);
+    setTimeout(install, 0);
+    setTimeout(install, 500);
+  }
+})();
+</script>
