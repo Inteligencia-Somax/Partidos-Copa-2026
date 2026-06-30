@@ -21032,3 +21032,382 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
 </style>
 
+
+<!-- AJUSTE 20260630: Classificação por grupo - admin only -->
+<style id="edson-admin-group-classification-20260630">
+  #nav-clasificacion{
+    display:none;
+  }
+
+  #panel-clasificacion{
+    padding-bottom:86px;
+  }
+
+  .grp-admin-head{
+    background:linear-gradient(135deg, rgba(0,155,84,.16), rgba(245,158,11,.12));
+    border:1px solid rgba(0,155,84,.22);
+    border-radius:22px;
+    padding:16px 18px;
+    margin:0 0 14px;
+    box-shadow:var(--shadow);
+  }
+
+  .grp-admin-head h3{
+    margin:0 0 6px;
+    font-size:18px;
+    font-weight:900;
+    color:var(--text);
+  }
+
+  .grp-admin-head p{
+    margin:0;
+    font-size:12.5px;
+    line-height:1.45;
+    color:var(--sub);
+    font-weight:650;
+  }
+
+  .grp-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  .grp-card{
+    background:var(--white);
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+
+  .grp-card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:13px 14px 10px;
+    border-bottom:1px solid var(--border);
+  }
+
+  .grp-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:15px;
+    font-weight:950;
+    color:var(--text);
+  }
+
+  .grp-pill{
+    font-size:10.5px;
+    font-weight:900;
+    color:#0F5132;
+    background:rgba(0,155,84,.12);
+    border:1px solid rgba(0,155,84,.20);
+    border-radius:999px;
+    padding:4px 8px;
+    white-space:nowrap;
+  }
+
+  .grp-pill.pending{
+    color:#8A5A00;
+    background:rgba(245,158,11,.14);
+    border-color:rgba(245,158,11,.26);
+  }
+
+  .grp-table{
+    width:100%;
+    border-collapse:collapse;
+  }
+
+  .grp-table th{
+    font-size:10px;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    color:var(--sub);
+    font-weight:900;
+    padding:8px 6px;
+    text-align:right;
+    background:#FAFAFA;
+  }
+
+  .grp-table th.team{
+    text-align:left;
+    padding-left:14px;
+  }
+
+  .grp-table td{
+    font-size:12px;
+    font-weight:800;
+    color:var(--text);
+    padding:10px 6px;
+    text-align:right;
+    border-top:1px solid rgba(0,0,0,.055);
+  }
+
+  .grp-table td.team{
+    text-align:left;
+    padding-left:14px;
+  }
+
+  .grp-team{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+  }
+
+  .grp-pos{
+    width:28px;
+    height:28px;
+    border-radius:10px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    font-weight:950;
+    background:#F3F4F6;
+    color:var(--sub);
+    flex:0 0 auto;
+  }
+
+  .grp-pos.top{
+    background:#FFF3D6;
+    color:#8A5A00;
+    box-shadow:0 0 0 1px rgba(245,158,11,.22) inset;
+  }
+
+  .grp-flag{
+    font-size:18px;
+    flex:0 0 auto;
+  }
+
+  .grp-name{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-weight:950;
+  }
+
+  .grp-classified{
+    background:rgba(245,158,11,.07);
+  }
+
+  .grp-classified td{
+    border-top-color:rgba(245,158,11,.18);
+  }
+
+  .grp-empty{
+    background:var(--white);
+    border:1px dashed rgba(0,0,0,.14);
+    border-radius:18px;
+    padding:20px;
+    text-align:center;
+    color:var(--sub);
+    font-weight:800;
+  }
+
+  @media(min-width:720px){
+    .grp-grid{
+      grid-template-columns:repeat(2, minmax(0,1fr));
+    }
+  }
+
+  @media(max-width:430px){
+    .nav-btn{
+      padding-left:10px!important;
+      padding-right:10px!important;
+    }
+
+    #nav-clasificacion .nav-icon{
+      font-size:19px;
+    }
+
+    #nav-clasificacion{
+      font-size:9px;
+    }
+
+    .grp-admin-head{
+      margin:0 0 12px;
+      padding:14px 15px;
+    }
+
+    .grp-card-head{
+      padding:12px 12px 9px;
+    }
+
+    .grp-table td.team,
+    .grp-table th.team{
+      padding-left:12px;
+    }
+
+    .grp-name{
+      max-width:145px;
+    }
+  }
+</style>
+
+<script id="edson-admin-group-classification-20260630-script">
+(function(){
+  if(window.__edsonAdminGroupClassificationInstalled) return;
+  window.__edsonAdminGroupClassificationInstalled = true;
+
+  function ensureClasificacionDom(){
+    const bottomNav = document.querySelector('.bottom-nav');
+    if(bottomNav && !document.getElementById('nav-clasificacion')){
+      const btn = document.createElement('button');
+      btn.className = 'nav-btn';
+      btn.id = 'nav-clasificacion';
+      btn.style.display = 'none';
+      btn.type = 'button';
+      btn.innerHTML = '<span class="nav-icon">🏅</span>Clasif.';
+      btn.onclick = function(){ switchTab('clasificacion', btn); };
+      const rankBtn = document.getElementById('nav-ranking');
+      if(rankBtn && rankBtn.nextSibling) bottomNav.insertBefore(btn, rankBtn.nextSibling);
+      else bottomNav.appendChild(btn);
+    }
+
+    if(!document.getElementById('panel-clasificacion')){
+      const panel = document.createElement('div');
+      panel.className = 'panel';
+      panel.id = 'panel-clasificacion';
+      panel.innerHTML = '<div id="clasificacion-grupos-body"></div>';
+      const rankingPanel = document.getElementById('panel-ranking');
+      if(rankingPanel && rankingPanel.parentNode) rankingPanel.parentNode.insertBefore(panel, rankingPanel.nextSibling);
+      else document.getElementById('main-content')?.appendChild(panel);
+    }
+  }
+
+  function isClasifAdmin(){
+    return currentUserRole === 'admin';
+  }
+
+  function escHtml(value){
+    return String(value ?? '').replace(/[&<>"']/g, function(ch){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+    });
+  }
+
+  function sortGroupKeys(keys){
+    return keys.sort(function(a,b){
+      return String(a).localeCompare(String(b), 'es', {numeric:true});
+    });
+  }
+
+  window.renderClasificacionGrupos = function(){
+    ensureClasificacionDom();
+
+    const body = document.getElementById('clasificacion-grupos-body');
+    if(!body) return;
+
+    if(!isClasifAdmin()){
+      body.innerHTML = '<div class="grp-empty">Área exclusiva del administrador.</div>';
+      return;
+    }
+
+    const real = loadRealResults();
+    const standings = computeStandings(real);
+    const keys = sortGroupKeys(Object.keys(standings || {}));
+
+    if(!keys.length){
+      body.innerHTML = '<div class="grp-empty">Aún no hay grupos disponibles.</div>';
+      return;
+    }
+
+    const cards = keys.map(function(g){
+      const s = standings[g];
+      const table = (s && Array.isArray(s.table)) ? s.table : [];
+      const top3 = table.slice(0, 3);
+      const statusCls = s && s.complete ? '' : ' pending';
+      const statusTxt = s && s.complete ? 'Grupo completo' : ((s?.played || 0) + '/' + (s?.total || 0) + ' partidos');
+
+      const rows = top3.map(function(t, idx){
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+        return '<tr class="grp-classified">' +
+          '<td class="team">' +
+            '<div class="grp-team">' +
+              '<span class="grp-pos top">' + medal + '</span>' +
+              '<span class="grp-flag">' + escHtml(t.flag || '') + '</span>' +
+              '<span class="grp-name">' + escHtml(t.name || '') + '</span>' +
+            '</div>' +
+          '</td>' +
+          '<td>' + (t.pj || 0) + '</td>' +
+          '<td>' + (t.pts || 0) + '</td>' +
+          '<td>' + ((t.gd || 0) > 0 ? '+' : '') + (t.gd || 0) + '</td>' +
+          '<td>' + (t.gf || 0) + '</td>' +
+        '</tr>';
+      }).join('');
+
+      return '<div class="grp-card">' +
+        '<div class="grp-card-head">' +
+          '<div class="grp-title"><span>Grupo ' + escHtml(g) + '</span></div>' +
+          '<span class="grp-pill' + statusCls + '">' + escHtml(statusTxt) + '</span>' +
+        '</div>' +
+        '<table class="grp-table">' +
+          '<thead><tr><th class="team">Top 3 clasificados</th><th>PJ</th><th>Pts</th><th>DG</th><th>GF</th></tr></thead>' +
+          '<tbody>' + (rows || '<tr><td colspan="5" class="team">Sin datos del grupo.</td></tr>') + '</tbody>' +
+        '</table>' +
+      '</div>';
+    }).join('');
+
+    body.innerHTML =
+      '<div class="grp-admin-head">' +
+        '<h3>🏅 Clasificación por grupo</h3>' +
+        '<p>Vista inicial exclusiva del administrador. Muestra los 3 mejores colocados de cada grupo según resultados cargados: puntos, diferencia de goles y goles a favor.</p>' +
+      '</div>' +
+      '<div class="grp-grid">' + cards + '</div>';
+  };
+
+  const oldUpdateRoleBasedNavigation = window.updateRoleBasedNavigation;
+  window.updateRoleBasedNavigation = function(){
+    ensureClasificacionDom();
+
+    if(typeof oldUpdateRoleBasedNavigation === 'function'){
+      oldUpdateRoleBasedNavigation.apply(this, arguments);
+    }
+
+    const isAdmin = isClasifAdmin();
+    const navClasif = document.getElementById('nav-clasificacion');
+
+    if(navClasif) navClasif.style.display = isAdmin ? 'flex' : 'none';
+
+    if(!isAdmin && document.getElementById('panel-clasificacion')?.classList.contains('active')){
+      switchTab('matches', document.getElementById('tab-matches'));
+    }
+  };
+
+  const oldSwitchTab = window.switchTab;
+  window.switchTab = function(tab, btn){
+    ensureClasificacionDom();
+
+    if(tab === 'clasificacion' && !isClasifAdmin()){
+      showSaveBanner('Acceso reservado');
+      return;
+    }
+
+    const result = oldSwitchTab.apply(this, arguments);
+
+    if(tab === 'clasificacion'){
+      renderClasificacionGrupos();
+      const scoringWrap = document.getElementById('scoring-rules-wrap');
+      if(scoringWrap) scoringWrap.style.display = 'none';
+      updateQuickFloatButtons?.();
+    }
+
+    return result;
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    ensureClasificacionDom();
+    updateRoleBasedNavigation();
+  });
+
+  setTimeout(function(){
+    ensureClasificacionDom();
+    updateRoleBasedNavigation();
+  }, 400);
+})();
+</script>
+
