@@ -8622,10 +8622,13 @@ function renderRanking(){
     const upicks = all[u.name] || {};
     const dots = recent5.map(m=>{
       const calc = calculatePickPoints(upicks[m.id], realResults[m.id], m);
-      const dotClass = calc.pts > 0 ? 'win' : 'miss';
-      /* Forma do ranking: verde quando pontuou, vermelho quando não pontuou. */
+      const isExact = calc.type === 'exact';
+      const dotClass = [calc.pts > 0 ? 'win' : 'miss', isExact ? 'exact-glow' : ''].filter(Boolean).join(' ');
+      /* Forma do ranking:
+         verde quando pontuou, vermelho quando não pontuou;
+         se foi Exacto, mantém verde e adiciona brilho dourado/laranja. */
       const dotColor = calc.pts > 0 ? 'var(--green)' : 'var(--red)';
-      return `<span class="fd ${dotClass}" style="background:${dotColor}!important" title="${calc.pts} pts"></span>`;
+      return `<span class="fd ${dotClass}" style="background:${dotColor}!important" title="${calc.pts} pts${isExact ? ' · Exacto' : ''}"></span>`;
     }).join('');
     const formHtml = dots ? `<span class="form-dots">${dots}</span>` : '';
     const generalHtml = (isRoundRanking && generalRankMap[u.name]) ? (()=>{
@@ -21004,6 +21007,21 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   .ud-dot.exact-glow,
   .rank-form-dot.exact-glow,
   .form-dot.exact-glow{
+    background:var(--green)!important;
+    opacity:1!important;
+    box-shadow:
+      0 0 0 2px rgba(245,158,11,.72),
+      0 0 8px rgba(245,158,11,.82),
+      0 0 14px rgba(245,158,11,.42)!important;
+    outline:1px solid rgba(255,255,255,.75)!important;
+  }
+</style>
+
+
+<style id="edson-ranking-form-exact-gold-glow-20260630">
+  /* Ranking: quando a bolinha da forma for Exacto, mantém verde e adiciona brilho dourado/laranja. */
+  #ranking-list .form-dots .fd.exact-glow,
+  #ranking-list .fd.exact-glow{
     background:var(--green)!important;
     opacity:1!important;
     box-shadow:
