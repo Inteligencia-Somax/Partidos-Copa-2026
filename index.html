@@ -8996,7 +8996,7 @@ function renderUdPartidos(){
       if(isExact) pickTags.push('<span class="ud-exact-tag">Exacto</span>');
     }
 
-    const historicalPositionHtml = formatHistoricalPositionTag(getUserPositionAfterMatch(udState?.stats?.name, m));
+    const historicalPositionHtml = formatHistoricalPositionTag(getUserPositionAfterMatch(udState?.name, m));
     const pickTagsHtml = pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : '';
     const historicalPositionSepHtml = historicalPositionHtml ? '<span class="ud-meta-sep">•</span>' + historicalPositionHtml : '';
 
