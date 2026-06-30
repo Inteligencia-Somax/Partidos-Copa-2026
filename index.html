@@ -21972,82 +21972,111 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
 </script>
 
 
-<!-- AJUSTE FINAL 20260630: Puntos por participante - filtro flutuante sem duplo clique e com aplicação real -->
-<script id="edson-mb-filter-authoritative-click-and-apply-20260630">
+<!-- AJUSTE DEFINITIVO 20260630: filtro real no Puntos por participante via dados, não só DOM -->
+<script id="edson-mb-data-filter-definitive-20260630">
 (function(){
-  if(window.__edsonMbFilterAuthoritativeInstalled) return;
-  window.__edsonMbFilterAuthoritativeInstalled = true;
+  if(window.__edsonMbDataFilterDefinitiveInstalled) return;
+  window.__edsonMbDataFilterDefinitiveInstalled = true;
 
-  window.__mbFloatActiveFilters = window.__mbFloatActiveFilters || [];
-  window.__mbFloatLastMatchId = null;
+  window.__mbFloatActiveFilters = Array.isArray(window.__mbFloatActiveFilters) ? window.__mbFloatActiveFilters : [];
+  window.__mbFloatMatchId = null;
 
-  function normalize(s){
-    return (s || '')
-      .toString()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g,'')
-      .toLowerCase();
-  }
-
-  function getMatchId(){
+  function currentMatchId(){
     try{
-      if(window.mbState && window.mbState.m && window.mbState.m.id !== undefined) return String(window.mbState.m.id);
-    }catch(e){}
-    return '';
+      return window.mbState && window.mbState.m ? String(window.mbState.m.id) : '';
+    }catch(e){
+      return '';
+    }
   }
 
-  function ensureMatchContext(){
-    var id = getMatchId();
-    if(id && window.__mbFloatLastMatchId !== id){
-      window.__mbFloatLastMatchId = id;
+  function ensureContext(){
+    var id = currentMatchId();
+    if(id && window.__mbFloatMatchId !== id){
+      window.__mbFloatMatchId = id;
       window.__mbFloatActiveFilters = [];
+      if(window.mbState){
+        window.mbState.tagFilters = [];
+        window.mbState.__allPartsForFloatingFilters = null;
+      }
+    }
+
+    if(window.mbState && Array.isArray(window.mbState.parts)){
+      if(!Array.isArray(window.mbState.__allPartsForFloatingFilters) || window.mbState.__allPartsForFloatingFiltersMatchId !== id){
+        window.mbState.__allPartsForFloatingFilters = window.mbState.parts.slice();
+        window.mbState.__allPartsForFloatingFiltersMatchId = id;
+      }
     }
   }
 
   function getActive(){
-    ensureMatchContext();
+    ensureContext();
     return Array.isArray(window.__mbFloatActiveFilters) ? window.__mbFloatActiveFilters.slice() : [];
   }
 
-  function setActive(arr){
-    window.__mbFloatActiveFilters = Array.isArray(arr) ? arr.slice() : [];
+  function setActive(active){
+    window.__mbFloatActiveFilters = Array.isArray(active) ? active.slice() : [];
     if(window.mbState) window.mbState.tagFilters = window.__mbFloatActiveFilters.slice();
   }
 
-  function rowMatches(row, key){
-    var text = normalize(row ? row.textContent : '');
+  function fullParts(){
+    ensureContext();
+    if(window.mbState && Array.isArray(window.mbState.__allPartsForFloatingFilters)){
+      return window.mbState.__allPartsForFloatingFilters.slice();
+    }
+    if(window.mbState && Array.isArray(window.mbState.parts)){
+      return window.mbState.parts.slice();
+    }
+    return [];
+  }
+
+  function scoreCounts(parts){
+    var counts = {};
+    parts.forEach(function(p){
+      if(!p || !p.pick) return;
+      var k = String(p.pick.home) + ':' + String(p.pick.away);
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    return counts;
+  }
+
+  function passFilter(p, key, parts, counts, maxCount){
+    if(!p) return false;
+
+    if(key === 'exact'){
+      return !!(!window.mbState?.pending && p.type === 'exact');
+    }
+
+    if(key === 'most'){
+      if(!p.pick || maxCount <= 1) return false;
+      var k = String(p.pick.home) + ':' + String(p.pick.away);
+      return counts[k] === maxCount;
+    }
 
     if(key === 'mine'){
-      return text.indexOf('= vos') >= 0;
+      var mp = window.mbState ? window.mbState.myPick : null;
+      if(!mp || !p.pick) return false;
+      return Number(p.pick.home) === Number(mp.home) && Number(p.pick.away) === Number(mp.away);
     }
-    if(key === 'most'){
-      return text.indexOf('mas palpitado') >= 0;
-    }
-    if(key === 'exact'){
-      return text.indexOf('exacto') >= 0;
-    }
+
     return true;
   }
 
-  function getRows(){
-    var body = document.getElementById('mb-body');
-    if(!body) return [];
+  function filteredPartsForRender(){
+    var active = getActive();
+    var all = fullParts();
 
-    var rows = Array.prototype.slice.call(body.children || []).filter(function(el){
-      if(!el || !el.classList) return false;
-      if(el.classList.contains('mb-filtered-empty') || el.classList.contains('mb-filtered-empty-final')) return false;
-      var txt = normalize(el.textContent || '');
-      return txt.indexOf('palpite:') >= 0 || txt.indexOf('sin palpite') >= 0;
-    });
+    if(!active.length) return all;
 
-    if(!rows.length){
-      rows = Array.prototype.slice.call(body.querySelectorAll('.ud-row,.mb-row,.mb-name-row')).filter(function(el){
-        var txt = normalize(el.textContent || '');
-        return txt.indexOf('palpite:') >= 0 || txt.indexOf('sin palpite') >= 0;
+    var counts = scoreCounts(all);
+    var values = Object.keys(counts).map(function(k){ return counts[k]; });
+    var maxCount = values.length ? Math.max.apply(Math, values) : 0;
+
+    // Multi-seletor como união: mostra quem atende pelo menos um filtro marcado.
+    return all.filter(function(p){
+      return active.some(function(key){
+        return passFilter(p, key, all, counts, maxCount);
       });
-    }
-
-    return rows;
+    });
   }
 
   function updateButtons(){
@@ -22057,13 +22086,6 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
 
     wrap.querySelectorAll('.mb-float-filter').forEach(function(btn){
       var key = btn.getAttribute('data-filter') || btn.getAttribute('data-filter-key') || '';
-      if(!key){
-        var t = normalize(btn.textContent || '');
-        if(t.indexOf('vos') >= 0) key = 'mine';
-        else if(t.indexOf('mas palpitado') >= 0) key = 'most';
-        else if(t.indexOf('exacto') >= 0) key = 'exact';
-        if(key) btn.setAttribute('data-filter', key);
-      }
       var on = active.indexOf(key) >= 0;
       btn.classList.toggle('active', on);
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -22076,47 +22098,22 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     });
   }
 
-  function applyFilter(){
-    ensureMatchContext();
-
-    var body = document.getElementById('mb-body');
-    if(!body) return;
-
+  window.renderMbFloatingFiltersHtml = function(){
     var active = getActive();
-    var rows = getRows();
-    var visible = 0;
+    function on(key){ return active.indexOf(key) >= 0 ? ' active' : ''; }
 
-    var old = body.querySelector('.mb-filtered-empty-final');
-    if(old) old.remove();
+    return '<div class="mb-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de participantes">' +
+      '<button type="button" data-filter="mine" data-filter-key="mine" class="mb-float-filter' + on('mine') + '" aria-pressed="' + (active.indexOf('mine') >= 0) + '"><span class="ud-mine-tag">= Vos</span></button>' +
+      '<button type="button" data-filter="most" data-filter-key="most" class="mb-float-filter' + on('most') + '" aria-pressed="' + (active.indexOf('most') >= 0) + '"><span class="ud-most-tag">Más palpitado</span></button>' +
+      '<button type="button" data-filter="exact" data-filter-key="exact" class="mb-float-filter' + on('exact') + '" aria-pressed="' + (active.indexOf('exact') >= 0) + '"><span class="ud-exact-tag">Exacto</span></button>' +
+    '</div>';
+  };
 
-    rows.forEach(function(row){
-      var show = true;
-      if(active.length){
-        // Multi-seletor como união: mostra linhas que tenham pelo menos um filtro selecionado.
-        show = active.some(function(key){ return rowMatches(row, key); });
-      }
-      row.style.display = show ? '' : 'none';
-      row.classList.toggle('mb-filter-hidden-by-floating', !show);
-      if(show) visible++;
-    });
-
-    if(active.length && rows.length && visible === 0){
-      var empty = document.createElement('div');
-      empty.className = 'mb-filtered-empty mb-filtered-empty-final';
-      empty.textContent = 'No hay participantes con los filtros seleccionados.';
-      body.appendChild(empty);
+  function rerender(){
+    if(typeof window.renderMatchBreakdown === 'function'){
+      window.renderMatchBreakdown();
     }
-
-    updateButtons();
-  }
-
-  function toggle(key){
-    var active = getActive();
-    var idx = active.indexOf(key);
-    if(idx >= 0) active.splice(idx, 1);
-    else active.push(key);
-    setActive(active);
-    applyFilter();
+    setTimeout(updateButtons, 0);
   }
 
   window.toggleMbTagFilter = function(key, ev){
@@ -22125,7 +22122,14 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
       ev.stopPropagation();
       if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
     }
-    toggle(key);
+
+    var active = getActive();
+    var idx = active.indexOf(key);
+    if(idx >= 0) active.splice(idx, 1);
+    else active.push(key);
+
+    setActive(active);
+    rerender();
     return false;
   };
 
@@ -22136,20 +22140,8 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
       if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
     }
     setActive([]);
-    applyFilter();
+    rerender();
     return false;
-  };
-
-  window.applyMbFloatingFilters = applyFilter;
-
-  window.renderMbFloatingFiltersHtml = function(){
-    var active = getActive();
-    function cls(key){ return active.indexOf(key) >= 0 ? ' active' : ''; }
-    return '<div class="mb-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de participantes">' +
-      '<button type="button" data-filter="mine" data-filter-key="mine" class="mb-float-filter' + cls('mine') + '" aria-pressed="' + (active.indexOf('mine') >= 0) + '"><span class="ud-mine-tag">= Vos</span></button>' +
-      '<button type="button" data-filter="most" data-filter-key="most" class="mb-float-filter' + cls('most') + '" aria-pressed="' + (active.indexOf('most') >= 0) + '"><span class="ud-most-tag">Más palpitado</span></button>' +
-      '<button type="button" data-filter="exact" data-filter-key="exact" class="mb-float-filter' + cls('exact') + '" aria-pressed="' + (active.indexOf('exact') >= 0) + '"><span class="ud-exact-tag">Exacto</span></button>' +
-    '</div>';
   };
 
   document.addEventListener('click', function(ev){
@@ -22161,50 +22153,50 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     if(ev.stopImmediatePropagation) ev.stopImmediatePropagation();
 
     var key = btn.getAttribute('data-filter') || btn.getAttribute('data-filter-key');
-    if(!key){
-      var t = normalize(btn.textContent || '');
-      if(t.indexOf('vos') >= 0) key = 'mine';
-      else if(t.indexOf('mas palpitado') >= 0) key = 'most';
-      else if(t.indexOf('exacto') >= 0) key = 'exact';
-    }
-    if(key) toggle(key);
+    if(key) window.toggleMbTagFilter(key, ev);
     return false;
   }, true);
 
-  // Observa re-renderizações e reaplica o filtro sem desmarcar.
-  var observer = null;
-  function startObserver(){
-    var body = document.getElementById('mb-body');
-    if(!body || observer) return;
-    observer = new MutationObserver(function(){
-      clearTimeout(window.__mbFloatingFilterApplyTimer);
-      window.__mbFloatingFilterApplyTimer = setTimeout(applyFilter, 40);
-    });
-    observer.observe(body, {childList:true, subtree:false});
-  }
-
-  var previousRender = window.renderMatchBreakdown;
-  if(typeof previousRender === 'function' && !previousRender.__edsonMbFilterAuthoritativeWrapped){
+  var originalRender = window.renderMatchBreakdown;
+  if(typeof originalRender === 'function' && !originalRender.__edsonMbDataFilterDefinitiveWrapped){
     window.renderMatchBreakdown = function(){
-      var result = previousRender.apply(this, arguments);
+      ensureContext();
+
+      var savedParts = null;
+      var shouldFilter = window.mbState && window.mbState.view !== 'stats';
+
+      if(shouldFilter && window.mbState && Array.isArray(window.mbState.parts)){
+        savedParts = window.mbState.parts;
+        window.mbState.parts = filteredPartsForRender();
+      }
+
+      var result = originalRender.apply(this, arguments);
+
+      if(savedParts && window.mbState){
+        window.mbState.parts = savedParts;
+      }
+
       setTimeout(function(){
-        startObserver();
-        applyFilter();
+        // Se não houver resultado, mostra mensagem mais correta que "Nadie palpitó este marcador".
+        var active = getActive();
+        var body = document.getElementById('mb-body');
+        if(active.length && body && /Nadie palpitó este marcador/i.test(body.textContent || '')){
+          body.innerHTML = '<div class="ud-empty">No hay participantes con los filtros seleccionados.</div>';
+        }
+        updateButtons();
       }, 0);
+
       return result;
     };
-    window.renderMatchBreakdown.__edsonMbFilterAuthoritativeWrapped = true;
+    window.renderMatchBreakdown.__edsonMbDataFilterDefinitiveWrapped = true;
     try{ renderMatchBreakdown = window.renderMatchBreakdown; }catch(e){}
   }
 
-  document.addEventListener('DOMContentLoaded', function(){
-    setTimeout(function(){ startObserver(); applyFilter(); }, 200);
-  });
-  setTimeout(function(){ startObserver(); applyFilter(); }, 400);
+  setTimeout(updateButtons, 200);
 })();
 </script>
 
-<style id="edson-mb-filter-authoritative-visual-state-20260630">
+<style id="edson-mb-data-filter-definitive-visual-20260630">
   #match-breakdown-modal .mb-floating-filters{
     justify-content:center!important;
     gap:16px!important;
