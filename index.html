@@ -6993,6 +6993,16 @@ html, body{scroll-behavior:auto!important;}
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
+
+<script id="edson-detecta-fase-decisiva-visual-20260630">
+function edsonIsFaseDecisivaVisual(m){
+  if(!m) return false;
+  if(m.x2) return true;
+  const phase = String(m.phase || '').toLowerCase();
+  return !!phase && !phase.includes('grupo') && !phase.includes('fecha');
+}
+</script>
+
 <script>
 // ══ FIREBASE CONFIGURATION ══
 const firebaseConfig = {
@@ -9093,7 +9103,7 @@ function openMatchBreakdown(matchId){
   const myPick = (allPicks[currentUser] || {})[matchId] || null;
   mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null, searchActive:false, searchTerm:'', myPick, myName:currentUser };
   const mbModal = document.getElementById('match-breakdown-modal');
-  mbModal.classList.toggle('x2-mode', !!m.x2);
+  mbModal.classList.toggle('x2-mode', (typeof edsonIsFaseDecisivaVisual === 'function' ? edsonIsFaseDecisivaVisual(m) : !!m.x2));
   mbModal.classList.remove('admin-pick-info-enabled');
   mbModal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
@@ -19720,3 +19730,154 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 })();
 </script>
+
+
+<style id="edson-fase-decisiva-nome-e-zero-laranja-20260630">
+  /*
+    Correção final:
+    - Jogo de fase decisiva também é detectado por phase "1/16", "Octavos", etc.
+    - Na fase decisiva, no MEU card: colocação, nome e pontuação do jogo ficam laranja.
+    - A linha de baixo continua visível e normal: Palpite + pontuação geral em cinza.
+    - Fundo colorido continua somente quando for Exacto.
+  */
+
+  /* Fase decisiva: colocação, nome e ponto do jogo em laranja/dourado */
+  body #match-breakdown-modal.x2-mode .ud-row.mine .mb-pos,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-participant-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.zero,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.win,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.exact{
+    color:#F59E0B!important;
+    font-weight:900!important;
+  }
+
+  /* Mantém o delta de posição com as cores próprias */
+  body #match-breakdown-modal.x2-mode .ud-row.mine .rank-delta.down{
+    color:#C8102E!important;
+  }
+
+  body #match-breakdown-modal.x2-mode .ud-row.mine .rank-delta.up{
+    color:var(--green)!important;
+  }
+
+  body #match-breakdown-modal.x2-mode .ud-row.mine .rank-delta.same{
+    color:#6B7280!important;
+  }
+
+  /* Linha de baixo do meu card: igual aos outros, cinza e visível */
+  body #match-breakdown-modal .ud-row.mine .ud-meta,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta{
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:wrap!important;
+    gap:0!important;
+    color:#6B7280!important;
+  }
+
+  body #match-breakdown-modal .ud-row.mine .ud-pick-text,
+  body #match-breakdown-modal .ud-row.mine .ud-pick-registered,
+  body #match-breakdown-modal .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal .ud-row.mine .ud-pending-score,
+  body #match-breakdown-modal .ud-row.mine .ud-pending-score-name,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-text,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-registered,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pick-points-inline,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pending-score-name{
+    color:#6B7280!important;
+    font-size:11px!important;
+    font-weight:400!important;
+    line-height:1.05!important;
+  }
+
+  body #match-breakdown-modal .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal .ud-row.mine .ud-meta-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-name-sep,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-meta-sep{
+    color:#9CA3AF!important;
+    font-size:11px!important;
+    font-weight:700!important;
+  }
+
+  /* Sem exacto: sem card preenchido, mas mantém a separação normal da lista */
+  body #match-breakdown-modal .ud-row.mine:not(.exact),
+  body #match-breakdown-modal.x2-mode .ud-row.mine:not(.exact){
+    background:#fff!important;
+    box-shadow:none!important;
+    border-color:transparent!important;
+    border-bottom:1px solid rgba(17,24,39,.10)!important;
+    border-radius:0!important;
+  }
+
+  /* Exacto em grupo: fundo verde */
+  body #match-breakdown-modal:not(.x2-mode) .ud-row.mine.exact{
+    background:rgba(0,155,84,.08)!important;
+    border-color:rgba(0,155,84,.32)!important;
+    border-radius:12px!important;
+    box-shadow:inset 0 0 0 1px rgba(0,155,84,.20), 0 0 0 1px rgba(0,155,84,.08)!important;
+  }
+
+  /* Exacto em fase decisiva: fundo laranja */
+  body #match-breakdown-modal.x2-mode .ud-row.mine.exact{
+    background:rgba(245,158,11,.10)!important;
+    border-color:rgba(245,158,11,.38)!important;
+    border-radius:12px!important;
+    box-shadow:inset 0 0 0 1px rgba(245,158,11,.22), 0 0 0 1px rgba(245,158,11,.10)!important;
+  }
+</style>
+
+<script id="edson-garante-x2-mode-visual-sem-travar-20260630">
+(function(){
+  if(window.__edsonGaranteX2ModeVisualSemTravar) return;
+  window.__edsonGaranteX2ModeVisualSemTravar = true;
+
+  function applyX2Visual(){
+    try{
+      var modal = document.getElementById('match-breakdown-modal');
+      if(!modal || !window.mbState || !mbState.m) return;
+      var isX2 = typeof edsonIsFaseDecisivaVisual === 'function'
+        ? edsonIsFaseDecisivaVisual(mbState.m)
+        : !!mbState.m.x2;
+      modal.classList.toggle('x2-mode', !!isX2);
+    }catch(e){}
+  }
+
+  var oldOpen = window.openMatchBreakdown;
+  if(typeof oldOpen === 'function' && !oldOpen.__edsonX2VisualWrapped){
+    var wrappedOpen = function(){
+      var ret = oldOpen.apply(this, arguments);
+      setTimeout(applyX2Visual, 0);
+      return ret;
+    };
+    wrappedOpen.__edsonX2VisualWrapped = true;
+    window.openMatchBreakdown = wrappedOpen;
+  }
+
+  var oldRender = window.renderMatchBreakdown;
+  if(typeof oldRender === 'function' && !oldRender.__edsonX2VisualWrapped){
+    var wrappedRender = function(){
+      applyX2Visual();
+      return oldRender.apply(this, arguments);
+    };
+    wrappedRender.__edsonX2VisualWrapped = true;
+    window.renderMatchBreakdown = wrappedRender;
+  }
+})();
+</script>
+
+
+<style id="edson-ponto-zero-sempre-vermelho-20260630">
+  /*
+    Regra final da pontuação do jogo:
+    quando a pontuação do jogo for 0, fica vermelho,
+    mesmo em fase decisiva.
+  */
+  body #match-breakdown-modal .ud-row .ud-pts.zero,
+  body #match-breakdown-modal.x2-mode .ud-row .ud-pts.zero,
+  body #match-breakdown-modal .ud-row.mine .ud-pts.zero,
+  body #match-breakdown-modal.x2-mode .ud-row.mine .ud-pts.zero{
+    color:#C8102E!important;
+    font-weight:900!important;
+  }
+</style>
