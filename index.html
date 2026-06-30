@@ -14170,6 +14170,177 @@ body.edson-matches-bg #summary-modal .summary-header{
   }
 </style>
 
+
+
+<!-- AJUSTE FINAL 20260630: filtros flutuantes do modal Puntos por participante funcionando sem alterar visual -->
+<script id="mb-floating-filters-functional-final-20260630">
+(function(){
+  if(window.__mbFloatingFiltersFunctionalFinal20260630) return;
+  window.__mbFloatingFiltersFunctionalFinal20260630 = true;
+
+  function getActive(){
+    if(typeof window.mbState === 'undefined' || !window.mbState) return [];
+    if(!Array.isArray(window.mbState.tagFilters)) window.mbState.tagFilters = [];
+    return window.mbState.tagFilters;
+  }
+
+  function setActive(next){
+    if(typeof window.mbState === 'undefined' || !window.mbState) return;
+    window.mbState.tagFilters = Array.from(new Set(next || []));
+  }
+
+  function rowText(row){
+    return String(row ? row.textContent || '' : '');
+  }
+
+  function readPickFromRow(row){
+    var text = rowText(row);
+    var m = text.match(/Palpite:\s*(\d+)\s*:\s*(\d+)/i);
+    return m ? {home:Number(m[1]), away:Number(m[2])} : null;
+  }
+
+  function samePickAsUser(row){
+    try{
+      var myPick = window.mbState && window.mbState.myPick;
+      var pick = readPickFromRow(row);
+      if(!myPick || !pick) return false;
+      return Number(myPick.home) === pick.home && Number(myPick.away) === pick.away;
+    }catch(e){ return false; }
+  }
+
+  function hasTag(row, key){
+    if(!row) return false;
+    if(key === 'mine') return samePickAsUser(row);
+    if(key === 'most') return !!row.querySelector('.ud-most-tag') || /Más\s+palpitado/i.test(rowText(row));
+    if(key === 'exact') return row.classList.contains('exact') || !!row.querySelector('.ud-exact-tag') || /Exacto/i.test(rowText(row));
+    return true;
+  }
+
+  function updateButtons(){
+    var active = getActive();
+    var wrap = document.querySelector('#match-breakdown-modal .mb-floating-filters');
+    if(!wrap) return;
+    wrap.querySelectorAll('.mb-float-filter').forEach(function(btn){
+      var key = btn.getAttribute('data-filter-key');
+      if(!key){
+        var text = rowText(btn);
+        if(/Vos/i.test(text)) key = 'mine';
+        else if(/Más/i.test(text)) key = 'most';
+        else if(/Exacto/i.test(text)) key = 'exact';
+      }
+      var on = key && active.indexOf(key) >= 0;
+      btn.classList.toggle('active', !!on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    wrap.querySelectorAll('.mb-float-clear').forEach(function(btn){
+      btn.classList.toggle('active', active.length > 0);
+      btn.setAttribute('aria-pressed', active.length > 0 ? 'true' : 'false');
+    });
+  }
+
+  function apply(){
+    var modal = document.getElementById('match-breakdown-modal');
+    var body = document.getElementById('mb-body');
+    if(!modal || !body || !window.mbState || window.mbState.view !== 'list') return;
+
+    var active = getActive();
+    var oldEmpty = body.querySelector('.mb-filtered-empty');
+    if(oldEmpty) oldEmpty.remove();
+
+    var rows = Array.prototype.slice.call(body.querySelectorAll(':scope > .ud-row'));
+    var visible = 0;
+    rows.forEach(function(row){
+      var ok = !active.length || active.every(function(k){ return hasTag(row, k); });
+      row.style.display = ok ? '' : 'none';
+      if(ok) visible++;
+    });
+
+    if(active.length && rows.length && visible === 0){
+      var div = document.createElement('div');
+      div.className = 'mb-filtered-empty';
+      div.textContent = 'No hay participantes con los filtros seleccionados.';
+      body.appendChild(div);
+    }
+    updateButtons();
+  }
+
+  window.applyMbFloatingFilters = apply;
+
+  window.toggleMbTagFilter = function(key, ev){
+    if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+    var active = getActive().slice();
+    var idx = active.indexOf(key);
+    if(idx >= 0) active.splice(idx, 1);
+    else active.push(key);
+    setActive(active);
+    apply();
+  };
+
+  window.clearMbTagFilters = function(ev){
+    if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+    setActive([]);
+    apply();
+  };
+
+  document.addEventListener('click', function(ev){
+    var filterBtn = ev.target.closest && ev.target.closest('#match-breakdown-modal .mb-float-filter');
+    var clearBtn = ev.target.closest && ev.target.closest('#match-breakdown-modal .mb-float-clear');
+    if(filterBtn){
+      ev.preventDefault();
+      ev.stopPropagation();
+      var key = filterBtn.getAttribute('data-filter-key');
+      if(!key){
+        var text = rowText(filterBtn);
+        if(/Vos/i.test(text)) key = 'mine';
+        else if(/Más/i.test(text)) key = 'most';
+        else if(/Exacto/i.test(text)) key = 'exact';
+      }
+      if(key) window.toggleMbTagFilter(key, ev);
+    }else if(clearBtn){
+      ev.preventDefault();
+      ev.stopPropagation();
+      window.clearMbTagFilters(ev);
+    }
+  }, true);
+
+  function addKeysToButtons(){
+    var wrap = document.querySelector('#match-breakdown-modal .mb-floating-filters');
+    if(!wrap) return;
+    wrap.querySelectorAll('.mb-float-filter').forEach(function(btn){
+      if(btn.getAttribute('data-filter-key')) return;
+      var text = rowText(btn);
+      if(/Vos/i.test(text)) btn.setAttribute('data-filter-key','mine');
+      else if(/Más/i.test(text)) btn.setAttribute('data-filter-key','most');
+      else if(/Exacto/i.test(text)) btn.setAttribute('data-filter-key','exact');
+    });
+  }
+
+  var oldRenderFloating = window.renderMbFloatingFiltersIntoModal;
+  if(typeof oldRenderFloating === 'function' && !oldRenderFloating.__functionalFinalWrapped){
+    window.renderMbFloatingFiltersIntoModal = function(){
+      var ret = oldRenderFloating.apply(this, arguments);
+      addKeysToButtons();
+      updateButtons();
+      return ret;
+    };
+    window.renderMbFloatingFiltersIntoModal.__functionalFinalWrapped = true;
+  }
+
+  if(typeof window.renderMatchBreakdown === 'function' && !window.renderMatchBreakdown.__mbFunctionalFinalWrapped){
+    var oldRender = window.renderMatchBreakdown;
+    window.renderMatchBreakdown = function(){
+      var ret = oldRender.apply(this, arguments);
+      setTimeout(function(){ addKeysToButtons(); apply(); }, 0);
+      return ret;
+    };
+    window.renderMatchBreakdown.__mbFunctionalFinalWrapped = true;
+    try{ renderMatchBreakdown = window.renderMatchBreakdown; }catch(e){}
+  }
+
+  setTimeout(function(){ addKeysToButtons(); apply(); }, 0);
+})();
+</script>
+
 </body>
 
 <!-- AJUSTE EDSON FINAL: corrigir corte da colocação/variação no modal Puntos por participante -->
@@ -21080,3 +21251,105 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     box-shadow:0 11px 28px rgba(0,0,0,.42),0 3px 9px rgba(0,0,0,.25)!important;
   }
 </style>
+
+<!-- AJUSTE 20260630: remover alerta inicial/resumen recente e marcar filtros por opacidade -->
+<style id="edson-remove-announcement-and-filter-active-opacity-20260630">
+  /* Remove completamente o alerta inicial e o resumo recente da experiência principal */
+  #announce-modal,
+  #summary-modal,
+  #recent-summary-wrap{
+    display:none!important;
+  }
+
+  /* Estado padrão dos filtros flutuantes: levemente opaco */
+  #user-detail-modal .ud-floating-filters .ud-float-filter span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span{
+    opacity:.54!important;
+    filter:saturate(.82) contrast(.98)!important;
+    transition:opacity .16s ease, filter .16s ease, box-shadow .16s ease!important;
+    box-shadow:0 11px 28px rgba(0,0,0,.42),0 3px 9px rgba(0,0,0,.25)!important;
+  }
+
+  /* Filtro aplicado: mesma cor e formato, apenas mais evidente */
+  #user-detail-modal .ud-floating-filters .ud-float-filter.active span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span{
+    opacity:1!important;
+    filter:saturate(1.10) contrast(1)!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.46),0 3px 10px rgba(0,0,0,.27)!important;
+  }
+
+  /* Limpiar representa o estado sem filtros: fica evidente quando nada está selecionado */
+  #user-detail-modal .ud-floating-filters .ud-float-clear,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    opacity:.54!important;
+    transition:opacity .16s ease, box-shadow .16s ease!important;
+    box-shadow:0 11px 28px rgba(0,0,0,.42),0 3px 9px rgba(0,0,0,.25)!important;
+    border:1px solid #D1D5DB!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-clear.active,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear.active{
+    opacity:1!important;
+    box-shadow:0 12px 30px rgba(0,0,0,.46),0 3px 10px rgba(0,0,0,.27)!important;
+    border:1px solid #D1D5DB!important;
+  }
+</style>
+
+<script id="edson-remove-announcement-and-filter-active-opacity-20260630-script">
+(function(){
+  function hideInitialAnnouncementAndRecentSummary(){
+    var ann = document.getElementById('announce-modal');
+    var sum = document.getElementById('summary-modal');
+    var wrap = document.getElementById('recent-summary-wrap');
+    if(ann){ ann.style.display = 'none'; ann.removeAttribute('data-open'); }
+    if(sum){ sum.style.display = 'none'; sum.removeAttribute('data-open'); }
+    if(wrap){ wrap.innerHTML = ''; wrap.style.display = 'none'; }
+    try{ if(typeof unlockSomaxPageScroll === 'function') unlockSomaxPageScroll(); }catch(e){}
+  }
+
+  // Remove o comunicado inicial, os comandos Partidas/Ranking/Ver resumen e o resumo recente.
+  window.APP_ANNOUNCEMENT = null;
+  window.maybeShowAnnouncement = function(){
+    window.__somaxPendingAnnouncement = false;
+    hideInitialAnnouncementAndRecentSummary();
+  };
+  window.dismissAnnounce = hideInitialAnnouncementAndRecentSummary;
+  window.dismissAnnounceToMatches = hideInitialAnnouncementAndRecentSummary;
+  window.dismissAnnounceToRanking = hideInitialAnnouncementAndRecentSummary;
+  window.closeAnnounceOutside = hideInitialAnnouncementAndRecentSummary;
+  window.renderRecentSummary = function(){ hideInitialAnnouncementAndRecentSummary(); };
+  window.recentSummaryHtml = function(){ return ''; };
+  window.openRecentSummaryModal = function(){ hideInitialAnnouncementAndRecentSummary(); };
+  window.closeRecentSummaryModal = hideInitialAnnouncementAndRecentSummary;
+  window.closeSummaryOutside = hideInitialAnnouncementAndRecentSummary;
+
+  // Recria apenas o HTML dos filtros para marcar o estado ativo por opacidade, sem check.
+  window.renderUdFloatingFiltersHtml = function(){
+    var active = (window.udState && Array.isArray(window.udState.tagFilters)) ? window.udState.tagFilters : [];
+    var isActive = function(key){ return active.indexOf(key) >= 0 ? ' active' : ''; };
+    var clearActive = active.length ? '' : ' active';
+    return '<div class="ud-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de partidos">' +
+      '<button type="button" class="ud-float-filter' + isActive('mine') + '" onclick="toggleUdTagFilter(\'mine\', event)" aria-pressed="' + (active.indexOf('mine') >= 0) + '"><span class="ud-mine-tag">= Vos</span></button>' +
+      '<button type="button" class="ud-float-filter' + isActive('most') + '" onclick="toggleUdTagFilter(\'most\', event)" aria-pressed="' + (active.indexOf('most') >= 0) + '"><span class="ud-most-tag">Más palpitado</span></button>' +
+      '<button type="button" class="ud-float-filter' + isActive('exact') + '" onclick="toggleUdTagFilter(\'exact\', event)" aria-pressed="' + (active.indexOf('exact') >= 0) + '"><span class="ud-exact-tag">Exacto</span></button>' +
+      '<button type="button" class="ud-float-clear' + clearActive + '" onclick="clearUdTagFilters(event)" aria-pressed="' + (!active.length) + '">Limpiar</button>' +
+    '</div>';
+  };
+
+  window.renderMbFloatingFiltersHtml = function(){
+    var active = (typeof mbState !== 'undefined' && mbState && Array.isArray(mbState.tagFilters)) ? mbState.tagFilters : [];
+    var isActive = function(key){ return active.indexOf(key) >= 0 ? ' active' : ''; };
+    var clearActive = active.length ? '' : ' active';
+    return '<div class="mb-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de participantes">' +
+      '<button type="button" class="mb-float-filter' + isActive('mine') + '" onclick="toggleMbTagFilter(\'mine\', event)" aria-pressed="' + (active.indexOf('mine') >= 0) + '"><span class="ud-mine-tag">= Vos</span></button>' +
+      '<button type="button" class="mb-float-filter' + isActive('most') + '" onclick="toggleMbTagFilter(\'most\', event)" aria-pressed="' + (active.indexOf('most') >= 0) + '"><span class="ud-most-tag">Más palpitado</span></button>' +
+      '<button type="button" class="mb-float-filter' + isActive('exact') + '" onclick="toggleMbTagFilter(\'exact\', event)" aria-pressed="' + (active.indexOf('exact') >= 0) + '"><span class="ud-exact-tag">Exacto</span></button>' +
+      '<button type="button" class="mb-float-clear' + clearActive + '" onclick="clearMbTagFilters(event)" aria-pressed="' + (!active.length) + '">Limpiar</button>' +
+    '</div>';
+  };
+
+  document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSummary);
+  setTimeout(hideInitialAnnouncementAndRecentSummary, 0);
+  setTimeout(hideInitialAnnouncementAndRecentSummary, 500);
+  setTimeout(hideInitialAnnouncementAndRecentSummary, 1200);
+})();
+</script>
