@@ -21408,41 +21408,68 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   @keyframes udQuickSpin{to{transform:rotate(360deg)}}
 </style>
 
+<style id="edson-user-detail-overlay-loading-20260630">
+  /* Loading antes de abrir detalhe do participante: fundo escuro, sem mostrar janelinha vazia */
+  #ud-preload-overlay{
+    position:fixed!important;
+    inset:0!important;
+    z-index:980!important;
+    display:none!important;
+    align-items:center!important;
+    justify-content:center!important;
+    background:rgba(0,0,0,.58)!important;
+    backdrop-filter:blur(1.5px)!important;
+    -webkit-backdrop-filter:blur(1.5px)!important;
+  }
+  #ud-preload-overlay.show{display:flex!important;}
+  #ud-preload-overlay .ud-preload-box{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:12px!important;
+    color:#fff!important;
+    font-size:15px!important;
+    font-weight:900!important;
+    text-align:center!important;
+    text-shadow:0 2px 8px rgba(0,0,0,.35)!important;
+  }
+  #ud-preload-overlay .ud-preload-spinner{
+    width:34px!important;
+    height:34px!important;
+    border-radius:50%!important;
+    border:3px solid rgba(255,255,255,.30)!important;
+    border-top-color:#fff!important;
+    animation:udPreloadSpin .72s linear infinite!important;
+  }
+  @keyframes udPreloadSpin{to{transform:rotate(360deg)}}
+</style>
+
 <script id="edson-instant-user-detail-open-20260630">
 (function(){
   if(window.__edsonInstantUserDetailOpenApplied) return;
   window.__edsonInstantUserDetailOpenApplied = true;
 
-  function showUserDetailLoading(name){
-    var modal = document.getElementById('user-detail-modal');
-    if(!modal) return;
-    var title = document.getElementById('ud-title');
-    var hero = document.getElementById('ud-hero');
-    var tabs = document.getElementById('ud-tabs');
-    var body = document.getElementById('ud-body');
-    var slot = document.getElementById('ud-floating-filters-slot');
+  function getOverlay(){
+    var overlay = document.getElementById('ud-preload-overlay');
+    if(overlay) return overlay;
+    overlay = document.createElement('div');
+    overlay.id = 'ud-preload-overlay';
+    overlay.setAttribute('aria-live','polite');
+    overlay.setAttribute('aria-label','Cargando datos');
+    overlay.innerHTML = '<div class="ud-preload-box"><span class="ud-preload-spinner" aria-hidden="true"></span><span>Cargando datos...</span></div>';
+    document.body.appendChild(overlay);
+    return overlay;
+  }
 
-    if(title) title.textContent = name || 'Detalle';
-    if(hero){
-      hero.innerHTML =
-        '<div class="ud-hero-stat"><span class="ud-hero-num">–</span><span class="ud-hero-lbl">puntos</span></div>' +
-        '<div class="ud-hero-sep"></div>' +
-        '<div class="ud-hero-stat"><span class="ud-hero-num">–</span><span class="ud-hero-lbl">posición</span></div>' +
-        '<div class="ud-hero-sep"></div>' +
-        '<div class="ud-hero-stat"><span class="ud-hero-num">–</span><span class="ud-hero-lbl">aprovecham.</span></div>';
-    }
-    if(tabs) tabs.innerHTML = '';
-    if(body){
-      body.innerHTML = '<div class="ud-loading-state"><span class="ud-loading-spinner" aria-hidden="true"></span><span>Cargando datos...</span></div>';
-      body.scrollTop = 0;
-    }
-    if(slot){
-      slot.innerHTML = '';
-      slot.classList.remove('show');
-    }
-    modal.classList.remove('has-ud-floating-filters');
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+  function showOverlay(){
+    var overlay = getOverlay();
+    overlay.classList.add('show');
+  }
+
+  function hideOverlay(){
+    var overlay = document.getElementById('ud-preload-overlay');
+    if(overlay) overlay.classList.remove('show');
   }
 
   function install(){
@@ -21466,16 +21493,21 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
       }catch(e){}
 
       opening = true;
-      showUserDetailLoading(name);
+      showOverlay();
 
       var self = this;
       setTimeout(function(){
         try{
           original.apply(self, args);
         }finally{
-          setTimeout(function(){ opening = false; }, 180);
+          requestAnimationFrame(function(){
+            setTimeout(function(){
+              hideOverlay();
+              opening = false;
+            }, 60);
+          });
         }
-      }, 35);
+      }, 25);
     };
     wrapped.__edsonInstantWrapped = true;
 
@@ -21491,3 +21523,25 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   }
 })();
 </script>
+
+<!-- AJUSTE 20260630: filtros flutuantes menos transparentes, mantendo estrutura/alinhamento -->
+<style id="edson-floating-filters-less-transparent-20260630">
+  #user-detail-modal .ud-floating-filters .ud-float-filter span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter span{
+    opacity:.86!important;
+    filter:saturate(1) contrast(1)!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-filter.active span,
+  #match-breakdown-modal .mb-floating-filters .mb-float-filter.active span{
+    opacity:1!important;
+    filter:saturate(1.08) contrast(1)!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-clear,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear{
+    opacity:.86!important;
+  }
+  #user-detail-modal .ud-floating-filters .ud-float-clear.active,
+  #match-breakdown-modal .mb-floating-filters .mb-float-clear.active{
+    opacity:1!important;
+  }
+</style>
