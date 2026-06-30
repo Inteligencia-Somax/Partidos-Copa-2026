@@ -7427,6 +7427,7 @@ async function logoutUser(){
   currentUserId = '';
   currentUserEmail = '';
   currentUserRole = 'usuario';
+  participantVisibilityMeta = {};
   localStorage.removeItem('somax_admin_unlocked');
   localStorage.removeItem('somax_all_picks');
   document.getElementById('main-content').style.display='none';
@@ -7487,9 +7488,17 @@ async function loadFirebaseState(){
   try{
     const picksSnap = await fbDb.collection('palpites').get();
     const all = {};
+    const meta = {};
     picksSnap.forEach(doc=>{
       const d = doc.data();
       const name = d.nombre || d.email || d.uid || 'Usuario';
+      const normName = normalizeRankingName(name);
+
+      if(!meta[normName]) meta[normName] = { uids: [], emails: [] };
+      if(d.uid && !meta[normName].uids.includes(d.uid)) meta[normName].uids.push(d.uid);
+      const pickEmail = normalizeEmail(d.email || '');
+      if(pickEmail && !meta[normName].emails.includes(pickEmail)) meta[normName].emails.push(pickEmail);
+
       if(!all[name]) all[name] = {};
       all[name][d.partidoId] = {
         home:Number(d.golesLocal),
@@ -7497,6 +7506,7 @@ async function loadFirebaseState(){
         savedAt: d.fechaPalpite && typeof d.fechaPalpite.toDate === 'function' ? d.fechaPalpite.toDate().toISOString() : (d.savedAt || '')
       };
     });
+    participantVisibilityMeta = meta;
     allPicks = all;
     localStorage.setItem('somax_all_picks', JSON.stringify(allPicks));
 
@@ -8288,6 +8298,9 @@ function updateCounts(){
 }
 
 // ══ RANKING ══
+// Mapa de segurança: identifica o dono real de cada participante pelo UID/e-mail do Firebase.
+// Isso evita que um usuário que apenas esteja com o mesmo nome no perfil veja o Edson.
+let participantVisibilityMeta = {};
 const EXCLUDED_RANKING_NAMES = ['Edson Queiroz Rodrigues Junior','Edson Queiroz Junior'];
 function normalizeRankingName(name){
   return String(name || '')
@@ -8300,8 +8313,20 @@ function isExcludedFromRanking(name){
 }
 function canCurrentUserSeeExcludedParticipant(name){
   // Edson fica invisível para todos os demais usuários.
-  // Apenas o próprio Edson pode ver seu nome/palpites nas telas de partida/detalhe.
-  return isExcludedFromRanking(name) && normalizeRankingName(name) === normalizeRankingName(currentUser);
+  // Apenas o próprio dono dos palpites (mesmo UID/e-mail do Firebase) pode ver.
+  if(!isExcludedFromRanking(name)) return true;
+
+  const n = normalizeRankingName(name);
+  const meta = participantVisibilityMeta && participantVisibilityMeta[n];
+
+  if(meta){
+    const uidOk = !!currentUserId && Array.isArray(meta.uids) && meta.uids.includes(currentUserId);
+    const emailOk = !!currentUserEmail && Array.isArray(meta.emails) && meta.emails.includes(normalizeEmail(currentUserEmail));
+    return uidOk || emailOk;
+  }
+
+  // Sem metadados do Firebase, por segurança não mostra o participante excluído.
+  return false;
 }
 function isVisibleParticipantName(name){
   return !isExcludedFromRanking(name) || canCurrentUserSeeExcludedParticipant(name);
@@ -9139,8 +9164,9 @@ function openMatchBreakdown(matchId){
     parts.push({ name:u.name, pos: excluded ? null : publicPosMap[u.name], excludedFromRanking: excluded, pick, pts:calc.pts, type:calc.type, totalScore:u.score, savedAt:pick.savedAt || pick.fechaPalpite || '' });
   });
 
+  const visibleParts = parts.filter(p => !p.excludedFromRanking || canCurrentUserSeeExcludedParticipant(p.name));
   const myPick = (allPicks[currentUser] || {})[matchId] || null;
-  mbState = { m, real, pending, parts, view:'list', expanded:null, filterScore:null, searchActive:false, searchTerm:'', myPick, myName:currentUser };
+  mbState = { m, real, pending, parts: visibleParts, view:'list', expanded:null, filterScore:null, searchActive:false, searchTerm:'', myPick, myName:currentUser };
   const mbModal = document.getElementById('match-breakdown-modal');
   mbModal.classList.toggle('x2-mode', (typeof edsonIsFaseDecisivaVisual === 'function' ? edsonIsFaseDecisivaVisual(m) : !!m.x2));
   mbModal.classList.remove('admin-pick-info-enabled');
