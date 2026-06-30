@@ -8312,9 +8312,15 @@ function isExcludedFromRanking(name){
   return EXCLUDED_RANKING_NAMES.some(x => normalizeRankingName(x) === n);
 }
 function canCurrentUserSeeExcludedParticipant(name){
-  // Edson fica invisível para todos os demais usuários.
-  // Apenas o próprio dono dos palpites (mesmo UID/e-mail do Firebase) pode ver.
+  // Privacidade do Edson:
+  // - Edson não entra no ranking oficial.
+  // - Nas telas de partida, o Edson só aparece quando o usuário logado é o próprio Edson.
+  // - Qualquer outro participante, mesmo autenticado no bolão, não deve visualizar o Edson.
   if(!isExcludedFromRanking(name)) return true;
+
+  const currentName = normalizeRankingName(currentUser);
+  const isCurrentUserEdson = EXCLUDED_RANKING_NAMES.some(x => normalizeRankingName(x) === currentName);
+  if(!isCurrentUserEdson) return false;
 
   const n = normalizeRankingName(name);
   const meta = participantVisibilityMeta && participantVisibilityMeta[n];
@@ -8322,11 +8328,12 @@ function canCurrentUserSeeExcludedParticipant(name){
   if(meta){
     const uidOk = !!currentUserId && Array.isArray(meta.uids) && meta.uids.includes(currentUserId);
     const emailOk = !!currentUserEmail && Array.isArray(meta.emails) && meta.emails.includes(normalizeEmail(currentUserEmail));
-    return uidOk || emailOk;
+    // Se houver metadados, UID/e-mail confirmam. O nome exato também libera para o próprio Edson
+    // quando o cadastro antigo não salvou UID/e-mail em todos os palpites.
+    return uidOk || emailOk || isCurrentUserEdson;
   }
 
-  // Sem metadados do Firebase, por segurança não mostra o participante excluído.
-  return false;
+  return isCurrentUserEdson;
 }
 function isVisibleParticipantName(name){
   return !isExcludedFromRanking(name) || canCurrentUserSeeExcludedParticipant(name);
@@ -13799,6 +13806,98 @@ body.edson-matches-bg #summary-modal .summary-header{
       }
     }, 160);
   }, true);
+})();
+</script>
+
+
+
+<script id="edson-privacidade-participante-final-20260630">
+(function(){
+  if(window.__edsonPrivacidadeParticipanteFinal) return;
+  window.__edsonPrivacidadeParticipanteFinal = true;
+
+  function norm(v){
+    try{
+      return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/\s+/g,' ');
+    }catch(e){ return String(v || '').trim().toLowerCase().replace(/\s+/g,' '); }
+  }
+  var EDSON_NAMES = ['edson queiroz rodrigues junior','edson queiroz junior'];
+  function isEdsonName(name){ return EDSON_NAMES.indexOf(norm(name)) >= 0; }
+  function currentIsEdson(){ return isEdsonName(window.currentUser || currentUser || ''); }
+  function mustHideEdsonName(name){ return isEdsonName(name) && !currentIsEdson(); }
+
+  // Reforça as funções globais, porque várias partes do arquivo usam wrappers/renderizações posteriores.
+  window.isVisibleParticipantName = function(name){
+    return !mustHideEdsonName(name);
+  };
+  window.canCurrentUserSeeExcludedParticipant = function(name){
+    if(!isEdsonName(name)) return true;
+    return currentIsEdson();
+  };
+
+  function filterMbState(){
+    try{
+      if(window.mbState && Array.isArray(mbState.parts)){
+        mbState.parts = mbState.parts.filter(function(p){ return !mustHideEdsonName(p && p.name); });
+      }
+    }catch(e){}
+  }
+
+  function cleanupDom(){
+    if(currentIsEdson()) return;
+    var modal = document.getElementById('match-breakdown-modal');
+    if(!modal) return;
+    modal.querySelectorAll('.ud-row').forEach(function(row){
+      var nameEl = row.querySelector('.ud-participant-name, .ud-teams, .mb-name-txt');
+      var txt = nameEl ? nameEl.textContent : row.textContent;
+      if(isEdsonName(txt.replace(/\s*•.*$/,'')) || norm(txt).indexOf('edson queiroz rodrigues junior') >= 0 || norm(txt).indexOf('edson queiroz junior') >= 0){
+        row.remove();
+      }
+    });
+    modal.querySelectorAll('.mb-name-row').forEach(function(row){
+      var txt = row.textContent || '';
+      if(norm(txt).indexOf('edson queiroz rodrigues junior') >= 0 || norm(txt).indexOf('edson queiroz junior') >= 0){
+        row.remove();
+      }
+    });
+  }
+
+  function run(){
+    filterMbState();
+    cleanupDom();
+  }
+
+  var oldOpen = window.openMatchBreakdown;
+  if(typeof oldOpen === 'function' && !oldOpen.__edsonPrivacyFinalWrapped){
+    var wrappedOpen = function(){
+      var ret = oldOpen.apply(this, arguments);
+      run();
+      setTimeout(run, 0);
+      setTimeout(run, 80);
+      return ret;
+    };
+    wrappedOpen.__edsonPrivacyFinalWrapped = true;
+    window.openMatchBreakdown = wrappedOpen;
+  }
+
+  var oldRender = window.renderMatchBreakdown;
+  if(typeof oldRender === 'function' && !oldRender.__edsonPrivacyFinalWrapped){
+    var wrappedRender = function(){
+      filterMbState();
+      var ret = oldRender.apply(this, arguments);
+      run();
+      setTimeout(run, 0);
+      setTimeout(run, 80);
+      return ret;
+    };
+    wrappedRender.__edsonPrivacyFinalWrapped = true;
+    window.renderMatchBreakdown = wrappedRender;
+  }
+
+  document.addEventListener('click', function(){ setTimeout(run, 40); }, true);
+  document.addEventListener('input', function(){ setTimeout(run, 40); }, true);
+  document.addEventListener('DOMContentLoaded', run);
+  setTimeout(run, 120);
 })();
 </script>
 
