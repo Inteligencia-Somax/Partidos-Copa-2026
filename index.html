@@ -6690,6 +6690,7 @@ html, body{scroll-behavior:auto!important;}
     <div class="ud-hero" id="ud-hero"></div>
     <div class="ud-tabs" id="ud-tabs"></div>
     <div class="ud-body" id="ud-body"></div>
+    <div class="ud-floating-filters-slot" id="ud-floating-filters-slot"></div>
   </div>
 </div>
 
@@ -8854,6 +8855,8 @@ function renderUd(){
   if(udState.tab === 'partidos') body.innerHTML = renderUdPartidos();
   else if(udState.tab === 'comparar' && !s.isMe) body.innerHTML = renderUdComparar();
   else body.innerHTML = renderUdResumen();
+
+  renderUdFloatingFiltersIntoModal();
 }
 
 function renderUdResumen(){
@@ -9037,19 +9040,34 @@ function renderUdPartidos(){
     </div>` : '';
 
   const emptyMsg = activeFilters.length ? 'No hay partidos con los filtros seleccionados.' : 'Aún no hay partidos.';
-  return nav + (renderedCount ? rows : `<div class="ud-empty">${emptyMsg}</div>`) + renderUdFloatingFilters();
+  return nav + (renderedCount ? rows : `<div class="ud-empty">${emptyMsg}</div>`);
 }
 
-function renderUdFloatingFilters(){
+function renderUdFloatingFiltersHtml(){
   const active = Array.isArray(udState.tagFilters) ? udState.tagFilters : [];
   const isActive = key => active.includes(key) ? ' active' : '';
   return `
     <div class="ud-floating-filters" onclick="event.stopPropagation()" aria-label="Filtros de partidos">
-      <button type="button" class="ud-float-filter${isActive('mine')}" onclick="toggleUdTagFilter('mine', event)"><span class="ud-mine-tag">= Vos</span></button>
-      <button type="button" class="ud-float-filter${isActive('most')}" onclick="toggleUdTagFilter('most', event)"><span class="ud-most-tag">Más palpitado</span></button>
-      <button type="button" class="ud-float-filter${isActive('exact')}" onclick="toggleUdTagFilter('exact', event)"><span class="ud-exact-tag">Exacto</span></button>
+      <button type="button" class="ud-float-filter${isActive('mine')}" onclick="toggleUdTagFilter('mine', event)" aria-pressed="${active.includes('mine')}"><span class="ud-mine-tag">= Vos</span></button>
+      <button type="button" class="ud-float-filter${isActive('most')}" onclick="toggleUdTagFilter('most', event)" aria-pressed="${active.includes('most')}"><span class="ud-most-tag">Más palpitado</span></button>
+      <button type="button" class="ud-float-filter${isActive('exact')}" onclick="toggleUdTagFilter('exact', event)" aria-pressed="${active.includes('exact')}"><span class="ud-exact-tag">Exacto</span></button>
       <button type="button" class="ud-float-clear${active.length ? ' active' : ''}" onclick="clearUdTagFilters(event)">Limpiar</button>
     </div>`;
+}
+
+function renderUdFloatingFiltersIntoModal(){
+  const slot = document.getElementById('ud-floating-filters-slot');
+  if(!slot) return;
+  const modal = document.getElementById('user-detail-modal');
+  if(!udState || udState.tab !== 'partidos'){
+    slot.innerHTML = '';
+    slot.classList.remove('show');
+    if(modal) modal.classList.remove('has-ud-floating-filters');
+    return;
+  }
+  slot.innerHTML = renderUdFloatingFiltersHtml();
+  slot.classList.add('show');
+  if(modal) modal.classList.add('has-ud-floating-filters');
 }
 
 function toggleUdTagFilter(key, ev){
@@ -14039,21 +14057,46 @@ body.edson-matches-bg #summary-modal .summary-header{
 
 <!-- AJUSTE: filtros flutuantes na aba Partidos do detalhe do participante -->
 <style id="user-detail-floating-tag-filters-20260630">
+  /* Filtros flutuantes do detalhe do participante: fora da lista, sobrepostos no rodapé do modal */
   #user-detail-modal .modal{
     position:relative!important;
+    overflow:hidden!important;
+  }
+  #user-detail-modal .ud-floating-filters-slot{
+    position:absolute!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    z-index:120!important;
+    display:none!important;
+    pointer-events:none!important;
+    padding:18px 14px 16px!important;
+    background:transparent!important;
+  }
+  #user-detail-modal .ud-floating-filters-slot.show{
+    display:block!important;
+  }
+  #user-detail-modal .ud-floating-filters-slot::before{
+    content:''!important;
+    position:absolute!important;
+    left:0!important;
+    right:0!important;
+    bottom:0!important;
+    height:82px!important;
+    pointer-events:none!important;
+    background:linear-gradient(to top,rgba(0,0,0,.18),rgba(0,0,0,.07) 48%,rgba(0,0,0,0))!important;
+    filter:blur(.2px)!important;
   }
   #user-detail-modal .ud-floating-filters{
-    position:absolute!important;
-    left:14px!important;
-    right:14px!important;
-    bottom:12px!important;
-    z-index:80!important;
+    position:relative!important;
+    z-index:2!important;
+    width:100%!important;
     display:flex!important;
     align-items:center!important;
     justify-content:center!important;
-    gap:6px!important;
+    gap:8px!important;
     background:transparent!important;
-    pointer-events:none!important;
+    pointer-events:auto!important;
     padding:0!important;
     margin:0!important;
   }
@@ -14067,48 +14110,50 @@ body.edson-matches-bg #summary-modal .summary-header{
     font-family:inherit!important;
     cursor:pointer!important;
     line-height:1!important;
-    opacity:.96!important;
+    opacity:.98!important;
     transform:translateZ(0)!important;
     -webkit-tap-highlight-color:transparent!important;
   }
   #user-detail-modal .ud-float-filter span{
     margin-left:0!important;
-    box-shadow:0 2px 6px rgba(0,0,0,.08)!important;
+    transform:scale(1.08)!important;
+    transform-origin:center!important;
+    box-shadow:0 4px 14px rgba(0,0,0,.18),0 1px 3px rgba(0,0,0,.10)!important;
   }
   #user-detail-modal .ud-float-filter.active span{
-    box-shadow:0 0 0 2px rgba(0,155,84,.18),0 2px 8px rgba(0,0,0,.10)!important;
-    filter:saturate(1.08)!important;
+    box-shadow:0 0 0 2px rgba(0,155,84,.26),0 5px 16px rgba(0,0,0,.22)!important;
+    filter:saturate(1.12)!important;
   }
   #user-detail-modal .ud-float-clear{
-    height:17px!important;
-    padding:1px 7px!important;
+    height:21px!important;
+    padding:2px 10px!important;
     border-radius:50px!important;
-    border:1px solid rgba(107,114,128,.22)!important;
-    background:rgba(255,255,255,.84)!important;
+    border:1px solid rgba(107,114,128,.28)!important;
+    background:rgba(255,255,255,.92)!important;
     color:#6b7280!important;
-    font-size:10px!important;
+    font-size:11px!important;
     font-weight:900!important;
     letter-spacing:.2px!important;
-    box-shadow:0 2px 6px rgba(0,0,0,.08)!important;
+    box-shadow:0 4px 14px rgba(0,0,0,.18),0 1px 3px rgba(0,0,0,.10)!important;
   }
   #user-detail-modal .ud-float-clear.active{
     color:#111114!important;
-    border-color:rgba(17,17,20,.26)!important;
-  }
-  #user-detail-modal .ud-body{
-    position:relative!important;
+    border-color:rgba(17,17,20,.30)!important;
   }
   @media(max-width:430px){
+    #user-detail-modal .ud-floating-filters-slot{
+      padding:18px 10px 14px!important;
+    }
     #user-detail-modal .ud-floating-filters{
-      left:10px!important;
-      right:10px!important;
-      bottom:10px!important;
-      gap:5px!important;
+      gap:7px!important;
+    }
+    #user-detail-modal .ud-float-filter span{
+      transform:scale(1.04)!important;
     }
     #user-detail-modal .ud-float-clear{
-      height:16px!important;
-      padding:1px 6px!important;
-      font-size:9px!important;
+      height:20px!important;
+      padding:2px 8px!important;
+      font-size:10px!important;
     }
   }
 </style>
