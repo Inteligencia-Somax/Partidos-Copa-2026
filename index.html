@@ -7159,7 +7159,7 @@ async function sendPickToGoogleSheets(match, pick){
   const deadlineUTC = new Date(getMatchDateTime(match).getTime() - 30*60*1000).toISOString();
 
   const payload = {
-    nombre: currentUser,
+    nombre: getCanonicalUserName(currentUser),
     partido: `${match.home} vs ${match.away}`,
     local: match.home,
     visitante: match.away,
@@ -7193,6 +7193,66 @@ let activeTeam = 'home'; // which score we're editing
 let adminUnlocked = localStorage.getItem('somax_admin_unlocked') === '1';
 let currentAdminFilter = 'all';
 
+
+// ══ MERGE DE USUARIOS DUPLICADOS ══
+// Mantiene una sola persona visible en ranking, puntos, detalle, comparación y reportes.
+const USER_MERGES = {
+  'fernando10agronomia': 'fernando otaviano da silva'
+};
+function normalizeUserMergeName(name){
+  return String(name || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .trim().toLowerCase().replace(/\s+/g,' ');
+}
+function getCanonicalUserName(name){
+  const original = String(name || '').trim();
+  const normalized = normalizeUserMergeName(original);
+  return USER_MERGES[normalized] || original;
+}
+function getUserAliasesForCanonical(name){
+  const canonical = normalizeUserMergeName(getCanonicalUserName(name));
+  return Object.entries(USER_MERGES)
+    .filter(function(entry){ return normalizeUserMergeName(entry[1]) === canonical; })
+    .map(function(entry){ return entry[0]; });
+}
+function rankingSearchMatches(name, query){
+  const q = normalizeUserMergeName(query);
+  if(!q) return true;
+  if(normalizeUserMergeName(name).includes(q)) return true;
+  return getUserAliasesForCanonical(name).some(function(alias){ return normalizeUserMergeName(alias).includes(q); });
+}
+function mergeAllPicksForRanking(rawAll){
+  const raw = rawAll && typeof rawAll === 'object' ? rawAll : {};
+  const merged = {};
+
+  // 1) Une todos los aliases cuando no hay conflicto.
+  Object.entries(raw).forEach(function(entry){
+    const name = entry[0];
+    const picks = entry[1] || {};
+    const canonical = getCanonicalUserName(name);
+    if(!merged[canonical]) merged[canonical] = {};
+    Object.entries(picks).forEach(function(pickEntry){
+      const matchId = String(pickEntry[0]);
+      const pick = pickEntry[1];
+      if(merged[canonical][matchId] === undefined) merged[canonical][matchId] = pick;
+    });
+  });
+
+  // 2) Si algún día existe palpite duplicado en el mismo partido, prevalece la cuenta principal.
+  Object.entries(raw).forEach(function(entry){
+    const name = entry[0];
+    const picks = entry[1] || {};
+    const canonical = getCanonicalUserName(name);
+    if(normalizeUserMergeName(name) !== normalizeUserMergeName(canonical)) return;
+    if(!merged[canonical]) merged[canonical] = {};
+    Object.entries(picks).forEach(function(pickEntry){
+      merged[canonical][String(pickEntry[0])] = pickEntry[1];
+    });
+  });
+
+  return merged;
+}
+
 function updateRoleBasedNavigation(){
   const isAdmin = currentUserRole === 'admin';
   const navDec = document.getElementById('nav-decepcion');
@@ -7214,21 +7274,21 @@ function updateRoleBasedNavigation(){
 function loadAllPicks(){
   try{
     const all = JSON.parse(localStorage.getItem('somax_all_picks')||'{}');
-    return all;
+    return mergeAllPicksForRanking(all);
   }catch{return {};}
 }
 function saveAllPicks(){
-  localStorage.setItem('somax_all_picks', JSON.stringify(allPicks));
+  localStorage.setItem('somax_all_picks', JSON.stringify(mergeAllPicksForRanking(allPicks)));
 }
 
 // Load picks for current user
 function loadUserPicks(){
   const all = loadAllPicks();
-  return all[currentUser] || {};
+  return all[getCanonicalUserName(currentUser)] || {};
 }
 function saveUserPicks(picks){
   const all = loadAllPicks();
-  all[currentUser] = picks;
+  all[getCanonicalUserName(currentUser)] = picks;
   localStorage.setItem('somax_all_picks', JSON.stringify(all));
 }
 
@@ -7450,7 +7510,7 @@ fbAuth.onAuthStateChanged(async user=>{
       const userDoc = await fbDb.collection('usuarios').doc(user.uid).get();
       if(!userDoc.exists){
         await fbDb.collection('usuarios').doc(user.uid).set({
-          nombre: currentUser,
+          nombre: getCanonicalUserName(currentUser),
           email: currentUserEmail,
           rol: currentUserEmail === adminEmail ? 'admin' : 'usuario',
           fechaRegistro: firebase.firestore.FieldValue.serverTimestamp()
@@ -7542,7 +7602,7 @@ async function savePickToFirebase(match, pick){
   const docId = `${currentUserId}_${match.id}`;
   await fbDb.collection('palpites').doc(docId).set({
     uid: currentUserId,
-    nombre: currentUser,
+    nombre: getCanonicalUserName(currentUser),
     email: currentUserEmail,
     partidoId: String(match.id),
     partido: `${match.home} vs ${match.away}`,
@@ -7569,6 +7629,7 @@ async function saveResultToFirebase(matchId, h, a, adv){
 }
 
 function showApp(){
+  currentUser = getCanonicalUserName(currentUser);
   document.getElementById('name-setup-wrap').style.display='none';
   document.getElementById('main-content').style.display='block';
   document.getElementById('topbar-user').style.display='flex';
@@ -7605,7 +7666,8 @@ function getRecentSummaryData(){
     .sort((a,b)=>getMatchDateTime(b)-getMatchDateTime(a))
     .slice(0,3);
   const general = getRankedUsers();
-  const myIdx = general.findIndex(u=>u.name===currentUser);
+  const canonicalCurrentUser = getCanonicalUserName(currentUser);
+  const myIdx = general.findIndex(u=>u.name===canonicalCurrentUser);
   const myPos = myIdx >= 0 ? myIdx + 1 : null;
   let rankDelta = null;
   const playedForDelta = MATCHES.filter(m=>realResults[m.id] && getMatchDateTime(m) <= now)
@@ -7613,7 +7675,7 @@ function getRecentSummaryData(){
   const lastDateForDelta = playedForDelta.length ? playedForDelta[0].date : null;
   if(myIdx >= 0 && lastDateForDelta){
     const before = getRankedUsersExcludingDate(lastDateForDelta);
-    const prevIdx = before.findIndex(u=>u.name===currentUser);
+    const prevIdx = before.findIndex(u=>u.name===canonicalCurrentUser);
     if(prevIdx >= 0) rankDelta = prevIdx - myIdx;
   }
   let myTotal = 0, exacts = 0, scored = 0;
@@ -8378,6 +8440,7 @@ function getRankedUsersByRoundIncludingExcluded(roundLabel){
 // Se usa en el detalle del participante > Partidos para mostrar en qué puesto estaba
 // en aquel momento, sin cambiar el ranking general ni las reglas de privacidad.
 function getUserPositionAfterMatch(userName, match){
+  userName = getCanonicalUserName(userName);
   if(!userName || !match || isExcludedFromRanking(userName)) return null;
 
   const all = loadAllPicks();
@@ -8484,7 +8547,8 @@ function updateTopbarPoints(){
   const ptsEl = document.getElementById('user-pts-display');
   if(!ptsEl) return;
   const ranked = getRankedUsers();
-  const idx = ranked.findIndex(u=>u.name===currentUser);
+  const canonicalCurrentUser = getCanonicalUserName(currentUser);
+  const idx = ranked.findIndex(u=>u.name===canonicalCurrentUser);
   const me = idx>=0 ? ranked[idx] : null;
   ptsEl.textContent = me ? me.score : 0;
 
@@ -8502,7 +8566,7 @@ function updateTopbarPoints(){
     const lastDate = playedSorted.length ? playedSorted[0].date : null;
     if(me && lastDate){
       const before = getRankedUsersExcludingDate(lastDate);
-      const prevIdx = before.findIndex(u=>u.name===currentUser);
+      const prevIdx = before.findIndex(u=>u.name===canonicalCurrentUser);
       if(prevIdx >= 0){
         const d = prevIdx - idx;
         if(d > 0){ deltaEl.textContent = `▲${d}`; deltaEl.classList.add('up'); }
@@ -8569,7 +8633,7 @@ function renderRanking(){
     if(isRoundRanking){
       const qtd = MATCHES.filter(m=>getRoundLabel(m)===rankScope && realResults[m.id]).length;
       const general = getRankedUsers();
-      const myIdx = general.findIndex(u=>u.name===currentUser);
+      const myIdx = general.findIndex(u=>u.name===getCanonicalUserName(currentUser));
       const myPos = myIdx >= 0 ? `${myIdx+1}º` : '—';
       ctx.style.display = 'block';
       ctx.innerHTML = `<div class="rank-context-card"><span class="rank-context-label">${rankScope}</span> solo partidos apurados de esta ronda (${qtd}). <span class="muted">Vos posición actual en el ranking general:</span> <strong>${myPos}</strong>.</div>`;
@@ -8603,9 +8667,9 @@ function renderRanking(){
 
   let anyShown = false;
   users.forEach((u,i)=>{
-    if(rankSearch && !u.name.toLowerCase().includes(rankSearch)) return;
+    if(rankSearch && !rankingSearchMatches(u.name, rankSearch)) return;
     anyShown = true;
-    const isMe = u.name===currentUser;
+    const isMe = u.name===getCanonicalUserName(currentUser);
     const card = document.createElement('div');
     card.className = 'rank-card' + (isRoundRanking ? ' round-mode' : (i===0?' top1':i===1?' top2':i===2?' top3':''));
     card.style.cursor='pointer';
@@ -8679,6 +8743,7 @@ let udState = { name:'', matches:[], rounds:[], idx:0, picks:{}, real:{} };
 let restoreMatchBreakdownContext = null;
 
 function openUserDetail(name){
+  name = getCanonicalUserName(name);
   if(isExcludedFromRanking(name) && !canCurrentUserSeeExcludedParticipant(name)){
     showSaveBanner('Participante no disponible');
     return;
@@ -8714,7 +8779,7 @@ function openUserDetail(name){
   // ── estadísticas ──
   const rankedNow = getRankedUsers();
   const viewedIdx = rankedNow.findIndex(u => u.name === name);
-  const myIdx = rankedNow.findIndex(u => u.name === currentUser);
+  const myIdx = rankedNow.findIndex(u => u.name === getCanonicalUserName(currentUser));
   const viewedScore = viewedIdx >= 0 ? rankedNow[viewedIdx].score : 0;
   const myScore = myIdx >= 0 ? rankedNow[myIdx].score : 0;
 
@@ -8775,10 +8840,10 @@ function openUserDetail(name){
   }
 
   udState = {
-    name, matches:revealedMatches, rounds, idx:rounds.length, picks, real:realResults, viewerPicks: allPicks[currentUser] || {}, tab:'partidos', sortAsc:false, compare:false, expanded:null, tagFilters:[],
+    name, matches:revealedMatches, rounds, idx:rounds.length, picks, real:realResults, viewerPicks: allPicks[getCanonicalUserName(currentUser)] || {}, tab:'partidos', sortAsc:false, compare:false, expanded:null, tagFilters:[],
     stats: {
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
-      total, viewedScore, myScore, isMe: name === currentUser,
+      total, viewedScore, myScore, isMe: name === getCanonicalUserName(currentUser),
       aprov, exact: typeCounts.exact, media, typeCounts, played: playedMatches.length,
       bestDay, suFuerte, bestStreak, form, bestPosition, posDelta, lastRound, lastDate, best
     }
@@ -9272,8 +9337,8 @@ function openMatchBreakdown(matchId){
   });
 
   const visibleParts = parts.filter(p => !p.excludedFromRanking || canCurrentUserSeeExcludedParticipant(p.name));
-  const myPick = (allPicks[currentUser] || {})[matchId] || null;
-  mbState = { m, real, pending, parts: visibleParts, view:'list', expanded:null, filterScore:null, searchActive:false, searchTerm:'', myPick, myName:currentUser };
+  const myPick = (allPicks[getCanonicalUserName(currentUser)] || {})[matchId] || null;
+  mbState = { m, real, pending, parts: visibleParts, view:'list', expanded:null, filterScore:null, searchActive:false, searchTerm:'', myPick, myName:getCanonicalUserName(currentUser) };
   const mbModal = document.getElementById('match-breakdown-modal');
   mbModal.classList.toggle('x2-mode', (typeof edsonIsFaseDecisivaVisual === 'function' ? edsonIsFaseDecisivaVisual(m) : !!m.x2));
   mbModal.classList.remove('admin-pick-info-enabled');
@@ -9979,6 +10044,7 @@ function renderDecepcion(){
 }
 
 function openDecepcionDetail(name){
+  name = getCanonicalUserName(name);
   const { qualified, playedCount, allPicksData, realResults } = getDecepcionQualified();
   const worst = qualified.slice().reverse();
   const u = worst.find(x => x.name === name) || qualified.find(x => x.name === name);
@@ -21335,7 +21401,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       btn.id = 'nav-clasificacion';
       btn.style.display = 'none';
       btn.type = 'button';
-      btn.innerHTML = '<span class="nav-icon">🏅</span>Clasif.';
+      btn.innerHTML = '<span class="nav-icon">🏁</span>Clasif.';
       btn.onclick = function(){ switchTab('clasificacion', btn); };
       const rankBtn = document.getElementById('nav-ranking');
       if(rankBtn && rankBtn.nextSibling) bottomNav.insertBefore(btn, rankBtn.nextSibling);
@@ -21633,10 +21699,10 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   function showTop3AlertIfNeeded(){
     if(!currentUser || typeof getRankedUsers !== 'function') return false;
     var ranked = getRankedUsers();
-    var idx = ranked.findIndex(function(u){ return u.name === currentUser; });
+    var idx = ranked.findIndex(function(u){ return u.name === getCanonicalUserName(currentUser); });
     if(idx < 0 || idx > 2) return false;
     var position = idx + 1;
-    var key = 'somax_alert_top3_' + normalizeUserName(currentUser) + '_' + position;
+    var key = 'somax_alert_top3_' + normalizeUserName(getCanonicalUserName(currentUser)) + '_' + position;
     if(!shouldShowOncePerSession(key)) return true;
     var msg = getTop3Message(position);
     showPersonalAlert({title:msg.title, html:msg.html, gold:true});
@@ -22037,7 +22103,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var btn = document.getElementById('nav-clasificacion');
     if(!btn) return;
     var icon = btn.querySelector('.nav-icon');
-    if(icon) icon.textContent = '📊';
+    if(icon) icon.textContent = '🏁';
     Array.from(btn.childNodes).forEach(function(node){
       if(node.nodeType === 3) node.nodeValue = 'Clasif.';
     });
