@@ -5313,7 +5313,7 @@ html, body{scroll-behavior:auto!important;}
         <div class="admin-export-box">
           <button class="admin-download-btn" onclick="downloadUpdatedHTML()">⬇ Descargar HTML actualizado</button>
           <button class="admin-copy-btn" onclick="copyUpdatedHTML()">📋 Copiar código</button>
-          <button class="admin-report-btn" onclick="downloadAdminPredictionsReport()">📊 Exportar relatório de palpites</button>
+          <button class="admin-report-btn" onclick="openAdminMatchExportSelector()">📊 Exportar relatório de palpites</button>
         </div>
         <p class="admin-export-note">Usá estos botones después de cargar o corregir resultados. El HTML guarda una copia actualizada del bolão y el relatório exporta los palpites con resultado, puntos, tipo de puntuación, horario de inicio, horario del palpite y diferencia hasta el partido.</p>
       </div>
@@ -14277,6 +14277,178 @@ body.edson-matches-bg #summary-modal .summary-header{
 })();
 </script>
 
+
+
+<!-- AJUSTE EDSON 20260701: clasificación disponible para todos los usuarios -->
+<script id="edson-clasificacion-publica-20260701">
+(function(){
+  function showClasificacionForAll(){
+    var btn = document.getElementById('nav-clasificacion');
+    if(btn) btn.style.display = 'flex';
+  }
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(showClasificacionForAll, 150); setTimeout(showClasificacionForAll, 700); });
+  setTimeout(showClasificacionForAll, 1200);
+})();
+</script>
+
+
+<!-- AJUSTE EDSON 20260701: exportar palpites por partida selecionada -->
+<style id="edson-admin-match-export-selector-style">
+  #admin-match-export-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:780;display:none;align-items:center;justify-content:center;padding:16px;}
+  #admin-match-export-modal.open{display:flex;}
+  .ame-card{width:100%;max-width:560px;background:#fff;border-radius:22px;box-shadow:0 18px 54px rgba(0,0,0,.28);overflow:hidden;display:flex;flex-direction:column;max-height:88vh;}
+  .ame-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;background:var(--green);color:#fff;}
+  .ame-title{font-size:16px;font-weight:950;line-height:1.2;}
+  .ame-sub{font-size:12px;font-weight:700;opacity:.86;margin-top:2px;}
+  .ame-close{width:32px;height:32px;border:none;border-radius:50%;background:rgba(255,255,255,.20);color:#fff;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .ame-body{padding:16px 18px 18px;overflow:auto;}
+  .ame-label{font-size:12px;font-weight:900;color:var(--sub);text-transform:uppercase;letter-spacing:.45px;margin-bottom:8px;display:block;}
+  .ame-select{width:100%;height:48px;border:1.5px solid var(--border);border-radius:14px;background:#fff;font-family:inherit;font-size:14px;font-weight:800;color:var(--text);padding:0 12px;outline:none;}
+  .ame-select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,155,84,.12);}
+  .ame-preview{margin:13px 0 14px;border:1px solid var(--border);border-radius:16px;background:var(--bg);padding:13px 14px;}
+  .ame-preview-title{font-size:15px;font-weight:950;color:var(--text);line-height:1.25;}
+  .ame-preview-meta{font-size:12px;font-weight:700;color:var(--sub);margin-top:5px;line-height:1.35;}
+  .ame-actions{display:grid;grid-template-columns:1fr;gap:9px;}
+  .ame-export{height:46px;border:none;border-radius:14px;background:var(--blue);color:#fff;font-family:inherit;font-size:14px;font-weight:950;cursor:pointer;}
+  .ame-export:active{transform:scale(.985);}
+  .ame-note{font-size:11.5px;color:var(--sub);font-weight:650;line-height:1.4;margin-top:10px;}
+</style>
+<script id="edson-admin-match-export-selector-script">
+(function(){
+  function ameEsc(v){return String(v ?? '').replace(/[&<>"']/g,function(ch){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];});}
+  function ameAdminOk(){return typeof currentUserRole !== 'undefined' && currentUserRole === 'admin' && typeof adminUnlocked !== 'undefined' && adminUnlocked;}
+  function ameSortedMatches(){return (Array.isArray(MATCHES)?MATCHES.slice():[]).sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});}
+  function ameDefaultMatchId(){
+    var now = new Date();
+    var sorted = ameSortedMatches();
+    var next = sorted.find(function(m){ return getMatchDateTime(m) >= now; });
+    return String((next || sorted[sorted.length-1] || sorted[0] || {}).id || '');
+  }
+  function ameMatchLabel(m){
+    var results = loadRealResults();
+    var standings = computeStandings(results);
+    var d = matchDisplay(m, results, standings);
+    var dt = getMatchDateTime(m);
+    var dateTxt = isNaN(dt) ? (m.date || '') : dt.toLocaleString('es-PY',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    var phase = adminReportPhaseLabel ? adminReportPhaseLabel(m) : (m.phase || '');
+    return dateTxt + ' · ' + phase + ' · ' + d.home + ' vs ' + d.away;
+  }
+  function ensureAdminMatchExportModal(){
+    if(document.getElementById('admin-match-export-modal')) return;
+    var el = document.createElement('div');
+    el.id = 'admin-match-export-modal';
+    el.innerHTML = '<div class="ame-card" onclick="event.stopPropagation()">' +
+      '<div class="ame-head"><div><div class="ame-title">Exportar palpites por partida</div><div class="ame-sub">Elegí una partida específica para generar el CSV</div></div><button type="button" class="ame-close" onclick="closeAdminMatchExportSelector()">×</button></div>' +
+      '<div class="ame-body">' +
+        '<label class="ame-label" for="admin-match-export-select">Partida</label>' +
+        '<select id="admin-match-export-select" class="ame-select" onchange="updateAdminMatchExportPreview()"></select>' +
+        '<div id="admin-match-export-preview" class="ame-preview"></div>' +
+        '<div class="ame-actions"><button type="button" class="ame-export" onclick="exportSelectedMatchPredictions()">📊 Exportar palpites de esta partida</button></div>' +
+        '<div class="ame-note">La próxima partida queda seleccionada automáticamente. También podés elegir partidas futuras o anteriores.</div>' +
+      '</div>' +
+    '</div>';
+    el.addEventListener('click', closeAdminMatchExportSelector);
+    document.body.appendChild(el);
+  }
+  window.openAdminMatchExportSelector = async function(){
+    if(!ameAdminOk()){ showSaveBanner('Acceso reservado para administradores'); return; }
+    ensureAdminMatchExportModal();
+    try{ await loadFirebaseState(); }catch(e){ console.warn('No fue posible sincronizar antes de abrir exportación:', e); }
+    var sel = document.getElementById('admin-match-export-select');
+    var sorted = ameSortedMatches();
+    sel.innerHTML = sorted.map(function(m){ return '<option value="'+ameEsc(m.id)+'">'+ameEsc(ameMatchLabel(m))+'</option>'; }).join('');
+    var def = ameDefaultMatchId();
+    if(def) sel.value = def;
+    updateAdminMatchExportPreview();
+    document.getElementById('admin-match-export-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeAdminMatchExportSelector = function(){
+    var el = document.getElementById('admin-match-export-modal');
+    if(el) el.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  window.updateAdminMatchExportPreview = function(){
+    var sel = document.getElementById('admin-match-export-select');
+    var prev = document.getElementById('admin-match-export-preview');
+    if(!sel || !prev) return;
+    var m = ameSortedMatches().find(function(x){return String(x.id)===String(sel.value);});
+    if(!m){ prev.innerHTML = '<div class="ame-preview-title">Sin partida seleccionada</div>'; return; }
+    var results = loadRealResults();
+    var standings = computeStandings(results);
+    var d = matchDisplay(m, results, standings);
+    var kickoff = getMatchDateTime(m);
+    var all = loadAllPicks();
+    var count = Object.entries(all).filter(function(pair){
+      var name = pair[0], picks = pair[1];
+      return isVisibleParticipantName(name) && picks && (picks[m.id] || picks[String(m.id)]);
+    }).length;
+    prev.innerHTML = '<div class="ame-preview-title">'+ameEsc(d.home)+' vs '+ameEsc(d.away)+'</div>' +
+      '<div class="ame-preview-meta">'+ameEsc(adminReportPhaseLabel(m))+' · Inicio: '+ameEsc(formatAdminReportDateTime(kickoff))+' · Palpites registrados: <b>'+count+'</b></div>';
+  };
+  window.exportSelectedMatchPredictions = async function(){
+    var sel = document.getElementById('admin-match-export-select');
+    if(!sel || !sel.value){ showSaveBanner('Seleccioná una partida'); return; }
+    await downloadAdminPredictionsReportByMatch(sel.value);
+  };
+  window.downloadAdminPredictionsReportByMatch = async function(matchId){
+    if(!ameAdminOk()){ showSaveBanner('Acceso reservado para administradores'); return; }
+    try{ await loadFirebaseState(); }catch(e){ console.warn('No fue posible sincronizar antes del relatório:', e); }
+    var m = ameSortedMatches().find(function(x){return String(x.id)===String(matchId);});
+    if(!m){ showSaveBanner('Partida no encontrada'); return; }
+    var all = loadAllPicks();
+    var results = loadRealResults();
+    var standings = computeStandings(results);
+    var rankedUsers = getRankedUsers();
+    var rankingPosByName = Object.fromEntries(rankedUsers.map(function(u, idx){ return [u.name, (idx+1)+'º']; }));
+    var kickoff = getMatchDateTime(m);
+    var disp = matchDisplay(m, results, standings);
+    var real = results[m.id] || null;
+    var resultadoFinal = real ? (disp.home + ' ' + real.home + ':' + real.away + ' ' + disp.away) : 'Sin resultado';
+    var rows = [];
+    Object.entries(all).filter(function(pair){ return isVisibleParticipantName(pair[0]); })
+      .sort(function(a,b){return String(a[0]).localeCompare(String(b[0]), 'pt-BR');})
+      .forEach(function(pair){
+        var name = pair[0], picks = pair[1];
+        var pick = picks ? (picks[m.id] || picks[String(m.id)]) : null;
+        if(!pick) return;
+        var diff = formatAdminReportDiff(pick.savedAt || pick.fechaPalpite || '', kickoff);
+        var calc = calculatePickPoints(pick, real, m);
+        rows.push({
+          pessoa:name,
+          posicaoJogador:rankingPosByName[name] || '',
+          jogo:disp.home + ' vs ' + disp.away,
+          fase:adminReportPhaseLabel(m),
+          resultadoFinal:resultadoFinal,
+          palpite:pick.home + 'x' + pick.away,
+          pontosPartida:calc.pts || 0,
+          tipoPontuacao:adminReportScoreTypeLabel(calc.type, m),
+          inicioJogo:formatAdminReportDateTime(kickoff),
+          horarioPalpite:formatAdminReportDateTime(pick.savedAt || pick.fechaPalpite || ''),
+          diferenca:diff.text
+        });
+      });
+    if(!rows.length){ showSaveBanner('No hay palpites para esta partida'); return; }
+    var header = ['Nome da pessoa que palpitou','Posição do jogador','Jogo','Fase','Resultado final do jogo','Palpite realizado','Pontos na partida','Tipo de pontuação','Horário do início do jogo','Horário do palpite','Diferença do palpite até o jogo'];
+    var csvLines = ['sep=;', header.map(csvAdminCell).join(';')].concat(rows.map(function(r){
+      return [r.pessoa,r.posicaoJogador,r.jogo,r.fase,r.resultadoFinal,r.palpite,r.pontosPartida,r.tipoPontuacao,r.inicioJogo,r.horarioPalpite,r.diferenca].map(csvAdminCell).join(';');
+    }));
+    var csvContent = csvLines.join('\r\n');
+    var blob = new Blob([encodeAdminCsvUtf16LE(csvContent)], {type:'text/csv;charset=utf-16le'});
+    var a = document.createElement('a');
+    var safeGame = (disp.home + '-' + disp.away).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
+    var stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'palpites-partida-' + safeGame + '_' + stamp + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 800);
+    closeAdminMatchExportSelector();
+    showSaveBanner('📊 Palpites de la partida exportados');
+  };
+})();
+</script>
+
 </body>
 
 <!-- AJUSTE EDSON FINAL: corrigir corte da colocação/variação no modal Puntos por participante -->
@@ -21535,7 +21707,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
 
   function isClasifAdmin(){
-    return currentUserRole === 'admin';
+    return true;
   }
 
   function escHtml(value){
@@ -21664,21 +21836,12 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     const isAdmin = isClasifAdmin();
     const navClasif = document.getElementById('nav-clasificacion');
 
-    if(navClasif) navClasif.style.display = isAdmin ? 'flex' : 'none';
-
-    if(!isAdmin && document.getElementById('panel-clasificacion')?.classList.contains('active')){
-      switchTab('matches', document.getElementById('tab-matches'));
-    }
+    if(navClasif) navClasif.style.display = 'flex';
   };
 
   const oldSwitchTab = window.switchTab;
   window.switchTab = function(tab, btn){
     ensureClasificacionDom();
-
-    if(tab === 'clasificacion' && !isClasifAdmin()){
-      showSaveBanner('Acceso reservado');
-      return;
-    }
 
     const result = oldSwitchTab.apply(this, arguments);
 
@@ -22016,7 +22179,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 
 <script id="edson-admin-classification-clean-form-20260701-script">
 (function(){
-  function isAdminView(){ return typeof currentUserRole !== 'undefined' && currentUserRole === 'admin'; }
+  function isAdminView(){ return true; }
   function esc(value){
     return String(value ?? '').replace(/[&<>"']/g, function(ch){
       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
@@ -22163,11 +22326,6 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var body = document.getElementById('clasificacion-grupos-body');
     if(!body) return;
     updateClasificacionNavVisual();
-
-    if(!isAdminView()){
-      body.innerHTML = '<div class="grp-empty">Área exclusiva del administrador.</div>';
-      return;
-    }
 
     var real = loadRealResults();
     var standings = computeStandings(real);
