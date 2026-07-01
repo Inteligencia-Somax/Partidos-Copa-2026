@@ -21523,3 +21523,147 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 })();
 </script>
 
+
+<!-- AJUSTE 20260630: alertas personalizados por usuario -->
+<style id="edson-user-personal-alerts-20260630">
+  #somax-personal-alert{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.58);box-sizing:border-box;}
+  #somax-personal-alert.show{display:flex;animation:personalAlertFade .18s ease;}
+  .personal-alert-card{width:100%;max-width:430px;background:#fff;border-radius:24px;box-shadow:0 18px 54px rgba(0,0,0,.32);overflow:hidden;animation:personalAlertScale .20s ease;}
+  .personal-alert-head{padding:16px 18px 12px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;}
+  .personal-alert-head.gold{background:linear-gradient(135deg,#F59E0B,#D97706);}
+  .personal-alert-title{font-size:17px;font-weight:950;line-height:1.2;margin:0;}
+  .personal-alert-body{padding:17px 18px 6px;}
+  .personal-alert-body p{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:var(--text);font-weight:650;}
+  .personal-alert-body strong{font-weight:900;color:var(--green2);}
+  .personal-alert-phone{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 0 4px;padding:11px 12px;border-radius:16px;background:#F3F4F6;border:1px solid var(--border);color:var(--text);font-size:16px;font-weight:950;letter-spacing:.2px;}
+  .personal-alert-actions{padding:12px 18px 18px;}
+  .personal-alert-btn{width:100%;height:46px;border:none;border-radius:16px;background:var(--green);color:#fff;font-family:inherit;font-size:14px;font-weight:950;cursor:pointer;}
+  .personal-alert-btn.gold{background:#F59E0B;}
+  .personal-alert-btn:active{transform:scale(.98);}
+  @keyframes personalAlertFade{from{opacity:0}to{opacity:1}}
+  @keyframes personalAlertScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+</style>
+
+<script id="edson-user-personal-alerts-20260630-script">
+(function(){
+  if(window.__somaxPersonalAlertsInstalled) return;
+  window.__somaxPersonalAlertsInstalled = true;
+
+  function normalizeUserName(name){
+    return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+  }
+
+  function ensurePersonalAlertModal(){
+    var modal = document.getElementById('somax-personal-alert');
+    if(modal) return modal;
+    modal = document.createElement('div');
+    modal.id = 'somax-personal-alert';
+    modal.innerHTML =
+      '<div class="personal-alert-card" role="dialog" aria-modal="true" aria-labelledby="personal-alert-title">' +
+        '<div class="personal-alert-head" id="personal-alert-head">' +
+          '<h3 class="personal-alert-title" id="personal-alert-title"></h3>' +
+        '</div>' +
+        '<div class="personal-alert-body" id="personal-alert-body"></div>' +
+        '<div class="personal-alert-actions">' +
+          '<button class="personal-alert-btn" id="personal-alert-btn" type="button" onclick="closeSomaxPersonalAlert()">Entendido</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  window.closeSomaxPersonalAlert = function(){
+    var modal = document.getElementById('somax-personal-alert');
+    if(modal) modal.classList.remove('show');
+    document.body.classList.remove('somax-modal-open');
+  };
+
+  function showPersonalAlert(config){
+    ensurePersonalAlertModal();
+    var head = document.getElementById('personal-alert-head');
+    var title = document.getElementById('personal-alert-title');
+    var body = document.getElementById('personal-alert-body');
+    var btn = document.getElementById('personal-alert-btn');
+    head.className = 'personal-alert-head' + (config.gold ? ' gold' : '');
+    btn.className = 'personal-alert-btn' + (config.gold ? ' gold' : '');
+    title.textContent = config.title || '';
+    body.innerHTML = config.html || '';
+    document.getElementById('somax-personal-alert').classList.add('show');
+    document.body.classList.add('somax-modal-open');
+  }
+
+  function shouldShowOncePerSession(key){
+    try{
+      if(sessionStorage.getItem(key) === '1') return false;
+      sessionStorage.setItem(key, '1');
+      return true;
+    }catch(e){ return true; }
+  }
+
+  function showCoordinatorAlertIfNeeded(){
+    if(normalizeUserName(currentUser) !== 'coordinador') return false;
+    var key = 'somax_alert_coordinador_' + normalizeUserName(currentUser || '');
+    if(!shouldShowOncePerSession(key)) return true;
+    showPersonalAlert({
+      title:'⚠️ Identificación necesaria',
+      html:'<p>Hola, identificamos que tu usuario está registrado como <strong>“Coordinador”</strong>.</p>' +
+           '<p>Para mantener el ranking correcto y evitar confusiones entre participantes, necesitamos que nos informes tu nombre completo.</p>' +
+           '<p>Por favor, entrá en contacto con el equipo de <strong>Inteligencia Estratégica de Somax</strong>.</p>' +
+           '<div class="personal-alert-phone">📱 0984 192122</div>' +
+           '<p style="text-align:center;color:var(--sub);font-size:12px;margin-top:10px;">Gracias.</p>'
+    });
+    return true;
+  }
+
+  function getTop3Message(position){
+    if(position === 1) return {
+      title:'🥇 ¡Felicitaciones, líder!',
+      html:'<p>Estás en el <strong>1º lugar</strong> del bolão.</p><p>Excelente desempeño hasta ahora. Seguí firme, cuidá cada palpite y defendé la punta hasta el final.</p><p style="text-align:center;color:var(--sub);font-size:12px;">¡Vamos por más!</p>'
+    };
+    if(position === 2) return {
+      title:'🥈 ¡Estás muy cerca!',
+      html:'<p>Estás en el <strong>2º lugar</strong> del bolão.</p><p>Gran campaña. La punta está cerca, seguí concentrado y cada marcador puede hacer la diferencia.</p><p style="text-align:center;color:var(--sub);font-size:12px;">¡A seguir peleando arriba!</p>'
+    };
+    return {
+      title:'🥉 ¡Estás en el podio!',
+      html:'<p>Estás en el <strong>3º lugar</strong> del bolão.</p><p>Muy buen desempeño. Seguí sumando, porque el podio está apretado y todavía hay mucho por jugar.</p><p style="text-align:center;color:var(--sub);font-size:12px;">¡No aflojes!</p>'
+    };
+  }
+
+  function showTop3AlertIfNeeded(){
+    if(!currentUser || typeof getRankedUsers !== 'function') return false;
+    var ranked = getRankedUsers();
+    var idx = ranked.findIndex(function(u){ return u.name === currentUser; });
+    if(idx < 0 || idx > 2) return false;
+    var position = idx + 1;
+    var key = 'somax_alert_top3_' + normalizeUserName(currentUser) + '_' + position;
+    if(!shouldShowOncePerSession(key)) return true;
+    var msg = getTop3Message(position);
+    showPersonalAlert({title:msg.title, html:msg.html, gold:true});
+    return true;
+  }
+
+  window.showSomaxPersonalAlerts = function(){
+    if(showCoordinatorAlertIfNeeded()) return;
+    showTop3AlertIfNeeded();
+  };
+
+  var oldEnterApp = window.enterApp;
+  if(typeof oldEnterApp === 'function' && !oldEnterApp.__personalAlertsWrapped){
+    window.enterApp = function(){
+      var result = oldEnterApp.apply(this, arguments);
+      setTimeout(function(){ if(window.showSomaxPersonalAlerts) window.showSomaxPersonalAlerts(); }, 650);
+      return result;
+    };
+    window.enterApp.__personalAlertsWrapped = true;
+    try{ enterApp = window.enterApp; }catch(e){}
+  }
+
+  setTimeout(function(){
+    if(currentUser && document.getElementById('main-content') && document.getElementById('main-content').style.display !== 'none'){
+      window.showSomaxPersonalAlerts();
+    }
+  }, 1500);
+})();
+</script>
+
