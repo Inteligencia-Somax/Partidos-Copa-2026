@@ -14164,6 +14164,119 @@ body.edson-matches-bg #summary-modal .summary-header{
 
 <!-- AJUSTE FINAL 20260630: filtros flutuantes do modal Puntos por participante funcionando sem alterar visual -->
 
+
+
+<!-- AJUSTE EDSON 20260701/02: histórico da seleção com próximos jogos -->
+<script id="edson-team-history-with-next-matches-20260702">
+(function(){
+  function safe(v){
+    if(typeof decEsc === 'function') return decEsc(v);
+    return String(v ?? '').replace(/[&<>'"]/g, function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch];});
+  }
+  function isPlayed(real, m){ return real && m && real[m.id]; }
+  window.openTeamHistory = function(code, originMatchId){
+    if(!code) return;
+    const thModalEl = document.getElementById('team-history-modal');
+    const originMatch = originMatchId ? MATCHES.find(mm => String(mm.id) === String(originMatchId)) : null;
+    const originIsX2 = originMatch && typeof isX2Match === 'function' ? isX2Match(originMatch) : false;
+    if(thModalEl) thModalEl.classList.toggle('x2-mode', !!originIsX2);
+
+    const real = loadRealResults();
+    const standings = computeStandings(real);
+    const reg = teamRegistry(real, standings);
+    const team = reg[code];
+    if(!team) return;
+
+    const played = [];
+    const upcoming = [];
+    MATCHES.forEach(function(m){
+      const d = matchDisplay(m, real, standings);
+      let isHome = null;
+      if(d.hc === code) isHome = true;
+      else if(d.ac === code) isHome = false;
+      else return;
+
+      const r = real[m.id];
+      if(r){
+        const gf = Number(isHome ? r.home : r.away);
+        const ga = Number(isHome ? r.away : r.home);
+        const res = gf > ga ? 'W' : (gf < ga ? 'L' : 'D');
+        played.push({m, d, r, res});
+      }else{
+        upcoming.push({m, d});
+      }
+    });
+    played.sort(function(a,b){ return getMatchDateTime(a.m) - getMatchDateTime(b.m); });
+    upcoming.sort(function(a,b){ return getMatchDateTime(a.m) - getMatchDateTime(b.m); });
+
+    const pj = played.length;
+    const g = played.filter(i => i.res === 'W').length;
+    const e = played.filter(i => i.res === 'D').length;
+    const p = played.filter(i => i.res === 'L').length;
+    const gf = played.reduce((s, i) => s + Number(i.d.hc === code ? i.r.home : i.r.away), 0);
+    const ga = played.reduce((s, i) => s + Number(i.d.hc === code ? i.r.away : i.r.home), 0);
+
+    document.getElementById('th-title').textContent = `${team.flag} ${team.name}`;
+    const sum = document.getElementById('th-summary');
+    const nextTxt = upcoming.length ? ` · ${upcoming.length} próximo${upcoming.length === 1 ? '' : 's'}` : '';
+    if(pj === 0){
+      sum.innerHTML = `<div><div class="th-rec-name">${team.flag} ${safe(team.name)}</div><div class="th-rec-sub">Recorrido en el torneo${nextTxt}</div></div>`;
+    }else{
+      sum.innerHTML = `
+        <div>
+          <div class="th-rec-name">${team.flag} ${safe(team.name)}</div>
+          <div class="th-rec-sub">${pj} partido${pj === 1 ? '' : 's'} · ${gf}:${ga} goles${nextTxt}</div>
+        </div>
+        <div class="th-badges">
+          <span class="th-badge w">${g} G</span>
+          <span class="th-badge d">${e} E</span>
+          <span class="th-badge l">${p} P</span>
+        </div>`;
+    }
+
+    const rowsPlayed = played.slice().reverse().map(function(i){
+      const m = i.m, d = i.d, r = i.r, res = i.res;
+      const resCls = res === 'W' ? 'win' : (res === 'L' ? 'loss' : 'draw');
+      const resTxt = res === 'W' ? 'G' : (res === 'L' ? 'P' : 'E');
+      return `
+        <div class="ud-row">
+          <div class="ud-match">
+            <div class="ud-line-main">
+              <span class="ud-teams"><span class="ud-team-name">${d.hf} ${safe(d.home)}</span> <span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span> <span class="ud-team-name">${safe(d.away)} ${d.af}</span></span>
+            </div>
+            <div class="th-row-sub">${safe(m.date)} · ${safe(teamPhaseLabel(m))}</div>
+          </div>
+          <div class="th-res ${resCls}">${resTxt}</div>
+        </div>`;
+    }).join('');
+
+    const rowsUpcoming = upcoming.map(function(i){
+      const m = i.m, d = i.d;
+      return `
+        <div class="ud-row">
+          <div class="ud-match">
+            <div class="ud-line-main">
+              <span class="ud-teams"><span class="ud-team-name">${d.hf} ${safe(d.home)}</span> <span class="ud-sc-in">×</span> <span class="ud-team-name">${safe(d.away)} ${d.af}</span></span>
+            </div>
+            <div class="th-row-sub">${safe(m.date)} · ${safe(teamPhaseLabel(m))}</div>
+          </div>
+          <div class="th-res next">Próx.</div>
+        </div>`;
+    }).join('');
+
+    const body = document.getElementById('th-body');
+    let html = '';
+    if(rowsUpcoming) html += '<div class="th-section-title">Próximos partidos</div>' + rowsUpcoming;
+    if(rowsPlayed) html += '<div class="th-section-title">Historial</div>' + rowsPlayed;
+    if(!html) html = `<div class="ud-empty">Todavía no hay partidos de ${safe(team.name)}.</div>`;
+    body.innerHTML = html;
+
+    (thModalEl || document.getElementById('team-history-modal')).style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  };
+})();
+</script>
+
 </body>
 
 <!-- AJUSTE EDSON FINAL: corrigir corte da colocação/variação no modal Puntos por participante -->
@@ -21765,22 +21878,23 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #panel-clasificacion .grp-format-card{
     background:#fff!important;
     border:1px solid var(--border)!important;
-    border-radius:20px!important;
+    border-radius:18px!important;
     box-shadow:var(--shadow)!important;
-    padding:14px 14px 12px!important;
+    padding:14px 14px!important;
     margin:0 0 14px!important;
     cursor:pointer!important;
+    width:100%!important;
+    font-family:inherit!important;
   }
   #panel-clasificacion .grp-format-card:active{transform:scale(.997)!important;}
-  #panel-clasificacion .grp-format-hero{display:grid!important;grid-template-columns:64px 1fr auto!important;gap:12px!important;align-items:center!important;}
-  #panel-clasificacion .grp-format-icon{width:60px!important;height:60px!important;border-radius:16px!important;border:1px solid var(--border)!important;background:#F8FAFB!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:31px!important;color:#163745!important;}
-  #panel-clasificacion .grp-format-main{min-width:0!important;}
-  #panel-clasificacion .grp-format-kicker{font-size:12px!important;color:#0D3040!important;font-weight:900!important;margin-top:2px!important;}
-  #panel-clasificacion .grp-format-title{font-size:14px!important;font-weight:900!important;color:var(--text)!important;margin:0!important;line-height:1.2!important;}
-  #panel-clasificacion .grp-format-year{font-size:12px!important;color:var(--sub)!important;font-weight:800!important;margin-top:3px!important;}
-  #panel-clasificacion .grp-format-actions{display:flex!important;align-items:flex-end!important;gap:8px!important;}
-  #panel-clasificacion .grp-format-act{width:22px!important;height:22px!important;border-radius:50%!important;border:none!important;background:transparent!important;color:var(--sub)!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:14px!important;padding:0!important;cursor:pointer!important;}
-  #panel-clasificacion .grp-format-track{margin-top:10px!important;display:grid!important;grid-template-columns:auto 1fr auto!important;gap:10px!important;align-items:center!important;}
+  #panel-clasificacion .grp-format-hero,
+  #panel-clasificacion .grp-format-icon,
+  #panel-clasificacion .grp-format-main,
+  #panel-clasificacion .grp-format-actions,
+  #panel-clasificacion .grp-format-icons{display:none!important;}
+  #panel-clasificacion .grp-format-title,
+  #panel-clasificacion .grp-format-year{display:none!important;}
+  #panel-clasificacion .grp-format-track{margin-top:0!important;display:grid!important;grid-template-columns:auto 1fr auto auto!important;gap:10px!important;align-items:center!important;}
   #panel-clasificacion .grp-format-date{font-size:11px!important;color:var(--sub)!important;font-weight:800!important;white-space:nowrap!important;}
   #panel-clasificacion .grp-format-bar{position:relative!important;height:6px!important;background:#E5E7EB!important;border-radius:999px!important;overflow:visible!important;}
   #panel-clasificacion .grp-format-bar-fill{position:absolute!important;left:0!important;top:0!important;height:100%!important;width:53%!important;border-radius:999px!important;background:#0D3040!important;}
@@ -21851,6 +21965,39 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #clasif-format-modal .cfm-date{font-size:13px;font-weight:900;color:#163745;white-space:nowrap;}
   #clasif-format-modal .cfm-name{font-size:14px;font-weight:950;color:var(--text);}
   #clasif-format-modal .cfm-detail{display:block;font-size:12px;color:var(--sub);font-weight:700;margin-top:2px;}
+
+
+  body.edson-clasificacion-active,
+  body.edson-clasificacion-active .main{
+    background:#0B5F34!important;
+  }
+  body.edson-clasificacion-active #panel-clasificacion{
+    background:#0B5F34!important;
+    margin-left:-12px!important;
+    margin-right:-12px!important;
+    padding:0 12px calc(96px + env(safe-area-inset-bottom,0px))!important;
+    min-height:calc(100vh - 56px)!important;
+  }
+  #team-history-modal .th-section-title{
+    padding:10px 8px 6px!important;
+    font-size:12px!important;
+    font-weight:950!important;
+    color:var(--sub)!important;
+    text-transform:uppercase!important;
+    letter-spacing:.5px!important;
+    border-bottom:1px solid var(--border)!important;
+  }
+  #team-history-modal .th-res.next{
+    width:auto!important;
+    min-width:48px!important;
+    height:26px!important;
+    padding:0 8px!important;
+    border-radius:999px!important;
+    background:rgba(0,56,168,.08)!important;
+    color:var(--blue)!important;
+    border:1px solid rgba(0,56,168,.18)!important;
+    font-size:11px!important;
+  }
 
   @media(max-width:430px){
     #panel-clasificacion .grp-admin-head,#panel-clasificacion .grp-section-title{padding:14px 15px!important;}
@@ -21963,24 +22110,13 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     wrap.querySelector('.cfm-close').addEventListener('click', closeClasifFormatModal);
   }
   function timelineHtml(){
-    return '<button type="button" class="grp-format-card" onclick="openClasifFormatModal()">' +
-      '<div class="grp-format-hero">' +
-        '<div class="grp-format-icon">🏆</div>' +
-        '<div class="grp-format-main">' +
-          '<div class="grp-format-title">Campeonato del mundo</div>' +
-          '<div class="grp-format-year">2026</div>' +
-        '</div>' +
-        '<div class="grp-format-actions">' +
-          '<span class="grp-format-act" aria-hidden="true">🏆</span>' +
-          '<span class="grp-format-act" aria-hidden="true">ⓘ</span>' +
-        '</div>' +
-      '</div>' +
+    return '<button type="button" class="grp-format-card" onclick="openClasifFormatModal()" aria-label="Ver formato de competición">' +
       '<div class="grp-format-track">' +
         '<span class="grp-format-date">11.06.</span>' +
         '<span class="grp-format-bar"><span class="grp-format-bar-fill"></span><span class="grp-format-dot start"></span><span class="grp-format-dot mid"></span></span>' +
         '<span class="grp-format-date">19.07.</span>' +
+        '<span class="grp-format-act" aria-hidden="true">ⓘ</span>' +
       '</div>' +
-      '<div class="grp-format-icons"><span>🏆</span><span>ⓘ</span></div>' +
     '</button>';
   }
   function legendHtml(){
@@ -22079,7 +22215,13 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     window.switchTab = function(tab, btn){
       var result = oldSwitch.apply(this, arguments);
       updateClasificacionNavVisual();
-      if(tab === 'clasificacion' && isAdminView()) window.renderClasificacionGrupos();
+      document.body.classList.toggle('edson-clasificacion-active', tab === 'clasificacion' && isAdminView());
+      if(tab === 'clasificacion' && isAdminView()){
+        window.renderClasificacionGrupos();
+        try{ window.scrollTo(0, 0); }catch(e){}
+        requestAnimationFrame(function(){ try{ window.scrollTo(0, 0); }catch(e){} });
+        setTimeout(function(){ try{ window.scrollTo(0, 0); }catch(e){} }, 120);
+      }
       return result;
     };
     window.switchTab.__edsonCleanClassificationWrapped = true;
@@ -22089,6 +22231,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   function refreshIfOpen(){
     updateClasificacionNavVisual();
     var panel = document.getElementById('panel-clasificacion');
+    document.body.classList.toggle('edson-clasificacion-active', !!(panel && panel.classList.contains('active') && isAdminView()));
     if(panel && panel.classList.contains('active') && isAdminView()) window.renderClasificacionGrupos();
   }
   document.addEventListener('DOMContentLoaded', function(){ setTimeout(refreshIfOpen, 300); });
