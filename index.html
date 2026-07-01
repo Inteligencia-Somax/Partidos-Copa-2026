@@ -21735,253 +21735,98 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 
 
 
-<!-- AJUSTE EDSON 20260701: clasificación admin sin medallas, con forma, mejores terceros destacados y línea de tiempo -->
+<!-- AJUSTE EDSON 20260701/02: clasificación admin refinada, selección clicable y formato con modal -->
 <style id="edson-admin-classification-clean-form-20260701">
-  #panel-clasificacion .grp-admin-head{
+  #panel-clasificacion .grp-admin-head,
+  #panel-clasificacion .grp-section-title{
     background:linear-gradient(135deg,#0B5F34 0%,#0E6F3E 55%,#0A4A2C 100%)!important;
     border:1px solid rgba(255,255,255,.18)!important;
     border-radius:22px!important;
-    padding:17px 18px!important;
+    padding:15px 18px!important;
     margin:0 0 12px!important;
     box-shadow:0 8px 24px rgba(0,0,0,.18)!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
   }
-  #panel-clasificacion .grp-admin-head h3{
+  #panel-clasificacion .grp-admin-head h3,
+  #panel-clasificacion .grp-section-title h3{
     margin:0!important;
     font-size:19px!important;
     font-weight:950!important;
     color:#fff!important;
     letter-spacing:-.2px!important;
   }
-  #panel-clasificacion .grp-admin-head p{display:none!important;}
+  #panel-clasificacion .grp-admin-head p,
+  #panel-clasificacion .grp-section-title span{display:none!important;}
 
   #panel-clasificacion .grp-format-card{
     background:#fff!important;
     border:1px solid var(--border)!important;
     border-radius:20px!important;
     box-shadow:var(--shadow)!important;
-    padding:15px 16px 14px!important;
+    padding:14px 14px 12px!important;
     margin:0 0 14px!important;
+    cursor:pointer!important;
   }
-  #panel-clasificacion .grp-format-title{
-    font-size:15px!important;
-    font-weight:950!important;
-    color:var(--text)!important;
-    margin:0 0 12px!important;
-  }
-  #panel-clasificacion .grp-timeline{
-    position:relative!important;
-    padding-left:22px!important;
-    display:flex!important;
-    flex-direction:column!important;
-    gap:12px!important;
-  }
-  #panel-clasificacion .grp-timeline::before{
-    content:''!important;
-    position:absolute!important;
-    left:6px!important;
-    top:7px!important;
-    bottom:7px!important;
-    width:3px!important;
-    border-radius:999px!important;
-    background:#0D3040!important;
-  }
-  #panel-clasificacion .grp-time-row{
-    position:relative!important;
-    display:grid!important;
-    grid-template-columns:minmax(128px,auto) 1fr!important;
-    gap:8px!important;
-    align-items:start!important;
-    font-size:12.5px!important;
-    color:var(--text)!important;
-    font-weight:700!important;
-    line-height:1.35!important;
-  }
-  #panel-clasificacion .grp-time-row::before{
-    content:''!important;
-    position:absolute!important;
-    left:-21px!important;
-    top:4px!important;
-    width:12px!important;
-    height:12px!important;
-    border-radius:50%!important;
-    background:#0D3040!important;
-    box-shadow:0 0 0 3px #fff!important;
-  }
-  #panel-clasificacion .grp-time-row.champion::before{
-    border-radius:5px!important;
-    background:#0D3040!important;
-  }
-  #panel-clasificacion .grp-time-date{color:#0D3040!important;font-weight:850!important;white-space:nowrap!important;}
-  #panel-clasificacion .grp-time-name{font-weight:950!important;color:var(--text)!important;}
-  #panel-clasificacion .grp-time-detail{display:block!important;color:var(--sub)!important;font-size:11px!important;font-weight:650!important;margin-top:1px!important;}
+  #panel-clasificacion .grp-format-card:active{transform:scale(.997)!important;}
+  #panel-clasificacion .grp-format-hero{display:grid!important;grid-template-columns:64px 1fr auto!important;gap:12px!important;align-items:center!important;}
+  #panel-clasificacion .grp-format-icon{width:60px!important;height:60px!important;border-radius:16px!important;border:1px solid var(--border)!important;background:#F8FAFB!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:31px!important;color:#163745!important;}
+  #panel-clasificacion .grp-format-main{min-width:0!important;}
+  #panel-clasificacion .grp-format-kicker{font-size:12px!important;color:#0D3040!important;font-weight:900!important;margin-top:2px!important;}
+  #panel-clasificacion .grp-format-title{font-size:14px!important;font-weight:900!important;color:var(--text)!important;margin:0!important;line-height:1.2!important;}
+  #panel-clasificacion .grp-format-year{font-size:12px!important;color:var(--sub)!important;font-weight:800!important;margin-top:3px!important;}
+  #panel-clasificacion .grp-format-actions{display:flex!important;align-items:flex-end!important;gap:8px!important;}
+  #panel-clasificacion .grp-format-act{width:22px!important;height:22px!important;border-radius:50%!important;border:none!important;background:transparent!important;color:var(--sub)!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:14px!important;padding:0!important;cursor:pointer!important;}
+  #panel-clasificacion .grp-format-track{margin-top:10px!important;display:grid!important;grid-template-columns:auto 1fr auto!important;gap:10px!important;align-items:center!important;}
+  #panel-clasificacion .grp-format-date{font-size:11px!important;color:var(--sub)!important;font-weight:800!important;white-space:nowrap!important;}
+  #panel-clasificacion .grp-format-bar{position:relative!important;height:6px!important;background:#E5E7EB!important;border-radius:999px!important;overflow:visible!important;}
+  #panel-clasificacion .grp-format-bar-fill{position:absolute!important;left:0!important;top:0!important;height:100%!important;width:53%!important;border-radius:999px!important;background:#0D3040!important;}
+  #panel-clasificacion .grp-format-dot{position:absolute!important;top:50%!important;transform:translate(-50%,-50%)!important;width:12px!important;height:12px!important;border-radius:50%!important;background:#0D3040!important;box-shadow:0 0 0 3px #fff!important;}
+  #panel-clasificacion .grp-format-dot.start{left:0!important;transform:translate(0,-50%)!important;}
+  #panel-clasificacion .grp-format-dot.mid{left:53%!important;}
+  #panel-clasificacion .grp-format-icons{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;margin-top:5px!important;color:var(--sub)!important;font-size:13px!important;}
 
   #panel-clasificacion .grp-grid{gap:13px!important;}
-  #panel-clasificacion .grp-card{
-    border-radius:20px!important;
-    overflow:hidden!important;
-  }
-  #panel-clasificacion .grp-card-head{
-    padding:13px 14px 10px!important;
-  }
-  #panel-clasificacion .grp-title{
-    font-size:15.5px!important;
-    font-weight:950!important;
-  }
+  #panel-clasificacion .grp-card{border-radius:20px!important;overflow:hidden!important;}
+  #panel-clasificacion .grp-card-head{padding:13px 14px 10px!important;}
+  #panel-clasificacion .grp-title{font-size:15.5px!important;font-weight:950!important;}
   #panel-clasificacion .grp-pill{display:none!important;}
   #panel-clasificacion .grp-note{display:none!important;}
 
-  #panel-clasificacion .grp-table{
-    table-layout:auto!important;
-  }
-  #panel-clasificacion .grp-table th{
-    background:#F3F4F6!important;
-    font-size:9.2px!important;
-    letter-spacing:.25px!important;
-    padding:8px 4px!important;
-    vertical-align:middle!important;
-    white-space:nowrap!important;
-  }
-  #panel-clasificacion .grp-table th.team{
-    padding-left:10px!important;
-  }
-  #panel-clasificacion .grp-table td{
-    padding:8px 4px!important;
-    font-size:11.3px!important;
-    vertical-align:middle!important;
-    white-space:nowrap!important;
-  }
-  #panel-clasificacion .grp-table td.team{
-    padding-left:10px!important;
-    min-width:132px!important;
-  }
-  #panel-clasificacion .grp-team{
-    gap:6px!important;
-  }
-  #panel-clasificacion .grp-pos{
-    width:24px!important;
-    height:24px!important;
-    border-radius:8px!important;
-    font-size:11px!important;
-    background:#F3F4F6!important;
-    color:var(--text)!important;
-    box-shadow:none!important;
-  }
-  #panel-clasificacion .grp-pos.top{
-    background:#E8F5EE!important;
-    color:var(--green2)!important;
-    box-shadow:0 0 0 1px rgba(0,155,84,.22) inset!important;
-  }
-  #panel-clasificacion .grp-pos.third{
-    background:#EAF1FF!important;
-    color:#0B4AA2!important;
-    box-shadow:0 0 0 1px rgba(59,130,246,.18) inset!important;
-  }
-  #panel-clasificacion .grp-third-qualified .grp-pos{
-    background:#E8F5EE!important;
-    color:var(--green2)!important;
-    box-shadow:0 0 0 1px rgba(0,155,84,.28) inset!important;
-  }
-  #panel-clasificacion .grp-flag{font-size:15px!important;}
-  #panel-clasificacion .grp-name{
-    max-width:96px!important;
-    font-size:11.7px!important;
-    font-weight:900!important;
-  }
-  #panel-clasificacion .grp-form-cell{
-    min-width:60px!important;
-  }
-  #panel-clasificacion .grp-form-dots{
-    display:inline-flex!important;
-    align-items:center!important;
-    justify-content:flex-end!important;
-    gap:3px!important;
-  }
-  #panel-clasificacion .grp-form-badge{
-    width:18px!important;
-    height:18px!important;
-    border-radius:6px!important;
-    display:inline-flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    color:#fff!important;
-    font-size:9.5px!important;
-    font-weight:950!important;
-    line-height:1!important;
-  }
+  #panel-clasificacion .grp-table{table-layout:auto!important;}
+  #panel-clasificacion .grp-table th{background:#F3F4F6!important;font-size:9.2px!important;letter-spacing:.25px!important;padding:8px 4px!important;vertical-align:middle!important;white-space:nowrap!important;}
+  #panel-clasificacion .grp-table th.team{padding-left:10px!important;}
+  #panel-clasificacion .grp-table td{padding:8px 4px!important;font-size:11.3px!important;vertical-align:middle!important;white-space:nowrap!important;}
+  #panel-clasificacion .grp-table td.team{padding-left:10px!important;min-width:132px!important;}
+  #panel-clasificacion .grp-team{gap:6px!important;display:inline-flex!important;align-items:center!important;min-width:0!important;}
+  #panel-clasificacion .grp-team-btn{all:unset!important;display:inline-flex!important;align-items:center!important;min-width:0!important;cursor:pointer!important;color:inherit!important;}
+  #panel-clasificacion .grp-team-btn:active{transform:scale(.985)!important;}
+  #panel-clasificacion .grp-pos{width:24px!important;height:24px!important;border-radius:8px!important;font-size:11px!important;background:#F3F4F6!important;color:var(--text)!important;box-shadow:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;font-weight:900!important;flex:0 0 auto!important;}
+  #panel-clasificacion .grp-pos.top{background:#E8F5EE!important;color:var(--green2)!important;box-shadow:0 0 0 1px rgba(0,155,84,.22) inset!important;}
+  #panel-clasificacion .grp-pos.third{background:#EAF1FF!important;color:#0B4AA2!important;box-shadow:0 0 0 1px rgba(59,130,246,.18) inset!important;}
+  #panel-clasificacion .grp-third-qualified .grp-pos{background:#E8F5EE!important;color:var(--green2)!important;box-shadow:0 0 0 1px rgba(0,155,84,.28) inset!important;}
+  #panel-clasificacion .grp-flag{font-size:15px!important;flex:0 0 auto!important;}
+  #panel-clasificacion .grp-name{max-width:120px!important;font-size:11.7px!important;font-weight:900!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+  #panel-clasificacion .grp-team-btn:hover .grp-name{text-decoration:underline!important;}
+  #panel-clasificacion .grp-form-cell{min-width:60px!important;}
+  #panel-clasificacion .grp-form-dots{display:inline-flex!important;align-items:center!important;justify-content:flex-end!important;gap:3px!important;}
+  #panel-clasificacion .grp-form-badge{width:18px!important;height:18px!important;border-radius:6px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;color:#fff!important;font-size:9.5px!important;font-weight:950!important;line-height:1!important;}
   #panel-clasificacion .grp-form-badge.v{background:var(--green)!important;}
   #panel-clasificacion .grp-form-badge.e{background:var(--pending)!important;}
   #panel-clasificacion .grp-form-badge.d{background:var(--red)!important;}
-  #panel-clasificacion .grp-form-empty{
-    color:var(--sub)!important;
-    font-size:11px!important;
-    font-weight:800!important;
-  }
+  #panel-clasificacion .grp-form-empty{color:var(--sub)!important;font-size:11px!important;font-weight:800!important;}
 
-  #panel-clasificacion .grp-section-title{
-    margin:16px 2px 9px!important;
-    color:#fff!important;
-    justify-content:flex-start!important;
-  }
-  #panel-clasificacion .grp-section-title h3{
-    font-size:17px!important;
-    font-weight:950!important;
-  }
-  #panel-clasificacion .grp-section-title span{display:none!important;}
-  #panel-clasificacion .grp-best-third-card .grp-card-head{
-    background:#fff!important;
-  }
-  #panel-clasificacion .grp-best-third-card .grp-title{
-    color:var(--text)!important;
-  }
-  #panel-clasificacion .grp-third-qualified{
-    background:linear-gradient(90deg,rgba(0,155,84,.14),rgba(0,155,84,.055))!important;
-  }
-  #panel-clasificacion .grp-third-qualified td{
-    border-top-color:rgba(0,155,84,.22)!important;
-  }
-  #panel-clasificacion .grp-third-waiting{
-    background:#fff!important;
-  }
+  #panel-clasificacion .grp-best-third-card .grp-card-head{background:#fff!important;}
+  #panel-clasificacion .grp-best-third-card .grp-title{color:var(--text)!important;}
+  #panel-clasificacion .grp-third-qualified{background:linear-gradient(90deg,rgba(0,155,84,.14),rgba(0,155,84,.055))!important;}
+  #panel-clasificacion .grp-third-qualified td{border-top-color:rgba(0,155,84,.22)!important;}
+  #panel-clasificacion .grp-third-waiting{background:#fff!important;}
 
-  #panel-clasificacion .grp-legend{
-    background:#fff!important;
-    border:1px solid var(--border)!important;
-    border-radius:18px!important;
-    box-shadow:var(--shadow)!important;
-    padding:12px 13px!important;
-    margin:12px 0 0!important;
-    display:flex!important;
-    flex-wrap:wrap!important;
-    gap:8px 10px!important;
-    align-items:center!important;
-  }
-  #panel-clasificacion .grp-legend-title{
-    width:100%!important;
-    color:var(--text)!important;
-    font-size:12px!important;
-    font-weight:950!important;
-    margin-bottom:1px!important;
-  }
-  #panel-clasificacion .grp-leg-item{
-    display:inline-flex!important;
-    align-items:center!important;
-    gap:6px!important;
-    color:var(--sub)!important;
-    font-size:11px!important;
-    font-weight:750!important;
-  }
-  #panel-clasificacion .grp-leg-box{
-    width:14px!important;
-    height:14px!important;
-    border-radius:5px!important;
-    display:inline-flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    color:#fff!important;
-    font-size:8px!important;
-    font-weight:950!important;
-    flex:0 0 auto!important;
-  }
+  #panel-clasificacion .grp-legend{background:#fff!important;border:1px solid var(--border)!important;border-radius:18px!important;box-shadow:var(--shadow)!important;padding:12px 13px!important;margin:4px 0 14px!important;display:flex!important;flex-wrap:wrap!important;gap:8px 10px!important;align-items:center!important;}
+  #panel-clasificacion .grp-legend-title{width:100%!important;color:var(--text)!important;font-size:12px!important;font-weight:950!important;margin-bottom:1px!important;}
+  #panel-clasificacion .grp-leg-item{display:inline-flex!important;align-items:center!important;gap:6px!important;color:var(--sub)!important;font-size:11px!important;font-weight:750!important;}
+  #panel-clasificacion .grp-leg-box{width:14px!important;height:14px!important;border-radius:5px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;color:#fff!important;font-size:8px!important;font-weight:950!important;flex:0 0 auto!important;}
   #panel-clasificacion .grp-leg-box.direct{background:var(--green)!important;}
   #panel-clasificacion .grp-leg-box.third{background:#3B82F6!important;}
   #panel-clasificacion .grp-leg-box.best{background:#0B7A42!important;}
@@ -21989,17 +21834,34 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #panel-clasificacion .grp-leg-box.e{background:var(--pending)!important;}
   #panel-clasificacion .grp-leg-box.d{background:var(--red)!important;}
 
+  #clasif-format-modal{position:fixed!important;inset:0!important;background:rgba(0,0,0,.48)!important;z-index:650!important;display:none;align-items:center;justify-content:center;padding:16px;}
+  #clasif-format-modal.open{display:flex!important;}
+  #clasif-format-modal .cfm-card{width:100%;max-width:540px;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.28);}
+  #clasif-format-modal .cfm-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);}
+  #clasif-format-modal .cfm-title{font-size:15px;font-weight:950;color:#0D3040;}
+  #clasif-format-modal .cfm-close{width:30px;height:30px;border:none;border-radius:50%;background:transparent;color:var(--sub);font-size:22px;line-height:1;cursor:pointer;}
+  #clasif-format-modal .cfm-body{padding:16px 18px 18px;}
+  #clasif-format-modal .cfm-timeline{position:relative;padding-left:28px;display:flex;flex-direction:column;gap:13px;}
+  #clasif-format-modal .cfm-timeline::before{content:'';position:absolute;left:8px;top:7px;bottom:7px;width:4px;border-radius:999px;background:#163745;}
+  #clasif-format-modal .cfm-item{position:relative;display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:10px;align-items:start;line-height:1.35;}
+  #clasif-format-modal .cfm-item::before{content:'';position:absolute;left:-22px;top:4px;width:12px;height:12px;border-radius:50%;background:#163745;box-shadow:0 0 0 3px #fff;}
+  #clasif-format-modal .cfm-item.champ::before{border-radius:4px;}
+  #clasif-format-modal .cfm-date{font-size:13px;font-weight:900;color:#163745;white-space:nowrap;}
+  #clasif-format-modal .cfm-name{font-size:14px;font-weight:950;color:var(--text);}
+  #clasif-format-modal .cfm-detail{display:block;font-size:12px;color:var(--sub);font-weight:700;margin-top:2px;}
+
   @media(max-width:430px){
-    #panel-clasificacion .grp-admin-head{padding:15px 15px!important;}
-    #panel-clasificacion .grp-format-card{padding:14px 14px 13px!important;}
-    #panel-clasificacion .grp-time-row{grid-template-columns:1fr!important;gap:1px!important;}
+    #panel-clasificacion .grp-admin-head,#panel-clasificacion .grp-section-title{padding:14px 15px!important;}
+    #panel-clasificacion .grp-format-hero{grid-template-columns:54px 1fr auto!important;gap:10px!important;}
+    #panel-clasificacion .grp-format-icon{width:50px!important;height:50px!important;font-size:27px!important;}
     #panel-clasificacion .grp-table th{font-size:8.6px!important;padding-left:3px!important;padding-right:3px!important;}
     #panel-clasificacion .grp-table td{font-size:10.6px!important;padding-left:3px!important;padding-right:3px!important;}
     #panel-clasificacion .grp-table td.team{min-width:118px!important;}
-    #panel-clasificacion .grp-name{max-width:82px!important;font-size:10.8px!important;}
+    #panel-clasificacion .grp-name{max-width:90px!important;font-size:10.8px!important;}
     #panel-clasificacion .grp-pos{width:22px!important;height:22px!important;font-size:10px!important;}
     #panel-clasificacion .grp-form-badge{width:16px!important;height:16px!important;border-radius:5px!important;font-size:8.8px!important;}
     #panel-clasificacion .grp-form-cell{min-width:52px!important;}
+    #clasif-format-modal .cfm-item{grid-template-columns:1fr!important;gap:2px!important;}
   }
 </style>
 
@@ -22011,9 +21873,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
     });
   }
-  function sortGroups(keys){
-    return (keys || []).sort(function(a,b){ return String(a).localeCompare(String(b), 'es', {numeric:true}); });
-  }
+  function sortGroups(keys){ return (keys || []).sort(function(a,b){ return String(a).localeCompare(String(b), 'es', {numeric:true}); }); }
   function normalizeResultForTeam(match, result, teamName){
     if(!match || !result) return null;
     var isHome = match.home === teamName;
@@ -22045,6 +21905,16 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       return '<span class="grp-form-badge ' + r.toLowerCase() + '">' + r + '</span>';
     }).join('') + '</span>';
   }
+  function teamBtnHtml(t, pos, posCls){
+    var code = esc(t.code || '');
+    return '<button type="button" class="grp-team-btn" data-team-code="' + code + '">' +
+      '<span class="grp-team">' +
+        '<span class="grp-pos ' + posCls + '">' + pos + '</span>' +
+        '<span class="grp-flag">' + esc(t.flag || '') + '</span>' +
+        '<span class="grp-name">' + esc(t.displayName || t.name || '') + '</span>' +
+      '</span>' +
+    '</button>';
+  }
   function teamRow(t, idx, opts){
     opts = opts || {};
     var pos = idx + 1;
@@ -22060,11 +21930,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var extras = opts.extras || {v:0,e:0,d:0,form:[]};
     var goals = (t.gf || 0) + ':' + (t.ga || 0);
     return '<tr class="' + rowCls.join(' ') + '">' +
-      '<td class="team"><div class="grp-team">' +
-        '<span class="grp-pos ' + posCls + '">' + pos + '</span>' +
-        '<span class="grp-flag">' + esc(t.flag || '') + '</span>' +
-        '<span class="grp-name">' + esc(t.displayName || t.name || '') + '</span>' +
-      '</div></td>' +
+      '<td class="team">' + teamBtnHtml(t, pos, posCls) + '</td>' +
       '<td>' + (t.pj || 0) + '</td>' +
       '<td>' + (t.pts || 0) + '</td>' +
       '<td>' + ((t.gd || 0) > 0 ? '+' : '') + (t.gd || 0) + '</td>' +
@@ -22078,21 +21944,48 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       '<tbody>' + (rows || '<tr><td colspan="6" class="team">Sin datos disponibles.</td></tr>') + '</tbody>' +
     '</table>';
   }
-  function timelineHtml(){
-    return '<div class="grp-format-card">' +
-      '<div class="grp-format-title">Formato de competición</div>' +
-      '<div class="grp-timeline">' +
-        '<div class="grp-time-row"><span class="grp-time-date">11.06 - 27.06.2026</span><span><span class="grp-time-name">Principal</span><span class="grp-time-detail">Fase de grupos y definición de clasificados directos.</span></span></div>' +
-        '<div class="grp-time-row"><span class="grp-time-date">28.06 - 19.07.2026</span><span><span class="grp-time-name">Playoffs</span><span class="grp-time-detail">Eliminación directa con puntuación duplicada.</span></span></div>' +
-        '<div class="grp-time-row champion"><span class="grp-time-date">19.07.2026</span><span><span class="grp-time-name">Ceremonia de campeón</span><span class="grp-time-detail">Cierre del torneo y campeón del bolão.</span></span></div>' +
-      '</div>' +
+  function ensureFormatModal(){
+    if(document.getElementById('clasif-format-modal')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'clasif-format-modal';
+    wrap.innerHTML = '<div class="cfm-card" onclick="event.stopPropagation()">' +
+      '<div class="cfm-head"><div class="cfm-title">Formato de competición</div><button class="cfm-close" type="button" aria-label="Cerrar">×</button></div>' +
+      '<div class="cfm-body"><div class="cfm-timeline">' +
+        '<div class="cfm-item"><span class="cfm-date">11.06. - 27.06.2026</span><span><span class="cfm-name">Principal</span><span class="cfm-detail">Fase de grupos y definición de clasificados directos.</span></span></div>' +
+        '<div class="cfm-item"><span class="cfm-date">28.06. - 19.07.2026</span><span><span class="cfm-name">Playoffs</span><span class="cfm-detail">Eliminación directa con cruces decisivos hasta la final.</span></span></div>' +
+        '<div class="cfm-item champ"><span class="cfm-date">19.07.2026</span><span><span class="cfm-name">Ceremonia de campeón</span><span class="cfm-detail">Cierre del torneo y consagración del campeón.</span></span></div>' +
+      '</div></div>' +
     '</div>';
+    document.body.appendChild(wrap);
+    wrap.addEventListener('click', closeClasifFormatModal);
+    wrap.querySelector('.cfm-close').addEventListener('click', closeClasifFormatModal);
+  }
+  function timelineHtml(){
+    return '<button type="button" class="grp-format-card" onclick="openClasifFormatModal()">' +
+      '<div class="grp-format-hero">' +
+        '<div class="grp-format-icon">🏆</div>' +
+        '<div class="grp-format-main">' +
+          '<div class="grp-format-title">Campeonato del mundo</div>' +
+          '<div class="grp-format-year">2026</div>' +
+        '</div>' +
+        '<div class="grp-format-actions">' +
+          '<span class="grp-format-act" aria-hidden="true">🏆</span>' +
+          '<span class="grp-format-act" aria-hidden="true">ⓘ</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="grp-format-track">' +
+        '<span class="grp-format-date">11.06.</span>' +
+        '<span class="grp-format-bar"><span class="grp-format-bar-fill"></span><span class="grp-format-dot start"></span><span class="grp-format-dot mid"></span></span>' +
+        '<span class="grp-format-date">19.07.</span>' +
+      '</div>' +
+      '<div class="grp-format-icons"><span>🏆</span><span>ⓘ</span></div>' +
+    '</button>';
   }
   function legendHtml(){
     return '<div class="grp-legend">' +
       '<div class="grp-legend-title">Leyenda</div>' +
       '<span class="grp-leg-item"><span class="grp-leg-box direct"></span>1º y 2º: clasificación directa</span>' +
-      '<span class="grp-leg-item"><span class="grp-leg-box third"></span>3º: entra en mejores terceros</span>' +
+      '<span class="grp-leg-item"><span class="grp-leg-box third"></span>3º: va a la tabla de mejores terceros</span>' +
       '<span class="grp-leg-item"><span class="grp-leg-box best"></span>Top 8 terceros: clasificados</span>' +
       '<span class="grp-leg-item"><span class="grp-leg-box v">V</span>Victoria</span>' +
       '<span class="grp-leg-item"><span class="grp-leg-box e">E</span>Empate</span>' +
@@ -22104,17 +21997,31 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     if(!btn) return;
     var icon = btn.querySelector('.nav-icon');
     if(icon) icon.textContent = '🏁';
-    Array.from(btn.childNodes).forEach(function(node){
-      if(node.nodeType === 3) node.nodeValue = 'Clasif.';
+    Array.from(btn.childNodes).forEach(function(node){ if(node.nodeType === 3) node.nodeValue = 'Clasif.'; });
+  }
+  function bindClassificationEvents(){
+    var panel = document.getElementById('panel-clasificacion');
+    if(!panel || panel.__grpTeamBound) return;
+    panel.__grpTeamBound = true;
+    panel.addEventListener('click', function(ev){
+      var btn = ev.target.closest('.grp-team-btn');
+      if(btn){
+        ev.preventDefault();
+        var code = btn.getAttribute('data-team-code');
+        if(code && typeof openTeamHistory === 'function') openTeamHistory(code);
+      }
     });
   }
+  window.openClasifFormatModal = function(){ ensureFormatModal(); document.getElementById('clasif-format-modal').classList.add('open'); document.body.style.overflow = 'hidden'; };
+  window.closeClasifFormatModal = function(){ var el = document.getElementById('clasif-format-modal'); if(el) el.classList.remove('open'); document.body.style.overflow = ''; };
 
   window.renderClasificacionGrupos = function(){
     if(typeof window.__edsonAdminGroupClassificationInstalled === 'undefined'){
-      // La estructura base aún no fue creada; intenta de nuevo luego.
       setTimeout(function(){ if(window.renderClasificacionGrupos) window.renderClasificacionGrupos(); }, 200);
       return;
     }
+    ensureFormatModal();
+    bindClassificationEvents();
     var body = document.getElementById('clasificacion-grupos-body');
     if(!body) return;
     updateClasificacionNavVisual();
@@ -22127,7 +22034,6 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var real = loadRealResults();
     var standings = computeStandings(real);
     var keys = sortGroups(Object.keys(standings || {}));
-
     if(!keys.length){
       body.innerHTML = '<div class="grp-empty">Aún no hay grupos disponibles.</div>';
       return;
@@ -22137,12 +22043,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var cards = keys.map(function(g){
       var s = standings[g];
       var table = (s && Array.isArray(s.table)) ? s.table : [];
-      if(table[2]){
-        thirdTeams.push(Object.assign({}, table[2], { group:g, extras:teamExtras(table[2].name, g, real) }));
-      }
-      var rows = table.map(function(t, idx){
-        return teamRow(t, idx, {qualified:idx < 2, third:idx === 2, extras:teamExtras(t.name, g, real)});
-      }).join('');
+      if(table[2]) thirdTeams.push(Object.assign({}, table[2], { group:g, extras:teamExtras(table[2].name, g, real) }));
+      var rows = table.map(function(t, idx){ return teamRow(t, idx, {qualified:idx < 2, third:idx === 2, extras:teamExtras(t.name, g, real)}); }).join('');
       return '<div class="grp-card">' +
         '<div class="grp-card-head"><div class="grp-title"><span>Grupo ' + esc(g) + '</span></div></div>' +
         tableHtml(rows, 'Clasificación') +
@@ -22150,14 +22052,11 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }).join('');
 
     thirdTeams.sort(function(a,b){
-      return (b.pts || 0) - (a.pts || 0) ||
-             (b.gd || 0) - (a.gd || 0) ||
-             (b.gf || 0) - (a.gf || 0) ||
-             String(a.code || '').localeCompare(String(b.code || ''));
+      return (b.pts || 0) - (a.pts || 0) || (b.gd || 0) - (a.gd || 0) || (b.gf || 0) - (a.gf || 0) || String(a.code || '').localeCompare(String(b.code || ''));
     });
 
     var thirdRows = thirdTeams.map(function(t, idx){
-      var display = Object.assign({}, t, {displayName:(t.name || '') + ' · Gr. ' + t.group});
+      var display = Object.assign({}, t, {displayName:(t.name || '')});
       return teamRow(display, idx, {bestThird:true, bestThirdQualified:idx < 8, third:true, extras:t.extras || {form:[]}});
     }).join('');
 
@@ -22165,12 +22064,12 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       '<div class="grp-admin-head"><h3>Clasificación</h3></div>' +
       timelineHtml() +
       '<div class="grp-grid">' + cards + '</div>' +
+      legendHtml() +
       '<div class="grp-section-title"><h3>Mejores terceros</h3></div>' +
       '<div class="grp-card grp-best-third-card">' +
         '<div class="grp-card-head"><div class="grp-title"><span>Mejores terceros</span></div></div>' +
-        tableHtml(thirdRows, 'Selección / grupo') +
-      '</div>' +
-      legendHtml();
+        tableHtml(thirdRows, 'Selección') +
+      '</div>';
   };
 
   var oldSwitch = window.switchTab;
@@ -22178,9 +22077,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     window.switchTab = function(tab, btn){
       var result = oldSwitch.apply(this, arguments);
       updateClasificacionNavVisual();
-      if(tab === 'clasificacion' && isAdminView()){
-        window.renderClasificacionGrupos();
-      }
+      if(tab === 'clasificacion' && isAdminView()) window.renderClasificacionGrupos();
       return result;
     };
     window.switchTab.__edsonCleanClassificationWrapped = true;
