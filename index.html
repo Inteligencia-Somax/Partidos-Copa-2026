@@ -14292,42 +14292,50 @@ body.edson-matches-bg #summary-modal .summary-header{
 </script>
 
 
-<!-- AJUSTE EDSON 20260701/02: exportar palpites com seleção de partida, todos, filtros e relatório sintético -->
+<!-- AJUSTE EDSON 20260701/02: exportar palpites com filtros padronizados, datas válidas e relatório sintético -->
 <style id="edson-admin-match-export-selector-style">
-  #admin-match-export-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:780;display:none;align-items:center;justify-content:center;padding:16px;}
+  #admin-match-export-modal{position:fixed;inset:0;background:rgba(17,24,39,.58);z-index:780;display:none;align-items:center;justify-content:center;padding:16px;}
   #admin-match-export-modal.open{display:flex;}
-  .ame-card{width:100%;max-width:660px;background:#fff;border-radius:22px;box-shadow:0 18px 54px rgba(0,0,0,.28);overflow:hidden;display:flex;flex-direction:column;max-height:92vh;}
-  .ame-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;background:var(--green);color:#fff;}
-  .ame-title{font-size:16px;font-weight:950;line-height:1.2;}
-  .ame-sub{font-size:12px;font-weight:700;opacity:.86;margin-top:2px;line-height:1.35;}
-  .ame-close{width:32px;height:32px;border:none;border-radius:50%;background:rgba(255,255,255,.20);color:#fff;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
-  .ame-body{padding:16px 18px 18px;overflow:auto;}
-  .ame-filter-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
-  .ame-field{min-width:0;}
-  .ame-label{font-size:11px;font-weight:950;color:var(--sub);text-transform:uppercase;letter-spacing:.45px;margin-bottom:7px;display:block;}
-  .ame-select,.ame-input{width:100%;min-height:46px;border:1.5px solid var(--border);border-radius:14px;background:#fff;font-family:inherit;font-size:13px;font-weight:800;color:var(--text);padding:0 12px;outline:none;box-sizing:border-box;}
-  .ame-input{height:46px;}
+  .ame-card{width:100%;max-width:720px;max-height:92vh;background:#fff;border-radius:24px;box-shadow:0 22px 64px rgba(0,0,0,.30);overflow:hidden;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.22);}
+  .ame-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;}
+  .ame-title{font-size:17px;font-weight:950;line-height:1.15;letter-spacing:-.2px;}
+  .ame-sub{font-size:12px;font-weight:700;opacity:.88;margin-top:3px;line-height:1.35;}
+  .ame-close{width:34px;height:34px;border:none;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .ame-close:active{transform:scale(.96);}
+  .ame-body{padding:16px 18px 18px;overflow:auto;background:#F7F8FA;}
+  .ame-filter-card,.ame-match-card,.ame-preview{background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);}
+  .ame-filter-card{padding:14px;margin-bottom:12px;}
+  .ame-section-title{font-size:13px;font-weight:950;color:var(--text);margin:0 0 11px;display:flex;align-items:center;gap:7px;}
+  .ame-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;}
+  .ame-field{min-width:0;display:flex;flex-direction:column;gap:7px;}
+  .ame-label{font-size:10.5px;font-weight:950;color:var(--sub);text-transform:uppercase;letter-spacing:.45px;display:block;}
+  .ame-select,.ame-input{width:100%;min-height:46px;border:1.5px solid var(--border);border-radius:14px;background:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;color:var(--text);padding:0 12px;outline:none;box-sizing:border-box;appearance:auto;}
   .ame-select:focus,.ame-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,155,84,.12);}
-  .ame-select[multiple]{height:102px;padding:8px 10px;line-height:1.35;}
-  .ame-select[multiple] option{padding:6px 4px;border-radius:8px;}
-  .ame-row-actions{display:flex;gap:8px;align-items:center;margin-top:7px;flex-wrap:wrap;}
-  .ame-mini-btn{border:1px solid var(--border);background:#fff;border-radius:999px;padding:6px 10px;font-family:inherit;font-size:11px;font-weight:900;color:var(--sub);cursor:pointer;}
+  .ame-select[multiple]{height:108px;padding:8px 10px;line-height:1.35;overflow:auto;}
+  .ame-select[multiple] option{padding:6px 7px;border-radius:8px;font-weight:750;}
+  .ame-help{font-size:10.8px;color:var(--sub);font-weight:650;line-height:1.25;margin-top:-2px;}
+  .ame-row-actions{display:flex;gap:7px;align-items:center;margin-top:0;flex-wrap:wrap;}
+  .ame-mini-btn{border:1px solid var(--border);background:#fff;border-radius:999px;padding:6px 10px;font-family:'Inter',sans-serif;font-size:10.8px;font-weight:900;color:var(--sub);cursor:pointer;}
+  .ame-mini-btn:hover{border-color:rgba(0,155,84,.32);color:var(--green2);}
   .ame-mini-btn:active{transform:scale(.97);}
-  .ame-all-box{display:flex;align-items:center;gap:9px;margin:4px 0 12px;padding:10px 12px;border:1px solid rgba(0,155,84,.22);background:#E8F5EE;border-radius:14px;color:var(--green2);font-size:13px;font-weight:900;cursor:pointer;user-select:none;}
+  .ame-match-card{padding:14px;margin-bottom:12px;}
+  .ame-mode-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;background:#F8FAFB;border:1px solid var(--border);border-radius:16px;padding:10px 12px;}
+  .ame-all-box{display:flex;align-items:center;gap:9px;color:var(--text);font-size:13px;font-weight:900;cursor:pointer;user-select:none;line-height:1.25;}
   .ame-all-box input{width:17px;height:17px;accent-color:var(--green);}
-  .ame-match-wrap{margin-top:4px;}
-  .ame-preview{margin:13px 0 14px;border:1px solid var(--border);border-radius:16px;background:var(--bg);padding:13px 14px;}
+  .ame-mode-hint{font-size:11px;color:var(--sub);font-weight:700;text-align:right;line-height:1.25;}
+  .ame-match-wrap{display:flex;flex-direction:column;gap:7px;}
+  .ame-preview{margin:0 0 13px;padding:13px 14px;background:#fff;}
   .ame-preview-title{font-size:15px;font-weight:950;color:var(--text);line-height:1.25;}
-  .ame-preview-meta{font-size:12px;font-weight:700;color:var(--sub);margin-top:5px;line-height:1.35;}
-  .ame-preview-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
-  .ame-tag{font-size:10px;font-weight:900;color:var(--green2);background:#E8F5EE;border:1px solid rgba(0,155,84,.22);border-radius:999px;padding:3px 8px;}
-  .ame-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-  .ame-export{min-height:46px;border:none;border-radius:14px;background:var(--blue);color:#fff;font-family:inherit;font-size:13.5px;font-weight:950;cursor:pointer;line-height:1.18;padding:10px 8px;}
-  .ame-export.secondary{background:var(--green);}
+  .ame-preview-meta{font-size:12px;font-weight:700;color:var(--sub);margin-top:6px;line-height:1.4;}
+  .ame-preview-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .ame-tag{font-size:10.5px;font-weight:900;color:var(--green2);background:#E8F5EE;border:1px solid rgba(0,155,84,.22);border-radius:999px;padding:4px 8px;}
+  .ame-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .ame-export{min-height:48px;border:none;border-radius:16px;background:var(--blue);color:#fff;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:950;cursor:pointer;line-height:1.18;padding:11px 10px;box-shadow:0 4px 12px rgba(0,56,168,.18);}
+  .ame-export.secondary{background:var(--green);box-shadow:0 4px 12px rgba(0,155,84,.18);}
   .ame-export:active{transform:scale(.985);}
-  .ame-note{font-size:11.5px;color:var(--sub);font-weight:650;line-height:1.4;margin-top:10px;}
-  @media(max-width:640px){.ame-filter-grid{grid-template-columns:1fr 1fr;}.ame-card{max-height:92vh;border-radius:20px;}.ame-actions{grid-template-columns:1fr;}}
-  @media(max-width:460px){.ame-filter-grid{grid-template-columns:1fr;gap:9px;}.ame-body{padding:14px 14px 16px;}.ame-select[multiple]{height:88px;}}
+  .ame-note{font-size:11.5px;color:var(--sub);font-weight:650;line-height:1.4;margin-top:10px;text-align:center;}
+  @media(max-width:680px){.ame-filter-grid{grid-template-columns:1fr 1fr;}.ame-card{max-height:92vh;border-radius:20px;}.ame-actions{grid-template-columns:1fr;}}
+  @media(max-width:480px){.ame-filter-grid{grid-template-columns:1fr;gap:10px;}.ame-body{padding:14px 14px 16px;}.ame-select[multiple]{height:96px;}.ame-mode-row{align-items:flex-start;flex-direction:column;}.ame-mode-hint{text-align:left;}}
 </style>
 <script id="edson-admin-match-export-selector-script">
 (function(){
@@ -14335,311 +14343,74 @@ body.edson-matches-bg #summary-modal .summary-header{
   function ameEsc(v){return String(v ?? '').replace(/[&<>"']/g,function(ch){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];});}
   function ameAdminOk(){return typeof currentUserRole !== 'undefined' && currentUserRole === 'admin' && typeof adminUnlocked !== 'undefined' && adminUnlocked;}
   function ameSortedMatches(){return (Array.isArray(MATCHES)?MATCHES.slice():[]).sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});}
-  function ameDateKey(date){
-    if(!(date instanceof Date) || isNaN(date)) return '';
-    var y=date.getFullYear();
-    var m=String(date.getMonth()+1).padStart(2,'0');
-    var d=String(date.getDate()).padStart(2,'0');
-    return y+'-'+m+'-'+d;
-  }
-  function ameDisplay(m){
-    var results = loadRealResults();
-    var standings = computeStandings(results);
-    return matchDisplay(m, results, standings);
-  }
-  function ameMatchLabel(m){
-    var d = ameDisplay(m);
-    var dt = getMatchDateTime(m);
-    var dateTxt = isNaN(dt) ? (m.date || '') : dt.toLocaleString('es-PY',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    var phase = (typeof adminReportPhaseLabel === 'function') ? adminReportPhaseLabel(m) : (m.phase || '');
-    return dateTxt + ' · ' + phase + ' · ' + d.home + ' vs ' + d.away;
-  }
-  function ameTeamsFromMatch(m){
-    var d = ameDisplay(m);
-    return [d.home, d.away].filter(Boolean);
-  }
-  function ameAllTeams(){
-    var set = new Set();
-    ameSortedMatches().forEach(function(m){ ameTeamsFromMatch(m).forEach(function(t){ if(t && !/^Ganador|^Perdedor|^3º|^1º|^2º|^W\d+|^L\d+/i.test(t)) set.add(t); }); });
-    return Array.from(set).sort(function(a,b){return String(a).localeCompare(String(b),'es',{numeric:true});});
-  }
-  function ameAllParticipants(){
-    return getRankedUsers()
-      .filter(function(u){ return u && u.name && isVisibleParticipantName(u.name); })
-      .map(function(u, idx){ return {name:u.name, pos:(idx+1)+'º'}; });
-  }
-  function ameSelectedTeams(){
-    var sel = document.getElementById('admin-match-export-team-filter');
-    if(!sel) return [];
-    return Array.from(sel.selectedOptions || []).map(function(o){return o.value;}).filter(Boolean);
-  }
-  function ameSelectedParticipants(){
-    var sel = document.getElementById('admin-match-export-participant-filter');
-    if(!sel) return [];
-    return Array.from(sel.selectedOptions || []).map(function(o){return o.value;}).filter(Boolean);
-  }
-  function ameFilteredParticipants(){
-    var selected = ameSelectedParticipants();
-    var all = ameAllParticipants();
-    if(!selected.length) return all;
-    var set = new Set(selected.map(String));
-    return all.filter(function(u){ return set.has(String(u.name)); });
-  }
-  function ameFilteredMatches(){
-    var dateVal = (document.getElementById('admin-match-export-date-filter') || {}).value || '';
-    var teams = ameSelectedTeams();
-    return ameSortedMatches().filter(function(m){
-      var dt = getMatchDateTime(m);
-      if(dateVal && ameDateKey(dt) !== dateVal) return false;
-      if(teams.length){
-        var names = ameTeamsFromMatch(m).map(function(x){return String(x);});
-        if(!teams.some(function(t){return names.includes(t);})){ return false; }
-      }
-      return true;
-    });
-  }
-  function ameDefaultMatchId(filtered){
-    var now = new Date();
-    var sorted = filtered && filtered.length ? filtered : ameSortedMatches();
-    var next = sorted.find(function(m){ return getMatchDateTime(m) >= now; });
-    return String((next || sorted[0] || sorted[sorted.length-1] || {}).id || '');
-  }
-  function ameCountPicksForMatch(m){
-    var all = loadAllPicks();
-    var allowed = new Set(ameFilteredParticipants().map(function(u){return String(u.name);}));
-    return Object.entries(all).filter(function(pair){
-      var name = pair[0], picks = pair[1];
-      return allowed.has(String(name)) && isVisibleParticipantName(name) && picks && (picks[m.id] || picks[String(m.id)]);
-    }).length;
-  }
+  function ameDateKey(date){if(!(date instanceof Date) || isNaN(date)) return '';var y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return y+'-'+m+'-'+d;}
+  function ameDateLabel(key){if(!key) return 'Todas las fechas';var p=key.split('-');if(p.length!==3) return key;var dt=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));return dt.toLocaleDateString('es-PY',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});}
+  function ameDisplay(m){var results=loadRealResults();var standings=computeStandings(results);return matchDisplay(m,results,standings);}
+  function ameMatchLabel(m){var d=ameDisplay(m);var dt=getMatchDateTime(m);var dateTxt=isNaN(dt)?(m.date||''):dt.toLocaleString('es-PY',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});var phase=(typeof adminReportPhaseLabel==='function')?adminReportPhaseLabel(m):(m.phase||'');return dateTxt+' · '+phase+' · '+d.home+' vs '+d.away;}
+  function ameTeamsFromMatch(m){var d=ameDisplay(m);return [d.home,d.away].filter(Boolean);}
+  function ameAllTeams(){var set=new Set();ameSortedMatches().forEach(function(m){ameTeamsFromMatch(m).forEach(function(t){if(t && !/^Ganador|^Perdedor|^3º|^1º|^2º|^W\d+|^L\d+/i.test(t)) set.add(t);});});return Array.from(set).sort(function(a,b){return String(a).localeCompare(String(b),'es',{numeric:true});});}
+  function ameAllParticipants(){return getRankedUsers().filter(function(u){return u&&u.name&&isVisibleParticipantName(u.name);}).map(function(u,idx){return {name:u.name,pos:(idx+1)+'º'};});}
+  function ameSelectedValues(id){var sel=document.getElementById(id);if(!sel) return [];return Array.from(sel.selectedOptions||[]).map(function(o){return o.value;}).filter(Boolean);}
+  function ameSelectedTeams(){return ameSelectedValues('admin-match-export-team-filter');}
+  function ameSelectedParticipants(){return ameSelectedValues('admin-match-export-participant-filter');}
+  function ameFilteredParticipants(){var selected=ameSelectedParticipants();var all=ameAllParticipants();if(!selected.length) return all;var set=new Set(selected.map(String));return all.filter(function(u){return set.has(String(u.name));});}
+  function ameAvailableDates(){var map=new Map();ameSortedMatches().forEach(function(m){var key=ameDateKey(getMatchDateTime(m));if(!key) return;map.set(key,(map.get(key)||0)+1);});return Array.from(map.entries()).sort(function(a,b){return a[0].localeCompare(b[0]);});}
+  function ameFilteredMatches(){var dateVal=(document.getElementById('admin-match-export-date-filter')||{}).value||'';var teams=ameSelectedTeams();return ameSortedMatches().filter(function(m){var dt=getMatchDateTime(m);if(dateVal && ameDateKey(dt)!==dateVal) return false;if(teams.length){var names=ameTeamsFromMatch(m).map(String);if(!teams.some(function(t){return names.includes(t);})){return false;}}return true;});}
+  function ameDefaultMatchId(filtered){var now=new Date();var sorted=filtered&&filtered.length?filtered:ameSortedMatches();var next=sorted.find(function(m){return getMatchDateTime(m)>=now;});return String((next||sorted[0]||sorted[sorted.length-1]||{}).id||'');}
+  function ameCountPicksForMatch(m){var all=loadAllPicks();var allowed=new Set(ameFilteredParticipants().map(function(u){return String(u.name);}));return Object.entries(all).filter(function(pair){var name=pair[0],picks=pair[1];return allowed.has(String(name))&&isVisibleParticipantName(name)&&picks&&(picks[m.id]||picks[String(m.id)]);}).length;}
   function ensureAdminMatchExportModal(){
     if(document.getElementById('admin-match-export-modal')) return;
-    var el = document.createElement('div');
-    el.id = 'admin-match-export-modal';
-    el.innerHTML = '<div class="ame-card" onclick="event.stopPropagation()">' +
-      '<div class="ame-head"><div><div class="ame-title">Exportar palpites</div><div class="ame-sub">Filtrá por partida, selección, fecha o participante antes de generar el CSV</div></div><button type="button" class="ame-close" onclick="closeAdminMatchExportSelector()">×</button></div>' +
-      '<div class="ame-body">' +
-        '<div class="ame-filter-grid">' +
-          '<div class="ame-field"><label class="ame-label" for="admin-match-export-date-filter">Fecha</label><input type="date" id="admin-match-export-date-filter" class="ame-input" onchange="refreshAdminMatchExportOptions()"><div class="ame-row-actions"><button type="button" class="ame-mini-btn" onclick="clearAdminExportDateFilter()">Todas las fechas</button></div></div>' +
-          '<div class="ame-field"><label class="ame-label" for="admin-match-export-team-filter">Selección</label><select id="admin-match-export-team-filter" class="ame-select" multiple onchange="refreshAdminMatchExportOptions()"></select><div class="ame-row-actions"><button type="button" class="ame-mini-btn" onclick="clearAdminExportTeamFilter()">Todas las selecciones</button></div></div>' +
-          '<div class="ame-field"><label class="ame-label" for="admin-match-export-participant-filter">Participante</label><select id="admin-match-export-participant-filter" class="ame-select" multiple onchange="refreshAdminMatchExportOptions()"></select><div class="ame-row-actions"><button type="button" class="ame-mini-btn" onclick="clearAdminExportParticipantFilter()">Todos los participantes</button></div></div>' +
-        '</div>' +
-        '<label class="ame-all-box"><input type="checkbox" id="admin-match-export-all" onchange="toggleAdminExportAllMode()"><span>Exportar todos los partidos filtrados</span></label>' +
-        '<div class="ame-match-wrap"><label class="ame-label" for="admin-match-export-select">Partida</label><select id="admin-match-export-select" class="ame-select" onchange="updateAdminMatchExportPreview()"></select></div>' +
-        '<div id="admin-match-export-preview" class="ame-preview"></div>' +
-        '<div class="ame-actions"><button type="button" class="ame-export" onclick="exportSelectedMatchPredictions(&quot;complete&quot;)">📊 Generar relatório completo</button><button type="button" class="ame-export secondary" onclick="exportSelectedMatchPredictions(&quot;summary&quot;)">📋 Generar relatório sintético</button></div>' +
-        '<div class="ame-note">Por padrão, a próxima partida fica selecionada automaticamente. O relatório sintético traz posição, participante, jogo e palpite; quem não palpitou aparece como “Sem palpite”.</div>' +
-      '</div>' +
-    '</div>';
-    el.addEventListener('click', closeAdminMatchExportSelector);
-    document.body.appendChild(el);
+    var el=document.createElement('div');el.id='admin-match-export-modal';
+    el.innerHTML='<div class="ame-card" onclick="event.stopPropagation()">'+
+      '<div class="ame-head"><div><div class="ame-title">Exportar palpites</div><div class="ame-sub">Elegí los filtros y generá el CSV con un padrão único</div></div><button type="button" class="ame-close" onclick="closeAdminMatchExportSelector()">×</button></div>'+
+      '<div class="ame-body">'+
+        '<div class="ame-filter-card"><div class="ame-section-title">Filtros del relatório</div><div class="ame-filter-grid">'+
+          '<div class="ame-field"><label class="ame-label" for="admin-match-export-date-filter">Fecha</label><select id="admin-match-export-date-filter" class="ame-select" onchange="refreshAdminMatchExportOptions()"></select><div class="ame-help">Solo fechas con partidos</div></div>'+
+          '<div class="ame-field"><label class="ame-label" for="admin-match-export-team-filter">Selección</label><select id="admin-match-export-team-filter" class="ame-select" multiple onchange="refreshAdminMatchExportOptions()"></select><div class="ame-row-actions"><button type="button" class="ame-mini-btn" onclick="clearAdminExportTeamFilter()">Todas</button></div></div>'+
+          '<div class="ame-field"><label class="ame-label" for="admin-match-export-participant-filter">Participante</label><select id="admin-match-export-participant-filter" class="ame-select" multiple onchange="refreshAdminMatchExportOptions()"></select><div class="ame-row-actions"><button type="button" class="ame-mini-btn" onclick="clearAdminExportParticipantFilter()">Todos</button></div></div>'+
+        '</div></div>'+
+        '<div class="ame-match-card"><div class="ame-section-title">Partidos para exportar</div><div class="ame-mode-row"><label class="ame-all-box"><input type="checkbox" id="admin-match-export-all" onchange="toggleAdminExportAllMode()"><span>Exportar todos los partidos filtrados</span></label><div class="ame-mode-hint">Desmarcado: exporta solo la partida seleccionada.</div></div><div class="ame-match-wrap"><label class="ame-label" for="admin-match-export-select">Partida</label><select id="admin-match-export-select" class="ame-select" onchange="updateAdminMatchExportPreview()"></select></div></div>'+
+        '<div id="admin-match-export-preview" class="ame-preview"></div>'+
+        '<div class="ame-actions"><button type="button" class="ame-export" onclick="exportSelectedMatchPredictions(&quot;complete&quot;)">📊 Generar relatório completo</button><button type="button" class="ame-export secondary" onclick="exportSelectedMatchPredictions(&quot;summary&quot;)">📋 Generar relatório sintético</button></div>'+
+        '<div class="ame-note">El sintético trae posición, participante, juego y palpite. Si no tiene palpite, sale “Sem palpite”.</div>'+
+      '</div></div>';
+    el.addEventListener('click',closeAdminMatchExportSelector);document.body.appendChild(el);
   }
-  function fillTeamFilter(){
-    var sel = document.getElementById('admin-match-export-team-filter');
-    if(!sel) return;
-    var selected = ameSelectedTeams();
-    sel.innerHTML = ameAllTeams().map(function(t){return '<option value="'+ameEsc(t)+'">'+ameEsc(t)+'</option>';}).join('');
-    Array.from(sel.options).forEach(function(o){ o.selected = selected.includes(o.value); });
-  }
-  function fillParticipantFilter(){
-    var sel = document.getElementById('admin-match-export-participant-filter');
-    if(!sel) return;
-    var selected = ameSelectedParticipants();
-    sel.innerHTML = ameAllParticipants().map(function(u){return '<option value="'+ameEsc(u.name)+'">'+ameEsc(u.pos+' · '+u.name)+'</option>';}).join('');
-    Array.from(sel.options).forEach(function(o){ o.selected = selected.includes(o.value); });
-  }
-  function fillMatchSelect(keepValue){
-    var sel = document.getElementById('admin-match-export-select');
-    if(!sel) return;
-    var filtered = ameFilteredMatches();
-    var allChecked = !!(document.getElementById('admin-match-export-all')||{}).checked;
-    var options = [];
-    options.push('<option value="'+AME_ALL+'">Todos los partidos filtrados ('+filtered.length+')</option>');
-    filtered.forEach(function(m){ options.push('<option value="'+ameEsc(m.id)+'">'+ameEsc(ameMatchLabel(m))+'</option>'); });
-    sel.innerHTML = options.join('');
-    if(allChecked){
-      sel.value = AME_ALL;
-      sel.disabled = true;
-    }else{
-      sel.disabled = false;
-      if(keepValue && Array.from(sel.options).some(function(o){return o.value===keepValue;})) sel.value = keepValue;
-      else sel.value = ameDefaultMatchId(filtered);
-    }
-  }
-  window.openAdminMatchExportSelector = async function(){
-    if(!ameAdminOk()){ showSaveBanner('Acceso reservado para administradores'); return; }
-    ensureAdminMatchExportModal();
-    try{ await loadFirebaseState(); }catch(e){ console.warn('No fue posible sincronizar antes de abrir exportación:', e); }
-    fillTeamFilter();
-    fillParticipantFilter();
-    var date = document.getElementById('admin-match-export-date-filter');
-    if(date) date.value = '';
-    var all = document.getElementById('admin-match-export-all');
-    if(all) all.checked = false;
-    var psel = document.getElementById('admin-match-export-participant-filter');
-    if(psel) Array.from(psel.options).forEach(function(o){o.selected=false;});
-    fillMatchSelect('');
-    updateAdminMatchExportPreview();
-    document.getElementById('admin-match-export-modal').classList.add('open');
-    document.body.style.overflow = 'hidden';
+  function fillDateFilter(keepValue){var sel=document.getElementById('admin-match-export-date-filter');if(!sel) return;var dates=ameAvailableDates();sel.innerHTML='<option value="">Todas las fechas con partidos</option>'+dates.map(function(pair){return '<option value="'+ameEsc(pair[0])+'">'+ameEsc(ameDateLabel(pair[0])+' · '+pair[1]+' partido'+(pair[1]===1?'':'s'))+'</option>';}).join('');if(keepValue&&Array.from(sel.options).some(function(o){return o.value===keepValue;})) sel.value=keepValue;else sel.value='';}
+  function fillTeamFilter(){var sel=document.getElementById('admin-match-export-team-filter');if(!sel) return;var selected=ameSelectedTeams();sel.innerHTML=ameAllTeams().map(function(t){return '<option value="'+ameEsc(t)+'">'+ameEsc(t)+'</option>';}).join('');Array.from(sel.options).forEach(function(o){o.selected=selected.includes(o.value);});}
+  function fillParticipantFilter(){var sel=document.getElementById('admin-match-export-participant-filter');if(!sel) return;var selected=ameSelectedParticipants();sel.innerHTML=ameAllParticipants().map(function(u){return '<option value="'+ameEsc(u.name)+'">'+ameEsc(u.pos+' · '+u.name)+'</option>';}).join('');Array.from(sel.options).forEach(function(o){o.selected=selected.includes(o.value);});}
+  function fillMatchSelect(keepValue){var sel=document.getElementById('admin-match-export-select');if(!sel) return;var filtered=ameFilteredMatches();var allChecked=!!(document.getElementById('admin-match-export-all')||{}).checked;var options=['<option value="'+AME_ALL+'">Todos los partidos filtrados ('+filtered.length+')</option>'];filtered.forEach(function(m){options.push('<option value="'+ameEsc(m.id)+'">'+ameEsc(ameMatchLabel(m))+'</option>');});sel.innerHTML=options.join('');if(allChecked){sel.value=AME_ALL;sel.disabled=true;}else{sel.disabled=false;if(keepValue&&keepValue!==AME_ALL&&Array.from(sel.options).some(function(o){return o.value===keepValue;})) sel.value=keepValue;else sel.value=ameDefaultMatchId(filtered);}}
+  window.openAdminMatchExportSelector=async function(){if(!ameAdminOk()){showSaveBanner('Acceso reservado para administradores');return;}ensureAdminMatchExportModal();try{await loadFirebaseState();}catch(e){console.warn('No fue posible sincronizar antes de abrir exportación:',e);}fillDateFilter('');fillTeamFilter();fillParticipantFilter();var all=document.getElementById('admin-match-export-all');if(all) all.checked=false;var tsel=document.getElementById('admin-match-export-team-filter');if(tsel) Array.from(tsel.options).forEach(function(o){o.selected=false;});var psel=document.getElementById('admin-match-export-participant-filter');if(psel) Array.from(psel.options).forEach(function(o){o.selected=false;});fillMatchSelect('');updateAdminMatchExportPreview();document.getElementById('admin-match-export-modal').classList.add('open');document.body.style.overflow='hidden';};
+  window.closeAdminMatchExportSelector=function(){var el=document.getElementById('admin-match-export-modal');if(el) el.classList.remove('open');document.body.style.overflow='';};
+  window.clearAdminExportDateFilter=function(){var el=document.getElementById('admin-match-export-date-filter');if(el) el.value='';refreshAdminMatchExportOptions();};
+  window.clearAdminExportTeamFilter=function(){var sel=document.getElementById('admin-match-export-team-filter');if(sel) Array.from(sel.options).forEach(function(o){o.selected=false;});refreshAdminMatchExportOptions();};
+  window.clearAdminExportParticipantFilter=function(){var sel=document.getElementById('admin-match-export-participant-filter');if(sel) Array.from(sel.options).forEach(function(o){o.selected=false;});refreshAdminMatchExportOptions();};
+  window.refreshAdminMatchExportOptions=function(){var old=(document.getElementById('admin-match-export-select')||{}).value||'';fillMatchSelect(old);updateAdminMatchExportPreview();};
+  window.toggleAdminExportAllMode=function(){fillMatchSelect('');updateAdminMatchExportPreview();};
+  window.updateAdminMatchExportPreview=function(){
+    var sel=document.getElementById('admin-match-export-select'),prev=document.getElementById('admin-match-export-preview');if(!sel||!prev) return;
+    var filtered=ameFilteredMatches(),selectedTeams=ameSelectedTeams(),selectedParticipants=ameSelectedParticipants(),participantCount=ameFilteredParticipants().length,dateVal=(document.getElementById('admin-match-export-date-filter')||{}).value||'',tags=[];
+    tags.push(dateVal?'Fecha: '+ameDateLabel(dateVal):'Fechas: todas con partidos');tags.push(selectedTeams.length?'Selecciones: '+selectedTeams.join(', '):'Selecciones: todas');tags.push(selectedParticipants.length?'Participantes: '+selectedParticipants.join(', '):'Participantes: todos ('+participantCount+')');
+    if(sel.value===AME_ALL){var totalPicks=filtered.reduce(function(sum,m){return sum+ameCountPicksForMatch(m);},0);prev.innerHTML='<div class="ame-preview-title">Todos los partidos filtrados</div><div class="ame-preview-meta">Partidos encontrados: <b>'+filtered.length+'</b> · Participantes: <b>'+participantCount+'</b> · Palpites registrados: <b>'+totalPicks+'</b></div><div class="ame-preview-tags">'+tags.map(function(t){return '<span class="ame-tag">'+ameEsc(t)+'</span>';}).join('')+'</div>';return;}
+    var m=filtered.find(function(x){return String(x.id)===String(sel.value);})||ameSortedMatches().find(function(x){return String(x.id)===String(sel.value);});if(!m){prev.innerHTML='<div class="ame-preview-title">Sin partida seleccionada</div><div class="ame-preview-meta">Ajustá los filtros o seleccioná todos los partidos filtrados.</div>';return;}
+    var d=ameDisplay(m),kickoff=getMatchDateTime(m),count=ameCountPicksForMatch(m);prev.innerHTML='<div class="ame-preview-title">'+ameEsc(d.home)+' vs '+ameEsc(d.away)+'</div><div class="ame-preview-meta">'+ameEsc(adminReportPhaseLabel(m))+' · Inicio: '+ameEsc(formatAdminReportDateTime(kickoff))+' · Participantes: <b>'+participantCount+'</b> · Palpites registrados: <b>'+count+'</b></div><div class="ame-preview-tags">'+tags.map(function(t){return '<span class="ame-tag">'+ameEsc(t)+'</span>';}).join('')+'</div>';
   };
-  window.closeAdminMatchExportSelector = function(){
-    var el = document.getElementById('admin-match-export-modal');
-    if(el) el.classList.remove('open');
-    document.body.style.overflow = '';
-  };
-  window.clearAdminExportDateFilter = function(){
-    var el = document.getElementById('admin-match-export-date-filter');
-    if(el) el.value = '';
-    refreshAdminMatchExportOptions();
-  };
-  window.clearAdminExportTeamFilter = function(){
-    var sel = document.getElementById('admin-match-export-team-filter');
-    if(sel) Array.from(sel.options).forEach(function(o){o.selected=false;});
-    refreshAdminMatchExportOptions();
-  };
-  window.clearAdminExportParticipantFilter = function(){
-    var sel = document.getElementById('admin-match-export-participant-filter');
-    if(sel) Array.from(sel.options).forEach(function(o){o.selected=false;});
-    refreshAdminMatchExportOptions();
-  };
-  window.refreshAdminMatchExportOptions = function(){
-    var old = (document.getElementById('admin-match-export-select') || {}).value || '';
-    fillMatchSelect(old);
-    updateAdminMatchExportPreview();
-  };
-  window.toggleAdminExportAllMode = function(){
-    fillMatchSelect('');
-    updateAdminMatchExportPreview();
-  };
-  window.updateAdminMatchExportPreview = function(){
-    var sel = document.getElementById('admin-match-export-select');
-    var prev = document.getElementById('admin-match-export-preview');
-    if(!sel || !prev) return;
-    var filtered = ameFilteredMatches();
-    var selectedTeams = ameSelectedTeams();
-    var selectedParticipants = ameSelectedParticipants();
-    var participantCount = ameFilteredParticipants().length;
-    var dateVal = (document.getElementById('admin-match-export-date-filter') || {}).value || '';
-    var tags = [];
-    if(dateVal) tags.push('Fecha: '+dateVal.split('-').reverse().join('/'));
-    if(selectedTeams.length) tags.push('Selecciones: '+selectedTeams.join(', '));
-    if(selectedParticipants.length) tags.push('Participantes: '+selectedParticipants.join(', '));
-    else tags.push('Participantes: todos ('+participantCount+')');
-    if(sel.value === AME_ALL){
-      var totalPicks = filtered.reduce(function(sum,m){return sum + ameCountPicksForMatch(m);},0);
-      prev.innerHTML = '<div class="ame-preview-title">Todos los partidos filtrados</div>' +
-        '<div class="ame-preview-meta">Partidos encontrados: <b>'+filtered.length+'</b> · Participantes: <b>'+participantCount+'</b> · Palpites registrados: <b>'+totalPicks+'</b></div>' +
-        (tags.length ? '<div class="ame-preview-tags">'+tags.map(function(t){return '<span class="ame-tag">'+ameEsc(t)+'</span>';}).join('')+'</div>' : '');
-      return;
-    }
-    var m = filtered.find(function(x){return String(x.id)===String(sel.value);}) || ameSortedMatches().find(function(x){return String(x.id)===String(sel.value);});
-    if(!m){ prev.innerHTML = '<div class="ame-preview-title">Sin partida seleccionada</div><div class="ame-preview-meta">Ajustá los filtros o seleccioná todos.</div>'; return; }
-    var d = ameDisplay(m);
-    var kickoff = getMatchDateTime(m);
-    var count = ameCountPicksForMatch(m);
-    prev.innerHTML = '<div class="ame-preview-title">'+ameEsc(d.home)+' vs '+ameEsc(d.away)+'</div>' +
-      '<div class="ame-preview-meta">'+ameEsc(adminReportPhaseLabel(m))+' · Inicio: '+ameEsc(formatAdminReportDateTime(kickoff))+' · Participantes: <b>'+participantCount+'</b> · Palpites registrados: <b>'+count+'</b></div>' +
-      (tags.length ? '<div class="ame-preview-tags">'+tags.map(function(t){return '<span class="ame-tag">'+ameEsc(t)+'</span>';}).join('')+'</div>' : '');
-  };
-  function selectedMatchIdsFromUi(){
-    var sel = document.getElementById('admin-match-export-select');
-    if(!sel || !sel.value) return [];
-    if(sel.value === AME_ALL){ return ameFilteredMatches().map(function(m){return m.id;}); }
-    return [sel.value];
-  }
-  function buildRowsForMatches(matchIds){
-    var all = loadAllPicks();
-    var results = loadRealResults();
-    var standings = computeStandings(results);
-    var participants = ameFilteredParticipants();
-    var rankingPosByName = Object.fromEntries(participants.map(function(u){ return [u.name, u.pos]; }));
-    var rows = [];
-    var matchSet = new Set(matchIds.map(String));
-    ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){
-      var kickoff = getMatchDateTime(m);
-      var disp = matchDisplay(m, results, standings);
-      var real = results[m.id] || null;
-      var resultadoFinal = real ? (disp.home + ' ' + real.home + ':' + real.away + ' ' + disp.away) : 'Sin resultado';
-      participants.forEach(function(u){
-        var name = u.name;
-        var picks = all[name] || {};
-        var pick = picks ? (picks[m.id] || picks[String(m.id)]) : null;
-        if(!pick) return;
-        var diff = formatAdminReportDiff(pick.savedAt || pick.fechaPalpite || '', kickoff);
-        var calc = calculatePickPoints(pick, real, m);
-        rows.push({pessoa:name,posicaoJogador:rankingPosByName[name] || '',jogo:disp.home + ' vs ' + disp.away,fase:adminReportPhaseLabel(m),resultadoFinal:resultadoFinal,palpite:pick.home + 'x' + pick.away,pontosPartida:calc.pts || 0,tipoPontuacao:adminReportScoreTypeLabel(calc.type, m),inicioJogo:formatAdminReportDateTime(kickoff),horarioPalpite:formatAdminReportDateTime(pick.savedAt || pick.fechaPalpite || ''),diferenca:diff.text});
-      });
-    });
-    return rows;
-  }
-  function buildSummaryRowsForMatches(matchIds){
-    var all = loadAllPicks();
-    var results = loadRealResults();
-    var standings = computeStandings(results);
-    var participants = ameFilteredParticipants();
-    var rows = [];
-    var matchSet = new Set(matchIds.map(String));
-    ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){
-      var disp = matchDisplay(m, results, standings);
-      participants.forEach(function(u){
-        var picks = all[u.name] || {};
-        var pick = picks ? (picks[m.id] || picks[String(m.id)]) : null;
-        rows.push({posicaoJogador:u.pos,pessoa:u.name,jogo:disp.home + ' vs ' + disp.away,palpite:pick ? (pick.home + 'x' + pick.away) : 'Sem palpite'});
-      });
-    });
-    return rows;
-  }
-  function downloadRowsAsCsv(rows, filenamePrefix, mode){
-    if(!rows.length){ showSaveBanner('No hay datos para exportar con estos filtros'); return; }
-    var header, csvRows;
-    if(mode === 'summary'){
-      header = ['Posição da pessoa','Nome da pessoa','Jogo','Palpite'];
-      csvRows = rows.map(function(r){ return [r.posicaoJogador,r.pessoa,r.jogo,r.palpite].map(csvAdminCell).join(';'); });
-    }else{
-      header = ['Nome da pessoa que palpitou','Posição do jogador','Jogo','Fase','Resultado final do jogo','Palpite realizado','Pontos na partida','Tipo de pontuação','Horário do início do jogo','Horário do palpite','Diferença do palpite até o jogo'];
-      csvRows = rows.map(function(r){ return [r.pessoa,r.posicaoJogador,r.jogo,r.fase,r.resultadoFinal,r.palpite,r.pontosPartida,r.tipoPontuacao,r.inicioJogo,r.horarioPalpite,r.diferenca].map(csvAdminCell).join(';'); });
-    }
-    var csvLines = ['sep=;', header.map(csvAdminCell).join(';')].concat(csvRows);
-    var csvContent = csvLines.join('\r\n');
-    var blob = new Blob([encodeAdminCsvUtf16LE(csvContent)], {type:'text/csv;charset=utf-16le'});
-    var a = document.createElement('a');
-    var stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
-    a.href = URL.createObjectURL(blob);
-    a.download = filenamePrefix + '_' + stamp + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 800);
-    closeAdminMatchExportSelector();
-    showSaveBanner(mode === 'summary' ? '📋 Relatório sintético exportado' : '📊 Relatório completo exportado');
-  }
-  window.exportSelectedMatchPredictions = async function(mode){
-    mode = mode || 'complete';
-    if(!ameAdminOk()){ showSaveBanner('Acceso reservado para administradores'); return; }
-    var matchIds = selectedMatchIdsFromUi();
-    if(!matchIds.length){ showSaveBanner('Seleccioná una partida o marcá todos'); return; }
-    try{ await loadFirebaseState(); }catch(e){ console.warn('No fue posible sincronizar antes del relatório:', e); }
-    var prefix;
-    var sel = document.getElementById('admin-match-export-select');
-    if(sel && sel.value === AME_ALL){ prefix = mode === 'summary' ? 'palpites-sintetico-todos-filtrados' : 'palpites-completo-todos-filtrados'; }
-    else{
-      var m = ameSortedMatches().find(function(x){return String(x.id)===String(matchIds[0]);});
-      var disp = m ? ameDisplay(m) : {home:'partida',away:'seleccionada'};
-      var safeGame = (disp.home + '-' + disp.away).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
-      prefix = (mode === 'summary' ? 'palpites-sintetico-' : 'palpites-completo-') + safeGame;
-    }
-    if(mode === 'summary') downloadRowsAsCsv(buildSummaryRowsForMatches(matchIds), prefix, 'summary');
-    else downloadRowsAsCsv(buildRowsForMatches(matchIds), prefix, 'complete');
-  };
-  window.downloadAdminPredictionsReportByMatch = async function(matchId){
-    if(!ameAdminOk()){ showSaveBanner('Acceso reservado para administradores'); return; }
-    try{ await loadFirebaseState(); }catch(e){ console.warn('No fue posible sincronizar antes del relatório:', e); }
-    var m = ameSortedMatches().find(function(x){return String(x.id)===String(matchId);});
-    if(!m){ showSaveBanner('Partida no encontrada'); return; }
-    var disp = ameDisplay(m);
-    var safeGame = (disp.home + '-' + disp.away).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();
-    downloadRowsAsCsv(buildRowsForMatches([matchId]), 'palpites-completo-' + safeGame, 'complete');
-  };
+  function selectedMatchIdsFromUi(){var sel=document.getElementById('admin-match-export-select');if(!sel||!sel.value) return [];if(sel.value===AME_ALL) return ameFilteredMatches().map(function(m){return m.id;});return [sel.value];}
+  function buildRowsForMatches(matchIds){var all=loadAllPicks(),results=loadRealResults(),standings=computeStandings(results),participants=ameFilteredParticipants(),rankingPosByName=Object.fromEntries(participants.map(function(u){return [u.name,u.pos];})),rows=[],matchSet=new Set(matchIds.map(String));ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){var kickoff=getMatchDateTime(m),disp=matchDisplay(m,results,standings),real=results[m.id]||null,resultadoFinal=real?(disp.home+' '+real.home+':'+real.away+' '+disp.away):'Sin resultado';participants.forEach(function(u){var name=u.name,picks=all[name]||{},pick=picks?(picks[m.id]||picks[String(m.id)]):null;if(!pick) return;var diff=formatAdminReportDiff(pick.savedAt||pick.fechaPalpite||'',kickoff),calc=calculatePickPoints(pick,real,m);rows.push({pessoa:name,posicaoJogador:rankingPosByName[name]||'',jogo:disp.home+' vs '+disp.away,fase:adminReportPhaseLabel(m),resultadoFinal:resultadoFinal,palpite:pick.home+'x'+pick.away,pontosPartida:calc.pts||0,tipoPontuacao:adminReportScoreTypeLabel(calc.type,m),inicioJogo:formatAdminReportDateTime(kickoff),horarioPalpite:formatAdminReportDateTime(pick.savedAt||pick.fechaPalpite||''),diferenca:diff.text});});});return rows;}
+  function buildSummaryRowsForMatches(matchIds){var all=loadAllPicks(),results=loadRealResults(),standings=computeStandings(results),participants=ameFilteredParticipants(),rows=[],matchSet=new Set(matchIds.map(String));ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){var disp=matchDisplay(m,results,standings);participants.forEach(function(u){var picks=all[u.name]||{},pick=picks?(picks[m.id]||picks[String(m.id)]):null;rows.push({posicaoJogador:u.pos,pessoa:u.name,jogo:disp.home+' vs '+disp.away,palpite:pick?(pick.home+'x'+pick.away):'Sem palpite'});});});return rows;}
+  function downloadRowsAsCsv(rows,filenamePrefix,mode){if(!rows.length){showSaveBanner('No hay datos para exportar con estos filtros');return;}var header,csvRows;if(mode==='summary'){header=['Posição da pessoa','Nome da pessoa','Jogo','Palpite'];csvRows=rows.map(function(r){return [r.posicaoJogador,r.pessoa,r.jogo,r.palpite].map(csvAdminCell).join(';');});}else{header=['Nome da pessoa que palpitou','Posição do jogador','Jogo','Fase','Resultado final do jogo','Palpite realizado','Pontos na partida','Tipo de pontuação','Horário do início do jogo','Horário do palpite','Diferença do palpite até o jogo'];csvRows=rows.map(function(r){return [r.pessoa,r.posicaoJogador,r.jogo,r.fase,r.resultadoFinal,r.palpite,r.pontosPartida,r.tipoPontuacao,r.inicioJogo,r.horarioPalpite,r.diferenca].map(csvAdminCell).join(';');});}var csvLines=['sep=;',header.map(csvAdminCell).join(';')].concat(csvRows);var blob=new Blob([encodeAdminCsvUtf16LE(csvLines.join('
+'))],{type:'text/csv;charset=utf-16le'});var a=document.createElement('a'),stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');a.href=URL.createObjectURL(blob);a.download=filenamePrefix+'_'+stamp+'.csv';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);closeAdminMatchExportSelector();showSaveBanner(mode==='summary'?'📋 Relatório sintético exportado':'📊 Relatório completo exportado');}
+  function ameXml(v){return String(v ?? '').replace(/[&<>"']/g,function(ch){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'})[ch];});}
+  function ameSheetName(raw,used){var base=String(raw||'Aba').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\\\/\?\*\[\]:]/g,' ').replace(/\s+/g,' ').trim()||'Aba';base=base.slice(0,31);var name=base,i=2;used=used||{};while(used[name]){var suffix=' '+i++;name=base.slice(0,31-suffix.length)+suffix;}used[name]=true;return name;}
+  function ameCompleteHeader(){return ['Nome da pessoa que palpitou','Posição do jogador','Jogo','Fase','Resultado final do jogo','Palpite realizado','Pontos na partida','Tipo de pontuação','Horário do início do jogo','Horário do palpite','Diferença do palpite até o jogo'];}
+  function buildWorkbookRowsForMatches(matchIds){var all=loadAllPicks(),results=loadRealResults(),standings=computeStandings(results),participants=ameFilteredParticipants(),rankingPosByName=Object.fromEntries(participants.map(function(u){return [u.name,u.pos];})),rows=[],matchSet=new Set(matchIds.map(String));ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){var kickoff=getMatchDateTime(m),disp=matchDisplay(m,results,standings),real=results[m.id]||null,resultadoFinal=real?(disp.home+' '+real.home+':'+real.away+' '+disp.away):'Sin resultado';participants.forEach(function(u){var name=u.name,picks=all[name]||{},pick=picks?(picks[m.id]||picks[String(m.id)]):null,calc=pick?calculatePickPoints(pick,real,m):{pts:0,type:'pending'},diff=pick?formatAdminReportDiff(pick.savedAt||pick.fechaPalpite||'',kickoff):{text:''};rows.push({pessoa:name,posicaoJogador:rankingPosByName[name]||'',jogo:disp.home+' vs '+disp.away,fase:adminReportPhaseLabel(m),resultadoFinal:resultadoFinal,palpite:pick?(pick.home+'x'+pick.away):'Sem palpite',pontosPartida:pick?(calc.pts||0):'',tipoPontuacao:pick?adminReportScoreTypeLabel(calc.type,m):'Sem palpite',inicioJogo:formatAdminReportDateTime(kickoff),horarioPalpite:pick?formatAdminReportDateTime(pick.savedAt||pick.fechaPalpite||''):'',diferenca:pick?diff.text:''});});});return rows;}
+  function ameWorksheetXml(name,header,rows){function rowXml(values,isHeader){return '<Row>'+values.map(function(v){return '<Cell'+(isHeader?' ss:StyleID="Header"':'')+'><Data ss:Type="String">'+ameXml(v)+'</Data></Cell>';}).join('')+'</Row>';}
+    var body=rowXml(header,true)+rows.map(function(r){return rowXml([r.pessoa,r.posicaoJogador,r.jogo,r.fase,r.resultadoFinal,r.palpite,r.pontosPartida,r.tipoPontuacao,r.inicioJogo,r.horarioPalpite,r.diferenca],false);}).join('');
+    return '<Worksheet ss:Name="'+ameXml(name)+'"><Table>'+body+'</Table></Worksheet>';}
+  function downloadCompleteWorkbookByParticipant(matchIds,filenamePrefix){var rows=buildWorkbookRowsForMatches(matchIds),participants=ameFilteredParticipants(),header=ameCompleteHeader();if(!rows.length){showSaveBanner('No hay datos para exportar con estos filtros');return;}var used={},sheets=[];sheets.push(ameWorksheetXml(ameSheetName('Geral',used),header,rows));participants.forEach(function(u){var userRows=rows.filter(function(r){return String(r.pessoa)===String(u.name);});sheets.push(ameWorksheetXml(ameSheetName(u.name,used),header,userRows));});var xml='<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Styles><Style ss:ID="Header"><Font ss:Bold="1"/></Style></Styles>'+sheets.join('')+'</Workbook>';var blob=new Blob(['\ufeff'+xml],{type:'application/vnd.ms-excel;charset=utf-8'});var a=document.createElement('a'),stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');a.href=URL.createObjectURL(blob);a.download=filenamePrefix+'_'+stamp+'.xls';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);closeAdminMatchExportSelector();showSaveBanner('📊 Relatório completo exportado com abas por participante');}
+  function ameAllParticipantsSelected(){var selected=ameSelectedParticipants(),all=ameAllParticipants();if(!selected.length) return true;if(selected.length!==all.length) return false;var set=new Set(selected.map(String));return all.every(function(u){return set.has(String(u.name));});}
+  window.exportSelectedMatchPredictions=async function(mode){mode=mode||'complete';if(!ameAdminOk()){showSaveBanner('Acceso reservado para administradores');return;}var matchIds=selectedMatchIdsFromUi();if(!matchIds.length){showSaveBanner('Seleccioná una partida o marcá todos');return;}try{await loadFirebaseState();}catch(e){console.warn('No fue posible sincronizar antes del relatório:',e);}var sel=document.getElementById('admin-match-export-select'),prefix;if(sel&&sel.value===AME_ALL) prefix=mode==='summary'?'palpites-sintetico-todos-filtrados':'palpites-completo-todos-filtrados';else{var m=ameSortedMatches().find(function(x){return String(x.id)===String(matchIds[0]);});var disp=m?ameDisplay(m):{home:'partida',away:'seleccionada'};var safeGame=(disp.home+'-'+disp.away).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();prefix=(mode==='summary'?'palpites-sintetico-':'palpites-completo-')+safeGame;}if(mode==='summary') downloadRowsAsCsv(buildSummaryRowsForMatches(matchIds),prefix,'summary');else if(ameAllParticipantsSelected()) downloadCompleteWorkbookByParticipant(matchIds,prefix);else downloadRowsAsCsv(buildRowsForMatches(matchIds),prefix,'complete');};
+  window.downloadAdminPredictionsReportByMatch=async function(matchId){if(!ameAdminOk()){showSaveBanner('Acceso reservado para administradores');return;}try{await loadFirebaseState();}catch(e){console.warn('No fue posible sincronizar antes del relatório:',e);}var m=ameSortedMatches().find(function(x){return String(x.id)===String(matchId);});if(!m){showSaveBanner('Partida no encontrada');return;}var disp=ameDisplay(m);var safeGame=(disp.home+'-'+disp.away).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').toLowerCase();downloadRowsAsCsv(buildRowsForMatches([matchId]),'palpites-completo-'+safeGame,'complete');};
 })();
 </script>
 
