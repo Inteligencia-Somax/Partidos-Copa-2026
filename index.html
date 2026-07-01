@@ -21667,3 +21667,466 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 })();
 </script>
 
+
+
+<!-- AJUSTE EDSON 20260701: clasificación admin sin medallas, con forma, mejores terceros destacados y línea de tiempo -->
+<style id="edson-admin-classification-clean-form-20260701">
+  #panel-clasificacion .grp-admin-head{
+    background:linear-gradient(135deg,#0B5F34 0%,#0E6F3E 55%,#0A4A2C 100%)!important;
+    border:1px solid rgba(255,255,255,.18)!important;
+    border-radius:22px!important;
+    padding:17px 18px!important;
+    margin:0 0 12px!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.18)!important;
+  }
+  #panel-clasificacion .grp-admin-head h3{
+    margin:0!important;
+    font-size:19px!important;
+    font-weight:950!important;
+    color:#fff!important;
+    letter-spacing:-.2px!important;
+  }
+  #panel-clasificacion .grp-admin-head p{display:none!important;}
+
+  #panel-clasificacion .grp-format-card{
+    background:#fff!important;
+    border:1px solid var(--border)!important;
+    border-radius:20px!important;
+    box-shadow:var(--shadow)!important;
+    padding:15px 16px 14px!important;
+    margin:0 0 14px!important;
+  }
+  #panel-clasificacion .grp-format-title{
+    font-size:15px!important;
+    font-weight:950!important;
+    color:var(--text)!important;
+    margin:0 0 12px!important;
+  }
+  #panel-clasificacion .grp-timeline{
+    position:relative!important;
+    padding-left:22px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    gap:12px!important;
+  }
+  #panel-clasificacion .grp-timeline::before{
+    content:''!important;
+    position:absolute!important;
+    left:6px!important;
+    top:7px!important;
+    bottom:7px!important;
+    width:3px!important;
+    border-radius:999px!important;
+    background:#0D3040!important;
+  }
+  #panel-clasificacion .grp-time-row{
+    position:relative!important;
+    display:grid!important;
+    grid-template-columns:minmax(128px,auto) 1fr!important;
+    gap:8px!important;
+    align-items:start!important;
+    font-size:12.5px!important;
+    color:var(--text)!important;
+    font-weight:700!important;
+    line-height:1.35!important;
+  }
+  #panel-clasificacion .grp-time-row::before{
+    content:''!important;
+    position:absolute!important;
+    left:-21px!important;
+    top:4px!important;
+    width:12px!important;
+    height:12px!important;
+    border-radius:50%!important;
+    background:#0D3040!important;
+    box-shadow:0 0 0 3px #fff!important;
+  }
+  #panel-clasificacion .grp-time-row.champion::before{
+    border-radius:5px!important;
+    background:#0D3040!important;
+  }
+  #panel-clasificacion .grp-time-date{color:#0D3040!important;font-weight:850!important;white-space:nowrap!important;}
+  #panel-clasificacion .grp-time-name{font-weight:950!important;color:var(--text)!important;}
+  #panel-clasificacion .grp-time-detail{display:block!important;color:var(--sub)!important;font-size:11px!important;font-weight:650!important;margin-top:1px!important;}
+
+  #panel-clasificacion .grp-grid{gap:13px!important;}
+  #panel-clasificacion .grp-card{
+    border-radius:20px!important;
+    overflow:hidden!important;
+  }
+  #panel-clasificacion .grp-card-head{
+    padding:13px 14px 10px!important;
+  }
+  #panel-clasificacion .grp-title{
+    font-size:15.5px!important;
+    font-weight:950!important;
+  }
+  #panel-clasificacion .grp-pill{display:none!important;}
+  #panel-clasificacion .grp-note{display:none!important;}
+
+  #panel-clasificacion .grp-table{
+    table-layout:auto!important;
+  }
+  #panel-clasificacion .grp-table th{
+    background:#F3F4F6!important;
+    font-size:9.2px!important;
+    letter-spacing:.25px!important;
+    padding:8px 4px!important;
+    vertical-align:middle!important;
+    white-space:nowrap!important;
+  }
+  #panel-clasificacion .grp-table th.team{
+    padding-left:10px!important;
+  }
+  #panel-clasificacion .grp-table td{
+    padding:8px 4px!important;
+    font-size:11.3px!important;
+    vertical-align:middle!important;
+    white-space:nowrap!important;
+  }
+  #panel-clasificacion .grp-table td.team{
+    padding-left:10px!important;
+    min-width:132px!important;
+  }
+  #panel-clasificacion .grp-team{
+    gap:6px!important;
+  }
+  #panel-clasificacion .grp-pos{
+    width:24px!important;
+    height:24px!important;
+    border-radius:8px!important;
+    font-size:11px!important;
+    background:#F3F4F6!important;
+    color:var(--text)!important;
+    box-shadow:none!important;
+  }
+  #panel-clasificacion .grp-pos.top{
+    background:#E8F5EE!important;
+    color:var(--green2)!important;
+    box-shadow:0 0 0 1px rgba(0,155,84,.22) inset!important;
+  }
+  #panel-clasificacion .grp-pos.third{
+    background:#EAF1FF!important;
+    color:#0B4AA2!important;
+    box-shadow:0 0 0 1px rgba(59,130,246,.18) inset!important;
+  }
+  #panel-clasificacion .grp-third-qualified .grp-pos{
+    background:#E8F5EE!important;
+    color:var(--green2)!important;
+    box-shadow:0 0 0 1px rgba(0,155,84,.28) inset!important;
+  }
+  #panel-clasificacion .grp-flag{font-size:15px!important;}
+  #panel-clasificacion .grp-name{
+    max-width:96px!important;
+    font-size:11.7px!important;
+    font-weight:900!important;
+  }
+  #panel-clasificacion .grp-form-cell{
+    min-width:60px!important;
+  }
+  #panel-clasificacion .grp-form-dots{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:3px!important;
+  }
+  #panel-clasificacion .grp-form-badge{
+    width:18px!important;
+    height:18px!important;
+    border-radius:6px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    color:#fff!important;
+    font-size:9.5px!important;
+    font-weight:950!important;
+    line-height:1!important;
+  }
+  #panel-clasificacion .grp-form-badge.v{background:var(--green)!important;}
+  #panel-clasificacion .grp-form-badge.e{background:var(--pending)!important;}
+  #panel-clasificacion .grp-form-badge.d{background:var(--red)!important;}
+  #panel-clasificacion .grp-form-empty{
+    color:var(--sub)!important;
+    font-size:11px!important;
+    font-weight:800!important;
+  }
+
+  #panel-clasificacion .grp-section-title{
+    margin:16px 2px 9px!important;
+    color:#fff!important;
+    justify-content:flex-start!important;
+  }
+  #panel-clasificacion .grp-section-title h3{
+    font-size:17px!important;
+    font-weight:950!important;
+  }
+  #panel-clasificacion .grp-section-title span{display:none!important;}
+  #panel-clasificacion .grp-best-third-card .grp-card-head{
+    background:#fff!important;
+  }
+  #panel-clasificacion .grp-best-third-card .grp-title{
+    color:var(--text)!important;
+  }
+  #panel-clasificacion .grp-third-qualified{
+    background:linear-gradient(90deg,rgba(0,155,84,.14),rgba(0,155,84,.055))!important;
+  }
+  #panel-clasificacion .grp-third-qualified td{
+    border-top-color:rgba(0,155,84,.22)!important;
+  }
+  #panel-clasificacion .grp-third-waiting{
+    background:#fff!important;
+  }
+
+  #panel-clasificacion .grp-legend{
+    background:#fff!important;
+    border:1px solid var(--border)!important;
+    border-radius:18px!important;
+    box-shadow:var(--shadow)!important;
+    padding:12px 13px!important;
+    margin:12px 0 0!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:8px 10px!important;
+    align-items:center!important;
+  }
+  #panel-clasificacion .grp-legend-title{
+    width:100%!important;
+    color:var(--text)!important;
+    font-size:12px!important;
+    font-weight:950!important;
+    margin-bottom:1px!important;
+  }
+  #panel-clasificacion .grp-leg-item{
+    display:inline-flex!important;
+    align-items:center!important;
+    gap:6px!important;
+    color:var(--sub)!important;
+    font-size:11px!important;
+    font-weight:750!important;
+  }
+  #panel-clasificacion .grp-leg-box{
+    width:14px!important;
+    height:14px!important;
+    border-radius:5px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    color:#fff!important;
+    font-size:8px!important;
+    font-weight:950!important;
+    flex:0 0 auto!important;
+  }
+  #panel-clasificacion .grp-leg-box.direct{background:var(--green)!important;}
+  #panel-clasificacion .grp-leg-box.third{background:#3B82F6!important;}
+  #panel-clasificacion .grp-leg-box.best{background:#0B7A42!important;}
+  #panel-clasificacion .grp-leg-box.v{background:var(--green)!important;}
+  #panel-clasificacion .grp-leg-box.e{background:var(--pending)!important;}
+  #panel-clasificacion .grp-leg-box.d{background:var(--red)!important;}
+
+  @media(max-width:430px){
+    #panel-clasificacion .grp-admin-head{padding:15px 15px!important;}
+    #panel-clasificacion .grp-format-card{padding:14px 14px 13px!important;}
+    #panel-clasificacion .grp-time-row{grid-template-columns:1fr!important;gap:1px!important;}
+    #panel-clasificacion .grp-table th{font-size:8.6px!important;padding-left:3px!important;padding-right:3px!important;}
+    #panel-clasificacion .grp-table td{font-size:10.6px!important;padding-left:3px!important;padding-right:3px!important;}
+    #panel-clasificacion .grp-table td.team{min-width:118px!important;}
+    #panel-clasificacion .grp-name{max-width:82px!important;font-size:10.8px!important;}
+    #panel-clasificacion .grp-pos{width:22px!important;height:22px!important;font-size:10px!important;}
+    #panel-clasificacion .grp-form-badge{width:16px!important;height:16px!important;border-radius:5px!important;font-size:8.8px!important;}
+    #panel-clasificacion .grp-form-cell{min-width:52px!important;}
+  }
+</style>
+
+<script id="edson-admin-classification-clean-form-20260701-script">
+(function(){
+  function isAdminView(){ return typeof currentUserRole !== 'undefined' && currentUserRole === 'admin'; }
+  function esc(value){
+    return String(value ?? '').replace(/[&<>"']/g, function(ch){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+    });
+  }
+  function sortGroups(keys){
+    return (keys || []).sort(function(a,b){ return String(a).localeCompare(String(b), 'es', {numeric:true}); });
+  }
+  function normalizeResultForTeam(match, result, teamName){
+    if(!match || !result) return null;
+    var isHome = match.home === teamName;
+    var gf = isHome ? result.home : result.away;
+    var ga = isHome ? result.away : result.home;
+    if(gf > ga) return 'V';
+    if(gf < ga) return 'D';
+    return 'E';
+  }
+  function teamExtras(teamName, group, real){
+    var stats = {v:0,e:0,d:0,form:[]};
+    if(!Array.isArray(MATCHES)) return stats;
+    MATCHES.filter(function(m){
+      return m.phase === 'Grupo ' + group && (m.home === teamName || m.away === teamName) && real && real[m.id];
+    }).sort(function(a,b){ return (a.id || 0) - (b.id || 0); }).forEach(function(m){
+      var res = normalizeResultForTeam(m, real[m.id], teamName);
+      if(!res) return;
+      if(res === 'V') stats.v++;
+      if(res === 'E') stats.e++;
+      if(res === 'D') stats.d++;
+      stats.form.push(res);
+    });
+    stats.form = stats.form.slice(-3);
+    return stats;
+  }
+  function formHtml(form){
+    if(!form || !form.length) return '<span class="grp-form-empty">—</span>';
+    return '<span class="grp-form-dots">' + form.map(function(r){
+      return '<span class="grp-form-badge ' + r.toLowerCase() + '">' + r + '</span>';
+    }).join('') + '</span>';
+  }
+  function teamRow(t, idx, opts){
+    opts = opts || {};
+    var pos = idx + 1;
+    var isQualified = opts.qualified || pos <= 2;
+    var isThird = opts.third || pos === 3;
+    var rowCls = [];
+    if(opts.bestThird && opts.bestThirdQualified) rowCls.push('grp-third-qualified');
+    else if(opts.bestThird) rowCls.push('grp-third-waiting');
+    else if(isQualified) rowCls.push('grp-qualified');
+    else if(isThird) rowCls.push('grp-third');
+    var posCls = isQualified ? 'top' : (isThird ? 'third' : '');
+    if(opts.bestThird && opts.bestThirdQualified) posCls = 'top';
+    var extras = opts.extras || {v:0,e:0,d:0,form:[]};
+    var goals = (t.gf || 0) + ':' + (t.ga || 0);
+    return '<tr class="' + rowCls.join(' ') + '">' +
+      '<td class="team"><div class="grp-team">' +
+        '<span class="grp-pos ' + posCls + '">' + pos + '</span>' +
+        '<span class="grp-flag">' + esc(t.flag || '') + '</span>' +
+        '<span class="grp-name">' + esc(t.displayName || t.name || '') + '</span>' +
+      '</div></td>' +
+      '<td>' + (t.pj || 0) + '</td>' +
+      '<td>' + (t.pts || 0) + '</td>' +
+      '<td>' + ((t.gd || 0) > 0 ? '+' : '') + (t.gd || 0) + '</td>' +
+      '<td>' + goals + '</td>' +
+      '<td class="grp-form-cell">' + formHtml(extras.form) + '</td>' +
+    '</tr>';
+  }
+  function tableHtml(rows, titleLabel){
+    return '<table class="grp-table">' +
+      '<thead><tr><th class="team">' + esc(titleLabel || 'Selección') + '</th><th>PJ</th><th>PTS</th><th>DG</th><th>G</th><th>Forma</th></tr></thead>' +
+      '<tbody>' + (rows || '<tr><td colspan="6" class="team">Sin datos disponibles.</td></tr>') + '</tbody>' +
+    '</table>';
+  }
+  function timelineHtml(){
+    return '<div class="grp-format-card">' +
+      '<div class="grp-format-title">Formato de competición</div>' +
+      '<div class="grp-timeline">' +
+        '<div class="grp-time-row"><span class="grp-time-date">11.06 - 27.06.2026</span><span><span class="grp-time-name">Principal</span><span class="grp-time-detail">Fase de grupos y definición de clasificados directos.</span></span></div>' +
+        '<div class="grp-time-row"><span class="grp-time-date">28.06 - 19.07.2026</span><span><span class="grp-time-name">Playoffs</span><span class="grp-time-detail">Eliminación directa con puntuación duplicada.</span></span></div>' +
+        '<div class="grp-time-row champion"><span class="grp-time-date">19.07.2026</span><span><span class="grp-time-name">Ceremonia de campeón</span><span class="grp-time-detail">Cierre del torneo y campeón del bolão.</span></span></div>' +
+      '</div>' +
+    '</div>';
+  }
+  function legendHtml(){
+    return '<div class="grp-legend">' +
+      '<div class="grp-legend-title">Leyenda</div>' +
+      '<span class="grp-leg-item"><span class="grp-leg-box direct"></span>1º y 2º: clasificación directa</span>' +
+      '<span class="grp-leg-item"><span class="grp-leg-box third"></span>3º: entra en mejores terceros</span>' +
+      '<span class="grp-leg-item"><span class="grp-leg-box best"></span>Top 8 terceros: clasificados</span>' +
+      '<span class="grp-leg-item"><span class="grp-leg-box v">V</span>Victoria</span>' +
+      '<span class="grp-leg-item"><span class="grp-leg-box e">E</span>Empate</span>' +
+      '<span class="grp-leg-item"><span class="grp-leg-box d">D</span>Derrota</span>' +
+    '</div>';
+  }
+  function updateClasificacionNavVisual(){
+    var btn = document.getElementById('nav-clasificacion');
+    if(!btn) return;
+    var icon = btn.querySelector('.nav-icon');
+    if(icon) icon.textContent = '📊';
+    Array.from(btn.childNodes).forEach(function(node){
+      if(node.nodeType === 3) node.nodeValue = 'Clasif.';
+    });
+  }
+
+  window.renderClasificacionGrupos = function(){
+    if(typeof window.__edsonAdminGroupClassificationInstalled === 'undefined'){
+      // La estructura base aún no fue creada; intenta de nuevo luego.
+      setTimeout(function(){ if(window.renderClasificacionGrupos) window.renderClasificacionGrupos(); }, 200);
+      return;
+    }
+    var body = document.getElementById('clasificacion-grupos-body');
+    if(!body) return;
+    updateClasificacionNavVisual();
+
+    if(!isAdminView()){
+      body.innerHTML = '<div class="grp-empty">Área exclusiva del administrador.</div>';
+      return;
+    }
+
+    var real = loadRealResults();
+    var standings = computeStandings(real);
+    var keys = sortGroups(Object.keys(standings || {}));
+
+    if(!keys.length){
+      body.innerHTML = '<div class="grp-empty">Aún no hay grupos disponibles.</div>';
+      return;
+    }
+
+    var thirdTeams = [];
+    var cards = keys.map(function(g){
+      var s = standings[g];
+      var table = (s && Array.isArray(s.table)) ? s.table : [];
+      if(table[2]){
+        thirdTeams.push(Object.assign({}, table[2], { group:g, extras:teamExtras(table[2].name, g, real) }));
+      }
+      var rows = table.map(function(t, idx){
+        return teamRow(t, idx, {qualified:idx < 2, third:idx === 2, extras:teamExtras(t.name, g, real)});
+      }).join('');
+      return '<div class="grp-card">' +
+        '<div class="grp-card-head"><div class="grp-title"><span>Grupo ' + esc(g) + '</span></div></div>' +
+        tableHtml(rows, 'Clasificación') +
+      '</div>';
+    }).join('');
+
+    thirdTeams.sort(function(a,b){
+      return (b.pts || 0) - (a.pts || 0) ||
+             (b.gd || 0) - (a.gd || 0) ||
+             (b.gf || 0) - (a.gf || 0) ||
+             String(a.code || '').localeCompare(String(b.code || ''));
+    });
+
+    var thirdRows = thirdTeams.map(function(t, idx){
+      var display = Object.assign({}, t, {displayName:(t.name || '') + ' · Gr. ' + t.group});
+      return teamRow(display, idx, {bestThird:true, bestThirdQualified:idx < 8, third:true, extras:t.extras || {form:[]}});
+    }).join('');
+
+    body.innerHTML =
+      '<div class="grp-admin-head"><h3>Clasificación</h3></div>' +
+      timelineHtml() +
+      '<div class="grp-grid">' + cards + '</div>' +
+      '<div class="grp-section-title"><h3>Mejores terceros</h3></div>' +
+      '<div class="grp-card grp-best-third-card">' +
+        '<div class="grp-card-head"><div class="grp-title"><span>Mejores terceros</span></div></div>' +
+        tableHtml(thirdRows, 'Selección / grupo') +
+      '</div>' +
+      legendHtml();
+  };
+
+  var oldSwitch = window.switchTab;
+  if(typeof oldSwitch === 'function' && !oldSwitch.__edsonCleanClassificationWrapped){
+    window.switchTab = function(tab, btn){
+      var result = oldSwitch.apply(this, arguments);
+      updateClasificacionNavVisual();
+      if(tab === 'clasificacion' && isAdminView()){
+        window.renderClasificacionGrupos();
+      }
+      return result;
+    };
+    window.switchTab.__edsonCleanClassificationWrapped = true;
+    try{ switchTab = window.switchTab; }catch(e){}
+  }
+
+  function refreshIfOpen(){
+    updateClasificacionNavVisual();
+    var panel = document.getElementById('panel-clasificacion');
+    if(panel && panel.classList.contains('active') && isAdminView()) window.renderClasificacionGrupos();
+  }
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(refreshIfOpen, 300); });
+  setTimeout(refreshIfOpen, 700);
+})();
+</script>
