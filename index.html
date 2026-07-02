@@ -24452,7 +24452,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       '<div class="sim-box">' +
         '<div class="sim-head"><span class="sim-title">🔮 Simulador ¿Y si...?</span><button class="sim-close" onclick="closeSimModal()">✕</button></div>' +
         '<div class="sim-body">' +
-          '<div class="sim-lbl">Partido sin resultado</div>' +
+          '<div class="sim-lbl">Partido cerrado, sin resultado</div>' +
           '<select class="sim-select" id="sim-match-select" onchange="simMatchChanged()"></select>' +
           '<div class="sim-lbl">Resultado hipotético</div>' +
           '<div class="sim-scores">' +
@@ -24464,7 +24464,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
           '</div>' +
           '<button class="sim-go" onclick="runSimulation()">Simular ranking</button>' +
           '<div class="sim-result" id="sim-result"></div>' +
-          '<div class="sim-note">La simulación usa los palpites reales ya registrados. No cambia nada en el bolão: es solo para soñar (o sufrir) un rato. 😄</div>' +
+          '<div class="sim-note">Solo se pueden simular partidos con palpites ya cerrados (desde 30 min antes del inicio). La simulación no cambia nada en el bolão: es solo para soñar (o sufrir) un rato. 😄</div>' +
         '</div>' +
       '</div>';
     wrap.addEventListener('click', function(e){ if(e.target === wrap) closeSimModal(); });
@@ -24472,14 +24472,17 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
   function simCandidates(){
     var real = loadRealResults();
-    return MATCHES.filter(function(m){ return !real[m.id]; })
+    // Solo partidos CERRADOS (menos de 30 min para el inicio o ya iniciados) y sin resultado.
+    // Con el palpite ya bloqueado/revelado, simular no filtra información de nadie.
+    // Partidos futuros quedan fuera: simularlos permitiría deducir los palpites ajenos.
+    return MATCHES.filter(function(m){ return !real[m.id] && !canEditPick(m); })
       .sort(function(a,b){ return getMatchDateTime(a) - getMatchDateTime(b); });
   }
   window.openSimModal = function(){
     ensureSimModal();
     var sel = document.getElementById('sim-match-select');
     var cands = simCandidates();
-    if(!cands.length){ showSaveBanner('No hay partidos sin resultado para simular'); return; }
+    if(!cands.length){ showSaveBanner('El simulador se habilita 30 min antes de cada partido (cuando los palpites ya están cerrados)'); return; }
     var results = loadRealResults(), standings = computeStandings(results);
     sel.innerHTML = cands.map(function(m){
       var d = matchDisplay(m, results, standings);
@@ -24515,6 +24518,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var a = parseInt(document.getElementById('sim-a').value, 10);
     var out = document.getElementById('sim-result');
     if(!m || isNaN(h) || isNaN(a)){ out.innerHTML = '<div class="sim-note">⚠ Completá los dos marcadores.</div>'; return; }
+    if(canEditPick(m)){ out.innerHTML = '<div class="sim-note">⚠ Este partido todavía está abierto: se habilita 30 min antes del inicio.</div>'; return; }
     var real = loadRealResults();
     var simReal = {};
     Object.keys(real).forEach(function(k){ simReal[k] = real[k]; });
