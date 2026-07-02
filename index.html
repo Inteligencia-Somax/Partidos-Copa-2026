@@ -23010,6 +23010,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
   .apl-score-pill.zero,
   .apl-score-pill.pending{background:#FEE2E2!important;color:#C1121F!important;border-color:#FECACA!important;}
+  .apl-score-empty{display:inline-block;min-width:28px;height:1px;}
   .apl-score-pill.group{background:#E8F5EE!important;color:var(--green2)!important;border-color:rgba(0,155,84,.24)!important;}
   .apl-score-pill.decisive{background:#FFF1D6!important;color:#B45309!important;border-color:#FCD99B!important;}
   .apl-score-pill.group-exact{background:#DDF7E8!important;color:var(--green2)!important;border-color:rgba(0,155,84,.40)!important;box-shadow:0 0 0 3px rgba(0,155,84,.16)!important;}
@@ -23036,7 +23037,9 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';}
   function scoreHtml(pick,real,m){
     if(!pick) return '<span class="apl-score-pill zero">0</span>';
-    if(!real) return '<span class="apl-score-pill pending">—</span>';
+    // Si todavía no hay resultado, pero el participante sí cargó pronóstico,
+    // no mostramos puntuación ni alerta: la partida aún no puede calcularse.
+    if(!real) return '<span class="apl-score-empty"></span>';
     var calc={pts:0,type:'wrong'};
     try{ if(typeof calculatePickPoints==='function') calc=calculatePickPoints(pick,real,m)||calc; }catch(e){}
     var pts=Number(calc.pts||0);
@@ -23046,7 +23049,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     if(calc.type==='exact') cls=isGroup?'group-exact':'decisive-exact';
     return '<span class="apl-score-pill '+cls+'">+'+pts+'</span>';
   }
-  function noPickDot(pick){return pick?'':'<span class="apl-nopick-dot" title="Sin pronóstico"></span>';}
+  function noPickDot(pick){return '';}
   function rowClass(pick){return pick?'':' class="apl-row-nopick"';}
 
   window.renderAdminPlayerLookupTable=function(playerName){
