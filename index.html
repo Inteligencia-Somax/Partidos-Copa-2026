@@ -23633,3 +23633,160 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   setTimeout(normalizeClasifButton, 1600);
 })();
 </script>
+
+<!-- AJUSTE EDSON 20260702: atajos Admin con estilo igual Ranking -->
+<style id="edson-admin-side-jump-ranking-style-20260702">
+  #admin-side-jump{
+    position:fixed!important;
+    right:14px!important;
+    bottom:92px!important;
+    top:auto!important;
+    transform:none!important;
+    z-index:745!important;
+    display:none!important;
+    flex-direction:column!important;
+    gap:8px!important;
+    pointer-events:none!important;
+  }
+  #admin-side-jump.show{display:flex!important;}
+  #admin-side-jump .asj-btn{
+    width:46px!important;
+    height:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    padding:0!important;
+    border-radius:999px!important;
+    border:2px solid rgba(0,155,84,.55)!important;
+    background:#fff!important;
+    color:var(--green)!important;
+    box-shadow:0 10px 26px rgba(0,0,0,.32),0 0 0 3px rgba(0,155,84,.18),0 0 16px rgba(0,155,84,.30)!important;
+    font-family:'Inter',sans-serif!important;
+    font-size:12px!important;
+    font-weight:950!important;
+    line-height:1!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:0!important;
+    cursor:pointer!important;
+    pointer-events:auto!important;
+    white-space:nowrap!important;
+    letter-spacing:-.2px!important;
+  }
+  #admin-side-jump .asj-btn.asj-top{font-size:20px!important;}
+  #admin-side-jump .asj-btn:active{transform:scale(.94)!important;}
+  body.apl-modal-open #admin-side-jump,
+  #admin-player-lookup-modal.open ~ #admin-side-jump{display:none!important;}
+</style>
+<script id="edson-admin-side-jump-ranking-style-20260702-script">
+(function(){
+  function setAdminSideJumpLabels(){
+    var el=document.getElementById('admin-side-jump');
+    if(!el) return;
+    el.innerHTML='<button type="button" class="asj-btn asj-top" onclick="adminScrollTop()" aria-label="Ir al inicio" title="Inicio">↑</button><button type="button" class="asj-btn asj-today" onclick="adminScrollTodayGame()" aria-label="Ir al partido de hoy" title="Hoy">Hoy</button>';
+  }
+  var oldSync=window.syncAdminSideJump;
+  window.syncAdminSideJump=function(){
+    if(typeof oldSync==='function') oldSync.apply(this,arguments);
+    setAdminSideJumpLabels();
+    var el=document.getElementById('admin-side-jump');
+    if(!el) return;
+    var modal=document.getElementById('admin-player-lookup-modal');
+    if((modal && modal.classList.contains('open')) || document.body.classList.contains('apl-modal-open')){
+      el.classList.remove('show');
+    }
+  };
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){setAdminSideJumpLabels(); if(typeof window.syncAdminSideJump==='function') window.syncAdminSideJump();},150);});
+  setInterval(setAdminSideJumpLabels,1200);
+})();
+</script>
+
+<!-- AJUSTE EDSON 20260702: padronização final do botão Clasif. na barra inferior -->
+<style id="edson-final-clasif-bottom-nav-exact-20260702">
+  .bottom-nav #nav-clasificacion.nav-btn{
+    -webkit-appearance:none!important;
+    appearance:none!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:3px!important;
+    background:transparent!important;
+    border:none!important;
+    border-radius:14px!important;
+    color:var(--sub)!important;
+    cursor:pointer!important;
+    font-family:'Inter',sans-serif!important;
+    font-size:10px!important;
+    font-weight:600!important;
+    line-height:1.05!important;
+    margin:0!important;
+    min-width:0!important;
+    padding:5px 16px!important;
+    text-align:center!important;
+    transition:color .2s,background .2s!important;
+    white-space:nowrap!important;
+  }
+  .bottom-nav #nav-clasificacion.nav-btn.active{
+    color:var(--green)!important;
+    background:rgba(0,155,84,.12)!important;
+    font-weight:800!important;
+  }
+  .bottom-nav #nav-clasificacion.nav-btn .nav-icon{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:24px!important;
+    min-width:24px!important;
+    height:24px!important;
+    min-height:24px!important;
+    margin:0!important;
+    padding:0!important;
+    font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important;
+    font-size:20px!important;
+    line-height:1!important;
+    transform:none!important;
+    overflow:visible!important;
+  }
+  @media(max-width:430px){
+    .bottom-nav #nav-clasificacion.nav-btn{
+      font-size:10px!important;
+      padding-left:10px!important;
+      padding-right:10px!important;
+    }
+    .bottom-nav #nav-clasificacion.nav-btn .nav-icon{
+      font-size:20px!important;
+      width:24px!important;
+      height:24px!important;
+    }
+  }
+</style>
+<script id="edson-final-clasif-bottom-nav-exact-20260702-script">
+(function(){
+  function fixClasifBottomButton(){
+    var btn=document.getElementById('nav-clasificacion');
+    if(!btn) return;
+    btn.className='nav-btn'+(btn.classList.contains('active')?' active':'');
+    btn.type='button';
+    btn.style.fontSize='';
+    btn.style.fontWeight='';
+    btn.style.padding='';
+    btn.style.display=btn.style.display||'';
+    if(!btn.querySelector('.nav-icon')) btn.innerHTML='<span class="nav-icon">🏁</span>Clasif.';
+    var icon=btn.querySelector('.nav-icon');
+    if(icon){
+      icon.textContent='🏁';
+      icon.style.fontSize='';
+      icon.style.width='';
+      icon.style.height='';
+    }
+    Array.from(btn.childNodes).forEach(function(node){
+      if(node.nodeType===3) node.nodeValue='Clasif.';
+    });
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    [100,400,1000,1800].forEach(function(t){setTimeout(fixClasifBottomButton,t);});
+  });
+  setInterval(fixClasifBottomButton,1500);
+})();
+</script>
