@@ -23204,3 +23204,24 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   };
 })();
 </script>
+
+<!-- AJUSTE EDSON 20260702: filtros da consulta em coluna e sem texto auxiliar -->
+<style id="edson-apl-filtros-vertical-sem-o-20260702">
+  #admin-player-lookup-modal .apl-filter-grid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+    align-items:stretch!important;
+  }
+  #admin-player-lookup-modal .apl-or,
+  #admin-player-lookup-modal .apl-help{
+    display:none!important;
+  }
+  #admin-player-lookup-modal .apl-filter-field{
+    width:100%!important;
+    min-width:0!important;
+  }
+  #admin-player-lookup-modal .apl-select{
+    width:100%!important;
+  }
+</style>
