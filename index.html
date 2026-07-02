@@ -9647,6 +9647,38 @@ async function downloadAdminPredictionsReport(){
 }
 
 // ══ ADMIN RESULTADOS ══
+let adminFloatingShortcutObserver = null;
+function removeAdminFloatingShortcuts(){
+  // Garante que atalhos flutuantes antigos como "Hoy/Hoje" e "↑" não apareçam na tela Admin.
+  // Remove também os eventos ligados a eles porque o elemento é eliminado do DOM.
+  const candidates = document.querySelectorAll('button, a, [role="button"], .floating-btn, .fab, [class*="float"], [class*="floating"], [id*="float"], [id*="floating"], [class*="today"], [id*="today"], [class*="top"], [id*="top"]');
+  candidates.forEach(el=>{
+    if(!el || !el.isConnected) return;
+    const txt = (el.textContent || el.getAttribute('aria-label') || el.getAttribute('title') || '').trim().toLowerCase();
+    let pos = '';
+    try{ pos = window.getComputedStyle(el).position; }catch(e){}
+    const looksLikeShortcut = txt === 'hoy' || txt === 'hoje' || txt === '↑' || txt === '⬆' || txt.includes('pra cima') || txt.includes('para cima') || txt.includes('arriba');
+    const classOrId = ((el.className || '') + ' ' + (el.id || '')).toString().toLowerCase();
+    const looksFloatingByName = classOrId.includes('floating') || classOrId.includes('float') || classOrId.includes('fab') || classOrId.includes('scroll-top') || classOrId.includes('go-top') || classOrId.includes('go-today') || classOrId.includes('today-fab');
+    if((pos === 'fixed' || pos === 'sticky' || looksFloatingByName) && (looksLikeShortcut || looksFloatingByName)){
+      el.remove();
+    }
+  });
+}
+function startAdminFloatingShortcutCleaner(){
+  removeAdminFloatingShortcuts();
+  if(adminFloatingShortcutObserver) return;
+  adminFloatingShortcutObserver = new MutationObserver(()=>{
+    if(document.body.classList.contains('somax-admin-active')) removeAdminFloatingShortcuts();
+  });
+  adminFloatingShortcutObserver.observe(document.body, {childList:true, subtree:true});
+}
+function stopAdminFloatingShortcutCleaner(){
+  if(adminFloatingShortcutObserver){
+    adminFloatingShortcutObserver.disconnect();
+    adminFloatingShortcutObserver = null;
+  }
+}
 function adminLogin(){
   if(currentUserRole !== 'admin'){
     showSaveBanner('Acceso reservado para administradores');
@@ -9669,7 +9701,9 @@ function showAdminArea(){
   const pendingBtn = document.querySelector("#admin-area .filter-chip[onclick*=\"'pending'\"]");
   if(pendingBtn) pendingBtn.classList.add('active');
 
-  renderAdminResults(currentAdminFilter, true);
+  startAdminFloatingShortcutCleaner();
+  renderAdminResults(currentAdminFilter);
+  requestAnimationFrame(()=>{ window.scrollTo({top:0, left:0, behavior:'auto'}); });
 }
 function filterAdminResults(f, btn){
   currentAdminFilter = f;
@@ -9677,24 +9711,24 @@ function filterAdminResults(f, btn){
   if(btn) btn.classList.add('active');
   renderAdminResults(f);
 }
-function renderAdminResults(filter='pending', autoJump=false){
+function renderAdminResults(filter='pending'){
   if(!adminUnlocked) return;
   renderThirdsPanel();
   const results = loadRealResults();
   const container = document.getElementById('admin-results-list');
   if(!container) return;
   container.innerHTML='';
-  // Orden cronológico: por fecha y horario.
+
+  // Orden cronológico: por fecha y horario. No hacemos salto automático:
+  // en Admin la pantalla debe quedar arriba y filtrada por "Falta resultado".
   const sorted = MATCHES.slice().sort((a,b)=>getMatchDateTime(a)-getMatchDateTime(b));
   const standings = computeStandings(results);
-  const now = new Date();
-  let jumpId = null;
+
   sorted.forEach(m=>{
     const real = results[m.id];
     if(filter==='pending' && real) return;
     if(filter==='done' && !real) return;
-    // Próximo a cargar: el primer partido ya jugado y sin resultado.
-    if(jumpId===null && !real && getMatchDateTime(m) <= now) jumpId = m.id;
+
     const disp = matchDisplay(m, results, standings);
     const card=document.createElement('div');
     card.id=`admin-card-${m.id}`;
@@ -9710,21 +9744,12 @@ function renderAdminResults(filter='pending', autoJump=false){
       </div>`;
     container.appendChild(card);
   });
+
   if(!container.innerHTML){
     container.innerHTML='<div style="text-align:center;padding:48px 20px;color:var(--sub);font-size:14px;font-weight:600;">No se encontraron resultados</div>';
   }
-  // Si no hay jugados pendientes, saltar al primer pendiente que se muestre.
-  if(autoJump && jumpId===null){
-    const firstPending = sorted.find(m=>!results[m.id] && (filter!=='done'));
-    if(firstPending && (filter!=='done')) jumpId = firstPending.id;
-  }
-  if(autoJump && jumpId!==null){
-    requestAnimationFrame(()=>{
-      const card = document.getElementById(`admin-card-${jumpId}`);
-      if(card) card.scrollIntoView({block:'center', behavior:'smooth'});
-    });
-  }
 }
+
 async function saveRealResult(matchId){
   const h=document.getElementById(`real-h-${matchId}`).value;
   const a=document.getElementById(`real-a-${matchId}`).value;
@@ -9742,7 +9767,7 @@ async function saveRealResult(matchId){
     return;
   }
   saveRealResults(results);
-  renderAdminResults(currentAdminFilter, true);
+  renderAdminResults(currentAdminFilter);
   renderMatches(currentFilter);
   renderRanking();
   renderDecepcion();
@@ -9933,10 +9958,14 @@ function switchTab(tab, btn){
     }
   }
   if(tab==='decepcion') renderDecepcion();
+  document.body.classList.toggle('somax-admin-active', tab === 'admin');
+  if(tab !== 'admin') stopAdminFloatingShortcutCleaner();
   if(tab==='admin'){
-
+    window.__somaxMatchesReturnTodayEnabled = false;
+    startAdminFloatingShortcutCleaner();
     if(adminUnlocked) showAdminArea();
     else setTimeout(()=>document.getElementById('admin-pass')?.focus(),100);
+    requestAnimationFrame(()=>{ window.scrollTo({top:0, left:0, behavior:'auto'}); });
   }
 }
 
@@ -12489,6 +12518,27 @@ body.edson-matches-bg #summary-modal .summary-header{
     opacity:1!important;
   }
 </style>
+
+
+<style id="edson-admin-remove-floating-shortcuts-20260702">
+/* Admin: elimina visualmente atalhos flutuantes antigos de Hoje/Para cima, caso algum script legado tente recriá-los. */
+body.somax-admin-active .floating-btn,
+body.somax-admin-active .floating-button,
+body.somax-admin-active .fab,
+body.somax-admin-active .today-fab,
+body.somax-admin-active .go-today,
+body.somax-admin-active .go-today-btn,
+body.somax-admin-active .scroll-top,
+body.somax-admin-active .scroll-top-btn,
+body.somax-admin-active .go-top,
+body.somax-admin-active .go-top-btn,
+body.somax-admin-active [class*="floating"],
+body.somax-admin-active [class*="float"]{
+  display:none!important;
+  pointer-events:none!important;
+}
+</style>
+
 </body></html>
 
 <style id="final-spacing-and-exact-chip-20260627">
