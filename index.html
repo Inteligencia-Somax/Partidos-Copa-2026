@@ -24829,3 +24829,105 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   else document.addEventListener('DOMContentLoaded', init);
 })();
 </script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v3-20260702
+     a) Quita el sparkline "Evolución de posición" del detalle del jugador.
+     b) FAB 🔮 recolocado en <body> (el panel lo estaba "tragando") con
+        sincronización de visibilidad: solo en Ranking y sin modales abiertos.
+     c) Quita la flechita ↑ flotante del Ranking (queda el "Yo" y la bola).
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v3-20260702-style">
+/* a) adiós sparkline */
+#ud-spark{display:none!important;}
+/* c) adiós flecha ↑ */
+#quick-top-btn{display:none!important;}
+/* b) FAB en body: visible solo con la clase somax-sim-fab-on */
+#sim-open-btn.sim-fab{display:none;}
+body.somax-sim-fab-on #sim-open-btn.sim-fab{display:flex;}
+body.somax-modal-locked #sim-open-btn.sim-fab{display:none!important;}
+</style>
+
+<script id="edson-upgrade-pack-v3-20260702-script">
+(function(){
+  'use strict';
+
+  /* ── a) neutraliza el sparkline (v1 lo insertaba tras renderUd) ── */
+  var _renderUd3 = window.renderUd;
+  window.renderUd = function(){
+    _renderUd3.apply(this, arguments);
+    var sp = document.getElementById('ud-spark');
+    if(sp) sp.remove();
+  };
+
+  /* ── b) FAB en <body> + visibilidad sincronizada ── */
+  function rankingVisible(){
+    var p = document.getElementById('panel-ranking');
+    return !!(p && p.classList.contains('active'));
+  }
+  function anyModalOpen(){
+    if(document.body.classList.contains('somax-modal-locked')) return true;
+    if((document.body.style.overflow || '') === 'hidden') return true;
+    var ids = ['user-detail-modal','match-breakdown-modal','team-history-modal','modal','sim-modal','admin-modal','announce-modal','summary-modal'];
+    for(var i=0;i<ids.length;i++){
+      var el = document.getElementById(ids[i]);
+      if(el && (el.classList.contains('open') || (el.style.display && el.style.display !== 'none'))) return true;
+    }
+    return false;
+  }
+  function ensureFabOnBody(){
+    var fab = document.getElementById('sim-open-btn');
+    if(fab && (!fab.classList.contains('sim-fab') || fab.parentNode !== document.body)){
+      fab.remove(); fab = null;
+    }
+    if(!fab){
+      fab = document.createElement('button');
+      fab.id = 'sim-open-btn';
+      fab.className = 'sim-fab';
+      fab.type = 'button';
+      fab.setAttribute('aria-label', 'Abrir simulador ¿Y si...?');
+      fab.innerHTML = '🔮<span class="sim-fab-lbl">¿Y si...?</span>';
+      fab.onclick = function(){ if(typeof openSimModal === 'function') openSimModal(); };
+      document.body.appendChild(fab);
+    }
+    return fab;
+  }
+  function syncFab(){
+    ensureFabOnBody();
+    var on = rankingVisible() && !anyModalOpen();
+    document.body.classList.toggle('somax-sim-fab-on', on);
+  }
+  window.edsonSyncSimFab = syncFab;
+
+  // engancha en los puntos donde cambia la pantalla
+  if(typeof window.updateQuickFloatButtons === 'function'){
+    var _uqfb = window.updateQuickFloatButtons;
+    window.updateQuickFloatButtons = function(){
+      _uqfb.apply(this, arguments);
+      try{ syncFab(); }catch(e){}
+    };
+  }
+  if(typeof window.switchTab === 'function'){
+    var _st = window.switchTab;
+    window.switchTab = function(){
+      var r = _st.apply(this, arguments);
+      try{ syncFab(); }catch(e){}
+      return r;
+    };
+  }
+  // cinturón y tirantes: cambios de clase en el panel y en <body>
+  var pr = document.getElementById('panel-ranking');
+  if(pr && window.MutationObserver){
+    new MutationObserver(function(){ try{ syncFab(); }catch(e){} })
+      .observe(pr, { attributes:true, attributeFilter:['class'] });
+  }
+  if(window.MutationObserver){
+    new MutationObserver(function(){ try{ syncFab(); }catch(e){} })
+      .observe(document.body, { attributes:true, attributeFilter:['class','style'] });
+  }
+
+  function init(){ try{ syncFab(); }catch(e){} setTimeout(syncFab, 400); setTimeout(syncFab, 1200); }
+  if(document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
