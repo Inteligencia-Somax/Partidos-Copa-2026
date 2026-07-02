@@ -24094,3 +24094,94 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
 })();
 </script>
+
+<!-- AJUSTE EDSON 20260702: atalhos Admin estáveis por posição da tela -->
+<style id="edson-admin-side-jump-conditional-20260702">
+  #admin-side-jump{display:none!important;opacity:1!important;visibility:visible!important;transition:none!important;animation:none!important;}
+  #admin-side-jump.show{display:flex!important;}
+  #admin-side-jump .asj-btn{transition:transform .12s ease!important;animation:none!important;}
+  #admin-side-jump .asj-btn.asj-hidden{display:none!important;}
+</style>
+<script id="edson-admin-side-jump-conditional-20260702-script">
+(function(){
+  function ensureAdminSideJump(){
+    var el=document.getElementById('admin-side-jump');
+    if(!el){
+      el=document.createElement('div');
+      el.id='admin-side-jump';
+      document.body.appendChild(el);
+    }
+    if(!el.querySelector('.asj-top') || !el.querySelector('.asj-today')){
+      el.innerHTML='<button type="button" class="asj-btn asj-top" onclick="adminScrollTop()" aria-label="Ir al inicio" title="Inicio">↑</button><button type="button" class="asj-btn asj-today" onclick="adminScrollTodayGame()" aria-label="Ir al partido de hoy" title="Hoy">Hoy</button>';
+    }
+    return el;
+  }
+  function isAdminVisible(){
+    var area=document.getElementById('admin-area');
+    var modal=document.getElementById('admin-player-lookup-modal');
+    if((modal && modal.classList.contains('open')) || document.body.classList.contains('apl-modal-open')) return false;
+    if(!area) return false;
+    var st=window.getComputedStyle?getComputedStyle(area):area.style;
+    if(st && st.display==='none') return false;
+    var nav=document.getElementById('nav-admin');
+    var adminActive=!!(nav && nav.classList.contains('active'));
+    var rect=area.getBoundingClientRect();
+    return adminActive || (rect.height>0 && rect.bottom>0 && rect.top<window.innerHeight);
+  }
+  function getSortedMatches(){
+    try{
+      if(typeof MATCHES==='undefined' || !Array.isArray(MATCHES)) return [];
+      return MATCHES.slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});
+    }catch(e){return [];}
+  }
+  function getAdminTodayTarget(){
+    var sorted=getSortedMatches();
+    if(!sorted.length) return null;
+    var now=new Date();
+    function sameDay(d){return d && d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();}
+    return sorted.find(function(m){return sameDay(getMatchDateTime(m));}) || sorted.find(function(m){return getMatchDateTime(m)>=now;}) || sorted[0];
+  }
+  function isNearAdminTop(){
+    var area=document.getElementById('admin-area');
+    if(!area) return false;
+    var rect=area.getBoundingClientRect();
+    return rect.top > -90;
+  }
+  function isNearTodayCard(){
+    var match=getAdminTodayTarget();
+    if(!match) return false;
+    var card=document.getElementById('admin-card-'+match.id);
+    if(!card) return false;
+    var r=card.getBoundingClientRect();
+    var topLimit=70;
+    var bottomLimit=window.innerHeight-160;
+    if(r.top>=topLimit && r.top<=bottomLimit) return true;
+    var center=r.top+(r.height/2);
+    return center>=topLimit && center<=bottomLimit;
+  }
+  window.syncAdminSideJump=function(){
+    var el=ensureAdminSideJump();
+    var topBtn=el.querySelector('.asj-top');
+    var todayBtn=el.querySelector('.asj-today');
+    if(!isAdminVisible()){
+      el.classList.remove('show');
+      return;
+    }
+    var atTop=isNearAdminTop();
+    var atToday=isNearTodayCard();
+    if(topBtn) topBtn.classList.toggle('asj-hidden', atTop);
+    if(todayBtn) todayBtn.classList.toggle('asj-hidden', atToday);
+    if(atTop && atToday){
+      if(todayBtn) todayBtn.classList.remove('asj-hidden');
+    }
+    var anyVisible=Array.prototype.some.call(el.querySelectorAll('.asj-btn'),function(btn){return !btn.classList.contains('asj-hidden');});
+    el.classList.toggle('show', anyVisible);
+  };
+  function scheduleSync(){requestAnimationFrame(function(){try{window.syncAdminSideJump();}catch(e){}});}
+  document.addEventListener('DOMContentLoaded',function(){ensureAdminSideJump();setTimeout(scheduleSync,150);});
+  window.addEventListener('scroll',scheduleSync,{passive:true});
+  window.addEventListener('resize',scheduleSync,{passive:true});
+  ['click','touchend'].forEach(function(evt){document.addEventListener(evt,function(){setTimeout(scheduleSync,90);},true);});
+  setTimeout(scheduleSync,300);
+})();
+</script>
