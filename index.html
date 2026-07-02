@@ -23995,3 +23995,102 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   setTimeout(markParticipantCells, 500);
 })();
 </script>
+
+
+<!-- AJUSTE EDSON 20260702: zero da pontuação sem fundo vermelho -->
+<style id="edson-apl-zero-score-no-pill-20260702">
+  #admin-player-lookup-modal .apl-score-pill.zero{
+    background:transparent!important;
+    border-color:transparent!important;
+    box-shadow:none!important;
+    padding:0!important;
+    min-width:auto!important;
+    height:auto!important;
+    color:#C1121F!important;
+    font-weight:950!important;
+  }
+</style>
+
+<!-- AJUSTE EDSON 20260702: consulta por participante rola até o próximo jogo e pisca a linha -->
+<style id="edson-apl-participant-next-game-focus-20260702">
+  #admin-player-lookup-modal .apl-next-match-focus{
+    position:relative!important;
+    animation:aplNextMatchPulse 1.15s ease-in-out 0s 3!important;
+    box-shadow:inset 4px 0 0 var(--green), 0 0 0 2px rgba(0,155,84,.18)!important;
+    background:rgba(0,155,84,.075)!important;
+  }
+  @keyframes aplNextMatchPulse{
+    0%,100%{background:rgba(0,155,84,.055);box-shadow:inset 4px 0 0 var(--green),0 0 0 0 rgba(0,155,84,0);}
+    50%{background:rgba(0,155,84,.16);box-shadow:inset 4px 0 0 var(--green),0 0 0 4px rgba(0,155,84,.22);}
+  }
+</style>
+<script id="edson-apl-participant-next-game-focus-20260702-script">
+(function(){
+  function aplMatchesSorted(){
+    try{return (typeof MATCHES!=='undefined'&&Array.isArray(MATCHES)?MATCHES:[]).slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});}
+    catch(e){return [];}
+  }
+  function nextMatchForLookup(){
+    var list=aplMatchesSorted();
+    if(!list.length) return null;
+    var now=new Date();
+    var todayKey=now.toDateString();
+    var todayNext=list.find(function(m){
+      var d=getMatchDateTime(m);
+      return d && !isNaN(d) && d.toDateString()===todayKey && d>=now;
+    });
+    if(todayNext) return todayNext;
+    var future=list.find(function(m){
+      var d=getMatchDateTime(m);
+      return d && !isNaN(d) && d>=now;
+    });
+    return future || list[list.length-1];
+  }
+  function focusParticipantNextMatch(){
+    var modal=document.getElementById('admin-player-lookup-modal');
+    if(!modal || !modal.classList.contains('open')) return;
+    var match=nextMatchForLookup();
+    if(!match) return;
+    var row=modal.querySelector('.apl-table tbody tr[data-match-id="'+String(match.id).replace(/"/g,'\\"')+'"]');
+    if(!row) return;
+    var wrap=modal.querySelector('.apl-table-wrap');
+    modal.querySelectorAll('.apl-next-match-focus').forEach(function(el){el.classList.remove('apl-next-match-focus');});
+    if(wrap){
+      try{wrap.scrollLeft=0;}catch(e){}
+      try{wrap.scrollTop=Math.max(0,row.offsetTop-(wrap.clientHeight/2)+(row.offsetHeight/2));}catch(e){}
+    }
+    row.classList.add('apl-next-match-focus');
+    setTimeout(function(){try{row.classList.remove('apl-next-match-focus');}catch(e){}},3900);
+  }
+  window.focusParticipantNextMatch = focusParticipantNextMatch;
+
+  var previousRender=window.renderAdminPlayerLookupTable;
+  if(typeof previousRender==='function' && !previousRender.__edsonNextFocusWrapped){
+    window.renderAdminPlayerLookupTable=function(playerName){
+      var result=previousRender.apply(this,arguments);
+      // Marca cada linha com o id do partido para poder localizar o próximo jogo.
+      try{
+        var modal=document.getElementById('admin-player-lookup-modal');
+        var rows=modal?modal.querySelectorAll('.apl-table tbody tr'):[];
+        var list=aplMatchesSorted();
+        rows.forEach(function(row,idx){
+          if(list[idx]) row.setAttribute('data-match-id', String(list[idx].id));
+        });
+      }catch(e){}
+      if(playerName){setTimeout(focusParticipantNextMatch,120);}
+      return result;
+    };
+    window.renderAdminPlayerLookupTable.__edsonNextFocusWrapped=true;
+  }
+
+  var previousSelect=window.aplSelectParticipant;
+  if(typeof previousSelect==='function' && !previousSelect.__edsonNextFocusWrapped){
+    window.aplSelectParticipant=function(playerName){
+      var result=previousSelect.apply(this,arguments);
+      if(playerName){setTimeout(focusParticipantNextMatch,180);}
+      return result;
+    };
+    window.aplSelectParticipant.__edsonNextFocusWrapped=true;
+  }
+})();
+</script>
