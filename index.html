@@ -5258,7 +5258,7 @@ html, body{scroll-behavior:auto!important;}
       <div class="decepcion-page-head">
         <div>
           <h3>🥴 Pelota desinflada</h3>
-          <p>Los <strong>puntajes más bajos</strong> entre quienes hicieron pronóstico en todos los partidos ya disputados. El primer lugar es el único candidato al premio <strong>Pelota Desinflada</strong>. Vista exclusiva del administrador.</p>
+          <p>Los <strong>puntajes más bajos</strong> entre quienes hicieron palpite en todos los partidos ya disputados. El primer lugar es el único candidato al premio <strong>Pelota Desinflada</strong>. Vista exclusiva del administrador.</p>
         </div>
       </div>
       <div class="dec-body" id="decepcion-body"></div>
@@ -5315,7 +5315,7 @@ html, body{scroll-behavior:auto!important;}
           <button class="admin-copy-btn" onclick="copyUpdatedHTML()">📋 Copiar</button>
           <button class="admin-report-btn" onclick="openAdminMatchExportSelector()">📊 Exportar</button>
         </div>
-        <p class="admin-export-note">Usá estos botones después de cargar o corregir resultados. El HTML guarda una copia actualizada del bolão y el reporte exporta los pronósticos con resultado, puntos, tipo de puntuación, horario de inicio, horario del pronóstico y diferencia hasta el partido.</p>
+        <p class="admin-export-note">Usá estos botones después de cargar o corregir resultados. El HTML guarda una copia actualizada del bolão y el reporte exporta los palpites con resultado, puntos, tipo de puntuación, horario de inicio, horario del palpite y diferencia hasta el partido.</p>
       </div>
 
 
@@ -8285,7 +8285,7 @@ function savePick(){
   const mcfWarn = document.getElementById('mcf-warn');
   if(mcfWarn){
     mcfWarn.innerHTML = isX2Match(match)
-      ? '⚠ Este partido corresponde a la <b>fase decisiva ×2</b>. Los puntos obtenidos se duplicarán. Una vez guardado, el pronóstico <b>no podrá modificarse</b>. Revisá bien el marcador.'
+      ? '⚠ Este partido corresponde a la <b>fase decisiva ×2</b>. Los puntos obtenidos se duplicarán. Una vez guardado, el palpite <b>no podrá modificarse</b>. Revisá bien el marcador.'
       : '⚠ Una vez guardado <b>no se puede cambiar</b>. Revisá bien el marcador.';
   }
   document.getElementById('modal-numpad').style.display = 'none';
@@ -9570,7 +9570,7 @@ function buildMbScoreSearchRow(){
   return `<div class="mb-score-search-row">
     <div class="mb-score-search-box">
       <span class="mb-score-search-ico">🔎</span>
-      <input id="mb-score-search-input" class="mb-score-search-input" type="text" inputmode="text" value="${value}" placeholder="Buscar pronóstico..." oninput="setMbScoreSearch(this.value)" autocomplete="off" />
+      <input id="mb-score-search-input" class="mb-score-search-input" type="text" inputmode="text" value="${value}" placeholder="Buscar palpite..." oninput="setMbScoreSearch(this.value)" autocomplete="off" />
       <button class="mb-score-search-close" type="button" onclick="closeMbScoreSearch()" aria-label="Cerrar búsqueda">×</button>
     </div>
   </div>`;
@@ -9716,7 +9716,7 @@ function renderMatchBreakdown(){
     if(String(mbState.searchTerm || '').trim()){
       const q = String(mbState.searchTerm || '').trim();
 
-      // Busca real: nome, placar/pronóstico, pontos, posição e badges.
+      // Busca real: nome, placar/palpite, pontos, posição e badges.
       // Antes filtrava só por marcador, por isso parecia que o campo não funcionava.
       if(typeof matchMbParticipantSearch === 'function'){
         rows = rows.filter(p => matchMbParticipantSearch(p, q, scoreCounts, maxScoreCount, pending));
@@ -10036,7 +10036,7 @@ function renderDecepcion(){
         <div class="dec-pos${d1}"><span class="dec-emoji">${emojis[i] || '🥴'}</span><span>${i+1}º</span></div>
         <div class="dec-info">
           <div class="dec-name">${decEsc(u.name)}</div>
-          <div class="dec-detail">${u.pickCount}/${MATCHES.length} pronósticos · ${u.exact} exacto${u.exact===1?'':'s'} · ${avg} pts/partido</div>
+          <div class="dec-detail">${u.pickCount}/${MATCHES.length} palpites · ${u.exact} exacto${u.exact===1?'':'s'} · ${avg} pts/partido</div>
           <div class="dec-tag">${tag}</div>
         </div>
         <div>
@@ -10045,7 +10045,7 @@ function renderDecepcion(){
         </div>
       </div>`;
   });
-  html += `<div class="dec-meta">Califican ${qualified.length} participante(s) con pronóstico en los ${playedCount} partidos disputados. Tocá un participante para ver por qué está en Decepción.</div>`;
+  html += `<div class="dec-meta">Califican ${qualified.length} participante(s) con palpite en los ${playedCount} partidos disputados. Tocá un participante para ver por qué está en Decepción.</div>`;
   container.innerHTML = html;
 }
 
@@ -10079,7 +10079,7 @@ function openDecepcionDetail(name){
     byRound[round].count++;
     if(calc.pts === 0){ zeros++; byRound[round].zeros++; }
     if(calc.pts > 0) aciertos++;
-    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin pronóstico';
+    const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
     const row = { m, r, pickStr, pts:calc.pts, type:calc.type, round };
     rowsAll.push(row);
     if(calc.pts === 0) mistakes.push(row);
@@ -10118,7 +10118,7 @@ function openDecepcionDetail(name){
       <div class="dec-bad-row">
         <div class="dec-bad-match">
           <div class="dec-bad-teams">${m.hf || ''} ${decEsc(m.home)} × ${decEsc(m.away)} ${m.af || ''}</div>
-          <div class="dec-bad-meta">${decEsc(m.date)} · ${decEsc(getRoundLabel(m))} · Resultado: ${r.home}:${r.away} · Pronóstico: ${decEsc(pickStr)}</div>
+          <div class="dec-bad-meta">${decEsc(m.date)} · ${decEsc(getRoundLabel(m))} · Resultado: ${r.home}:${r.away} · Palpite: ${decEsc(pickStr)}</div>
         </div>
         <div class="dec-bad-pts">${pts}</div>
       </div>`).join('') : '<div class="dec-bad-empty">No tuvo partidos en cero. Está aquí por bajo promedio general.</div>';
@@ -10127,7 +10127,7 @@ function openDecepcionDetail(name){
       <div class="dec-bad-row">
         <div class="dec-bad-match">
           <div class="dec-bad-teams">${m.hf || ''} ${decEsc(m.home)} × ${decEsc(m.away)} ${m.af || ''}</div>
-          <div class="dec-bad-meta">Resultado: ${r.home}:${r.away} · Pronóstico: ${decEsc(pickStr)}</div>
+          <div class="dec-bad-meta">Resultado: ${r.home}:${r.away} · Palpite: ${decEsc(pickStr)}</div>
         </div>
         <div class="dec-bad-pts ${pts>0?'good':''}">${pts>0?'+':''}${pts}</div>
       </div>`).join('');
@@ -14387,7 +14387,7 @@ body.edson-matches-bg #summary-modal .summary-header{
         '<div id="admin-match-export-preview" class="ame-preview"></div>'+
         '<div class="ame-complete-format"><div class="ame-section-title">Formato del relatório completo</div><div class="ame-format-options"><label class="ame-format-option"><input type="radio" name="admin-complete-output-mode" value="general" checked onchange="updateAdminMatchExportPreview()"><span><span class="ame-format-main">Geral, sin abas</span><span class="ame-format-sub">Una sola hoja/lista con todos los registros filtrados.</span></span></label><label class="ame-format-option"><input type="radio" name="admin-complete-output-mode" value="tabs" onchange="updateAdminMatchExportPreview()"><span><span class="ame-format-main">Con abas por participante</span><span class="ame-format-sub">Una aba Geral y una aba para cada jugador.</span></span></label></div></div>'+
         '<div class="ame-actions"><button type="button" class="ame-export" onclick="exportSelectedMatchPredictions(&quot;complete&quot;)">📊 Generar relatório completo</button><button type="button" class="ame-export secondary" onclick="exportSelectedMatchPredictions(&quot;summary&quot;)">📋 Generar relatório sintético</button></div>'+
-        '<div class="ame-note">El sintético trae posición, participante, juego y palpite. Si no tiene palpite, sale “Sin pronóstico”.</div>'+
+        '<div class="ame-note">El sintético trae posición, participante, juego y palpite. Si no tiene palpite, sale “Sin palpite”.</div>'+
       '</div></div>';
     el.addEventListener('click',closeAdminMatchExportSelector);document.body.appendChild(el);
   }
@@ -14412,12 +14412,12 @@ body.edson-matches-bg #summary-modal .summary-header{
   };
   function selectedMatchIdsFromUi(){var sel=document.getElementById('admin-match-export-select');if(!sel||!sel.value) return [];if(sel.value===AME_ALL) return ameFilteredMatches().map(function(m){return m.id;});return [sel.value];}
   function buildRowsForMatches(matchIds){var all=loadAllPicks(),results=loadRealResults(),standings=computeStandings(results),participants=ameFilteredParticipants(),rankingPosByName=Object.fromEntries(participants.map(function(u){return [u.name,u.pos];})),rows=[],matchSet=new Set(matchIds.map(String));ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){var kickoff=getMatchDateTime(m),disp=matchDisplay(m,results,standings),real=results[m.id]||null,resultadoFinal=real?(disp.home+' '+real.home+':'+real.away+' '+disp.away):'Sin resultado';participants.forEach(function(u){var name=u.name,picks=all[name]||{},pick=picks?(picks[m.id]||picks[String(m.id)]):null;if(!pick) return;var diff=formatAdminReportDiff(pick.savedAt||pick.fechaPalpite||'',kickoff),calc=calculatePickPoints(pick,real,m);rows.push({pessoa:name,posicaoJogador:rankingPosByName[name]||'',jogo:disp.home+' vs '+disp.away,fase:adminReportPhaseLabel(m),resultadoFinal:resultadoFinal,palpite:pick.home+'x'+pick.away,pontosPartida:calc.pts||0,tipoPontuacao:adminReportScoreTypeLabel(calc.type,m),inicioJogo:formatAdminReportDateTime(kickoff),horarioPalpite:formatAdminReportDateTime(pick.savedAt||pick.fechaPalpite||''),diferenca:diff.text,horaExportacao:formatAdminReportDateTime(new Date())});});});return rows;}
-  function buildSummaryRowsForMatches(matchIds){var all=loadAllPicks(),results=loadRealResults(),standings=computeStandings(results),participants=ameFilteredParticipants(),rows=[],matchSet=new Set(matchIds.map(String));ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){var disp=matchDisplay(m,results,standings);participants.forEach(function(u){var picks=all[u.name]||{},pick=picks?(picks[m.id]||picks[String(m.id)]):null;rows.push({posicaoJogador:u.pos,pessoa:u.name,jogo:disp.home+' vs '+disp.away,palpite:pick?(pick.home+'x'+pick.away):'Sin pronóstico'});});});return rows;}
+  function buildSummaryRowsForMatches(matchIds){var all=loadAllPicks(),results=loadRealResults(),standings=computeStandings(results),participants=ameFilteredParticipants(),rows=[],matchSet=new Set(matchIds.map(String));ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){var disp=matchDisplay(m,results,standings);participants.forEach(function(u){var picks=all[u.name]||{},pick=picks?(picks[m.id]||picks[String(m.id)]):null;rows.push({posicaoJogador:u.pos,pessoa:u.name,jogo:disp.home+' vs '+disp.away,palpite:pick?(pick.home+'x'+pick.away):'Sin palpite'});});});return rows;}
   function downloadRowsAsCsv(rows,filenamePrefix,mode){if(!rows.length){showSaveBanner('No hay datos para exportar con estos filtros');return;}var header,csvRows;if(mode==='summary'){header=['Posição da pessoa','Nome da pessoa','Jogo','Palpite'];csvRows=rows.map(function(r){return [r.posicaoJogador,r.pessoa,r.jogo,r.palpite].map(csvAdminCell).join(';');});}else{header=['Nome da pessoa que palpitou','Posição do jogador','Jogo','Fase','Resultado final do jogo','Palpite realizado','Pontos na partida','Tipo de pontuação','Horário do início do jogo','Horário do palpite','Diferença do palpite até o jogo','Hora da Exportação'];csvRows=rows.map(function(r){return [r.pessoa,r.posicaoJogador,r.jogo,r.fase,r.resultadoFinal,r.palpite,r.pontosPartida,r.tipoPontuacao,r.inicioJogo,r.horarioPalpite,r.diferenca,r.horaExportacao||formatAdminReportDateTime(new Date())].map(csvAdminCell).join(';');});}var csvLines=['sep=;',header.map(csvAdminCell).join(';')].concat(csvRows);var blob=new Blob([encodeAdminCsvUtf16LE(csvLines.join('\r\n'))],{type:'text/csv;charset=utf-16le'});var a=document.createElement('a'),stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');a.href=URL.createObjectURL(blob);a.download=filenamePrefix+'_'+stamp+'.csv';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},800);closeAdminMatchExportSelector();showSaveBanner(mode==='summary'?'📋 Relatório sintético exportado':'📊 Relatório completo exportado');}
   function ameXml(v){return String(v ?? '').replace(/[&<>"']/g,function(ch){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'})[ch];});}
   function ameSheetName(raw,used){var base=String(raw||'Aba').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\\\/\?\*\[\]:]/g,' ').replace(/\s+/g,' ').trim()||'Aba';base=base.slice(0,31);var name=base,i=2;used=used||{};while(used[name]){var suffix=' '+i++;name=base.slice(0,31-suffix.length)+suffix;}used[name]=true;return name;}
   function ameCompleteHeader(){return ['Nome da pessoa que palpitou','Posição do jogador','Jogo','Fase','Resultado final do jogo','Palpite realizado','Pontos na partida','Tipo de pontuação','Horário do início do jogo','Horário do palpite','Diferença do palpite até o jogo','Hora da Exportação'];}
-  function buildWorkbookRowsForMatches(matchIds){var all=loadAllPicks(),results=loadRealResults(),standings=computeStandings(results),participants=ameFilteredParticipants(),rankingPosByName=Object.fromEntries(participants.map(function(u){return [u.name,u.pos];})),rows=[],matchSet=new Set(matchIds.map(String));ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){var kickoff=getMatchDateTime(m),disp=matchDisplay(m,results,standings),real=results[m.id]||null,resultadoFinal=real?(disp.home+' '+real.home+':'+real.away+' '+disp.away):'Sin resultado';participants.forEach(function(u){var name=u.name,picks=all[name]||{},pick=picks?(picks[m.id]||picks[String(m.id)]):null,calc=pick?calculatePickPoints(pick,real,m):{pts:0,type:'pending'},diff=pick?formatAdminReportDiff(pick.savedAt||pick.fechaPalpite||'',kickoff):{text:''};rows.push({pessoa:name,posicaoJogador:rankingPosByName[name]||'',jogo:disp.home+' vs '+disp.away,fase:adminReportPhaseLabel(m),resultadoFinal:resultadoFinal,palpite:pick?(pick.home+'x'+pick.away):'Sin pronóstico',pontosPartida:pick?(calc.pts||0):'',tipoPontuacao:pick?adminReportScoreTypeLabel(calc.type,m):'Sin pronóstico',inicioJogo:formatAdminReportDateTime(kickoff),horarioPalpite:pick?formatAdminReportDateTime(pick.savedAt||pick.fechaPalpite||''):'',diferenca:pick?diff.text:'',horaExportacao:formatAdminReportDateTime(new Date())});});});return rows;}
+  function buildWorkbookRowsForMatches(matchIds){var all=loadAllPicks(),results=loadRealResults(),standings=computeStandings(results),participants=ameFilteredParticipants(),rankingPosByName=Object.fromEntries(participants.map(function(u){return [u.name,u.pos];})),rows=[],matchSet=new Set(matchIds.map(String));ameSortedMatches().filter(function(m){return matchSet.has(String(m.id));}).forEach(function(m){var kickoff=getMatchDateTime(m),disp=matchDisplay(m,results,standings),real=results[m.id]||null,resultadoFinal=real?(disp.home+' '+real.home+':'+real.away+' '+disp.away):'Sin resultado';participants.forEach(function(u){var name=u.name,picks=all[name]||{},pick=picks?(picks[m.id]||picks[String(m.id)]):null,calc=pick?calculatePickPoints(pick,real,m):{pts:0,type:'pending'},diff=pick?formatAdminReportDiff(pick.savedAt||pick.fechaPalpite||'',kickoff):{text:''};rows.push({pessoa:name,posicaoJogador:rankingPosByName[name]||'',jogo:disp.home+' vs '+disp.away,fase:adminReportPhaseLabel(m),resultadoFinal:resultadoFinal,palpite:pick?(pick.home+'x'+pick.away):'Sin palpite',pontosPartida:pick?(calc.pts||0):'',tipoPontuacao:pick?adminReportScoreTypeLabel(calc.type,m):'Sin palpite',inicioJogo:formatAdminReportDateTime(kickoff),horarioPalpite:pick?formatAdminReportDateTime(pick.savedAt||pick.fechaPalpite||''):'',diferenca:pick?diff.text:'',horaExportacao:formatAdminReportDateTime(new Date())});});});return rows;}
   function ameWorksheetXml(name,header,rows){function rowXml(values,isHeader){return '<Row>'+values.map(function(v){return '<Cell'+(isHeader?' ss:StyleID="Header"':'')+'><Data ss:Type="String">'+ameXml(v)+'</Data></Cell>';}).join('')+'</Row>';}
     var body=rowXml(header,true)+rows.map(function(r){return rowXml([r.pessoa,r.posicaoJogador,r.jogo,r.fase,r.resultadoFinal,r.palpite,r.pontosPartida,r.tipoPontuacao,r.inicioJogo,r.horarioPalpite,r.diferenca,r.horaExportacao||formatAdminReportDateTime(new Date())],false);}).join('');
     return '<Worksheet ss:Name="'+ameXml(name)+'"><Table>'+body+'</Table></Worksheet>';}
@@ -18845,7 +18845,7 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
                  type="text"
                  inputmode="search"
                  autocomplete="off"
-                 placeholder="Buscar nombre, pronóstico o puntos..."
+                 placeholder="Buscar nombre, palpite o puntos..."
                  value="${String(value || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}"
                  oninput="setMbScoreSearchTerm(this.value)">
           <button class="mb-score-search-clear" type="button" onclick="setMbScoreSearchTerm('')" aria-label="Limpiar búsqueda">×</button>
@@ -19620,7 +19620,7 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
   var frases = [
     'Preparando partidos...',
     'Actualizando ranking...',
-    'Cargando tus pronósticos...',
+    'Cargando tus palpites...',
     'Sincronizando resultados...',
     'Organizando fechas...'
   ];
@@ -19802,7 +19802,7 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
                  autocomplete="off"
                  autocapitalize="none"
                  spellcheck="false"
-                 placeholder="Buscar nombre, pronóstico o puntos..."
+                 placeholder="Buscar nombre, palpite o puntos..."
                  value="${escAttr(value)}"
                  oninput="setMbScoreSearchTerm(this.value)"
                  onclick="event.stopPropagation(); this.focus({preventScroll:true});"
@@ -20005,7 +20005,7 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
                  autocomplete="off"
                  autocapitalize="none"
                  spellcheck="false"
-                 placeholder="Buscar nombre, pronóstico o puntos..."
+                 placeholder="Buscar nombre, palpite o puntos..."
                  value="${escAttr(value)}"
                  oninput="applyMbLiveSearch(this.value)"
                  onclick="event.stopPropagation();"
@@ -22464,7 +22464,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 })();
 </script>
 
-<!-- AJUSTE EDSON 20260701: consulta de pronósticos por participante o partido no Admin -->
+<!-- AJUSTE EDSON 20260701: consulta de palpites por participante o partido no Admin -->
 <style id="edson-admin-player-search-20260701">
   .admin-export-box{
     grid-template-columns:repeat(3,minmax(0,1fr)) 48px!important;
@@ -22630,8 +22630,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     btn.id='admin-player-search-btn';
     btn.type='button';
     btn.className='admin-player-search-btn';
-    btn.setAttribute('aria-label','Consultar pronósticos');
-    btn.title='Consultar pronósticos';
+    btn.setAttribute('aria-label','Consultar palpites');
+    btn.title='Consultar palpites';
     btn.textContent='🔎';
     btn.onclick=function(){ openAdminPlayerLookupModal(); };
     box.appendChild(btn);
@@ -22641,7 +22641,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var wrap=document.createElement('div');
     wrap.id='admin-player-lookup-modal';
     wrap.innerHTML='<div class="apl-card" onclick="event.stopPropagation()">'+
-      '<div class="apl-head"><div><div class="apl-title">Consulta de pronósticos</div><div class="apl-sub">Filtrá por participante o por partido. Usá solo uno por vez.</div></div><button class="apl-close" type="button" onclick="closeAdminPlayerLookupModal()">×</button></div>'+ 
+      '<div class="apl-head"><div><div class="apl-title">Consulta de palpites</div><div class="apl-sub">Filtrá por participante o por partido. Usá solo uno por vez.</div></div><button class="apl-close" type="button" onclick="closeAdminPlayerLookupModal()">×</button></div>'+ 
       '<div class="apl-body">'+
         '<div class="apl-filter-card">'+
           '<div class="apl-filter-grid">'+
@@ -22705,7 +22705,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }catch(e){return {fecha:String(value||''),hora:''};}
   }
   function aplResultText(real){return real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';}
-  function aplPickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';}
+  function aplPickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin palpite';}
   window.openAdminPlayerLookupModal=async function(){
     if(typeof currentUserRole!=='undefined' && currentUserRole!=='admin'){showSaveBanner&&showSaveBanner('Acceso reservado para administradores');return;}
     ensureAdminPlayerLookupModal();
@@ -22758,7 +22758,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       '</tr>';
     }).join('');
     area.className='';
-    area.innerHTML='<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Pronóstico</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    area.innerHTML='<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Palpite</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
   window.renderAdminMatchLookupTable=function(matchId){
     var area=document.getElementById('apl-table-area');
@@ -22786,7 +22786,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       '</tr>';
     }).join('');
     area.className='';
-    area.innerHTML='<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Partido / selecciones</th><th>Resultado</th><th>Pronóstico</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    area.innerHTML='<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Partido / selecciones</th><th>Resultado</th><th>Palpite</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
   var oldShowAdminArea=window.showAdminArea;
   if(typeof oldShowAdminArea==='function' && !oldShowAdminArea.__edsonPlayerLookupWrapped){
@@ -22942,7 +22942,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       var picks=all[u.name]||{};
       var pick=picks[m.id]||picks[String(m.id)]||null;
       var dt=window.aplSplitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
-      var pickText=pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';
+      var pickText=pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin palpite';
       return '<tr>'+ 
         '<td><strong>'+escApl2(u.pos)+'</strong> · '+escApl2(u.name)+'</td>'+ 
         '<td class="apl-result">'+escApl2(resultado)+'</td>'+ 
@@ -22953,12 +22953,12 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+escApl2(matchTitle)+'</div><div class="apl-match-summary-meta">'+escApl2(matchMeta)+'</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Pronóstico</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Palpite</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 })();
 </script>
 
-<!-- AJUSTE EDSON 20260702: consulta de pronósticos com pontuação, alerta sem pronóstico e cabeçalho por filtro -->
+<!-- AJUSTE EDSON 20260702: consulta de palpites com pontuação, alerta sem palpite e cabeçalho por filtro -->
 <style id="edson-admin-player-search-score-20260702">
   .apl-person-summary,
   .apl-match-summary{
@@ -23034,10 +23034,10 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
   window.aplSplitDateTime = splitDateTime;
   function resultText(real){return real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';}
-  function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';}
+  function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin palpite';}
   function scoreHtml(pick,real,m){
     if(!pick) return '<span class="apl-score-pill zero">0</span>';
-    // Si todavía no hay resultado, pero el participante sí cargó pronóstico,
+    // Si todavía no hay resultado, pero el participante sí cargó palpite,
     // no mostramos puntuación ni alerta: la partida aún no puede calcularse.
     if(!real) return '<span class="apl-score-empty"></span>';
     var calc={pts:0,type:'wrong'};
@@ -23074,7 +23074,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-person-summary"><div class="apl-person-summary-title">'+esc(user.pos?user.pos+' · '+user.name:user.name)+'</div><div class="apl-person-summary-meta">Consulta por participante · Todos los partidos</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Palpite</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 
   window.renderAdminMatchLookupTable=function(matchId){
@@ -23100,12 +23100,12 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Palpite</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 })();
 </script>
 
-<!-- AJUSTE EDSON 20260702: sin resultado + sin pronóstico fica sem pontuação e linhas centralizadas -->
+<!-- AJUSTE EDSON 20260702: sin resultado + sin palpite fica sem pontuação e linhas centralizadas -->
 <style id="edson-admin-player-search-score-empty-center-20260702">
   .apl-table td{
     vertical-align:middle!important;
@@ -23134,12 +23134,12 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
   window.aplSplitDateTime = splitDateTime;
   function resultText(real){return real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';}
-  function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';}
+  function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin palpite';}
   function scoreHtml(pick,real,m){
     // Sin resultado: no se calcula puntuación todavía.
-    // Si además no hay pronóstico, también queda sin puntuación.
+    // Si además no hay palpite, también queda sin puntuación.
     if(!real) return '<span class="apl-score-empty"></span>';
-    // Con resultado y sin pronóstico: 0 en rojo.
+    // Con resultado y sin palpite: 0 en rojo.
     if(!pick) return '<span class="apl-score-pill zero">0</span>';
     var calc={pts:0,type:'wrong'};
     try{ if(typeof calculatePickPoints==='function') calc=calculatePickPoints(pick,real,m)||calc; }catch(e){}
@@ -23174,7 +23174,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-person-summary"><div class="apl-person-summary-title">'+esc(user.pos?user.pos+' · '+user.name:user.name)+'</div><div class="apl-person-summary-meta">Consulta por participante · Todos los partidos</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Palpite</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 
   window.renderAdminMatchLookupTable=function(matchId){
@@ -23200,7 +23200,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Palpite</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 })();
 </script>
@@ -23688,7 +23688,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   var oldSync=window.syncAdminSideJump;
   window.syncAdminSideJump=function(){
     if(typeof oldSync==='function') oldSync.apply(this,arguments);
-    setAdminSideJumpLabels();
+    /* setAdminSideJumpLabels removido para não recriar botões durante scroll/toque */
     var el=document.getElementById('admin-side-jump');
     if(!el) return;
     var modal=document.getElementById('admin-player-lookup-modal');
@@ -23697,7 +23697,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }
   };
   document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){setAdminSideJumpLabels(); if(typeof window.syncAdminSideJump==='function') window.syncAdminSideJump();},150);});
-  setInterval(setAdminSideJumpLabels,1200);
+  /* setInterval(setAdminSideJumpLabels,1200) removido: evitava mal contato nos botões flutuantes */
 })();
 </script>
 
@@ -24183,5 +24183,178 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   window.addEventListener('resize',scheduleSync,{passive:true});
   ['click','touchend'].forEach(function(evt){document.addEventListener(evt,function(){setTimeout(scheduleSync,90);},true);});
   setTimeout(scheduleSync,300);
+})();
+</script>
+
+
+<!-- AJUSTE EDSON 20260702: texto Palpite e botões flutuantes Admin estáveis -->
+<style id="edson-admin-floating-stable-palpite-20260702">
+  #admin-side-jump{
+    position:fixed!important;
+    right:14px!important;
+    bottom:92px!important;
+    top:auto!important;
+    z-index:900!important;
+    flex-direction:column!important;
+    gap:8px!important;
+    pointer-events:none!important;
+    opacity:1!important;
+    visibility:visible!important;
+    transition:none!important;
+    animation:none!important;
+  }
+  #admin-side-jump.show{display:flex!important;}
+  #admin-side-jump:not(.show){display:none!important;}
+  #admin-side-jump .asj-btn{
+    width:46px!important;
+    height:46px!important;
+    min-width:46px!important;
+    max-width:46px!important;
+    padding:0!important;
+    border-radius:999px!important;
+    border:2px solid rgba(0,155,84,.55)!important;
+    background:#fff!important;
+    color:var(--green)!important;
+    box-shadow:0 10px 26px rgba(0,0,0,.28),0 0 0 3px rgba(0,155,84,.14)!important;
+    font-family:'Inter',sans-serif!important;
+    font-size:12px!important;
+    font-weight:950!important;
+    line-height:1!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    cursor:pointer!important;
+    pointer-events:auto!important;
+    user-select:none!important;
+    -webkit-tap-highlight-color:transparent!important;
+    touch-action:manipulation!important;
+    animation:none!important;
+  }
+  #admin-side-jump .asj-btn.asj-top{font-size:20px!important;}
+  #admin-side-jump .asj-btn.asj-hidden{display:none!important;}
+  body.apl-modal-open #admin-side-jump{display:none!important;}
+</style>
+<script id="edson-admin-floating-stable-palpite-20260702-script">
+(function(){
+  var lastState = '';
+  var syncing = false;
+  function ensureAdminSideJumpStable(){
+    var el=document.getElementById('admin-side-jump');
+    if(!el){
+      el=document.createElement('div');
+      el.id='admin-side-jump';
+      document.body.appendChild(el);
+    }
+    if(!el.querySelector('.asj-top')){
+      var top=document.createElement('button');
+      top.type='button';
+      top.className='asj-btn asj-top';
+      top.setAttribute('aria-label','Ir al inicio');
+      top.title='Inicio';
+      top.textContent='↑';
+      top.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation(); if(typeof window.adminScrollTop==='function') window.adminScrollTop(); setTimeout(syncAdminSideJumpStable,250);}, {passive:false});
+      el.appendChild(top);
+    }
+    if(!el.querySelector('.asj-today')){
+      var today=document.createElement('button');
+      today.type='button';
+      today.className='asj-btn asj-today';
+      today.setAttribute('aria-label','Ir al partido de hoy');
+      today.title='Hoy';
+      today.textContent='Hoy';
+      today.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation(); if(typeof window.adminScrollTodayGame==='function') window.adminScrollTodayGame(); setTimeout(syncAdminSideJumpStable,250);}, {passive:false});
+      el.appendChild(today);
+    }
+    return el;
+  }
+  function getAdminArea(){return document.getElementById('admin-area');}
+  function isAdminVisibleStable(){
+    var area=getAdminArea();
+    var modal=document.getElementById('admin-player-lookup-modal');
+    if((modal && modal.classList.contains('open')) || document.body.classList.contains('apl-modal-open')) return false;
+    if(!area) return false;
+    var st=window.getComputedStyle?getComputedStyle(area):area.style;
+    if(st && st.display==='none') return false;
+    var nav=document.getElementById('nav-admin');
+    if(nav && nav.classList.contains('active')) return true;
+    var rect=area.getBoundingClientRect();
+    return rect.height>0 && rect.bottom>0 && rect.top<window.innerHeight;
+  }
+  function getSortedMatchesStable(){
+    try{
+      if(typeof MATCHES==='undefined' || !Array.isArray(MATCHES)) return [];
+      return MATCHES.slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});
+    }catch(e){return [];}
+  }
+  function getAdminTodayTargetStable(){
+    var sorted=getSortedMatchesStable();
+    if(!sorted.length) return null;
+    var now=new Date();
+    function sameDay(d){return d && d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();}
+    return sorted.find(function(m){return sameDay(getMatchDateTime(m));}) || sorted.find(function(m){return getMatchDateTime(m)>=now;}) || sorted[0];
+  }
+  function nearTopStable(){
+    var area=getAdminArea();
+    if(!area) return false;
+    var rect=area.getBoundingClientRect();
+    return rect.top > -80;
+  }
+  function nearTodayStable(){
+    var match=getAdminTodayTargetStable();
+    if(!match) return false;
+    var card=document.getElementById('admin-card-'+match.id);
+    if(!card) return false;
+    var r=card.getBoundingClientRect();
+    var viewportTop=80;
+    var viewportBottom=window.innerHeight-170;
+    var center=r.top+(r.height/2);
+    return center>=viewportTop && center<=viewportBottom;
+  }
+  function applyTextPalpite(){
+    var modal=document.getElementById('admin-player-lookup-modal');
+    if(!modal) return;
+    var walker=document.createTreeWalker(modal, NodeFilter.SHOW_TEXT);
+    var node;
+    while((node=walker.nextNode())){
+      var v=node.nodeValue;
+      var nv=v.replace(/pronósticos/g,'palpites').replace(/Pronósticos/g,'Palpites').replace(/pronóstico/g,'palpite').replace(/Pronóstico/g,'Palpite').replace(/PRONÓSTICO/g,'PALPITE').replace(/PRONÓSTICOS/g,'PALPITES');
+      if(nv!==v) node.nodeValue=nv;
+    }
+  }
+  window.syncAdminSideJump=function(){ syncAdminSideJumpStable(); };
+  function syncAdminSideJumpStable(){
+    if(syncing) return;
+    syncing=true;
+    requestAnimationFrame(function(){
+      syncing=false;
+      applyTextPalpite();
+      var el=ensureAdminSideJumpStable();
+      var topBtn=el.querySelector('.asj-top');
+      var todayBtn=el.querySelector('.asj-today');
+      if(!isAdminVisibleStable()){
+        var hiddenState='hidden';
+        if(lastState!==hiddenState){el.classList.remove('show'); lastState=hiddenState;}
+        return;
+      }
+      var atTop=nearTopStable();
+      var atToday=nearTodayStable();
+      var showTop=!atTop;
+      var showToday=!atToday;
+      if(atTop && atToday){showTop=false; showToday=true;}
+      var state=(showTop?'1':'0')+(showToday?'1':'0');
+      if(state!==lastState){
+        if(topBtn) topBtn.classList.toggle('asj-hidden', !showTop);
+        if(todayBtn) todayBtn.classList.toggle('asj-hidden', !showToday);
+        el.classList.toggle('show', showTop || showToday);
+        lastState=state;
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded',function(){ensureAdminSideJumpStable(); setTimeout(syncAdminSideJumpStable,200);});
+  window.addEventListener('scroll',syncAdminSideJumpStable,{passive:true});
+  window.addEventListener('resize',syncAdminSideJumpStable,{passive:true});
+  document.addEventListener('click',function(){setTimeout(syncAdminSideJumpStable,180);},true);
+  document.addEventListener('change',function(){setTimeout(function(){applyTextPalpite(); syncAdminSideJumpStable();},120);},true);
+  setTimeout(function(){applyTextPalpite(); syncAdminSideJumpStable();},400);
 })();
 </script>
