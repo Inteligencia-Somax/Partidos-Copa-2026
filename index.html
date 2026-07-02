@@ -5311,9 +5311,9 @@ html, body{scroll-behavior:auto!important;}
         <h3>✅ Cargar resultado real</h3>
         <p>Después de finalizar cada partido, cargá el marcador real y guardá. El ranking se recalcula automáticamente cruzando resultado real vs. palpite de cada jugador.</p>
         <div class="admin-export-box">
-          <button class="admin-download-btn" onclick="downloadUpdatedHTML()">⬇ Descargar HTML actualizado</button>
-          <button class="admin-copy-btn" onclick="copyUpdatedHTML()">📋 Copiar código</button>
-          <button class="admin-report-btn" onclick="openAdminMatchExportSelector()">📊 Exportar relatório de palpites</button>
+          <button class="admin-download-btn" onclick="downloadUpdatedHTML()">⬇ HTML</button>
+          <button class="admin-copy-btn" onclick="copyUpdatedHTML()">📋 Copiar</button>
+          <button class="admin-report-btn" onclick="openAdminMatchExportSelector()">📊 Exportar</button>
         </div>
         <p class="admin-export-note">Usá estos botones después de cargar o corregir resultados. El HTML guarda una copia actualizada del bolão y el relatório exporta los palpites con resultado, puntos, tipo de puntuación, horario de inicio, horario del palpite y diferencia hasta el partido.</p>
       </div>
@@ -5323,6 +5323,10 @@ html, body{scroll-behavior:auto!important;}
         <button class="filter-chip active" onclick="filterAdminResults('all',this)">Todos</button>
         <button class="filter-chip" onclick="filterAdminResults('pending',this)">Sin resultado</button>
         <button class="filter-chip" onclick="filterAdminResults('done',this)">Con resultado</button>
+      </div>
+      <div class="admin-jump-row">
+        <button type="button" class="admin-jump-btn" onclick="adminScrollTop()">↑ Inicio</button>
+        <button type="button" class="admin-jump-btn" onclick="adminScrollTodayGame()">📍 Juego de hoy</button>
       </div>
       <div id="admin-thirds-panel" class="admin-thirds-panel"></div>
       <div id="admin-results-list"><div class="admin-result-card pending">
@@ -22370,5 +22374,336 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
   document.addEventListener('DOMContentLoaded', function(){ setTimeout(refreshIfOpen, 300); });
   setTimeout(refreshIfOpen, 700);
+})();
+</script>
+
+
+<!-- AJUSTE EDSON 20260701: admin botones iguales, ocultar terceros y accesos rápidos -->
+<style id="edson-admin-actions-clean-20260701">
+  .admin-export-box{
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin-top:14px!important;
+    width:100%!important;
+  }
+  .admin-download-btn,.admin-copy-btn,.admin-report-btn{
+    min-width:0!important;
+    width:100%!important;
+    height:50px!important;
+    padding:0 6px!important;
+    border:none!important;
+    border-radius:13px!important;
+    background:var(--green)!important;
+    color:#fff!important;
+    font-family:'Inter',sans-serif!important;
+    font-size:12.5px!important;
+    font-weight:900!important;
+    line-height:1.1!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+    box-shadow:0 2px 8px rgba(0,155,84,.18)!important;
+  }
+  .admin-download-btn:active,.admin-copy-btn:active,.admin-report-btn:active{transform:scale(.98)!important;}
+  #admin-thirds-panel,.admin-thirds-panel{display:none!important;}
+  .admin-jump-row{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin:10px 0 12px!important;
+  }
+  .admin-jump-btn{
+    height:42px!important;
+    border:1px solid rgba(0,155,84,.32)!important;
+    border-radius:14px!important;
+    background:#E8F5EE!important;
+    color:var(--green2)!important;
+    font-family:'Inter',sans-serif!important;
+    font-size:13px!important;
+    font-weight:900!important;
+    cursor:pointer!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:6px!important;
+  }
+  .admin-jump-btn:active{transform:scale(.98)!important;}
+  @media(max-width:390px){
+    .admin-download-btn,.admin-copy-btn,.admin-report-btn{font-size:11.5px!important;height:48px!important;}
+  }
+</style>
+<script id="edson-admin-scroll-shortcuts-20260701">
+(function(){
+  window.adminScrollTop = function(){
+    var target = document.getElementById('admin-area') || document.querySelector('.rules-section') || document.body;
+    try{ target.scrollIntoView({block:'start', behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); }
+  };
+  window.adminScrollTodayGame = function(){
+    try{
+      if(typeof MATCHES === 'undefined' || !Array.isArray(MATCHES)) return;
+      var now = new Date();
+      var sameDay = function(d){ return d && d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate(); };
+      var sorted = MATCHES.slice().sort(function(a,b){ return getMatchDateTime(a)-getMatchDateTime(b); });
+      var match = sorted.find(function(m){ return sameDay(getMatchDateTime(m)); }) || sorted.find(function(m){ return getMatchDateTime(m) >= now; }) || sorted[0];
+      if(!match) return;
+      if(typeof currentAdminFilter !== 'undefined' && currentAdminFilter !== 'all'){
+        currentAdminFilter = 'all';
+        document.querySelectorAll('#admin-area .filter-chip').forEach(function(c){ c.classList.remove('active'); });
+        var allBtn = document.querySelector('#admin-area .filter-chip[onclick*="all"]');
+        if(allBtn) allBtn.classList.add('active');
+        if(typeof renderAdminResults === 'function') renderAdminResults('all', false);
+      }
+      requestAnimationFrame(function(){
+        var card = document.getElementById('admin-card-' + match.id);
+        if(card) card.scrollIntoView({block:'center', behavior:'smooth'});
+      });
+    }catch(e){ console.warn('No fue posible ir al juego de hoy', e); }
+  };
+})();
+</script>
+
+<!-- AJUSTE EDSON 20260701: consulta de palpites por participante no Admin -->
+<style id="edson-admin-player-search-20260701">
+  .admin-export-box{
+    grid-template-columns:repeat(3,minmax(0,1fr)) 48px!important;
+    align-items:stretch!important;
+  }
+  .admin-player-search-btn{
+    min-width:0!important;
+    width:48px!important;
+    height:50px!important;
+    padding:0!important;
+    border:none!important;
+    border-radius:13px!important;
+    background:var(--green)!important;
+    color:#fff!important;
+    font-family:'Inter',sans-serif!important;
+    font-size:18px!important;
+    font-weight:950!important;
+    cursor:pointer!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-shadow:0 2px 8px rgba(0,155,84,.18)!important;
+  }
+  .admin-player-search-btn:active{transform:scale(.96)!important;}
+  @media(max-width:390px){
+    .admin-export-box{gap:6px!important;grid-template-columns:repeat(3,minmax(0,1fr)) 44px!important;}
+    .admin-player-search-btn{width:44px!important;height:48px!important;font-size:17px!important;}
+  }
+
+  #admin-player-lookup-modal{
+    position:fixed!important;
+    inset:0!important;
+    z-index:760!important;
+    display:none;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:14px!important;
+    background:rgba(0,0,0,.52)!important;
+  }
+  #admin-player-lookup-modal.open{display:flex!important;}
+  .apl-card{
+    width:100%!important;
+    max-width:720px!important;
+    max-height:88vh!important;
+    background:#fff!important;
+    border-radius:22px!important;
+    overflow:hidden!important;
+    box-shadow:0 18px 52px rgba(0,0,0,.30)!important;
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  .apl-head{
+    background:var(--green)!important;
+    color:#fff!important;
+    padding:15px 17px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:12px!important;
+  }
+  .apl-title{font-size:16px!important;font-weight:950!important;line-height:1.1!important;}
+  .apl-sub{font-size:11.5px!important;font-weight:700!important;opacity:.88!important;margin-top:3px!important;}
+  .apl-close{
+    width:32px!important;height:32px!important;border:none!important;border-radius:50%!important;
+    background:rgba(255,255,255,.20)!important;color:#fff!important;font-size:20px!important;font-weight:800!important;cursor:pointer!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;
+  }
+  .apl-body{padding:15px!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important;}
+  .apl-filter-card{
+    background:#F8FAFB!important;
+    border:1px solid var(--border)!important;
+    border-radius:18px!important;
+    padding:12px!important;
+    margin-bottom:13px!important;
+  }
+  .apl-label{
+    display:block!important;
+    font-size:11px!important;
+    font-weight:950!important;
+    color:var(--sub)!important;
+    text-transform:uppercase!important;
+    letter-spacing:.5px!important;
+    margin-bottom:7px!important;
+  }
+  .apl-select{
+    width:100%!important;
+    height:46px!important;
+    border:1.5px solid var(--border)!important;
+    border-radius:13px!important;
+    background:#fff!important;
+    color:var(--text)!important;
+    font-family:'Inter',sans-serif!important;
+    font-size:14px!important;
+    font-weight:850!important;
+    padding:0 12px!important;
+    outline:none!important;
+  }
+  .apl-select:focus{border-color:var(--green)!important;box-shadow:0 0 0 3px rgba(0,155,84,.12)!important;}
+  .apl-table-wrap{
+    border:1px solid var(--border)!important;
+    border-radius:18px!important;
+    overflow:auto!important;
+    background:#fff!important;
+    max-height:52vh!important;
+  }
+  .apl-table{width:100%!important;border-collapse:collapse!important;min-width:650px!important;}
+  .apl-table th{
+    position:sticky!important;top:0!important;z-index:1!important;
+    background:#F3F4F6!important;
+    color:var(--sub)!important;
+    font-size:10.5px!important;
+    font-weight:950!important;
+    text-transform:uppercase!important;
+    letter-spacing:.35px!important;
+    padding:10px 9px!important;
+    text-align:left!important;
+    white-space:nowrap!important;
+    border-bottom:1px solid var(--border)!important;
+  }
+  .apl-table td{
+    padding:10px 9px!important;
+    border-bottom:1px solid var(--border)!important;
+    color:var(--text)!important;
+    font-size:12.5px!important;
+    font-weight:700!important;
+    vertical-align:top!important;
+    white-space:nowrap!important;
+  }
+  .apl-table tr:last-child td{border-bottom:none!important;}
+  .apl-muted{color:var(--sub)!important;font-weight:700!important;}
+  .apl-pick{font-weight:950!important;color:var(--green2)!important;}
+  .apl-no-pick{font-weight:850!important;color:var(--sub)!important;}
+  .apl-result{font-weight:950!important;}
+  .apl-empty{display:none!important;}
+</style>
+
+<script id="edson-admin-player-search-20260701-script">
+(function(){
+  function escApl(v){return String(v ?? '').replace(/[&<>"']/g,function(ch){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];});}
+  function ensureAdminPlayerSearchButton(){
+    var box=document.querySelector('#admin-area .admin-export-box')||document.querySelector('.admin-export-box');
+    if(!box || document.getElementById('admin-player-search-btn')) return;
+    var btn=document.createElement('button');
+    btn.id='admin-player-search-btn';
+    btn.type='button';
+    btn.className='admin-player-search-btn';
+    btn.setAttribute('aria-label','Consultar palpites por participante');
+    btn.title='Consultar palpites por participante';
+    btn.textContent='🔎';
+    btn.onclick=function(){ openAdminPlayerLookupModal(); };
+    box.appendChild(btn);
+  }
+  function ensureAdminPlayerLookupModal(){
+    if(document.getElementById('admin-player-lookup-modal')) return;
+    var wrap=document.createElement('div');
+    wrap.id='admin-player-lookup-modal';
+    wrap.innerHTML='<div class="apl-card" onclick="event.stopPropagation()">'+
+      '<div class="apl-head"><div><div class="apl-title">Consulta de palpites</div><div class="apl-sub">Buscá un participante y revisá partido por partido.</div></div><button class="apl-close" type="button" onclick="closeAdminPlayerLookupModal()">×</button></div>'+
+      '<div class="apl-body">'+
+        '<div class="apl-filter-card"><label class="apl-label" for="apl-player-select">Participante</label><select id="apl-player-select" class="apl-select" onchange="renderAdminPlayerLookupTable(this.value)"><option value="">Seleccionar participante...</option></select></div>'+
+        '<div id="apl-table-area" class="apl-empty"></div>'+
+      '</div>'+
+    '</div>';
+    wrap.addEventListener('click',function(e){if(e.target===wrap) closeAdminPlayerLookupModal();});
+    document.body.appendChild(wrap);
+  }
+  function aplParticipants(){
+    try{
+      var ranked=(typeof getRankedUsers==='function'?getRankedUsers():[]).filter(function(u){return u&&u.name&&(!window.isVisibleParticipantName || isVisibleParticipantName(u.name));});
+      return ranked.map(function(u,idx){return {name:u.name,pos:(idx+1)+'º'};});
+    }catch(e){return [];}
+  }
+  function fillAdminPlayerSelect(){
+    var sel=document.getElementById('apl-player-select');
+    if(!sel) return;
+    var current=sel.value;
+    var opts=aplParticipants().map(function(u){return '<option value="'+escApl(u.name)+'">'+escApl(u.pos+' · '+u.name)+'</option>';}).join('');
+    sel.innerHTML='<option value="">Seleccionar participante...</option>'+opts;
+    if(current && Array.from(sel.options).some(function(o){return o.value===current;})) sel.value=current;
+  }
+  function aplFormatDateTime(value){
+    try{
+      if(!value) return '';
+      if(typeof formatAdminReportDateTime==='function') return formatAdminReportDateTime(value);
+      var d=value instanceof Date?value:new Date(value);
+      if(isNaN(d)) return String(value);
+      return d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    }catch(e){return String(value||'');}
+  }
+  window.openAdminPlayerLookupModal=async function(){
+    if(typeof currentUserRole!=='undefined' && currentUserRole!=='admin'){showSaveBanner&&showSaveBanner('Acceso reservado para administradores');return;}
+    ensureAdminPlayerLookupModal();
+    try{ if(typeof loadFirebaseState==='function') await loadFirebaseState(); }catch(e){ console.warn('No fue posible sincronizar antes de la consulta:',e); }
+    fillAdminPlayerSelect();
+    var sel=document.getElementById('apl-player-select');
+    if(sel) sel.value='';
+    var area=document.getElementById('apl-table-area');
+    if(area){area.innerHTML='';area.className='apl-empty';}
+    document.getElementById('admin-player-lookup-modal').classList.add('open');
+    document.body.style.overflow='hidden';
+  };
+  window.closeAdminPlayerLookupModal=function(){
+    var m=document.getElementById('admin-player-lookup-modal');
+    if(m) m.classList.remove('open');
+    document.body.style.overflow='';
+  };
+  window.renderAdminPlayerLookupTable=function(playerName){
+    var area=document.getElementById('apl-table-area');
+    if(!area) return;
+    if(!playerName){area.innerHTML='';area.className='apl-empty';return;}
+    var all=(typeof loadAllPicks==='function'?loadAllPicks():{});
+    var results=(typeof loadRealResults==='function'?loadRealResults():{});
+    var standings=(typeof computeStandings==='function'?computeStandings(results):{});
+    var picks=all[playerName]||{};
+    var sorted=(Array.isArray(window.MATCHES)?MATCHES:[]).slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});
+    var rows=sorted.map(function(m){
+      var disp=(typeof matchDisplay==='function'?matchDisplay(m,results,standings):{home:m.home,away:m.away,hf:'',af:''});
+      var real=results[m.id]||results[String(m.id)]||null;
+      var pick=picks[m.id]||picks[String(m.id)]||null;
+      var resultTxt=real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';
+      var pickTxt=pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sem palpite';
+      var dt=pick?aplFormatDateTime(pick.savedAt||pick.fechaPalpite||''):'';
+      return '<tr>'+ 
+        '<td><span>'+escApl(disp.hf||'')+' '+escApl(disp.home||m.home||'')+' × '+escApl(disp.away||m.away||'')+' '+escApl(disp.af||'')+'</span><br><span class="apl-muted">'+escApl(m.date||'')+' · '+escApl(m.time||'')+' · '+escApl(m.phase||'')+'</span></td>'+ 
+        '<td class="apl-result">'+escApl(resultTxt)+'</td>'+ 
+        '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+escApl(pickTxt)+'</td>'+ 
+        '<td class="apl-muted">'+escApl(dt)+'</td>'+ 
+      '</tr>';
+    }).join('');
+    area.className='';
+    area.innerHTML='<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Jogo / seleções</th><th>Resultado</th><th>Palpite</th><th>Data e hora do palpite</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  };
+  var oldShowAdminArea=window.showAdminArea;
+  if(typeof oldShowAdminArea==='function' && !oldShowAdminArea.__edsonPlayerLookupWrapped){
+    window.showAdminArea=function(){var r=oldShowAdminArea.apply(this,arguments);setTimeout(ensureAdminPlayerSearchButton,50);return r;};
+    window.showAdminArea.__edsonPlayerLookupWrapped=true;
+    try{showAdminArea=window.showAdminArea;}catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(ensureAdminPlayerSearchButton,300);});
+  setTimeout(ensureAdminPlayerSearchButton,700);
 })();
 </script>
