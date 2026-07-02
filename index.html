@@ -22464,7 +22464,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 })();
 </script>
 
-<!-- AJUSTE EDSON 20260701: consulta de palpites por participante no Admin -->
+<!-- AJUSTE EDSON 20260701: consulta de pronósticos por participante o partido no Admin -->
 <style id="edson-admin-player-search-20260701">
   .admin-export-box{
     grid-template-columns:repeat(3,minmax(0,1fr)) 48px!important;
@@ -22507,7 +22507,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #admin-player-lookup-modal.open{display:flex!important;}
   .apl-card{
     width:100%!important;
-    max-width:720px!important;
+    max-width:760px!important;
     max-height:88vh!important;
     background:#fff!important;
     border-radius:22px!important;
@@ -22540,6 +22540,16 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     padding:12px!important;
     margin-bottom:13px!important;
   }
+  .apl-filter-grid{display:grid!important;grid-template-columns:1fr auto 1fr!important;gap:10px!important;align-items:end!important;}
+  .apl-filter-field{min-width:0!important;}
+  .apl-or{
+    align-self:center!important;
+    margin-top:22px!important;
+    width:34px!important;height:34px!important;border-radius:50%!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    background:#fff!important;border:1px solid var(--border)!important;color:var(--sub)!important;
+    font-size:10px!important;font-weight:950!important;text-transform:uppercase!important;
+  }
   .apl-label{
     display:block!important;
     font-size:11px!important;
@@ -22563,6 +22573,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     outline:none!important;
   }
   .apl-select:focus{border-color:var(--green)!important;box-shadow:0 0 0 3px rgba(0,155,84,.12)!important;}
+  .apl-help{margin-top:9px!important;font-size:11.5px!important;line-height:1.35!important;color:var(--sub)!important;font-weight:700!important;}
   .apl-table-wrap{
     border:1px solid var(--border)!important;
     border-radius:18px!important;
@@ -22570,7 +22581,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     background:#fff!important;
     max-height:52vh!important;
   }
-  .apl-table{width:100%!important;border-collapse:collapse!important;min-width:650px!important;}
+  .apl-table{width:100%!important;border-collapse:collapse!important;min-width:720px!important;}
   .apl-table th{
     position:sticky!important;top:0!important;z-index:1!important;
     background:#F3F4F6!important;
@@ -22599,6 +22610,14 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   .apl-no-pick{font-weight:850!important;color:var(--sub)!important;}
   .apl-result{font-weight:950!important;}
   .apl-empty{display:none!important;}
+  .apl-empty-msg{
+    border:1px dashed var(--border)!important;border-radius:16px!important;background:#fff!important;
+    padding:28px 16px!important;text-align:center!important;color:var(--sub)!important;font-size:13px!important;font-weight:750!important;
+  }
+  @media(max-width:520px){
+    .apl-filter-grid{grid-template-columns:1fr!important;gap:10px!important;}
+    .apl-or{width:auto!important;height:auto!important;border-radius:999px!important;margin:0!important;padding:5px 10px!important;justify-self:center!important;}
+  }
 </style>
 
 <script id="edson-admin-player-search-20260701-script">
@@ -22611,8 +22630,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     btn.id='admin-player-search-btn';
     btn.type='button';
     btn.className='admin-player-search-btn';
-    btn.setAttribute('aria-label','Consultar pronósticos por participante');
-    btn.title='Consultar pronósticos por participante';
+    btn.setAttribute('aria-label','Consultar pronósticos');
+    btn.title='Consultar pronósticos';
     btn.textContent='🔎';
     btn.onclick=function(){ openAdminPlayerLookupModal(); };
     box.appendChild(btn);
@@ -22622,11 +22641,18 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var wrap=document.createElement('div');
     wrap.id='admin-player-lookup-modal';
     wrap.innerHTML='<div class="apl-card" onclick="event.stopPropagation()">'+
-      '<div class="apl-head"><div><div class="apl-title">Consulta de pronósticos</div><div class="apl-sub">Buscá un participante y revisá partido por partido.</div></div><button class="apl-close" type="button" onclick="closeAdminPlayerLookupModal()">×</button></div>'+
+      '<div class="apl-head"><div><div class="apl-title">Consulta de pronósticos</div><div class="apl-sub">Filtrá por participante o por partido. Usá solo uno por vez.</div></div><button class="apl-close" type="button" onclick="closeAdminPlayerLookupModal()">×</button></div>'+ 
       '<div class="apl-body">'+
-        '<div class="apl-filter-card"><label class="apl-label" for="apl-player-select">Participante</label><select id="apl-player-select" class="apl-select" onchange="renderAdminPlayerLookupTable(this.value)"><option value="">Seleccionar participante...</option></select></div>'+
-        '<div id="apl-table-area" class="apl-empty"></div>'+
-      '</div>'+
+        '<div class="apl-filter-card">'+
+          '<div class="apl-filter-grid">'+
+            '<div class="apl-filter-field"><label class="apl-label" for="apl-player-select">Participante</label><select id="apl-player-select" class="apl-select" onchange="aplSelectParticipant(this.value)"><option value="">Seleccionar participante...</option></select></div>'+ 
+            '<div class="apl-or">o</div>'+ 
+            '<div class="apl-filter-field"><label class="apl-label" for="apl-match-select">Partido</label><select id="apl-match-select" class="apl-select" onchange="aplSelectMatch(this.value)"><option value="">Seleccionar partido...</option></select></div>'+ 
+          '</div>'+ 
+          '<div class="apl-help">Elegí un participante para ver todos sus partidos o elegí un partido para ver todos los participantes.</div>'+ 
+        '</div>'+ 
+        '<div id="apl-table-area" class="apl-empty"></div>'+ 
+      '</div>'+ 
     '</div>';
     wrap.addEventListener('click',function(e){if(e.target===wrap) closeAdminPlayerLookupModal();});
     document.body.appendChild(wrap);
@@ -22637,6 +22663,14 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       return ranked.map(function(u,idx){return {name:u.name,pos:(idx+1)+'º'};});
     }catch(e){return [];}
   }
+  function aplSortedMatches(){
+    try{return (typeof MATCHES!=='undefined' && Array.isArray(MATCHES) ? MATCHES : []).slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});}
+    catch(e){return [];}
+  }
+  function aplDisplay(m,results,standings){
+    try{return (typeof matchDisplay==='function'?matchDisplay(m,results,standings):{home:m.home,away:m.away,hf:'',af:''});}
+    catch(e){return {home:m.home,away:m.away,hf:'',af:''};}
+  }
   function fillAdminPlayerSelect(){
     var sel=document.getElementById('apl-player-select');
     if(!sel) return;
@@ -22645,24 +22679,45 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     sel.innerHTML='<option value="">Seleccionar participante...</option>'+opts;
     if(current && Array.from(sel.options).some(function(o){return o.value===current;})) sel.value=current;
   }
-  function aplFormatDateTime(value){
-    try{
-      if(!value) return '';
-      if(typeof formatAdminReportDateTime==='function') return formatAdminReportDateTime(value);
-      var d=value instanceof Date?value:new Date(value);
-      if(isNaN(d)) return String(value);
-      return d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    }catch(e){return String(value||'');}
+  function fillAdminMatchSelect(){
+    var sel=document.getElementById('apl-match-select');
+    if(!sel) return;
+    var current=sel.value;
+    var results=(typeof loadRealResults==='function'?loadRealResults():{});
+    var standings=(typeof computeStandings==='function'?computeStandings(results):{});
+    var opts=aplSortedMatches().map(function(m){
+      var d=aplDisplay(m,results,standings);
+      var label=(m.date||'')+' · '+(m.time||'')+' · '+(d.home||m.home||'')+' vs '+(d.away||m.away||'');
+      return '<option value="'+escApl(m.id)+'">'+escApl(label)+'</option>';
+    }).join('');
+    sel.innerHTML='<option value="">Seleccionar partido...</option>'+opts;
+    if(current && Array.from(sel.options).some(function(o){return o.value===current;})) sel.value=current;
   }
+  function aplSplitDateTime(value){
+    try{
+      if(!value) return {fecha:'',hora:''};
+      var d=value instanceof Date?value:new Date(value);
+      if(isNaN(d)) return {fecha:String(value),hora:''};
+      return {
+        fecha:d.toLocaleDateString('es-PY',{day:'2-digit',month:'2-digit',year:'numeric'}),
+        hora:d.toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'})
+      };
+    }catch(e){return {fecha:String(value||''),hora:''};}
+  }
+  function aplResultText(real){return real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';}
+  function aplPickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';}
   window.openAdminPlayerLookupModal=async function(){
     if(typeof currentUserRole!=='undefined' && currentUserRole!=='admin'){showSaveBanner&&showSaveBanner('Acceso reservado para administradores');return;}
     ensureAdminPlayerLookupModal();
     try{ if(typeof loadFirebaseState==='function') await loadFirebaseState(); }catch(e){ console.warn('No fue posible sincronizar antes de la consulta:',e); }
     fillAdminPlayerSelect();
-    var sel=document.getElementById('apl-player-select');
-    if(sel) sel.value='';
+    fillAdminMatchSelect();
+    var psel=document.getElementById('apl-player-select');
+    var msel=document.getElementById('apl-match-select');
+    if(psel) psel.value='';
+    if(msel) msel.value='';
     var area=document.getElementById('apl-table-area');
-    if(area){area.innerHTML='';area.className='apl-empty';}
+    if(area){area.innerHTML='<div class="apl-empty-msg">Seleccioná un participante o un partido para consultar.</div>';area.className='';}
     document.getElementById('admin-player-lookup-modal').classList.add('open');
     document.body.style.overflow='hidden';
   };
@@ -22671,31 +22726,67 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     if(m) m.classList.remove('open');
     document.body.style.overflow='';
   };
+  window.aplSelectParticipant=function(playerName){
+    var matchSel=document.getElementById('apl-match-select');
+    if(playerName && matchSel) matchSel.value='';
+    renderAdminPlayerLookupTable(playerName);
+  };
+  window.aplSelectMatch=function(matchId){
+    var playerSel=document.getElementById('apl-player-select');
+    if(matchId && playerSel) playerSel.value='';
+    renderAdminMatchLookupTable(matchId);
+  };
   window.renderAdminPlayerLookupTable=function(playerName){
     var area=document.getElementById('apl-table-area');
     if(!area) return;
-    if(!playerName){area.innerHTML='';area.className='apl-empty';return;}
+    if(!playerName){area.innerHTML='<div class="apl-empty-msg">Seleccioná un participante o un partido para consultar.</div>';area.className='';return;}
     var all=(typeof loadAllPicks==='function'?loadAllPicks():{});
     var results=(typeof loadRealResults==='function'?loadRealResults():{});
     var standings=(typeof computeStandings==='function'?computeStandings(results):{});
     var picks=all[playerName]||{};
-    var sorted=(typeof MATCHES!=='undefined' && Array.isArray(MATCHES) ? MATCHES : []).slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});
-    var rows=sorted.map(function(m){
-      var disp=(typeof matchDisplay==='function'?matchDisplay(m,results,standings):{home:m.home,away:m.away,hf:'',af:''});
+    var rows=aplSortedMatches().map(function(m){
+      var disp=aplDisplay(m,results,standings);
       var real=results[m.id]||results[String(m.id)]||null;
       var pick=picks[m.id]||picks[String(m.id)]||null;
-      var resultTxt=real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';
-      var pickTxt=pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';
-      var dt=pick?aplFormatDateTime(pick.savedAt||pick.fechaPalpite||''):'';
+      var dt=pick?aplSplitDateTime(pick.savedAt||pick.fechaPalpite||''):{fecha:'',hora:''};
       return '<tr>'+ 
         '<td><span>'+escApl(disp.hf||'')+' '+escApl(disp.home||m.home||'')+' × '+escApl(disp.away||m.away||'')+' '+escApl(disp.af||'')+'</span><br><span class="apl-muted">'+escApl(m.date||'')+' · '+escApl(m.time||'')+' · '+escApl(m.phase||'')+'</span></td>'+ 
-        '<td class="apl-result">'+escApl(resultTxt)+'</td>'+ 
-        '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+escApl(pickTxt)+'</td>'+ 
-        '<td class="apl-muted">'+escApl(dt)+'</td>'+ 
+        '<td class="apl-result">'+escApl(aplResultText(real))+'</td>'+ 
+        '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+escApl(aplPickText(pick))+'</td>'+ 
+        '<td class="apl-muted">'+escApl(dt.fecha)+'</td>'+ 
+        '<td class="apl-muted">'+escApl(dt.hora)+'</td>'+ 
       '</tr>';
     }).join('');
     area.className='';
-    area.innerHTML='<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Pronóstico</th><th>Fecha y hora del pronóstico</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    area.innerHTML='<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Pronóstico</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  };
+  window.renderAdminMatchLookupTable=function(matchId){
+    var area=document.getElementById('apl-table-area');
+    if(!area) return;
+    if(!matchId){area.innerHTML='<div class="apl-empty-msg">Seleccioná un participante o un partido para consultar.</div>';area.className='';return;}
+    var all=(typeof loadAllPicks==='function'?loadAllPicks():{});
+    var results=(typeof loadRealResults==='function'?loadRealResults():{});
+    var standings=(typeof computeStandings==='function'?computeStandings(results):{});
+    var m=aplSortedMatches().find(function(x){return String(x.id)===String(matchId);});
+    if(!m){area.innerHTML='<div class="apl-empty-msg">Partido no encontrado.</div>';area.className='';return;}
+    var disp=aplDisplay(m,results,standings);
+    var real=results[m.id]||results[String(m.id)]||null;
+    var participants=aplParticipants();
+    var rows=participants.map(function(u){
+      var picks=all[u.name]||{};
+      var pick=picks[m.id]||picks[String(m.id)]||null;
+      var dt=pick?aplSplitDateTime(pick.savedAt||pick.fechaPalpite||''):{fecha:'',hora:''};
+      return '<tr>'+ 
+        '<td><strong>'+escApl(u.pos)+'</strong> · '+escApl(u.name)+'</td>'+ 
+        '<td><span>'+escApl(disp.hf||'')+' '+escApl(disp.home||m.home||'')+' × '+escApl(disp.away||m.away||'')+' '+escApl(disp.af||'')+'</span><br><span class="apl-muted">'+escApl(m.date||'')+' · '+escApl(m.time||'')+' · '+escApl(m.phase||'')+'</span></td>'+ 
+        '<td class="apl-result">'+escApl(aplResultText(real))+'</td>'+ 
+        '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+escApl(aplPickText(pick))+'</td>'+ 
+        '<td class="apl-muted">'+escApl(dt.fecha)+'</td>'+ 
+        '<td class="apl-muted">'+escApl(dt.hora)+'</td>'+ 
+      '</tr>';
+    }).join('');
+    area.className='';
+    area.innerHTML='<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Partido / selecciones</th><th>Resultado</th><th>Pronóstico</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
   var oldShowAdminArea=window.showAdminArea;
   if(typeof oldShowAdminArea==='function' && !oldShowAdminArea.__edsonPlayerLookupWrapped){
