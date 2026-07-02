@@ -23225,3 +23225,292 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     width:100%!important;
   }
 </style>
+
+<!-- AJUSTE EDSON 20260702: destaque da pontuação somente quando for exacto -->
+<style id="edson-apl-score-highlight-only-exact-20260702">
+  /* Pontuação normal: usa somente a cor do texto, sem fundo realçado */
+  #admin-player-lookup-modal .apl-score-pill.group,
+  #admin-player-lookup-modal .apl-score-pill.decisive{
+    background:transparent!important;
+    border-color:transparent!important;
+    box-shadow:none!important;
+    padding:0!important;
+    min-width:auto!important;
+    height:auto!important;
+  }
+  #admin-player-lookup-modal .apl-score-pill.group{
+    color:var(--green2)!important;
+  }
+  #admin-player-lookup-modal .apl-score-pill.decisive{
+    color:#B45309!important;
+  }
+
+  /* Destaque/fundo apenas quando for acerto exacto */
+  #admin-player-lookup-modal .apl-score-pill.group-exact{
+    background:#DDF7E8!important;
+    color:var(--green2)!important;
+    border-color:rgba(0,155,84,.40)!important;
+    box-shadow:0 0 0 3px rgba(0,155,84,.16)!important;
+    padding:0 9px!important;
+    min-width:42px!important;
+    height:26px!important;
+  }
+  #admin-player-lookup-modal .apl-score-pill.decisive-exact{
+    background:#FFE5B8!important;
+    color:#B45309!important;
+    border-color:#F59E0B!important;
+    box-shadow:0 0 0 3px rgba(245,158,11,.18)!important;
+    padding:0 9px!important;
+    min-width:42px!important;
+    height:26px!important;
+  }
+</style>
+
+
+<!-- AJUSTE EDSON 20260702: consulta abre marcada no próximo partido por data/hora -->
+<script id="edson-apl-default-next-match-20260702">
+(function(){
+  function aplMatchesSorted(){
+    try{
+      return (typeof MATCHES!=='undefined' && Array.isArray(MATCHES) ? MATCHES : [])
+        .slice()
+        .sort(function(a,b){ return getMatchDateTime(a) - getMatchDateTime(b); });
+    }catch(e){ return []; }
+  }
+  function aplNextMatchIdByDateTime(){
+    var list = aplMatchesSorted();
+    if(!list.length) return '';
+    var now = new Date();
+    var next = list.find(function(m){
+      try{ return getMatchDateTime(m) >= now; }catch(e){ return false; }
+    });
+    // Si todos ya pasaron, deja marcado el último partido del calendario.
+    if(!next) next = list[list.length - 1];
+    return next && next.id != null ? String(next.id) : '';
+  }
+  var previousOpen = window.openAdminPlayerLookupModal;
+  window.openAdminPlayerLookupModal = async function(){
+    if(typeof previousOpen === 'function'){
+      await previousOpen.apply(this, arguments);
+    }
+    requestAnimationFrame(function(){
+      var playerSel = document.getElementById('apl-player-select');
+      var matchSel = document.getElementById('apl-match-select');
+      var nextId = aplNextMatchIdByDateTime();
+      if(playerSel) playerSel.value = '';
+      if(matchSel && nextId){
+        matchSel.value = nextId;
+        if(typeof window.renderAdminMatchLookupTable === 'function'){
+          window.renderAdminMatchLookupTable(nextId);
+        }
+      }
+    });
+  };
+})();
+</script>
+
+<!-- AJUSTE EDSON 20260702: carregamento da consulta, lupa sem fundo verde e atalhos laterais visíveis -->
+<style id="edson-apl-loading-side-fixes-20260702">
+  /* Lupa menor, sem fundo verde sólido */
+  #admin-player-search-btn.admin-player-search-btn{
+    background:#fff!important;
+    color:var(--green2)!important;
+    border:1.5px solid rgba(0,155,84,.34)!important;
+    box-shadow:0 2px 8px rgba(0,0,0,.08)!important;
+  }
+  #admin-player-search-btn.admin-player-search-btn:active{
+    background:#E8F5EE!important;
+  }
+
+  /* Mensagem de carregamento enquanto sincroniza a consulta */
+  #apl-loading-overlay{
+    position:fixed!important;
+    inset:0!important;
+    z-index:900!important;
+    display:none!important;
+    align-items:center!important;
+    justify-content:center!important;
+    background:rgba(0,0,0,.56)!important;
+    padding:18px!important;
+  }
+  #apl-loading-overlay.show{display:flex!important;}
+  .apl-loading-box{
+    min-width:180px!important;
+    max-width:280px!important;
+    border-radius:18px!important;
+    background:rgba(255,255,255,.96)!important;
+    box-shadow:0 18px 46px rgba(0,0,0,.26)!important;
+    padding:20px 18px!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:10px!important;
+    font-family:'Inter',sans-serif!important;
+    color:var(--text)!important;
+    font-weight:900!important;
+    text-align:center!important;
+  }
+  .apl-loading-spinner{
+    width:30px!important;
+    height:30px!important;
+    border-radius:50%!important;
+    border:3px solid rgba(0,155,84,.18)!important;
+    border-top-color:var(--green)!important;
+    animation:aplSpin .72s linear infinite!important;
+  }
+  .apl-loading-text{font-size:14px!important;line-height:1.2!important;}
+  @keyframes aplSpin{to{transform:rotate(360deg);}}
+
+  /* Atajos laterales visibles al costado de Admin */
+  #admin-side-jump{
+    position:fixed!important;
+    right:8px!important;
+    top:54%!important;
+    transform:translateY(-50%)!important;
+    z-index:745!important;
+    flex-direction:column!important;
+    gap:8px!important;
+    pointer-events:none!important;
+  }
+  #admin-side-jump.show{display:flex!important;}
+  #admin-side-jump .asj-btn{
+    pointer-events:auto!important;
+    min-width:82px!important;
+    height:36px!important;
+    padding:0 8px!important;
+    border:none!important;
+    border-radius:999px!important;
+    background:var(--green)!important;
+    color:#fff!important;
+    box-shadow:0 8px 20px rgba(0,0,0,.24)!important;
+    font-family:'Inter',sans-serif!important;
+    font-size:10.5px!important;
+    font-weight:950!important;
+    line-height:1!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:5px!important;
+    cursor:pointer!important;
+    white-space:nowrap!important;
+  }
+  #admin-player-lookup-modal.open ~ #admin-side-jump,
+  body.apl-modal-open #admin-side-jump{
+    display:none!important;
+  }
+</style>
+<script id="edson-apl-loading-side-fixes-20260702-script">
+(function(){
+  function ensureAplLoading(){
+    var el=document.getElementById('apl-loading-overlay');
+    if(el) return el;
+    el=document.createElement('div');
+    el.id='apl-loading-overlay';
+    el.innerHTML='<div class="apl-loading-box"><div class="apl-loading-spinner"></div><div class="apl-loading-text">Cargando consulta...</div></div>';
+    document.body.appendChild(el);
+    return el;
+  }
+  function showAplLoading(){
+    ensureAplLoading().classList.add('show');
+  }
+  function hideAplLoading(){
+    var el=document.getElementById('apl-loading-overlay');
+    if(el) el.classList.remove('show');
+  }
+  window.showAplLookupLoading=showAplLoading;
+  window.hideAplLookupLoading=hideAplLoading;
+
+  function hookSearchButton(){
+    var btn=document.getElementById('admin-player-search-btn');
+    if(btn && !btn.__edsonLoadingHooked){
+      btn.__edsonLoadingHooked=true;
+      btn.onclick=function(){
+        showAplLoading();
+        setTimeout(function(){
+          if(typeof window.openAdminPlayerLookupModal==='function') window.openAdminPlayerLookupModal();
+        },20);
+      };
+    }
+  }
+
+  var previousOpen=window.openAdminPlayerLookupModal;
+  if(typeof previousOpen==='function' && !previousOpen.__edsonLoadingWrapped){
+    window.openAdminPlayerLookupModal=async function(){
+      showAplLoading();
+      try{
+        var r=await previousOpen.apply(this,arguments);
+        document.body.classList.add('apl-modal-open');
+        return r;
+      }finally{
+        setTimeout(hideAplLoading,120);
+      }
+    };
+    window.openAdminPlayerLookupModal.__edsonLoadingWrapped=true;
+  }
+
+  var previousClose=window.closeAdminPlayerLookupModal;
+  if(typeof previousClose==='function' && !previousClose.__edsonLoadingWrapped){
+    window.closeAdminPlayerLookupModal=function(){
+      var r=previousClose.apply(this,arguments);
+      document.body.classList.remove('apl-modal-open');
+      hideAplLoading();
+      if(typeof window.syncAdminSideJump==='function') setTimeout(window.syncAdminSideJump,80);
+      return r;
+    };
+    window.closeAdminPlayerLookupModal.__edsonLoadingWrapped=true;
+  }
+
+  function ensureAdminSideJumpFinal(){
+    var el=document.getElementById('admin-side-jump');
+    if(!el){
+      el=document.createElement('div');
+      el.id='admin-side-jump';
+      el.innerHTML='<button type="button" class="asj-btn" onclick="adminScrollTop()">↑ Inicio</button><button type="button" class="asj-btn" onclick="adminScrollTodayGame()">📍 Partido de hoy</button>';
+      document.body.appendChild(el);
+    }else{
+      el.innerHTML='<button type="button" class="asj-btn" onclick="adminScrollTop()">↑ Inicio</button><button type="button" class="asj-btn" onclick="adminScrollTodayGame()">📍 Partido de hoy</button>';
+    }
+    return el;
+  }
+  function adminVisibleFinal(){
+    var area=document.getElementById('admin-area');
+    var modal=document.getElementById('admin-player-lookup-modal');
+    if(modal && modal.classList.contains('open')) return false;
+    if(document.body.classList.contains('apl-modal-open')) return false;
+    if(!area) return false;
+    var st=window.getComputedStyle?getComputedStyle(area):area.style;
+    if(st && st.display==='none') return false;
+    var nav=document.getElementById('nav-admin');
+    var adminTabActive=!!(nav && nav.classList.contains('active'));
+    var rect=area.getBoundingClientRect();
+    var visibleByRect=rect.height>0 && rect.bottom>0 && rect.top<window.innerHeight;
+    return adminTabActive || visibleByRect;
+  }
+  window.syncAdminSideJump=function(){
+    var el=ensureAdminSideJumpFinal();
+    el.classList.toggle('show', adminVisibleFinal());
+  };
+
+  var oldShowAdminArea=window.showAdminArea;
+  if(typeof oldShowAdminArea==='function' && !oldShowAdminArea.__edsonSideFinalWrapped){
+    window.showAdminArea=function(){var r=oldShowAdminArea.apply(this,arguments);setTimeout(window.syncAdminSideJump,80);return r;};
+    window.showAdminArea.__edsonSideFinalWrapped=true;
+    try{showAdminArea=window.showAdminArea;}catch(e){}
+  }
+  var oldSwitchTab=window.switchTab;
+  if(typeof oldSwitchTab==='function' && !oldSwitchTab.__edsonSideFinalWrapped){
+    window.switchTab=function(){var r=oldSwitchTab.apply(this,arguments);setTimeout(window.syncAdminSideJump,80);return r;};
+    window.switchTab.__edsonSideFinalWrapped=true;
+    try{switchTab=window.switchTab;}catch(e){}
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    ensureAplLoading();
+    ensureAdminSideJumpFinal();
+    setTimeout(function(){hookSearchButton();window.syncAdminSideJump();},250);
+  });
+  setInterval(function(){hookSearchButton();window.syncAdminSideJump();},700);
+  window.addEventListener('scroll',function(){window.syncAdminSideJump();},{passive:true});
+})();
+</script>
