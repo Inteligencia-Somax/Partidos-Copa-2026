@@ -22700,7 +22700,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       if(isNaN(d)) return {fecha:String(value),hora:''};
       return {
         fecha:d.toLocaleDateString('es-PY',{day:'2-digit',month:'2-digit',year:'numeric'}),
-        hora:d.toLocaleTimeString('es-PY',{hour:'2-digit',minute:'2-digit'})
+        hora:String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0')
       };
     }catch(e){return {fecha:String(value||''),hora:''};}
   }
@@ -22879,5 +22879,222 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   document.addEventListener('DOMContentLoaded',function(){ensureAdminSideJump();setTimeout(syncAdminSideJump,300);});
   window.addEventListener('scroll',syncAdminSideJump,{passive:true});
   setInterval(syncAdminSideJump,900);
+})();
+</script>
+
+
+<!-- AJUSTE EDSON 20260701: consulta por partido sin repetir partido en la tabla + hora 24h -->
+<style id="edson-admin-player-search-match-clean-20260701">
+  .apl-match-summary{
+    border:1px solid var(--border)!important;
+    background:#F8FAFB!important;
+    border-radius:16px!important;
+    padding:12px 13px!important;
+    margin-bottom:10px!important;
+  }
+  .apl-match-summary-title{
+    color:var(--text)!important;
+    font-size:14px!important;
+    font-weight:950!important;
+    line-height:1.25!important;
+  }
+  .apl-match-summary-meta{
+    margin-top:5px!important;
+    color:var(--sub)!important;
+    font-size:11.5px!important;
+    font-weight:750!important;
+    line-height:1.35!important;
+  }
+</style>
+<script id="edson-admin-player-search-match-clean-20260701-script">
+(function(){
+  function escApl2(v){return String(v ?? '').replace(/[&<>"']/g,function(ch){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];});}
+  function aplGetMatches2(){try{return (typeof MATCHES!=='undefined' && Array.isArray(MATCHES)?MATCHES:[]).slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});}catch(e){return [];}}
+  function aplDisplay2(m,results,standings){try{return typeof matchDisplay==='function'?matchDisplay(m,results,standings):{home:m.home,away:m.away,hf:'',af:''};}catch(e){return {home:m.home,away:m.away,hf:'',af:''};}}
+  function aplParticipants2(){try{return (typeof getRankedUsers==='function'?getRankedUsers():[]).filter(function(u){return u&&u.name&&(!window.isVisibleParticipantName||isVisibleParticipantName(u.name));}).map(function(u,idx){return {name:u.name,pos:(idx+1)+'º'};});}catch(e){return [];}}
+  window.aplSplitDateTime=function(value){
+    try{
+      if(!value) return {fecha:'',hora:''};
+      var d=value instanceof Date?value:new Date(value);
+      if(isNaN(d)) return {fecha:String(value),hora:''};
+      var fecha=d.toLocaleDateString('es-PY',{day:'2-digit',month:'2-digit',year:'numeric'});
+      var hh=String(d.getHours()).padStart(2,'0');
+      var mm=String(d.getMinutes()).padStart(2,'0');
+      return {fecha:fecha,hora:hh+':'+mm};
+    }catch(e){return {fecha:String(value||''),hora:''};}
+  };
+  window.renderAdminMatchLookupTable=function(matchId){
+    var area=document.getElementById('apl-table-area');
+    if(!area) return;
+    if(!matchId){area.innerHTML='<div class="apl-empty-msg">Seleccioná un participante o un partido para consultar.</div>';area.className='';return;}
+    var all=(typeof loadAllPicks==='function'?loadAllPicks():{});
+    var results=(typeof loadRealResults==='function'?loadRealResults():{});
+    var standings=(typeof computeStandings==='function'?computeStandings(results):{});
+    var m=aplGetMatches2().find(function(x){return String(x.id)===String(matchId);});
+    if(!m){area.innerHTML='<div class="apl-empty-msg">Partido no encontrado.</div>';area.className='';return;}
+    var disp=aplDisplay2(m,results,standings);
+    var real=results[m.id]||results[String(m.id)]||null;
+    var resultado=real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';
+    var matchTitle=(disp.hf||'')+' '+(disp.home||m.home||'')+' × '+(disp.away||m.away||'')+' '+(disp.af||'');
+    var matchMeta=(m.date||'')+' · '+(m.time||'')+' · '+(m.phase||'')+' · Resultado: '+resultado;
+    var participants=aplParticipants2();
+    var rows=participants.map(function(u){
+      var picks=all[u.name]||{};
+      var pick=picks[m.id]||picks[String(m.id)]||null;
+      var dt=window.aplSplitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
+      var pickText=pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';
+      return '<tr>'+ 
+        '<td><strong>'+escApl2(u.pos)+'</strong> · '+escApl2(u.name)+'</td>'+ 
+        '<td class="apl-result">'+escApl2(resultado)+'</td>'+ 
+        '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+escApl2(pickText)+'</td>'+ 
+        '<td class="apl-muted">'+escApl2(dt.fecha)+'</td>'+ 
+        '<td class="apl-muted">'+escApl2(dt.hora)+'</td>'+ 
+      '</tr>';
+    }).join('');
+    area.className='';
+    area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+escApl2(matchTitle)+'</div><div class="apl-match-summary-meta">'+escApl2(matchMeta)+'</div></div>'+ 
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Pronóstico</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  };
+})();
+</script>
+
+<!-- AJUSTE EDSON 20260702: consulta de pronósticos com pontuação, alerta sem pronóstico e cabeçalho por filtro -->
+<style id="edson-admin-player-search-score-20260702">
+  .apl-person-summary,
+  .apl-match-summary{
+    border:1px solid var(--border)!important;
+    background:#F8FAFB!important;
+    border-radius:16px!important;
+    padding:12px 13px!important;
+    margin-bottom:10px!important;
+  }
+  .apl-person-summary-title,
+  .apl-match-summary-title{
+    color:var(--text)!important;
+    font-size:14px!important;
+    font-weight:950!important;
+    line-height:1.25!important;
+  }
+  .apl-person-summary-meta,
+  .apl-match-summary-meta{
+    margin-top:5px!important;
+    color:var(--sub)!important;
+    font-size:11.5px!important;
+    font-weight:750!important;
+    line-height:1.35!important;
+  }
+  .apl-row-nopick td{background:#FFF7F7!important;}
+  .apl-nopick-dot{
+    width:9px!important;
+    height:9px!important;
+    border-radius:50%!important;
+    background:var(--red)!important;
+    display:inline-block!important;
+    margin-right:7px!important;
+    vertical-align:middle!important;
+    box-shadow:0 0 0 3px rgba(220,38,38,.12)!important;
+  }
+  .apl-score-pill{
+    min-width:42px!important;
+    height:26px!important;
+    padding:0 9px!important;
+    border-radius:999px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:12px!important;
+    font-weight:950!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    border:1px solid transparent!important;
+  }
+  .apl-score-pill.zero{background:#FEE2E2!important;color:#C1121F!important;border-color:#FECACA!important;}
+  .apl-score-pill.group{background:#E8F5EE!important;color:var(--green2)!important;border-color:rgba(0,155,84,.24)!important;}
+  .apl-score-pill.decisive{background:#FFF1D6!important;color:#B45309!important;border-color:#FCD99B!important;}
+  .apl-score-pill.exact{background:#FFF7C2!important;color:#9A6700!important;border-color:#F4D35E!important;box-shadow:0 0 0 3px rgba(248,212,92,.22)!important;}
+  .apl-score-pill.pending{background:#F3F4F6!important;color:var(--sub)!important;border-color:var(--border)!important;}
+  .apl-table th.score,
+  .apl-table td.score{text-align:center!important;}
+</style>
+<script id="edson-admin-player-search-score-20260702-script">
+(function(){
+  function esc(v){return String(v ?? '').replace(/[&<>"']/g,function(ch){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];});}
+  function matches(){try{return (typeof MATCHES!=='undefined'&&Array.isArray(MATCHES)?MATCHES:[]).slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});}catch(e){return [];}}
+  function participants(){try{return (typeof getRankedUsers==='function'?getRankedUsers():[]).filter(function(u){return u&&u.name&&(!window.isVisibleParticipantName||isVisibleParticipantName(u.name));}).map(function(u,idx){return {name:u.name,pos:(idx+1)+'º'};});}catch(e){return [];}}
+  function display(m,results,standings){try{return typeof matchDisplay==='function'?matchDisplay(m,results,standings):{home:m.home,away:m.away,hf:'',af:''};}catch(e){return {home:m.home,away:m.away,hf:'',af:''};}}
+  function splitDateTime(value){
+    try{
+      if(!value) return {fecha:'',hora:''};
+      var d=value instanceof Date?value:new Date(value);
+      if(isNaN(d)) return {fecha:String(value),hora:''};
+      return {fecha:d.toLocaleDateString('es-PY',{day:'2-digit',month:'2-digit',year:'numeric'}),hora:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+    }catch(e){return {fecha:String(value||''),hora:''};}
+  }
+  window.aplSplitDateTime = splitDateTime;
+  function resultText(real){return real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';}
+  function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';}
+  function scoreHtml(pick,real,m){
+    if(!pick) return '<span class="apl-score-pill zero">0</span>';
+    if(!real) return '<span class="apl-score-pill pending">—</span>';
+    var calc={pts:0,type:'wrong'};
+    try{ if(typeof calculatePickPoints==='function') calc=calculatePickPoints(pick,real,m)||calc; }catch(e){}
+    var pts=Number(calc.pts||0);
+    if(pts<=0) return '<span class="apl-score-pill zero">0</span>';
+    var cls=(calc.type==='exact')?'exact':((m&&m.phase&&String(m.phase).indexOf('Grupo ')===0&&!m.x2)?'group':'decisive');
+    return '<span class="apl-score-pill '+cls+'">+'+pts+'</span>';
+  }
+  function noPickDot(pick){return pick?'':'<span class="apl-nopick-dot" title="Sin pronóstico"></span>';}
+  function rowClass(pick){return pick?'':' class="apl-row-nopick"';}
+
+  window.renderAdminPlayerLookupTable=function(playerName){
+    var area=document.getElementById('apl-table-area');
+    if(!area) return;
+    if(!playerName){area.innerHTML='<div class="apl-empty-msg">Seleccioná un participante o un partido para consultar.</div>';area.className='';return;}
+    var all=(typeof loadAllPicks==='function'?loadAllPicks():{});
+    var results=(typeof loadRealResults==='function'?loadRealResults():{});
+    var standings=(typeof computeStandings==='function'?computeStandings(results):{});
+    var picks=all[playerName]||{};
+    var user=participants().find(function(u){return String(u.name)===String(playerName);})||{name:playerName,pos:''};
+    var rows=matches().map(function(m){
+      var d=display(m,results,standings),real=results[m.id]||results[String(m.id)]||null,pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
+      return '<tr'+rowClass(pick)+'>'+ 
+        '<td>'+noPickDot(pick)+'<span>'+esc(d.hf||'')+' '+esc(d.home||m.home||'')+' × '+esc(d.away||m.away||'')+' '+esc(d.af||'')+'</span><br><span class="apl-muted">'+esc(m.date||'')+' · '+esc(m.time||'')+' · '+esc(m.phase||'')+'</span></td>'+ 
+        '<td class="apl-result">'+esc(resultText(real))+'</td>'+ 
+        '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
+        '<td class="score">'+scoreHtml(pick,real,m)+'</td>'+ 
+        '<td class="apl-muted">'+esc(dt.fecha)+'</td>'+ 
+        '<td class="apl-muted">'+esc(dt.hora)+'</td>'+ 
+      '</tr>';
+    }).join('');
+    area.className='';
+    area.innerHTML='<div class="apl-person-summary"><div class="apl-person-summary-title">'+esc(user.pos?user.pos+' · '+user.name:user.name)+'</div><div class="apl-person-summary-meta">Consulta por participante · Todos los partidos</div></div>'+ 
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  };
+
+  window.renderAdminMatchLookupTable=function(matchId){
+    var area=document.getElementById('apl-table-area');
+    if(!area) return;
+    if(!matchId){area.innerHTML='<div class="apl-empty-msg">Seleccioná un participante o un partido para consultar.</div>';area.className='';return;}
+    var all=(typeof loadAllPicks==='function'?loadAllPicks():{}),results=(typeof loadRealResults==='function'?loadRealResults():{}),standings=(typeof computeStandings==='function'?computeStandings(results):{});
+    var m=matches().find(function(x){return String(x.id)===String(matchId);});
+    if(!m){area.innerHTML='<div class="apl-empty-msg">Partido no encontrado.</div>';area.className='';return;}
+    var d=display(m,results,standings),real=results[m.id]||results[String(m.id)]||null,resultado=resultText(real);
+    var matchTitle=(d.hf||'')+' '+(d.home||m.home||'')+' × '+(d.away||m.away||'')+' '+(d.af||'');
+    var matchMeta=(m.date||'')+' · '+(m.time||'')+' · '+(m.phase||'')+' · Resultado: '+resultado;
+    var rows=participants().map(function(u){
+      var picks=all[u.name]||{},pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
+      return '<tr'+rowClass(pick)+'>'+ 
+        '<td>'+noPickDot(pick)+'<strong>'+esc(u.pos)+'</strong> · '+esc(u.name)+'</td>'+ 
+        '<td class="apl-result">'+esc(resultado)+'</td>'+ 
+        '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
+        '<td class="score">'+scoreHtml(pick,real,m)+'</td>'+ 
+        '<td class="apl-muted">'+esc(dt.fecha)+'</td>'+ 
+        '<td class="apl-muted">'+esc(dt.hora)+'</td>'+ 
+      '</tr>';
+    }).join('');
+    area.className='';
+    area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div></div>'+ 
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  };
 })();
 </script>
