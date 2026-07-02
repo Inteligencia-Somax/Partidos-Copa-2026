@@ -2,6 +2,13 @@
 <html lang="es"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0A2A6E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bolão Somax">
 <title>Bolão Somax Agro — Mundial 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
 <style>
@@ -8123,6 +8130,7 @@ function renderMatches(filter){
       const scoreInfoAttr = pickSavedAt ? pickInfoAttrs(pickSavedAt) : '';
       const card = document.createElement('div');
       card.className = `match-card ${hasPick?'done':'pending'} ${m.py?'py-game':''} ${m.x2?'x2-game':''} ${isExactHit?'exact-hit':''}`;
+      card.dataset.mid = m.id;
       const hScore = hasPick ? pick.home : '–';
       const aScore = hasPick ? pick.away : '–';
       const locked = !canEditPick(m);
@@ -24183,5 +24191,534 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   window.addEventListener('resize',scheduleSync,{passive:true});
   ['click','touchend'].forEach(function(evt){document.addEventListener(evt,function(){setTimeout(scheduleSync,90);},true);});
   setTimeout(scheduleSync,300);
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-20260702
+     1) Hero "Próximo partido" con countdown al cierre
+     2) Consenso del grupo en partidos cerrados
+     3) Racha 🔥 en el ranking
+     4) Simulador "¿Y si...?" en el ranking
+     5) PWA (manifest + service worker) — requiere subir manifest.webmanifest,
+        sw.js, icon-192.png e icon-512.png junto al index.html
+     6) Steppers +/− en el modal de palpite
+     7) Haptics + pulso visual al guardar
+     8) Skeleton loading del ranking durante la 1ª sincronización
+     9) Sparkline de posición histórica en el detalle del participante
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-20260702-style">
+/* ── 1) HERO PRÓXIMO PARTIDO ── */
+.nx-hero{max-width:680px;margin:12px auto 0;padding:0 12px;}
+.nx-card{background:linear-gradient(135deg,#0A2A6E 0%,#0D3A8A 55%,#071C4E 100%);border-radius:18px;padding:14px 16px 12px;color:#fff;box-shadow:0 4px 18px rgba(10,42,110,.28);position:relative;overflow:hidden;cursor:pointer;}
+.nx-card::before{content:'';position:absolute;top:-40px;right:-30px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,215,0,.22) 0%,transparent 65%);pointer-events:none;}
+.nx-top{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.75);margin-bottom:8px;}
+.nx-top .nx-live-dot{width:7px;height:7px;border-radius:50%;background:#F59E0B;animation:nxPulse 1.4s ease infinite;}
+@keyframes nxPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.45;transform:scale(.8);}}
+.nx-teams{display:flex;align-items:center;justify-content:center;gap:14px;margin:2px 0 8px;}
+.nx-team{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:70px;}
+.nx-flag{font-size:34px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));}
+.nx-name{font-size:11.5px;font-weight:700;color:rgba(255,255,255,.92);text-align:center;max-width:96px;}
+.nx-vs{font-family:'Bebas Neue',sans-serif;font-size:22px;color:rgba(255,255,255,.55);letter-spacing:1px;}
+.nx-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.nx-count{display:flex;flex-direction:column;gap:1px;}
+.nx-count-lbl{font-size:9.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:rgba(255,255,255,.6);}
+.nx-count-val{font-size:17px;font-weight:900;color:#FFD84D;font-variant-numeric:tabular-nums;}
+.nx-count-val.nx-urgent{color:#FF6B6B;animation:nxPulse 1.2s ease infinite;}
+.nx-cta{background:#009B54;border:none;color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:800;padding:10px 18px;border-radius:12px;cursor:pointer;box-shadow:0 3px 10px rgba(0,155,84,.4);transition:transform .12s ease;}
+.nx-cta:active{transform:scale(.95);}
+.nx-meta{font-size:10.5px;color:rgba(255,255,255,.6);font-weight:600;margin-top:2px;text-align:center;}
+/* ── 2) CONSENSO ── */
+.mc-consensus{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:11px;font-weight:700;color:var(--sub);}
+.mc-consensus .mcc-bar{flex:1;height:5px;border-radius:3px;background:var(--border);overflow:hidden;display:flex;}
+.mc-consensus .mcc-seg{height:100%;}
+.mc-consensus .mcc-h{background:var(--green);}
+.mc-consensus .mcc-d{background:#9CA3AF;}
+.mc-consensus .mcc-a{background:var(--blue);}
+.mc-consensus b{color:var(--text);}
+/* ── 3) RACHA ── */
+.rank-streak{display:inline-flex;align-items:center;gap:2px;background:rgba(245,158,11,.12);color:#B45309;border:1px solid rgba(245,158,11,.35);border-radius:8px;padding:1px 6px;font-size:10.5px;font-weight:800;line-height:1.5;}
+/* ── 4) SIMULADOR ── */
+.sim-btn{display:inline-flex;align-items:center;gap:5px;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:8px 12px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:800;color:var(--text);cursor:pointer;box-shadow:var(--shadow);white-space:nowrap;}
+.sim-btn:active{transform:scale(.96);}
+#sim-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:16px;}
+#sim-modal.open{display:flex;}
+.sim-box{background:var(--white);border-radius:20px;width:100%;max-width:440px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;animation:fadeUp .22s ease;}
+.sim-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.sim-title{font-size:15px;font-weight:900;color:var(--text);}
+.sim-close{background:none;border:none;font-size:18px;color:var(--sub);cursor:pointer;padding:4px 8px;}
+.sim-body{padding:14px 16px;overflow-y:auto;}
+.sim-lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);margin:10px 0 5px;}
+.sim-select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:12px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;color:var(--text);background:var(--white);}
+.sim-scores{display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 0 4px;}
+.sim-score-in{width:64px;height:56px;text-align:center;font-size:24px;font-weight:900;border:1.5px solid var(--border);border-radius:14px;font-family:'Inter',sans-serif;color:var(--text);}
+.sim-score-in:focus{outline:none;border-color:var(--green);}
+.sim-colon{font-size:22px;font-weight:900;color:var(--sub);}
+.sim-flag-lbl{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:800;color:var(--sub);}
+.sim-flag-lbl span:first-child{font-size:26px;}
+.sim-go{width:100%;margin-top:14px;background:var(--green);color:#fff;border:none;border-radius:14px;padding:13px;font-family:'Inter',sans-serif;font-size:14px;font-weight:900;cursor:pointer;}
+.sim-go:active{transform:scale(.98);}
+.sim-result{margin-top:14px;}
+.sim-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;border:1px solid var(--border);margin-bottom:6px;background:var(--white);font-size:13px;font-weight:700;}
+.sim-row.sim-me{border:2px solid var(--gold);background:#FFFBEB;}
+.sim-pos{width:32px;font-weight:900;color:var(--sub);flex-shrink:0;}
+.sim-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);}
+.sim-pts{font-weight:900;color:var(--text);flex-shrink:0;}
+.sim-d{font-size:11px;font-weight:900;flex-shrink:0;min-width:28px;text-align:right;}
+.sim-d.up{color:var(--green);}
+.sim-d.down{color:var(--red);}
+.sim-d.same{color:var(--sub);}
+.sim-note{font-size:11px;color:var(--sub);font-weight:600;margin-top:8px;line-height:1.45;}
+/* ── 6) STEPPERS ── */
+.pk-step{display:flex;flex-direction:column;gap:6px;}
+.pk-step button{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--border);background:var(--white);font-size:18px;font-weight:900;color:var(--text);cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
+.pk-step button:active{background:var(--bg);transform:scale(.92);}
+/* ── 7) PULSO AL GUARDAR ── */
+@keyframes savedPulse{0%{box-shadow:0 0 0 0 rgba(0,155,84,.55);}100%{box-shadow:0 0 0 16px rgba(0,155,84,0);}}
+.match-card.just-saved{animation:savedPulse .9s ease 2;border-color:var(--green)!important;}
+/* ── 8) SKELETON ── */
+.sk-card{border-radius:16px;background:var(--white);border:1px solid var(--border);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.sk-bar{border-radius:6px;background:linear-gradient(90deg,#EDEDF0 25%,#F7F7F9 50%,#EDEDF0 75%);background-size:200% 100%;animation:skShine 1.2s linear infinite;}
+@keyframes skShine{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.sk-circle{width:34px;height:34px;border-radius:50%;flex-shrink:0;}
+/* ── 9) SPARKLINE ── */
+.ud-spark{padding:8px 14px 10px;border-bottom:1px solid var(--border);}
+.ud-spark-head{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);margin-bottom:4px;}
+.ud-spark svg{display:block;width:100%;height:44px;}
+</style>
+
+<script id="edson-upgrade-pack-20260702-script">
+(function(){
+  'use strict';
+
+  /* ════ helpers ════ */
+  function visiblePickEntries(){
+    var all = loadAllPicks(), out = [];
+    Object.keys(all).forEach(function(name){
+      if(typeof isExcludedFromRanking === 'function' && isExcludedFromRanking(name)) return;
+      out.push([name, all[name] || {}]);
+    });
+    return out;
+  }
+  function playedChrono(realResults){
+    var now = new Date();
+    return MATCHES.filter(function(m){ return realResults[m.id] && getMatchDateTime(m) <= now; })
+      .sort(function(a,b){ return getMatchDateTime(a) - getMatchDateTime(b); });
+  }
+
+  /* ════ 1) HERO PRÓXIMO PARTIDO + COUNTDOWN ════ */
+  var nxTimer = null;
+  function nextPendingMatch(){
+    var picks = (typeof currentUser !== 'undefined' && currentUser) ? loadUserPicks() : {};
+    var cands = MATCHES.filter(function(m){ return canEditPick(m) && picks[m.id] === undefined; });
+    cands.sort(function(a,b){ return getMatchDateTime(a) - getMatchDateTime(b); });
+    return cands[0] || null;
+  }
+  function fmtCountdown(ms){
+    if(ms <= 0) return '¡Cerrado!';
+    var s = Math.floor(ms/1000), d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), mi = Math.floor((s%3600)/60), se = s%60;
+    if(d > 0) return d + 'd ' + h + 'h ' + mi + 'm';
+    if(h > 0) return h + 'h ' + mi + 'm ' + se + 's';
+    return mi + 'm ' + se + 's';
+  }
+  function renderNextHero(){
+    var panel = document.getElementById('panel-matches');
+    if(!panel) return;
+    var host = document.getElementById('nx-hero');
+    if(!host){
+      host = document.createElement('div');
+      host.className = 'nx-hero';
+      host.id = 'nx-hero';
+      var anchor = panel.querySelector('.filter-row');
+      panel.insertBefore(host, anchor || panel.firstChild);
+    }
+    if(nxTimer){ clearInterval(nxTimer); nxTimer = null; }
+    var m = nextPendingMatch();
+    if(!m){ host.innerHTML = ''; host.style.display = 'none'; return; }
+    host.style.display = '';
+    var disp = matchDisplay(m, loadRealResults(), computeStandings(loadRealResults()));
+    var deadline = getMatchDateTime(m).getTime() - 30*60*1000;
+    var pending = MATCHES.filter(function(x){ return canEditPick(x) && loadUserPicks()[x.id] === undefined; }).length;
+    host.innerHTML =
+      '<div class="nx-card" onclick="openModal(' + m.id + ')">' +
+        '<div class="nx-top"><span class="nx-live-dot"></span>Próximo palpite · ' + m.phase + (isX2Match(m) ? ' · ×2 PUNTOS' : '') + '</div>' +
+        '<div class="nx-teams">' +
+          '<div class="nx-team"><span class="nx-flag">' + disp.hf + '</span><span class="nx-name">' + disp.home + '</span></div>' +
+          '<span class="nx-vs">VS</span>' +
+          '<div class="nx-team"><span class="nx-flag">' + disp.af + '</span><span class="nx-name">' + disp.away + '</span></div>' +
+        '</div>' +
+        '<div class="nx-bottom">' +
+          '<div class="nx-count"><span class="nx-count-lbl">Cierra en</span><span class="nx-count-val" id="nx-count-val">—</span></div>' +
+          '<button class="nx-cta" onclick="event.stopPropagation();openModal(' + m.id + ')">⚽ Palpitar ahora</button>' +
+        '</div>' +
+        '<div class="nx-meta">' + m.date + ' · ' + m.time + 'hs' + (pending > 1 ? ' · Te faltan ' + pending + ' palpites abiertos' : '') + '</div>' +
+      '</div>';
+    function tick(){
+      var el = document.getElementById('nx-count-val');
+      if(!el){ clearInterval(nxTimer); nxTimer = null; return; }
+      var left = deadline - Date.now();
+      el.textContent = fmtCountdown(left);
+      el.classList.toggle('nx-urgent', left > 0 && left < 3*60*60*1000);
+      if(left <= 0){ clearInterval(nxTimer); nxTimer = null; try{ renderMatches(currentFilter); }catch(e){} }
+    }
+    tick();
+    nxTimer = setInterval(tick, 1000);
+  }
+
+  /* ════ 2) CONSENSO EN PARTIDOS CERRADOS ════ */
+  function matchConsensus(matchId){
+    var entries = visiblePickEntries();
+    var h=0, d=0, a=0, total=0, scoreCount={};
+    entries.forEach(function(ent){
+      var p = ent[1][matchId];
+      if(!p || p.home === undefined || p.away === undefined) return;
+      total++;
+      if(p.home > p.away) h++; else if(p.home < p.away) a++; else d++;
+      var key = p.home + '-' + p.away;
+      scoreCount[key] = (scoreCount[key] || 0) + 1;
+    });
+    if(total < 3) return null;
+    var top = null;
+    Object.keys(scoreCount).forEach(function(k){ if(!top || scoreCount[k] > scoreCount[top]) top = k; });
+    return { total:total, h:h, d:d, a:a, topScore:top.replace('-',':'), topN:scoreCount[top] };
+  }
+  function decorateConsensus(){
+    var list = document.getElementById('matches-list');
+    if(!list) return;
+    var results = loadRealResults();
+    var standings = computeStandings(results);
+    list.querySelectorAll('.match-card[data-mid]').forEach(function(card){
+      if(card.querySelector('.mc-consensus')) return;
+      var mid = parseInt(card.dataset.mid, 10);
+      var m = MATCHES.find(function(x){ return x.id === mid; });
+      if(!m || canEditPick(m)) return;               // solo cerrados
+      var c = matchConsensus(mid);
+      if(!c) return;
+      var disp = matchDisplay(m, results, standings);
+      var hc = disp.hc || disp.home.substring(0,3).toUpperCase();
+      var ac = disp.ac || disp.away.substring(0,3).toUpperCase();
+      var lead, pct;
+      if(c.h >= c.d && c.h >= c.a){ lead = hc; pct = c.h; }
+      else if(c.a >= c.d){ lead = ac; pct = c.a; }
+      else { lead = 'Empate'; pct = c.d; }
+      pct = Math.round(pct / c.total * 100);
+      var ph = Math.round(c.h/c.total*100), pd = Math.round(c.d/c.total*100), pa = 100-ph-pd;
+      var div = document.createElement('div');
+      div.className = 'mc-consensus';
+      div.innerHTML = '👥 <b>' + pct + '%</b>&nbsp;' + lead +
+        '<span class="mcc-bar"><span class="mcc-seg mcc-h" style="width:' + ph + '%"></span><span class="mcc-seg mcc-d" style="width:' + pd + '%"></span><span class="mcc-seg mcc-a" style="width:' + pa + '%"></span></span>' +
+        'más elegido&nbsp;<b>' + c.topScore + '</b>';
+      card.appendChild(div);
+    });
+  }
+
+  /* ════ 3) RACHA 🔥 EN EL RANKING ════ */
+  function currentStreakFor(picks, chrono){
+    var real = loadRealResults(), n = 0;
+    for(var i = chrono.length - 1; i >= 0; i--){
+      var m = chrono[i];
+      var pts = calculatePickPoints(picks[m.id], real[m.id], m).pts;
+      if(pts > 0) n++; else break;
+    }
+    return n;
+  }
+  function decorateStreaks(){
+    var list = document.getElementById('ranking-list');
+    if(!list) return;
+    var all = loadAllPicks();
+    var chrono = playedChrono(loadRealResults());
+    if(!chrono.length) return;
+    list.querySelectorAll('.rank-card').forEach(function(card){
+      var nameEl = card.querySelector('.rank-name-txt');
+      var detail = card.querySelector('.rank-detail');
+      if(!nameEl || !detail || detail.querySelector('.rank-streak')) return;
+      var streak = currentStreakFor(all[nameEl.textContent] || {}, chrono);
+      if(streak >= 2){
+        var b = document.createElement('span');
+        b.className = 'rank-streak';
+        b.title = streak + ' partidos seguidos puntuando';
+        b.textContent = '🔥' + streak;
+        detail.insertBefore(b, detail.firstChild);
+      }
+    });
+  }
+
+  /* ════ 4) SIMULADOR "¿Y SI...?" ════ */
+  function ensureSimModal(){
+    if(document.getElementById('sim-modal')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'sim-modal';
+    wrap.innerHTML =
+      '<div class="sim-box">' +
+        '<div class="sim-head"><span class="sim-title">🔮 Simulador ¿Y si...?</span><button class="sim-close" onclick="closeSimModal()">✕</button></div>' +
+        '<div class="sim-body">' +
+          '<div class="sim-lbl">Partido sin resultado</div>' +
+          '<select class="sim-select" id="sim-match-select" onchange="simMatchChanged()"></select>' +
+          '<div class="sim-lbl">Resultado hipotético</div>' +
+          '<div class="sim-scores">' +
+            '<span class="sim-flag-lbl"><span id="sim-hf">🏳️</span><span id="sim-hc">—</span></span>' +
+            '<input class="sim-score-in" id="sim-h" type="number" min="0" max="99" inputmode="numeric" placeholder="-">' +
+            '<span class="sim-colon">:</span>' +
+            '<input class="sim-score-in" id="sim-a" type="number" min="0" max="99" inputmode="numeric" placeholder="-">' +
+            '<span class="sim-flag-lbl"><span id="sim-af">🏳️</span><span id="sim-ac">—</span></span>' +
+          '</div>' +
+          '<button class="sim-go" onclick="runSimulation()">Simular ranking</button>' +
+          '<div class="sim-result" id="sim-result"></div>' +
+          '<div class="sim-note">La simulación usa los palpites reales ya registrados. No cambia nada en el bolão: es solo para soñar (o sufrir) un rato. 😄</div>' +
+        '</div>' +
+      '</div>';
+    wrap.addEventListener('click', function(e){ if(e.target === wrap) closeSimModal(); });
+    document.body.appendChild(wrap);
+  }
+  function simCandidates(){
+    var real = loadRealResults();
+    return MATCHES.filter(function(m){ return !real[m.id]; })
+      .sort(function(a,b){ return getMatchDateTime(a) - getMatchDateTime(b); });
+  }
+  window.openSimModal = function(){
+    ensureSimModal();
+    var sel = document.getElementById('sim-match-select');
+    var cands = simCandidates();
+    if(!cands.length){ showSaveBanner('No hay partidos sin resultado para simular'); return; }
+    var results = loadRealResults(), standings = computeStandings(results);
+    sel.innerHTML = cands.map(function(m){
+      var d = matchDisplay(m, results, standings);
+      return '<option value="' + m.id + '">' + d.hf + ' ' + d.home + ' vs ' + d.away + ' ' + d.af + ' · ' + m.date + '</option>';
+    }).join('');
+    window.simMatchChanged();
+    document.getElementById('sim-result').innerHTML = '';
+    document.getElementById('sim-h').value = '';
+    document.getElementById('sim-a').value = '';
+    document.getElementById('sim-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeSimModal = function(){
+    var el = document.getElementById('sim-modal');
+    if(el) el.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  window.simMatchChanged = function(){
+    var sel = document.getElementById('sim-match-select');
+    var m = MATCHES.find(function(x){ return String(x.id) === String(sel.value); });
+    if(!m) return;
+    var d = matchDisplay(m, loadRealResults(), computeStandings(loadRealResults()));
+    document.getElementById('sim-hf').textContent = d.hf;
+    document.getElementById('sim-hc').textContent = d.hc || d.home.substring(0,3).toUpperCase();
+    document.getElementById('sim-af').textContent = d.af;
+    document.getElementById('sim-ac').textContent = d.ac || d.away.substring(0,3).toUpperCase();
+  };
+  window.runSimulation = function(){
+    var sel = document.getElementById('sim-match-select');
+    var mid = parseInt(sel.value, 10);
+    var m = MATCHES.find(function(x){ return x.id === mid; });
+    var h = parseInt(document.getElementById('sim-h').value, 10);
+    var a = parseInt(document.getElementById('sim-a').value, 10);
+    var out = document.getElementById('sim-result');
+    if(!m || isNaN(h) || isNaN(a)){ out.innerHTML = '<div class="sim-note">⚠ Completá los dos marcadores.</div>'; return; }
+    var real = loadRealResults();
+    var simReal = {};
+    Object.keys(real).forEach(function(k){ simReal[k] = real[k]; });
+    simReal[mid] = { home:h, away:a };
+    function rank(results){
+      return visiblePickEntries().map(function(ent){
+        var stats = { name:ent[0], pickCount:0, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0 };
+        MATCHES.forEach(function(mm){
+          if(ent[1][mm.id]) stats.pickCount++;
+          var calc = calculatePickPoints(ent[1][mm.id], results[mm.id], mm);
+          stats.score += calc.pts;
+          if(stats[calc.type] !== undefined) stats[calc.type]++;
+        });
+        return stats;
+      }).sort(sortRankStats);
+    }
+    var cur = rank(real), sim = rank(simReal);
+    var curPos = {};
+    cur.forEach(function(u,i){ curPos[u.name] = i + 1; });
+    var me = (typeof getCanonicalUserName === 'function' && typeof currentUser !== 'undefined') ? getCanonicalUserName(currentUser) : '';
+    var rows = '';
+    var shown = sim.slice(0, 10);
+    var meIdx = sim.findIndex(function(u){ return u.name === me; });
+    if(meIdx >= 10) shown.push(sim[meIdx]);
+    shown.forEach(function(u){
+      var pos = sim.indexOf(u) + 1;
+      var dd = (curPos[u.name] || pos) - pos;
+      var dHtml = dd > 0 ? '<span class="sim-d up">▲' + dd + '</span>' : dd < 0 ? '<span class="sim-d down">▼' + (-dd) + '</span>' : '<span class="sim-d same">=</span>';
+      rows += '<div class="sim-row' + (u.name === me ? ' sim-me' : '') + '"><span class="sim-pos">' + pos + 'º</span><span class="sim-nm">' + u.name + '</span><span class="sim-pts">' + u.score + ' pts</span>' + dHtml + '</div>';
+    });
+    var disp = matchDisplay(m, real, computeStandings(real));
+    out.innerHTML = '<div class="sim-lbl">Si ' + disp.home + ' ' + h + ':' + a + ' ' + disp.away + ' →</div>' + rows;
+    if(navigator.vibrate) navigator.vibrate(10);
+  };
+  function injectSimButton(){
+    var tools = document.querySelector('#panel-ranking .rank-tools');
+    if(!tools || document.getElementById('sim-open-btn')) return;
+    var b = document.createElement('button');
+    b.id = 'sim-open-btn';
+    b.className = 'sim-btn';
+    b.type = 'button';
+    b.innerHTML = '🔮 ¿Y si...?';
+    b.onclick = window.openSimModal;
+    tools.appendChild(b);
+  }
+
+  /* ════ 5) PWA — registro del service worker ════ */
+  if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js').catch(function(e){ console.warn('SW no registrado:', e); });
+    });
+  }
+
+  /* ════ 6) STEPPERS +/− EN EL MODAL ════ */
+  function stepScore(side, delta){
+    var el = document.getElementById(side === 'home' ? 'modal-score-home' : 'modal-score-away');
+    if(!el) return;
+    var cur = el.textContent === '–' || el.textContent === '' ? -1 : parseInt(el.textContent, 10);
+    var next = cur + delta;
+    if(cur === -1 && delta > 0) next = 0;
+    if(next < 0){ el.textContent = '–'; el.className = 'modal-num'; setActiveTeam(side); return; }
+    if(next > 99) next = 99;
+    el.textContent = String(next);
+    setActiveTeam(side);
+    el.className = 'modal-num active';
+    if(navigator.vibrate) navigator.vibrate(5);
+  }
+  window.edsonStepScore = stepScore;
+  function injectSteppers(){
+    var disp = document.querySelector('#modal-box .modal-score-display');
+    if(!disp || disp.querySelector('.pk-step')) return;
+    var homeNum = document.getElementById('modal-score-home');
+    var awayNum = document.getElementById('modal-score-away');
+    if(!homeNum || !awayNum) return;
+    function mk(side){
+      var d = document.createElement('div');
+      d.className = 'pk-step';
+      d.innerHTML = '<button type="button" aria-label="más" onclick="edsonStepScore(\'' + side + '\',1)">+</button>' +
+                    '<button type="button" aria-label="menos" onclick="edsonStepScore(\'' + side + '\',-1)">−</button>';
+      return d;
+    }
+    disp.insertBefore(mk('home'), homeNum);
+    disp.insertBefore(mk('away'), awayNum.nextSibling);
+  }
+
+  /* ════ 7) HAPTICS + PULSO AL GUARDAR ════ */
+  var _commitPick = window.commitPick;
+  window.commitPick = async function(){
+    var mid = (typeof activeMatchId !== 'undefined') ? activeMatchId : null;
+    await _commitPick.apply(this, arguments);
+    if(navigator.vibrate) navigator.vibrate([15, 40, 15]);
+    if(mid !== null){
+      var card = document.querySelector('.match-card[data-mid="' + mid + '"]');
+      if(card){
+        card.classList.add('just-saved');
+        setTimeout(function(){ card.classList.remove('just-saved'); }, 2200);
+      }
+    }
+  };
+
+  /* ════ 8) SKELETON DURANTE 1ª SINCRONIZACIÓN ════ */
+  function rankSkeletonHtml(){
+    var row = '<div class="sk-card"><div class="sk-bar sk-circle"></div><div style="flex:1"><div class="sk-bar" style="height:12px;width:60%;margin-bottom:7px;"></div><div class="sk-bar" style="height:9px;width:38%;"></div></div><div class="sk-bar" style="height:20px;width:44px;border-radius:8px;"></div></div>';
+    return row + row + row + row + row;
+  }
+  var _loadFirebaseState = window.loadFirebaseState;
+  window.loadFirebaseState = async function(){
+    var firstLoad = Object.keys(loadAllPicks()).length === 0;
+    if(firstLoad){
+      var rl = document.getElementById('ranking-list');
+      if(rl) rl.innerHTML = rankSkeletonHtml();
+    }
+    try{
+      await _loadFirebaseState.apply(this, arguments);
+    } finally {
+      if(firstLoad){
+        try{ renderRanking(); }catch(e){}
+        try{ renderMatches(currentFilter); }catch(e){}
+      }
+    }
+  };
+
+  /* ════ 9) SPARKLINE DE POSICIÓN EN EL DETALLE ════ */
+  var sparkCache = {};
+  function roundPositions(name){
+    if(sparkCache[name]) return sparkCache[name];
+    var real = loadRealResults();
+    var chrono = playedChrono(real);
+    if(!chrono.length) return null;
+    var lastByRound = {};
+    var roundOrder = [];
+    chrono.forEach(function(m){
+      var r = getRoundLabel(m);
+      if(!lastByRound[r]) roundOrder.push(r);
+      lastByRound[r] = m;
+    });
+    var pts = roundOrder.map(function(r){
+      return { round:r, pos:getUserPositionAfterMatch(name, lastByRound[r]) };
+    }).filter(function(p){ return p.pos; });
+    sparkCache[name] = pts.length >= 2 ? pts : null;
+    return sparkCache[name];
+  }
+  function renderSparkline(){
+    var hero = document.getElementById('ud-hero');
+    if(!hero || !udState || !udState.name) return;
+    var old = document.getElementById('ud-spark');
+    if(old) old.remove();
+    var data = roundPositions(udState.name);
+    if(!data) return;
+    var W = 300, H = 40, pad = 6;
+    var maxPos = Math.max.apply(null, data.map(function(p){ return p.pos; }));
+    var minPos = Math.min.apply(null, data.map(function(p){ return p.pos; }));
+    var span = Math.max(maxPos - minPos, 1);
+    var pts = data.map(function(p, i){
+      var x = pad + i * (W - 2*pad) / Math.max(data.length - 1, 1);
+      var y = pad + (p.pos - minPos) / span * (H - 2*pad);
+      return { x:x, y:y, pos:p.pos, round:p.round };
+    });
+    var line = pts.map(function(p,i){ return (i ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1); }).join(' ');
+    var dots = pts.map(function(p){ return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="3" fill="#009B54"/>'; }).join('');
+    var first = data[0], last = data[data.length - 1];
+    var trend = last.pos < first.pos ? '📈 subiendo' : last.pos > first.pos ? '📉 bajando' : '➡ estable';
+    var div = document.createElement('div');
+    div.className = 'ud-spark';
+    div.id = 'ud-spark';
+    div.innerHTML =
+      '<div class="ud-spark-head"><span>Evolución de posición</span><span>' + first.round + ' ' + first.pos + 'º → ' + last.round + ' ' + last.pos + 'º · ' + trend + '</span></div>' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none"><path d="' + line + '" fill="none" stroke="#009B54" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' + dots + '</svg>';
+    hero.parentNode.insertBefore(div, hero.nextSibling);
+  }
+  var _renderUd = window.renderUd;
+  window.renderUd = function(){
+    _renderUd.apply(this, arguments);
+    try{ renderSparkline(); }catch(e){ console.warn('sparkline:', e); }
+  };
+  var _openUserDetail = window.openUserDetail;
+  window.openUserDetail = function(name){
+    sparkCache = {};
+    return _openUserDetail.apply(this, arguments);
+  };
+
+  /* ════ hooks de render ════ */
+  var _renderMatches = window.renderMatches;
+  window.renderMatches = function(f){
+    _renderMatches.apply(this, arguments);
+    try{ renderNextHero(); }catch(e){ console.warn('hero:', e); }
+    try{ decorateConsensus(); }catch(e){ console.warn('consenso:', e); }
+  };
+  var _renderRanking = window.renderRanking;
+  window.renderRanking = function(){
+    _renderRanking.apply(this, arguments);
+    try{ decorateStreaks(); }catch(e){ console.warn('streak:', e); }
+    try{ injectSimButton(); }catch(e){}
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    injectSteppers();
+    injectSimButton();
+    try{ renderNextHero(); }catch(e){}
+  });
+  if(document.readyState !== 'loading'){
+    injectSteppers();
+    injectSimButton();
+    try{ renderNextHero(); }catch(e){}
+  }
 })();
 </script>
