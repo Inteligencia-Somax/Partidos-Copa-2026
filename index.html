@@ -2418,7 +2418,7 @@ html, body{scroll-behavior:auto!important;}
 
 
 <!-- SCORING RULES MINI -->
-<div id="scoring-rules-wrap" style="max-width:680px;margin:0 auto;padding:0 12px;">
+<div id="scoring-rules-wrap" style="max-width:680px;margin:0 auto;padding:0 12px;display:none;">
   <div class="rules-card">
     <div class="rules-head">
       <div class="rules-title">Sistema de Puntuación</div>
@@ -10669,9 +10669,9 @@ function switchTab(tab, btn){
   document.getElementById('panel-'+tab).classList.add('active');
   if(btn) btn.classList.add('active');
   document.getElementById('nav-'+tab)?.classList.add('active');
-  // Ocultar el mini "Sistema de Puntuación" en Ranking, Admin y Decepción.
+  // Mini "Sistema de Puntuación": visible SOLO en la pestaña Reglas (edson-ajuste-20260702).
   const scoringWrap = document.getElementById('scoring-rules-wrap');
-  if(scoringWrap) scoringWrap.style.display = (tab === 'ranking' || tab === 'admin' || tab === 'decepcion') ? 'none' : '';
+  if(scoringWrap) scoringWrap.style.display = (tab === 'rules') ? '' : 'none';
   if(tab==='ranking'){
     renderRanking();
     requestAnimationFrame(()=>{ const me=document.getElementById('my-rank-card'); edsonInstantScrollIntoView(me,'center'); updateQuickFloatButtons(); setTimeout(spotlightMyRankCard, 120); });
@@ -24720,5 +24720,112 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     injectSimButton();
     try{ renderNextHero(); }catch(e){}
   }
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v2-20260702
+     a) Simulador → bola de cristal 🔮 flotante en el Ranking (FAB);
+        la búsqueda recupera su ancho original.
+     b) Hero "Próximo palpite" enmarcado: mismo ancho de los cards,
+        espaciados estándar (12px), botón más cuadrado y protagonista.
+     c) El card "Sistema de Puntuación" vive solo en Reglas.
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v2-20260702-style">
+/* ── a) FAB del simulador ── */
+#sim-open-btn.sim-fab{
+  position:fixed;right:14px;bottom:96px;z-index:250;
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(145deg,#0D3A8A,#0A2A6E);
+  border:2px solid rgba(255,255,255,.85);
+  box-shadow:0 6px 18px rgba(10,42,110,.45),0 2px 6px rgba(0,0,0,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;line-height:1;cursor:pointer;padding:0;
+  transition:transform .12s ease;
+}
+#sim-open-btn.sim-fab:active{transform:scale(.9);}
+#sim-open-btn.sim-fab .sim-fab-lbl{
+  position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
+  font-size:9px;font-weight:900;letter-spacing:.4px;color:#0A2A6E;
+  background:rgba(255,255,255,.92);border-radius:6px;padding:1px 6px;
+  white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.18);
+}
+/* anula el botón v1 en la fila de herramientas si algo lo reinyecta */
+.rank-tools .sim-btn{display:none!important;}
+
+/* ── b) Hero próximo palpite: encuadre y ritmo estándar ── */
+.nx-hero{max-width:680px;margin:12px auto;padding:0 12px;}
+.nx-card{
+  border-radius:16px;                 /* mismo --radius de los cards */
+  padding:16px 16px 14px;
+  box-shadow:var(--shadow),0 6px 20px rgba(10,42,110,.30);
+}
+.nx-top{margin-bottom:10px;}
+.nx-teams{margin:0 0 12px;gap:18px;}
+.nx-flag{font-size:38px;}
+.nx-name{font-size:12px;}
+.nx-bottom{
+  display:grid;grid-template-columns:auto 1fr;align-items:center;
+  gap:12px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:12px;padding:10px 12px;
+}
+.nx-count-val{font-size:19px;}
+.nx-cta{
+  width:100%;border-radius:10px;padding:13px 12px;font-size:14px;
+  letter-spacing:.2px;box-shadow:0 3px 12px rgba(0,155,84,.45);
+}
+.nx-meta{margin-top:10px;}
+/* separación estándar con la fila de filtros */
+#panel-matches .filter-row{margin-top:0;}
+</style>
+
+<script id="edson-upgrade-pack-v2-20260702-script">
+(function(){
+  'use strict';
+
+  function setupSimFab(){
+    // 1) quita el botón v1 de la fila de herramientas (si quedó)
+    document.querySelectorAll('.rank-tools .sim-btn').forEach(function(b){ b.remove(); });
+    // 2) FAB dentro del panel de Ranking → aparece/desaparece con la pestaña
+    var panel = document.getElementById('panel-ranking');
+    if(!panel) return;
+    var fab = document.getElementById('sim-open-btn');
+    if(fab && fab.classList.contains('sim-fab')) return;   // ya está
+    if(fab) fab.remove();
+    fab = document.createElement('button');
+    fab.id = 'sim-open-btn';                                // el inyector v1 lo ve y no duplica
+    fab.className = 'sim-fab';
+    fab.type = 'button';
+    fab.setAttribute('aria-label', 'Abrir simulador ¿Y si...?');
+    fab.innerHTML = '🔮<span class="sim-fab-lbl">¿Y si...?</span>';
+    fab.onclick = function(){ if(typeof openSimModal === 'function') openSimModal(); };
+    panel.appendChild(fab);
+  }
+
+  function hideScoringOnStart(){
+    // pestaña inicial = Partidas → el card de puntuación queda solo en Reglas
+    var wrap = document.getElementById('scoring-rules-wrap');
+    var rulesActive = document.getElementById('panel-rules') &&
+                      document.getElementById('panel-rules').classList.contains('active');
+    if(wrap) wrap.style.display = rulesActive ? '' : 'none';
+  }
+
+  function init(){
+    setupSimFab();
+    hideScoringOnStart();
+    // reaplica tras renders que puedan reinyectar el botón v1
+    var host = document.getElementById('panel-ranking');
+    if(host && window.MutationObserver){
+      new MutationObserver(function(){
+        var old = document.querySelector('.rank-tools .sim-btn');
+        if(old) old.remove();
+        if(!document.querySelector('#panel-ranking > .sim-fab')) setupSimFab();
+      }).observe(host, { childList:true, subtree:true });
+    }
+  }
+
+  if(document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
 })();
 </script>
