@@ -23008,11 +23008,12 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     white-space:nowrap!important;
     border:1px solid transparent!important;
   }
-  .apl-score-pill.zero{background:#FEE2E2!important;color:#C1121F!important;border-color:#FECACA!important;}
+  .apl-score-pill.zero,
+  .apl-score-pill.pending{background:#FEE2E2!important;color:#C1121F!important;border-color:#FECACA!important;}
   .apl-score-pill.group{background:#E8F5EE!important;color:var(--green2)!important;border-color:rgba(0,155,84,.24)!important;}
   .apl-score-pill.decisive{background:#FFF1D6!important;color:#B45309!important;border-color:#FCD99B!important;}
-  .apl-score-pill.exact{background:#FFF7C2!important;color:#9A6700!important;border-color:#F4D35E!important;box-shadow:0 0 0 3px rgba(248,212,92,.22)!important;}
-  .apl-score-pill.pending{background:#F3F4F6!important;color:var(--sub)!important;border-color:var(--border)!important;}
+  .apl-score-pill.group-exact{background:#DDF7E8!important;color:var(--green2)!important;border-color:rgba(0,155,84,.40)!important;box-shadow:0 0 0 3px rgba(0,155,84,.16)!important;}
+  .apl-score-pill.decisive-exact{background:#FFE5B8!important;color:#B45309!important;border-color:#F59E0B!important;box-shadow:0 0 0 3px rgba(245,158,11,.18)!important;}
   .apl-table th.score,
   .apl-table td.score{text-align:center!important;}
 </style>
@@ -23040,7 +23041,9 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     try{ if(typeof calculatePickPoints==='function') calc=calculatePickPoints(pick,real,m)||calc; }catch(e){}
     var pts=Number(calc.pts||0);
     if(pts<=0) return '<span class="apl-score-pill zero">0</span>';
-    var cls=(calc.type==='exact')?'exact':((m&&m.phase&&String(m.phase).indexOf('Grupo ')===0&&!m.x2)?'group':'decisive');
+    var isGroup=!!(m&&m.phase&&String(m.phase).indexOf('Grupo ')===0&&!m.x2);
+    var cls=isGroup?'group':'decisive';
+    if(calc.type==='exact') cls=isGroup?'group-exact':'decisive-exact';
     return '<span class="apl-score-pill '+cls+'">+'+pts+'</span>';
   }
   function noPickDot(pick){return pick?'':'<span class="apl-nopick-dot" title="Sin pronóstico"></span>';}
