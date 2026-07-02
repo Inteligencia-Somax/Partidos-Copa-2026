@@ -23514,3 +23514,122 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   window.addEventListener('scroll',function(){window.syncAdminSideJump();},{passive:true});
 })();
 </script>
+
+<!-- AJUSTE EDSON 20260702: Clasif. con mismo estilo y swipe lateral -->
+<style id="edson-clasif-nav-style-swipe-20260702">
+  .bottom-nav #nav-clasificacion.nav-btn{
+    font-family:'Inter',sans-serif!important;
+    font-size:10px!important;
+    font-weight:600!important;
+    color:var(--sub)!important;
+    padding:5px 16px!important;
+    gap:3px!important;
+    border-radius:14px!important;
+    line-height:1.15!important;
+    min-width:0!important;
+    flex:0 1 auto!important;
+  }
+  .bottom-nav #nav-clasificacion.nav-btn.active{
+    color:var(--green)!important;
+    background:rgba(0,155,84,.12)!important;
+    font-weight:800!important;
+  }
+  .bottom-nav #nav-clasificacion .nav-icon{
+    font-size:20px!important;
+    line-height:1!important;
+  }
+  @media(max-width:430px){
+    .bottom-nav #nav-clasificacion.nav-btn{
+      font-size:10px!important;
+      padding-left:10px!important;
+      padding-right:10px!important;
+    }
+    .bottom-nav #nav-clasificacion .nav-icon{
+      font-size:20px!important;
+    }
+  }
+</style>
+<script id="edson-clasif-swipe-tabs-20260702">
+(function(){
+  if(window.__edsonClasifSwipeTabs20260702) return;
+  window.__edsonClasifSwipeTabs20260702 = true;
+
+  var SWIPE_TABS = ['matches','ranking','clasificacion','rules','decepcion','admin'];
+  var startX = 0, startY = 0, startTime = 0, startTab = '';
+
+  function activeTab(){
+    var active = document.querySelector('.panel.active');
+    if(!active || !active.id) return 'matches';
+    return active.id.replace('panel-','');
+  }
+  function canSwipeFrom(target){
+    if(!target) return true;
+    if(target.closest('.modal-overlay,.ame-modal-overlay,.apq-overlay,.admin-player-query-overlay,#admin-player-query-modal,#clasif-format-modal')) return false;
+    if(target.closest('input, textarea, select, button, a')) return false;
+    if(target.closest('.numpad,.modal,.rank-filter-menu')) return false;
+    return true;
+  }
+  function tabVisible(tab){
+    var btn = document.getElementById('nav-' + tab) || document.getElementById('tab-' + tab);
+    if(!btn) return tab === 'clasificacion' && !!document.getElementById('panel-clasificacion');
+    var st = window.getComputedStyle(btn);
+    return st.display !== 'none' && st.visibility !== 'hidden';
+  }
+  function availableTabs(){
+    return SWIPE_TABS.filter(function(tab){ return tabVisible(tab); });
+  }
+  function tabButton(tab){
+    return document.getElementById('nav-' + tab) || document.getElementById('tab-' + tab);
+  }
+  function go(direction){
+    var tabs = availableTabs();
+    var current = startTab || activeTab();
+    var idx = tabs.indexOf(current);
+    if(idx < 0) return;
+    var nextIdx = idx + direction;
+    if(nextIdx < 0 || nextIdx >= tabs.length) return;
+    var next = tabs[nextIdx];
+    if(typeof switchTab === 'function') switchTab(next, tabButton(next));
+    if(next === 'clasificacion' && typeof window.renderClasificacionGrupos === 'function'){
+      setTimeout(function(){ window.renderClasificacionGrupos(); }, 80);
+    }
+  }
+
+  document.addEventListener('touchstart', function(e){
+    if(!e.touches || e.touches.length !== 1) return;
+    if(!canSwipeFrom(e.target)) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startTime = Date.now();
+    startTab = activeTab();
+  }, {passive:true});
+
+  document.addEventListener('touchend', function(e){
+    if(!startTime) return;
+    if(!e.changedTouches || e.changedTouches.length !== 1) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    var elapsed = Date.now() - startTime;
+    startX = 0; startY = 0; startTime = 0;
+    if(Math.abs(dx) < 55) return;
+    if(Math.abs(dy) > 80) return;
+    if(Math.abs(dx) < Math.abs(dy) * 1.25) return;
+    if(elapsed > 900) return;
+    go(dx < 0 ? 1 : -1);
+    startTab = '';
+  }, {passive:true});
+
+  function normalizeClasifButton(){
+    var btn = document.getElementById('nav-clasificacion');
+    if(!btn) return;
+    btn.classList.add('nav-btn');
+    btn.style.fontSize = '';
+    btn.style.fontWeight = '';
+    btn.style.padding = '';
+    var icon = btn.querySelector('.nav-icon');
+    if(icon) icon.style.fontSize = '';
+  }
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(normalizeClasifButton, 300); setTimeout(normalizeClasifButton, 1200); });
+  setTimeout(normalizeClasifButton, 1600);
+})();
+</script>
