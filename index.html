@@ -10028,20 +10028,7 @@ function unlockSomaxPageScroll(){
   window.scrollTo(0, somaxModalScrollY || 0);
 }
 
-const APP_ANNOUNCEMENT = {
-  id: 'alerta-mata-mata-puntos-dobles-20260628',
-  title: '⚠️ Atención',
-  html: `
-    <p><strong>⚽ A partir de ahora, los partidos de eliminación directa valen puntos dobles.</strong></p>
-    <p>La puntuación seguirá las mismas reglas de la fase de grupos, pero todos los puntos obtenidos serán multiplicados por <strong>2</strong>.</p>
-    <p><strong>Ejemplos:</strong></p>
-    <p>Marcador exacto → <strong>25 × 2 = 50 puntos</strong><br>
-    Ganador + diferencia de goles → <strong>15 × 2 = 30 puntos</strong><br>
-    Solo ganador correcto → <strong>7 × 2 = 14 puntos</strong></p>
-    <p>Para la puntuación del bolão, será considerado el resultado final del partido, incluyendo <strong>tiempo normal + prórroga</strong>, cuando haya.</p>
-    <p><strong>Ejemplo:</strong> si un partido termina <strong>1x1 en el tiempo normal</strong> y <strong>2x1 después de la prórroga</strong>, el resultado válido para la puntuación será <strong>2x1</strong>.</p>
-  `
-};
+const APP_ANNOUNCEMENT = null; // Alerta inicial removido a pedido do usuário.
 
 
 function edsonGetTodayTarget(){
@@ -12538,6 +12525,23 @@ body.somax-admin-active [class*="float"]{
   pointer-events:none!important;
 }
 </style>
+
+
+<script id="edson-remove-initial-announcement-20260702">
+(function(){
+  window.__somaxPendingAnnouncement = false;
+  window.maybeShowAnnouncement = function(){ return false; };
+  function removeAnnouncementIfOpen(){
+    var modal = document.getElementById('announce-modal');
+    if(modal) modal.style.display = 'none';
+    document.documentElement.classList.remove('somax-modal-open');
+    document.body.classList.remove('somax-modal-open','somax-modal-locked');
+    document.body.style.top = '';
+  }
+  document.addEventListener('DOMContentLoaded', removeAnnouncementIfOpen);
+  window.addEventListener('load', removeAnnouncementIfOpen);
+})();
+</script>
 
 </body></html>
 
