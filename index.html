@@ -2158,8 +2158,62 @@ body.somax-modal-locked{
 .quick-float-btn.show{display:flex;animation:quickFabIn .16s ease;}
 .quick-float-btn:active{transform:scale(.94);}
 .quick-float-btn.top{font-size:19px;}
+.quick-float-btn.today{font-size:11px;letter-spacing:-.2px;}
 @keyframes quickFabIn{from{opacity:0;transform:translateY(6px) scale(.96);}to{opacity:1;transform:none;}}
 </style>
+
+
+<script id="edson-matches-side-jump-20260703">
+(function(){
+  function getTodayGroupEl(){ return document.getElementById('today-group'); }
+  function isMatchesActive(){ return !!document.getElementById('panel-matches')?.classList.contains('active'); }
+  function isTodayGroupInView(){
+    var el = getTodayGroupEl();
+    if(!el) return true;
+    var r = el.getBoundingClientRect();
+    var topLimit = 90, bottomLimit = window.innerHeight - 140;
+    return r.top < bottomLimit && r.bottom > topLimit;
+  }
+  window.quickMatchesScrollTop = function(){
+    window.scrollTo({top:0, behavior:'smooth'});
+    setTimeout(function(){ if(window.updateQuickFloatButtons) window.updateQuickFloatButtons(); }, 320);
+  };
+  window.quickMatchesScrollToday = function(){
+    if(typeof edsonScrollToTodayNow === 'function') edsonScrollToTodayNow();
+    setTimeout(function(){ if(window.updateQuickFloatButtons) window.updateQuickFloatButtons(); }, 420);
+  };
+  var oldUpdate = window.updateQuickFloatButtons;
+  window.updateQuickFloatButtons = function(){
+    if(typeof oldUpdate === 'function') oldUpdate();
+    var topBtn = document.getElementById('quick-matches-top-btn');
+    var todayBtn = document.getElementById('quick-matches-today-btn');
+    if(!topBtn || !todayBtn) return;
+    if(!isMatchesActive()){
+      topBtn.classList.remove('show');
+      todayBtn.classList.remove('show');
+      return;
+    }
+    topBtn.classList.toggle('show', window.scrollY > 140);
+    var hasToday = !!getTodayGroupEl();
+    todayBtn.classList.toggle('show', hasToday && !isTodayGroupInView());
+  };
+  function scheduleUpdate(){ requestAnimationFrame(function(){ if(window.updateQuickFloatButtons) window.updateQuickFloatButtons(); }); }
+  window.addEventListener('scroll', scheduleUpdate, {passive:true});
+  window.addEventListener('resize', scheduleUpdate);
+  var oldSwitchTab = window.switchTab;
+  if(typeof oldSwitchTab === 'function' && !oldSwitchTab.__matchesFabWrapped){
+    window.switchTab = function(){
+      var r = oldSwitchTab.apply(this, arguments);
+      setTimeout(scheduleUpdate, 80);
+      return r;
+    };
+    window.switchTab.__matchesFabWrapped = true;
+    try{ switchTab = window.switchTab; }catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(scheduleUpdate, 300); });
+  setTimeout(scheduleUpdate, 700);
+})();
+</script>
 
 
 <style id="edson-initial-loader-20260628">
@@ -6741,6 +6795,8 @@ html, body{scroll-behavior:auto!important;}
 <div class="quick-float-nav" id="quick-float-nav" aria-hidden="true">
   <button class="quick-float-btn top" id="quick-top-btn" type="button" onclick="quickScrollTop()" aria-label="Ir al inicio">↑</button>
   <button class="quick-float-btn me" id="quick-me-btn" type="button" onclick="quickScrollMe()" aria-label="Ir a mi posición">Yo</button>
+  <button class="quick-float-btn top" id="quick-matches-top-btn" type="button" onclick="quickMatchesScrollTop()" aria-label="Ir al inicio">↑</button>
+  <button class="quick-float-btn today" id="quick-matches-today-btn" type="button" onclick="quickMatchesScrollToday()" aria-label="Ir al partido de hoy">Hoy</button>
 </div>
 
 <div class="bottom-nav">
@@ -22684,7 +22740,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     background:#fff!important;
     max-height:52vh!important;
   }
-  .apl-table{width:100%!important;border-collapse:collapse!important;min-width:720px!important;}
+  .apl-table{width:100%!important;border-collapse:collapse!important;min-width:460px!important;}
   .apl-table th{
     position:sticky!important;top:0!important;z-index:1!important;
     background:#F3F4F6!important;
@@ -23275,7 +23331,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-person-summary"><div class="apl-person-summary-title">'+esc(user.pos?user.pos+' · '+user.name:user.name)+'</div><div class="apl-person-summary-meta">Consulta por participante · Todos los partidos · Puntos totales: <strong>'+esc(user.score)+'</strong></div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partidas</th><th>Selecciones</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table apl-table-wide"><thead><tr><th>Partidas</th><th>Selecciones</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 
   window.renderAdminMatchLookupTable=function(matchId){
@@ -23292,7 +23348,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var rows=participants().map(function(u){
       var picks=all[u.name]||{},pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
       return '<tr'+rowClass(pick)+'>'+ 
-        '<td><strong>'+esc(u.pos)+'</strong> · '+esc(u.name)+'</td>'+ 
+        '<td class="apl-name-cell"><strong>'+esc(u.pos)+'</strong> · '+esc(u.name)+'</td>'+ 
         (hasResult?('<td class="apl-result">'+esc(resultado)+'</td>'):'')+ 
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
         (hasResult?('<td class="score">'+scoreHtml(pick,real,m)+'</td>'):'')+ 
@@ -23316,7 +23372,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     font-weight:700!important;
     color:var(--text)!important;
   }
-  #admin-player-lookup-modal .apl-table{min-width:980px!important;}
+  #admin-player-lookup-modal .apl-table-wide{min-width:980px!important;}
+  #admin-player-lookup-modal .apl-name-cell{white-space:normal!important;max-width:150px!important;line-height:1.3!important;}
 </style>
 
 <!-- AJUSTE EDSON 20260702: filtros da consulta em coluna e sem texto auxiliar -->
@@ -23797,6 +23854,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   function setAdminSideJumpLabels(){
     var el=document.getElementById('admin-side-jump');
     if(!el) return;
+    if(el.querySelector('.asj-top') && el.querySelector('.asj-today')) return;
     el.innerHTML='<button type="button" class="asj-btn asj-top" onclick="adminScrollTop()" aria-label="Ir al inicio" title="Inicio">↑</button><button type="button" class="asj-btn asj-today" onclick="adminScrollTodayGame()" aria-label="Ir al partido de hoy" title="Hoy">Hoy</button>';
   }
   var oldSync=window.syncAdminSideJump;
@@ -23811,7 +23869,6 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }
   };
   document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){setAdminSideJumpLabels(); if(typeof window.syncAdminSideJump==='function') window.syncAdminSideJump();},150);});
-  setInterval(setAdminSideJumpLabels,1200);
 })();
 </script>
 
@@ -24952,8 +25009,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 <style id="edson-upgrade-pack-v3-20260702-style">
 /* a) adiós sparkline */
 #ud-spark{display:none!important;}
-/* c) adiós flecha ↑ */
-#quick-top-btn{display:none!important;}
+/* c) (revertido 20260703 a pedido de Edson) la flechita ↑ vuelve a aparecer en el Ranking */
 /* b) FAB en body: visible solo con la clase somax-sim-fab-on */
 #sim-open-btn.sim-fab{display:none;}
 body.somax-sim-fab-on #sim-open-btn.sim-fab{display:flex;}
