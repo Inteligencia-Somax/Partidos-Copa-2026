@@ -21999,6 +21999,109 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 })();
 </script>
 
+<!-- AJUSTE 20260703: bloqueo de acceso para usuarios no identificados (ej. "Coordinador") -->
+<style id="edson-block-unidentified-user-20260703">
+  #somax-block-overlay{
+    position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;
+    padding:18px;background:rgba(11,32,20,.94);box-sizing:border-box;
+  }
+  #somax-block-overlay.show{display:flex;animation:personalAlertFade .18s ease;}
+  .block-card{width:100%;max-width:440px;background:#fff;border-radius:24px;box-shadow:0 18px 54px rgba(0,0,0,.40);overflow:hidden;animation:personalAlertScale .20s ease;}
+  .block-head{padding:22px 20px 16px;background:linear-gradient(135deg,#B91C1C,#7F1D1D);color:#fff;text-align:center;}
+  .block-icon{font-size:32px;line-height:1;margin-bottom:6px;}
+  .block-title{font-size:17px;font-weight:950;margin:0;line-height:1.25;}
+  .block-body{padding:18px 20px 4px;}
+  .block-body p{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:var(--text);font-weight:650;}
+  .block-body strong{font-weight:900;color:#B91C1C;}
+  .block-phone{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 0 4px;padding:11px 12px;border-radius:16px;background:#F3F4F6;border:1px solid var(--border);color:var(--text);font-size:16px;font-weight:950;letter-spacing:.2px;}
+  .block-note{text-align:center;color:var(--sub);font-size:12px;font-weight:650;margin-top:10px;}
+  .block-actions{padding:14px 20px 20px;}
+  .block-btn{width:100%;height:46px;border:none;border-radius:16px;background:#374151;color:#fff;font-family:inherit;font-size:14px;font-weight:950;cursor:pointer;}
+  .block-btn:active{transform:scale(.98);}
+  body.somax-block-active{overflow:hidden!important;}
+</style>
+<script id="edson-block-unidentified-user-20260703-script">
+(function(){
+  if(window.__somaxBlockGateInstalled) return;
+  window.__somaxBlockGateInstalled = true;
+
+  // Lista de usuarios bloqueados hasta que se identifiquen (nombre normalizado).
+  var BLOCKED_USERNAMES = ['coordinador'];
+
+  function normBlockName(name){
+    return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+  }
+  function isBlockedUser(){
+    var n = normBlockName(typeof currentUser !== 'undefined' ? currentUser : '');
+    return BLOCKED_USERNAMES.indexOf(n) !== -1;
+  }
+
+  function ensureBlockOverlay(){
+    var el = document.getElementById('somax-block-overlay');
+    if(el) return el;
+    el = document.createElement('div');
+    el.id = 'somax-block-overlay';
+    el.innerHTML =
+      '<div class="block-card" role="dialog" aria-modal="true" aria-labelledby="block-title">' +
+        '<div class="block-head"><div class="block-icon">🔒</div><h3 class="block-title" id="block-title">Acceso bloqueado</h3></div>' +
+        '<div class="block-body">' +
+          '<p>Tu usuario todavía figura como <strong>“Coordinador”</strong>, por eso el acceso al bolão está bloqueado por ahora.</p>' +
+          '<p>Para desbloquear tu cuenta, necesitamos que nos informes tu <strong>nombre completo</strong>.</p>' +
+          '<p>Por favor, entrá en contacto con el equipo de <strong>Inteligencia Estratégica de Somax</strong>.</p>' +
+          '<div class="block-phone">📱 0984 192122</div>' +
+          '<p class="block-note">En cuanto te identifiques, el equipo habilitará tu acceso.</p>' +
+        '</div>' +
+        '<div class="block-actions"><button class="block-btn" type="button" onclick="logoutUser()">Cerrar sesión</button></div>' +
+      '</div>';
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function enforceBlock(){
+    if(!isBlockedUser()) return false;
+    ensureBlockOverlay().classList.add('show');
+    document.body.classList.add('somax-block-active');
+    ['main-content','topbar-user','topbar-right'].forEach(function(id){
+      var e = document.getElementById(id);
+      if(e) e.style.display = 'none';
+    });
+    // cierra cualquier otro modal/aviso que pudiera haber quedado abierto
+    ['announce-modal','summary-modal','modal','user-detail-modal','match-breakdown-modal','somax-personal-alert'].forEach(function(id){
+      var e = document.getElementById(id);
+      if(e){ e.style.display = 'none'; e.classList.remove('show'); }
+    });
+    return true;
+  }
+  function releaseBlock(){
+    var el = document.getElementById('somax-block-overlay');
+    if(el) el.classList.remove('show');
+    document.body.classList.remove('somax-block-active');
+  }
+  window.__somaxEnforceUserBlock = enforceBlock;
+
+  var oldShowApp = window.showApp;
+  if(typeof oldShowApp === 'function' && !oldShowApp.__blockGateWrapped){
+    window.showApp = function(){
+      var r = oldShowApp.apply(this, arguments);
+      if(!enforceBlock()) releaseBlock();
+      return r;
+    };
+    window.showApp.__blockGateWrapped = true;
+    try{ showApp = window.showApp; }catch(e){}
+  }
+
+  var oldLogout = window.logoutUser;
+  if(typeof oldLogout === 'function' && !oldLogout.__blockGateWrapped){
+    window.logoutUser = function(){
+      releaseBlock();
+      return oldLogout.apply(this, arguments);
+    };
+    window.logoutUser.__blockGateWrapped = true;
+    try{ logoutUser = window.logoutUser; }catch(e){}
+  }
+})();
+</script>
+
 
 
 <!-- AJUSTE EDSON 20260701/02: clasificación admin refinada, selección clicable y formato con modal -->
@@ -22853,40 +22956,36 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 </style>
 <script id="edson-admin-side-shortcuts-20260701-script">
 (function(){
+  // AJUSTE 20260703: removido o setInterval/scroll listener antigo que usava
+  // adminSideShouldShow() com lógica desatualizada. Ele brigava a cada 900ms
+  // com a versão nova (edson-admin-side-jump-conditional), causando o piscar
+  // dos botões ↑ / Hoy no Admin. Agora este bloco só garante o elemento e
+  // dispara a sincronização correta (window.syncAdminSideJump) nos momentos certos.
   function ensureAdminSideJump(){
     var el=document.getElementById('admin-side-jump');
     if(el) return el;
     el=document.createElement('div');
     el.id='admin-side-jump';
-    el.innerHTML='<button type="button" class="asj-btn" onclick="adminScrollTop()">↑ Inicio</button><button type="button" class="asj-btn" onclick="adminScrollTodayGame()">📍 Juego de hoy</button>';
+    el.innerHTML='<button type="button" class="asj-btn asj-top" onclick="adminScrollTop()">↑</button><button type="button" class="asj-btn asj-today" onclick="adminScrollTodayGame()">Hoy</button>';
     document.body.appendChild(el);
     return el;
   }
-  function adminSideShouldShow(){
-    var area=document.getElementById('admin-area');
-    var rules=document.getElementById('panel-rules');
-    var isAdminPanel=!!(area && area.style.display!=='none' && (!rules || rules.classList.contains('active')));
-    return isAdminPanel;
-  }
-  function syncAdminSideJump(){
-    var el=ensureAdminSideJump();
-    el.classList.toggle('show', adminSideShouldShow());
+  function syncNow(){
+    if(typeof window.syncAdminSideJump === 'function') window.syncAdminSideJump();
   }
   var oldShowAdminArea=window.showAdminArea;
   if(typeof oldShowAdminArea==='function' && !oldShowAdminArea.__edsonSideJumpWrapped){
-    window.showAdminArea=function(){var r=oldShowAdminArea.apply(this,arguments);setTimeout(syncAdminSideJump,80);return r;};
+    window.showAdminArea=function(){var r=oldShowAdminArea.apply(this,arguments);setTimeout(syncNow,80);return r;};
     window.showAdminArea.__edsonSideJumpWrapped=true;
     try{showAdminArea=window.showAdminArea;}catch(e){}
   }
   var oldSwitchTab=window.switchTab;
   if(typeof oldSwitchTab==='function' && !oldSwitchTab.__edsonSideJumpWrapped){
-    window.switchTab=function(){var r=oldSwitchTab.apply(this,arguments);setTimeout(syncAdminSideJump,80);return r;};
+    window.switchTab=function(){var r=oldSwitchTab.apply(this,arguments);setTimeout(syncNow,80);return r;};
     window.switchTab.__edsonSideJumpWrapped=true;
     try{switchTab=window.switchTab;}catch(e){}
   }
-  document.addEventListener('DOMContentLoaded',function(){ensureAdminSideJump();setTimeout(syncAdminSideJump,300);});
-  window.addEventListener('scroll',syncAdminSideJump,{passive:true});
-  setInterval(syncAdminSideJump,900);
+  document.addEventListener('DOMContentLoaded',function(){ensureAdminSideJump();setTimeout(syncNow,300);});
 })();
 </script>
 
@@ -23130,7 +23229,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 (function(){
   function esc(v){return String(v ?? '').replace(/[&<>"']/g,function(ch){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];});}
   function matches(){try{return (typeof MATCHES!=='undefined'&&Array.isArray(MATCHES)?MATCHES:[]).slice().sort(function(a,b){return getMatchDateTime(a)-getMatchDateTime(b);});}catch(e){return [];}}
-  function participants(){try{return (typeof getRankedUsers==='function'?getRankedUsers():[]).filter(function(u){return u&&u.name&&(!window.isVisibleParticipantName||isVisibleParticipantName(u.name));}).map(function(u,idx){return {name:u.name,pos:(idx+1)+'º'};});}catch(e){return [];}}
+  function participants(){try{return (typeof getRankedUsers==='function'?getRankedUsers():[]).filter(function(u){return u&&u.name&&(!window.isVisibleParticipantName||isVisibleParticipantName(u.name));}).map(function(u,idx){return {name:u.name,pos:(idx+1)+'º',score:u.score||0};});}catch(e){return [];}}
   function display(m,results,standings){try{return typeof matchDisplay==='function'?matchDisplay(m,results,standings):{home:m.home,away:m.away,hf:'',af:''};}catch(e){return {home:m.home,away:m.away,hf:'',af:''};}}
   function splitDateTime(value){
     try{
@@ -23168,21 +23267,23 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var results=(typeof loadRealResults==='function'?loadRealResults():{});
     var standings=(typeof computeStandings==='function'?computeStandings(results):{});
     var picks=all[playerName]||{};
-    var user=participants().find(function(u){return String(u.name)===String(playerName);})||{name:playerName,pos:''};
+    var user=participants().find(function(u){return String(u.name)===String(playerName);})||{name:playerName,pos:'',score:0};
     var rows=matches().map(function(m){
       var d=display(m,results,standings),real=results[m.id]||results[String(m.id)]||null,pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
       return '<tr'+rowClass(pick)+'>'+ 
-        '<td><span>'+esc(d.hf||'')+' '+esc(d.home||m.home||'')+' × '+esc(d.away||m.away||'')+' '+esc(d.af||'')+'</span><br><span class="apl-muted">'+esc(m.date||'')+' · '+esc(m.time||'')+' · '+esc(m.phase||'')+'</span></td>'+ 
+        '<td class="apl-muted">'+esc(m.date||'')+'<br><span class="apl-muted">'+esc(m.time||'')+' · '+esc(m.phase||'')+'</span></td>'+ 
+        '<td><span>'+esc(d.hf||'')+' '+esc(d.home||m.home||'')+' × '+esc(d.away||m.away||'')+' '+esc(d.af||'')+'</span></td>'+ 
         '<td class="apl-result">'+esc(resultText(real))+'</td>'+ 
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
         '<td class="score">'+scoreHtml(pick,real,m)+'</td>'+ 
+        '<td class="score apl-total-pts">'+esc(user.score)+'</td>'+ 
         '<td class="apl-muted">'+esc(dt.fecha)+'</td>'+ 
         '<td class="apl-muted">'+esc(dt.hora)+'</td>'+ 
       '</tr>';
     }).join('');
     area.className='';
-    area.innerHTML='<div class="apl-person-summary"><div class="apl-person-summary-title">'+esc(user.pos?user.pos+' · '+user.name:user.name)+'</div><div class="apl-person-summary-meta">Consulta por participante · Todos los partidos</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partido / selecciones</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+    area.innerHTML='<div class="apl-person-summary"><div class="apl-person-summary-title">'+esc(user.pos?user.pos+' · '+user.name:user.name)+'</div><div class="apl-person-summary-meta">Consulta por participante · Todos los partidos · Puntos totales: <strong>'+esc(user.score)+'</strong></div></div>'+ 
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Partidas</th><th>Selecciones</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 
   window.renderAdminMatchLookupTable=function(matchId){
@@ -23199,19 +23300,29 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       var picks=all[u.name]||{},pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
       return '<tr'+rowClass(pick)+'>'+ 
         '<td><strong>'+esc(u.pos)+'</strong> · '+esc(u.name)+'</td>'+ 
+        '<td class="apl-muted">'+esc(m.date||'')+'<br><span class="apl-muted">'+esc(m.time||'')+' · '+esc(m.phase||'')+'</span></td>'+ 
+        '<td><span>'+esc(d.hf||'')+' '+esc(d.home||m.home||'')+' × '+esc(d.away||m.away||'')+' '+esc(d.af||'')+'</span></td>'+ 
         '<td class="apl-result">'+esc(resultado)+'</td>'+ 
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
         '<td class="score">'+scoreHtml(pick,real,m)+'</td>'+ 
+        '<td class="score apl-total-pts">'+esc(u.score)+'</td>'+ 
         '<td class="apl-muted">'+esc(dt.fecha)+'</td>'+ 
         '<td class="apl-muted">'+esc(dt.hora)+'</td>'+ 
       '</tr>';
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Partidas</th><th>Selecciones</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 })();
 </script>
+<style id="edson-apl-partidas-selecciones-puntos-20260703">
+  #admin-player-lookup-modal .apl-total-pts{
+    font-weight:950!important;
+    color:var(--green2)!important;
+  }
+  #admin-player-lookup-modal .apl-table{min-width:980px!important;}
+</style>
 
 <!-- AJUSTE EDSON 20260702: filtros da consulta em coluna e sem texto auxiliar -->
 <style id="edson-apl-filtros-vertical-sem-o-20260702">
