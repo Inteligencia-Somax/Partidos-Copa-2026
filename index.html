@@ -7210,7 +7210,8 @@ let currentAdminFilter = 'all';
 const USER_MERGES = {
   'fernando10agronomia': 'fernando otaviano da silva',
   'silvana.arrua': 'Silvana Arrúa',
-  'silvana arrua': 'Silvana Arrúa'
+  'silvana arrua': 'Silvana Arrúa',
+  'coordinador': 'Coordinador (Robison Iturbe)'
 };
 function normalizeUserMergeName(name){
   return String(name || '')
@@ -21933,18 +21934,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
 
   function showCoordinatorAlertIfNeeded(){
-    if(normalizeUserName(currentUser) !== 'coordinador') return false;
-    var key = 'somax_alert_coordinador_' + normalizeUserName(currentUser || '');
-    if(!shouldShowOncePerSession(key)) return true;
-    showPersonalAlert({
-      title:'⚠️ Identificación necesaria',
-      html:'<p>Hola, identificamos que tu usuario está registrado como <strong>“Coordinador”</strong>.</p>' +
-           '<p>Para mantener el ranking correcto y evitar confusiones entre participantes, necesitamos que nos informes tu nombre completo.</p>' +
-           '<p>Por favor, entrá en contacto con el equipo de <strong>Inteligencia Estratégica de Somax</strong>.</p>' +
-           '<div class="personal-alert-phone">📱 0984 192122</div>' +
-           '<p style="text-align:center;color:var(--sub);font-size:12px;margin-top:10px;">Gracias.</p>'
-    });
-    return true;
+    // 20260703: "coordinador" ya fue identificado como Robison Iturbe, alerta desactivada.
+    return false;
   }
 
   function getTop3Message(position){
@@ -22026,7 +22017,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   window.__somaxBlockGateInstalled = true;
 
   // Lista de usuarios bloqueados hasta que se identifiquen (nombre normalizado).
-  var BLOCKED_USERNAMES = ['coordinador'];
+  // 20260703: "coordinador" ya fue identificado como Robison Iturbe, se retira del bloqueo.
+  var BLOCKED_USERNAMES = [];
 
   function normBlockName(name){
     return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
@@ -23300,19 +23292,17 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       var picks=all[u.name]||{},pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
       return '<tr'+rowClass(pick)+'>'+ 
         '<td><strong>'+esc(u.pos)+'</strong> · '+esc(u.name)+'</td>'+ 
-        '<td class="apl-muted">'+esc(m.date||'')+'<br><span class="apl-muted">'+esc(m.time||'')+' · '+esc(m.phase||'')+'</span></td>'+ 
-        '<td><span>'+esc(d.hf||'')+' '+esc(d.home||m.home||'')+' × '+esc(d.away||m.away||'')+' '+esc(d.af||'')+'</span></td>'+ 
         '<td class="apl-result">'+esc(resultado)+'</td>'+ 
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
         '<td class="score">'+scoreHtml(pick,real,m)+'</td>'+ 
-        '<td class="score apl-total-pts">'+esc(u.score)+'</td>'+ 
+        '<td class="score apl-total-pts-plain">'+esc(u.score)+'</td>'+ 
         '<td class="apl-muted">'+esc(dt.fecha)+'</td>'+ 
         '<td class="apl-muted">'+esc(dt.hora)+'</td>'+ 
       '</tr>';
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Partidas</th><th>Selecciones</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 })();
 </script>
@@ -23320,6 +23310,10 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #admin-player-lookup-modal .apl-total-pts{
     font-weight:950!important;
     color:var(--green2)!important;
+  }
+  #admin-player-lookup-modal .apl-total-pts-plain{
+    font-weight:700!important;
+    color:var(--text)!important;
   }
   #admin-player-lookup-modal .apl-table{min-width:980px!important;}
 </style>
