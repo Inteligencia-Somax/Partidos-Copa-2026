@@ -24540,9 +24540,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     cur.forEach(function(u,i){ curPos[u.name] = i + 1; });
     var me = (typeof getCanonicalUserName === 'function' && typeof currentUser !== 'undefined') ? getCanonicalUserName(currentUser) : '';
     var rows = '';
-    var shown = sim.slice(0, 10);
+    var shown = sim;                       // ranking completo (edson-ajuste-20260702)
     var meIdx = sim.findIndex(function(u){ return u.name === me; });
-    if(meIdx >= 10) shown.push(sim[meIdx]);
     shown.forEach(function(u){
       var pos = sim.indexOf(u) + 1;
       var dd = (curPos[u.name] || pos) - pos;
@@ -24551,6 +24550,9 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     });
     var disp = matchDisplay(m, real, computeStandings(real));
     out.innerHTML = '<div class="sim-lbl">Si ' + disp.home + ' ' + h + ':' + a + ' ' + disp.away + ' →</div>' + rows;
+    // lleva la vista hasta tu línea en el ranking completo
+    var meRow = out.querySelector('.sim-me');
+    if(meRow) setTimeout(function(){ meRow.scrollIntoView({ block:'center', behavior:'smooth' }); }, 150);
     if(navigator.vibrate) navigator.vibrate(10);
   };
   function injectSimButton(){
@@ -24933,5 +24935,69 @@ body.somax-modal-locked #sim-open-btn.sim-fab{display:none!important;}
   function init(){ try{ syncFab(); }catch(e){} setTimeout(syncFab, 400); setTimeout(syncFab, 1200); }
   if(document.readyState !== 'loading') init();
   else document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v4-20260702
+     a) FAB 🔮 sin etiqueta "¿Y si...?" y reposicionado arriba del botón "Yo"
+        para no taparlo (el "Yo" solo aparece cuando tu card del ranking está
+        fuera de la pantalla).
+     b) Simulador: marcador de UN dígito (0–9) con salto automático al otro
+        campo — escribís el local y el cursor ya está en el visitante.
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v4-20260702-style">
+/* a) sin etiqueta y apilado arriba del "Yo" (Yo: bottom 92 + 42px alto) */
+#sim-open-btn.sim-fab .sim-fab-lbl{display:none!important;}
+#sim-open-btn.sim-fab{bottom:150px;}
+</style>
+
+<script id="edson-upgrade-pack-v4-20260702-script">
+(function(){
+  'use strict';
+
+  /* b) un dígito por campo + salto automático (delegado: funciona aunque
+        el modal se cree después) */
+  function isSimField(el){ return el && (el.id === 'sim-h' || el.id === 'sim-a'); }
+
+  document.addEventListener('input', function(e){
+    var el = e.target;
+    if(!isSimField(el)) return;
+    // deja solo el último dígito 0–9 (0 vale: 2:0 es el palpite más común 😉)
+    var digits = String(el.value).replace(/\D/g, '');
+    el.value = digits ? digits.slice(-1) : '';
+    if(el.value === '') return;
+    if(el.id === 'sim-h'){
+      var away = document.getElementById('sim-a');
+      if(away){ away.focus(); away.select && away.select(); }
+    } else {
+      el.blur(); // los dos completos → cierra el teclado, listo para "Simular"
+    }
+  }, true);
+
+  // al enfocar un campo, selecciona lo que haya para sobreescribir de un toque
+  document.addEventListener('focusin', function(e){
+    if(isSimField(e.target) && e.target.select) e.target.select();
+  }, true);
+
+  // refuerza atributos cuando el modal exista
+  function hardenSimInputs(){
+    ['sim-h','sim-a'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.setAttribute('maxlength', '1');
+      el.setAttribute('pattern', '[0-9]');
+      el.setAttribute('inputmode', 'numeric');
+      el.setAttribute('autocomplete', 'off');
+    });
+  }
+  var _openSim = window.openSimModal;
+  if(typeof _openSim === 'function'){
+    window.openSimModal = function(){
+      var r = _openSim.apply(this, arguments);
+      try{ hardenSimInputs(); }catch(e){}
+      return r;
+    };
+  }
 })();
 </script>
