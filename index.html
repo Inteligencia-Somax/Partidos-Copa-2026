@@ -23263,7 +23263,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var rows=matches().map(function(m){
       var d=display(m,results,standings),real=results[m.id]||results[String(m.id)]||null,pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
       return '<tr'+rowClass(pick)+'>'+ 
-        '<td class="apl-muted">'+esc(m.date||'')+'<br><span class="apl-muted">'+esc(m.time||'')+' · '+esc(m.phase||'')+'</span></td>'+ 
+        '<td class="apl-muted">'+esc(m.date||'')+' · '+esc(m.time||'')+' · '+esc(m.phase||'')+'</td>'+ 
         '<td><span>'+esc(d.hf||'')+' '+esc(d.home||m.home||'')+' × '+esc(d.away||m.away||'')+' '+esc(d.af||'')+'</span></td>'+ 
         '<td class="apl-result">'+esc(resultText(real))+'</td>'+ 
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
@@ -23288,13 +23288,14 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var d=display(m,results,standings),real=results[m.id]||results[String(m.id)]||null,resultado=resultText(real);
     var matchTitle=(d.hf||'')+' '+(d.home||m.home||'')+' × '+(d.away||m.away||'')+' '+(d.af||'');
     var matchMeta=(m.date||'')+' · '+(m.time||'')+' · '+(m.phase||'')+' · Resultado: '+resultado;
+    var hasResult=!!real;
     var rows=participants().map(function(u){
       var picks=all[u.name]||{},pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
       return '<tr'+rowClass(pick)+'>'+ 
         '<td><strong>'+esc(u.pos)+'</strong> · '+esc(u.name)+'</td>'+ 
-        '<td class="apl-result">'+esc(resultado)+'</td>'+ 
+        (hasResult?('<td class="apl-result">'+esc(resultado)+'</td>'):'')+ 
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
-        '<td class="score">'+scoreHtml(pick,real,m)+'</td>'+ 
+        (hasResult?('<td class="score">'+scoreHtml(pick,real,m)+'</td>'):'')+ 
         '<td class="score apl-total-pts-plain">'+esc(u.score)+'</td>'+ 
         '<td class="apl-muted">'+esc(dt.fecha)+'</td>'+ 
         '<td class="apl-muted">'+esc(dt.hora)+'</td>'+ 
@@ -23302,7 +23303,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th><th>Resultado</th><th>Pronóstico</th><th class="score">Puntuación</th><th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th>'+(hasResult?'<th>Resultado</th>':'')+'<th>Pronóstico</th>'+(hasResult?'<th class="score">Puntuación</th>':'')+'<th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 })();
 </script>
