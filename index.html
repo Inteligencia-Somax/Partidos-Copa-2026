@@ -25001,3 +25001,175 @@ body.somax-modal-locked #sim-open-btn.sim-fab{display:none!important;}
   }
 })();
 </script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v5-20260702
+     a) FABs más chicos (46px) — el 🔮 del Ranking y el nuevo de Partidas.
+     b) Nuevo FAB 💥 en Partidas: "Top 5 más fallados" — los resultados
+        donde más gente erró (0 pts), con el palpite equivocado más común.
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v5-20260702-style">
+/* a) tamaño compacto para ambos FABs */
+#sim-open-btn.sim-fab,
+#fail-open-btn.fail-fab{
+  position:fixed;right:14px;bottom:150px;z-index:250;
+  width:46px;height:46px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.85);
+  display:none;align-items:center;justify-content:center;
+  font-size:22px;line-height:1;cursor:pointer;padding:0;
+  box-shadow:0 4px 14px rgba(0,0,0,.30);
+  transition:transform .12s ease;
+}
+#sim-open-btn.sim-fab{background:linear-gradient(145deg,#0D3A8A,#0A2A6E);}
+#fail-open-btn.fail-fab{background:linear-gradient(145deg,#B91C1C,#7F1D1D);}
+#sim-open-btn.sim-fab:active,
+#fail-open-btn.fail-fab:active{transform:scale(.9);}
+body.somax-sim-fab-on #sim-open-btn.sim-fab{display:flex;}
+body.somax-fail-fab-on #fail-open-btn.fail-fab{display:flex;}
+body.somax-modal-locked #sim-open-btn.sim-fab,
+body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
+
+/* b) filas del Top 5 */
+.fail-row{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--white);}
+.fail-row-top{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:800;color:var(--text);}
+.fail-rank{font-size:16px;flex-shrink:0;}
+.fail-real{margin-left:auto;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px 8px;font-weight:900;flex-shrink:0;}
+.fail-row-sub{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11.5px;font-weight:700;color:var(--sub);flex-wrap:wrap;}
+.fail-pct{color:var(--red);font-weight:900;}
+.fail-bar{flex-basis:100%;height:5px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:4px;}
+.fail-bar span{display:block;height:100%;background:linear-gradient(90deg,#EF4444,#B91C1C);}
+</style>
+
+<script id="edson-upgrade-pack-v5-20260702-script">
+(function(){
+  'use strict';
+
+  /* ── datos: top 5 partidos con más errores (0 pts) ── */
+  function topFailedMatches(){
+    var real = loadRealResults();
+    var all = loadAllPicks();
+    var names = Object.keys(all).filter(function(n){
+      return !(typeof isExcludedFromRanking === 'function' && isExcludedFromRanking(n));
+    });
+    var rows = [];
+    MATCHES.forEach(function(m){
+      if(!real[m.id]) return;
+      var total = 0, misses = 0, wrongCount = {};
+      names.forEach(function(n){
+        var p = (all[n] || {})[m.id];
+        if(!p || p.home === undefined) return;
+        total++;
+        var pts = calculatePickPoints(p, real[m.id], m).pts;
+        if(pts === 0){
+          misses++;
+          var k = p.home + ':' + p.away;
+          wrongCount[k] = (wrongCount[k] || 0) + 1;
+        }
+      });
+      if(total < 3 || misses === 0) return;
+      var topWrong = null;
+      Object.keys(wrongCount).forEach(function(k){
+        if(!topWrong || wrongCount[k] > wrongCount[topWrong]) topWrong = k;
+      });
+      rows.push({ m:m, total:total, misses:misses, pct:misses/total, topWrong:topWrong, topWrongN:wrongCount[topWrong] });
+    });
+    rows.sort(function(a,b){ return b.pct - a.pct || b.misses - a.misses; });
+    return rows.slice(0, 5);
+  }
+
+  function ensureFailModal(){
+    if(document.getElementById('fail-modal')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'fail-modal';
+    wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:16px;';
+    wrap.innerHTML =
+      '<div class="sim-box">' +
+        '<div class="sim-head"><span class="sim-title">💥 Top 5 más fallados</span><button class="sim-close" onclick="closeFailModal()">✕</button></div>' +
+        '<div class="sim-body" id="fail-body"></div>' +
+      '</div>';
+    wrap.addEventListener('click', function(e){ if(e.target === wrap) closeFailModal(); });
+    document.body.appendChild(wrap);
+  }
+  window.openFailModal = function(){
+    ensureFailModal();
+    var body = document.getElementById('fail-body');
+    var rows = topFailedMatches();
+    if(!rows.length){
+      body.innerHTML = '<div class="sim-note">Todavía no hay partidos con resultado suficientes para el Top 5. ¡Paciencia!</div>';
+    } else {
+      var real = loadRealResults(), standings = computeStandings(real);
+      var medals = ['🥇','🥈','🥉','4º','5º'];
+      body.innerHTML = '<div class="sim-lbl">Los resultados que más dolieron en el bolão</div>' +
+        rows.map(function(r, i){
+          var d = matchDisplay(r.m, real, standings);
+          var pct = Math.round(r.pct * 100);
+          return '<div class="fail-row">' +
+            '<div class="fail-row-top"><span class="fail-rank">' + medals[i] + '</span>' +
+              d.hf + ' ' + d.home + ' × ' + d.away + ' ' + d.af +
+              '<span class="fail-real">' + real[r.m.id].home + ':' + real[r.m.id].away + '</span></div>' +
+            '<div class="fail-row-sub"><span class="fail-pct">' + pct + '% erró</span>· ' + r.misses + ' de ' + r.total +
+              (r.topWrong ? ' · palpite fallado más común: <b>' + r.topWrong + '</b> (' + r.topWrongN + ')' : '') +
+              '<span class="fail-bar"><span style="width:' + pct + '%"></span></span></div>' +
+          '</div>';
+        }).join('') +
+        '<div class="sim-note">Solo cuentan participantes con palpite registrado en cada partido.</div>';
+    }
+    document.getElementById('fail-modal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeFailModal = function(){
+    var el = document.getElementById('fail-modal');
+    if(el) el.style.display = 'none';
+    document.body.style.overflow = '';
+  };
+
+  /* ── FAB en Partidas ── */
+  function matchesVisible(){
+    var p = document.getElementById('panel-matches');
+    return !!(p && p.classList.contains('active'));
+  }
+  function anyModalOpen(){
+    if(document.body.classList.contains('somax-modal-locked')) return true;
+    if((document.body.style.overflow || '') === 'hidden') return true;
+    return false;
+  }
+  function ensureFailFab(){
+    var fab = document.getElementById('fail-open-btn');
+    if(!fab){
+      fab = document.createElement('button');
+      fab.id = 'fail-open-btn';
+      fab.className = 'fail-fab';
+      fab.type = 'button';
+      fab.setAttribute('aria-label', 'Top 5 resultados más fallados');
+      fab.textContent = '💥';
+      fab.onclick = function(){ window.openFailModal(); };
+      document.body.appendChild(fab);
+    }
+    return fab;
+  }
+  function syncFailFab(){
+    ensureFailFab();
+    document.body.classList.toggle('somax-fail-fab-on', matchesVisible() && !anyModalOpen());
+  }
+  window.edsonSyncFailFab = syncFailFab;
+
+  if(typeof window.switchTab === 'function'){
+    var _st5 = window.switchTab;
+    window.switchTab = function(){
+      var r = _st5.apply(this, arguments);
+      try{ syncFailFab(); }catch(e){}
+      return r;
+    };
+  }
+  if(window.MutationObserver){
+    var pm = document.getElementById('panel-matches');
+    if(pm) new MutationObserver(function(){ try{ syncFailFab(); }catch(e){} })
+      .observe(pm, { attributes:true, attributeFilter:['class'] });
+    new MutationObserver(function(){ try{ syncFailFab(); }catch(e){} })
+      .observe(document.body, { attributes:true, attributeFilter:['class','style'] });
+  }
+  function init(){ try{ syncFailFab(); }catch(e){} setTimeout(syncFailFab, 400); setTimeout(syncFailFab, 1200); }
+  if(document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
