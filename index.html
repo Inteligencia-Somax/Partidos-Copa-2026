@@ -25173,3 +25173,349 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
   else document.addEventListener('DOMContentLoaded', init);
 })();
 </script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v6-20260702
+     Desactiva temporalmente el FAB 💥 "Top 5 más fallados" en Partidas.
+     La lógica del v5 queda intacta: para reactivarlo mañana (con más
+     curiosidades), basta borrar este bloque de estilo.
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v6-20260702-style">
+#fail-open-btn.fail-fab{display:none!important;}
+</style>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v7-20260703 — "Curiosidades"
+     Botón (sin emojis) debajo del hero de Próximo Palpite, que abre un
+     modal con 4 pestañas en español: Fallos · Hazañas · Zebras · El grupo.
+     Todos los cálculos usan SOLO partidos cerrados/terminados → no se
+     puede deducir ningún palpite de partidos abiertos.
+     El FAB 💥 del v5 queda definitivamente reemplazado por esto.
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v7-20260703-style">
+.curio-wrap{max-width:680px;margin:0 auto 12px;padding:0 12px;}
+.curio-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  background:var(--white);border:1px solid var(--border);border-radius:16px;
+  padding:13px 16px;font-family:'Inter',sans-serif;font-size:14px;font-weight:900;
+  color:var(--text);cursor:pointer;box-shadow:var(--shadow);
+}
+.curio-btn:active{transform:scale(.98);}
+.curio-btn .curio-sub{display:block;font-size:10.5px;font-weight:700;color:var(--sub);margin-top:2px;}
+.curio-btn .curio-chev{font-size:16px;color:var(--sub);font-weight:900;}
+#curio-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:16px;}
+#curio-modal.open{display:flex;}
+.curio-tabs{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap;}
+.curio-tab{
+  border:1px solid var(--border);background:var(--white);border-radius:999px;
+  padding:7px 13px;font-family:'Inter',sans-serif;font-size:12px;font-weight:800;
+  color:var(--sub);cursor:pointer;
+}
+.curio-tab.on{background:var(--green);border-color:var(--green);color:#fff;}
+.curio-sec-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);margin:14px 0 6px;}
+.curio-sec-title:first-child{margin-top:2px;}
+.curio-row{border:1px solid var(--border);border-radius:12px;padding:9px 12px;margin-bottom:6px;background:var(--white);font-size:12.5px;font-weight:700;color:var(--text);line-height:1.5;}
+.curio-row b{font-weight:900;}
+.curio-row .c-sub{display:block;font-size:11px;color:var(--sub);font-weight:700;margin-top:2px;}
+.curio-row .c-pct{color:var(--red);font-weight:900;}
+.curio-row .c-good{color:var(--green);font-weight:900;}
+.curio-empty{font-size:12px;color:var(--sub);font-weight:600;padding:8px 2px;}
+</style>
+
+<script id="edson-upgrade-pack-v7-20260703-script">
+(function(){
+  'use strict';
+
+  /* ─── base de datos: solo partidos con resultado (cerrados por definición) ─── */
+  function curioData(){
+    var real = loadRealResults();
+    var all = loadAllPicks();
+    var names = Object.keys(all).filter(function(n){
+      return !(typeof isExcludedFromRanking === 'function' && isExcludedFromRanking(n));
+    });
+    var finished = MATCHES.filter(function(m){ return real[m.id]; })
+      .sort(function(a,b){ return getMatchDateTime(a) - getMatchDateTime(b); });
+    var locked = MATCHES.filter(function(m){ return !canEditPick(m); });
+    var standings = computeStandings(real);
+
+    var perMatch = {};      // id -> {total,misses,outcomeOk,exactNames,scoreCount,consensusScore}
+    var roundPts = {};      // round -> {user: pts, __total, __users}
+    var teamStats = {};     // code -> {pickedWin, totalPicks, wins, games, name, flag}
+    var userGoals = {};     // user -> {goals, picks}
+    var globalScoreCount = {};
+
+    finished.forEach(function(m){
+      var r = real[m.id];
+      var d = matchDisplay(m, real, standings);
+      var pm = { total:0, misses:0, outcomeOk:0, exactNames:[], scoreCount:{}, disp:d, real:r };
+      var round = getRoundLabel(m);
+      if(!roundPts[round]) roundPts[round] = { __users:{} };
+      var realOut = r.home === r.away ? 'D' : (r.home > r.away ? 'H' : 'A');
+
+      [['h', d.hc || d.home, d.hf], ['a', d.ac || d.away, d.af]].forEach(function(side){
+        var code = side[1];
+        if(!teamStats[code]) teamStats[code] = { pickedWin:0, totalPicks:0, wins:0, games:0, flag:side[2] };
+        teamStats[code].games++;
+      });
+      var hc = d.hc || d.home, ac = d.ac || d.away;
+      if(realOut === 'H') teamStats[hc].wins++;
+      if(realOut === 'A') teamStats[ac].wins++;
+
+      names.forEach(function(n){
+        var p = (all[n] || {})[m.id];
+        if(!p || p.home === undefined) return;
+        pm.total++;
+        var k = p.home + ':' + p.away;
+        pm.scoreCount[k] = (pm.scoreCount[k] || 0) + 1;
+        var calc = calculatePickPoints(p, r, m);
+        if(calc.pts === 0) pm.misses++;
+        if(calc.type === 'exact') pm.exactNames.push(n);
+        var pickOut = p.home === p.away ? 'D' : (p.home > p.away ? 'H' : 'A');
+        if(pickOut === realOut) pm.outcomeOk++;
+        roundPts[round].__users[n] = (roundPts[round].__users[n] || 0) + calc.pts;
+        teamStats[hc].totalPicks++; teamStats[ac].totalPicks++;
+        if(pickOut === 'H') teamStats[hc].pickedWin++;
+        if(pickOut === 'A') teamStats[ac].pickedWin++;
+      });
+      var top = null;
+      Object.keys(pm.scoreCount).forEach(function(k){ if(!top || pm.scoreCount[k] > pm.scoreCount[top]) top = k; });
+      pm.consensusScore = top;
+      perMatch[m.id] = pm;
+    });
+
+    // marcadores globales y optimista/pesimista: sobre partidos CERRADOS
+    locked.forEach(function(m){
+      names.forEach(function(n){
+        var p = (all[n] || {})[m.id];
+        if(!p || p.home === undefined) return;
+        var k = p.home + ':' + p.away;
+        globalScoreCount[k] = (globalScoreCount[k] || 0) + 1;
+        if(!userGoals[n]) userGoals[n] = { goals:0, picks:0 };
+        userGoals[n].goals += p.home + p.away;
+        userGoals[n].picks++;
+      });
+    });
+
+    return { finished:finished, perMatch:perMatch, roundPts:roundPts, teamStats:teamStats,
+             userGoals:userGoals, globalScoreCount:globalScoreCount, real:real, names:names };
+  }
+
+  function matchTitle(pm){
+    return pm.disp.hf + ' ' + pm.disp.home + ' ' + pm.real.home + ' \u00d7 ' + pm.real.away + ' ' + pm.disp.away + ' ' + pm.disp.af;
+  }
+  function pct(x){ return Math.round(x * 100) + '%'; }
+
+  /* ─── pestañas ─── */
+  function tabFallos(D){
+    var h = '';
+    var rows = D.finished.map(function(m){ return D.perMatch[m.id]; })
+      .filter(function(pm){ return pm.total >= 3 && pm.misses > 0; })
+      .sort(function(a,b){ return b.misses/b.total - a.misses/a.total || b.misses - a.misses; })
+      .slice(0, 5);
+    h += '<div class="curio-sec-title">Top 5: los resultados que m\u00e1s dolieron</div>';
+    if(!rows.length) h += '<div class="curio-empty">Todav\u00eda no hay datos suficientes.</div>';
+    rows.forEach(function(pm, i){
+      h += '<div class="curio-row">' + (i+1) + '\u00ba \u00b7 ' + matchTitle(pm) +
+        '<span class="c-sub"><span class="c-pct">' + pct(pm.misses/pm.total) + ' err\u00f3</span> \u00b7 ' + pm.misses + ' de ' + pm.total + ' participantes con 0 puntos</span></div>';
+    });
+    var enganos = D.finished.map(function(m){ return D.perMatch[m.id]; })
+      .filter(function(pm){
+        if(pm.total < 3 || !pm.consensusScore) return false;
+        var parts = pm.consensusScore.split(':');
+        var co = +parts[0] === +parts[1] ? 'D' : (+parts[0] > +parts[1] ? 'H' : 'A');
+        var ro = pm.real.home === pm.real.away ? 'D' : (pm.real.home > pm.real.away ? 'H' : 'A');
+        return co !== ro;
+      })
+      .sort(function(a,b){ return b.scoreCount[b.consensusScore]/b.total - a.scoreCount[a.consensusScore]/a.total; })
+      .slice(0, 3);
+    h += '<div class="curio-sec-title">El enga\u00f1o colectivo</div>';
+    if(!enganos.length) h += '<div class="curio-empty">El grupo todav\u00eda no cay\u00f3 en ninguna trampa grande.</div>';
+    enganos.forEach(function(pm){
+      h += '<div class="curio-row">' + matchTitle(pm) +
+        '<span class="c-sub">El m\u00e1s elegido fue <b>' + pm.consensusScore + '</b> (' + pct(pm.scoreCount[pm.consensusScore]/pm.total) + ' del grupo) y el ganador ni siquiera coincidi\u00f3</span></div>';
+    });
+    return h;
+  }
+
+  function tabHazanas(D){
+    var h = '';
+    var valientes = D.finished.map(function(m){ return D.perMatch[m.id]; })
+      .filter(function(pm){ return pm.total >= 10 && pm.exactNames.length > 0 && pm.exactNames.length <= 2; })
+      .sort(function(a,b){ return a.exactNames.length/a.total - b.exactNames.length/b.total; })
+      .slice(0, 5);
+    h += '<div class="curio-sec-title">Palpites valientes (exactos que casi nadie vio)</div>';
+    if(!valientes.length) h += '<div class="curio-empty">Todav\u00eda no hubo exactos solitarios.</div>';
+    valientes.forEach(function(pm){
+      h += '<div class="curio-row">' + matchTitle(pm) +
+        '<span class="c-sub"><span class="c-good">Solo ' + pm.exactNames.length + ' de ' + pm.total + '</span> clavaron el ' + pm.real.home + ':' + pm.real.away + ' \u2192 <b>' + pm.exactNames.join(', ') + '</b></span></div>';
+    });
+    h += '<div class="curio-sec-title">El profeta de cada fecha</div>';
+    var anyRound = false;
+    Object.keys(D.roundPts).forEach(function(round){
+      var users = D.roundPts[round].__users;
+      var best = null;
+      Object.keys(users).forEach(function(n){ if(!best || users[n] > users[best]) best = n; });
+      if(!best || users[best] <= 0) return;
+      anyRound = true;
+      h += '<div class="curio-row"><b>' + round + '</b>: ' + best + '<span class="c-sub c-good">' + users[best] + ' puntos en la fecha</span></div>';
+    });
+    if(!anyRound) h += '<div class="curio-empty">Sin fechas completadas a\u00fan.</div>';
+    var brillo = D.finished.map(function(m){ return D.perMatch[m.id]; })
+      .filter(function(pm){ return pm.total >= 3 && pm.exactNames.length > 0; })
+      .sort(function(a,b){ return b.exactNames.length/b.total - a.exactNames.length/a.total; })
+      .slice(0, 3);
+    h += '<div class="curio-sec-title">Donde el grupo brill\u00f3</div>';
+    brillo.forEach(function(pm){
+      h += '<div class="curio-row">' + matchTitle(pm) +
+        '<span class="c-sub"><span class="c-good">' + pct(pm.exactNames.length/pm.total) + '</span> clav\u00f3 el marcador exacto</span></div>';
+    });
+    if(!brillo.length) h += '<div class="curio-empty">A\u00fan sin exactos masivos.</div>';
+    return h;
+  }
+
+  function tabZebras(D){
+    var h = '';
+    var zebras = D.finished.map(function(m){ return D.perMatch[m.id]; })
+      .filter(function(pm){ return pm.total >= 3; })
+      .sort(function(a,b){ return a.outcomeOk/a.total - b.outcomeOk/b.total; })
+      .slice(0, 5);
+    h += '<div class="curio-sec-title">Top 5 zebras del torneo</div>';
+    if(!zebras.length) h += '<div class="curio-empty">Sin datos suficientes.</div>';
+    zebras.forEach(function(pm, i){
+      h += '<div class="curio-row">' + (i+1) + '\u00ba \u00b7 ' + matchTitle(pm) +
+        '<span class="c-sub">Solo <span class="c-pct">' + pct(pm.outcomeOk/pm.total) + '</span> acert\u00f3 al menos el ganador</span></div>';
+    });
+    var teams = Object.keys(D.teamStats).map(function(code){
+      var t = D.teamStats[code];
+      if(t.games < 3 || t.totalPicks < 10) return null;
+      return { code:code, flag:t.flag, conf:t.pickedWin/t.totalPicks, realWin:t.wins/t.games,
+               gap:(t.pickedWin/t.totalPicks) - (t.wins/t.games) };
+    }).filter(Boolean);
+    var sobre = teams.slice().sort(function(a,b){ return b.gap - a.gap; }).slice(0, 3);
+    var infra = teams.slice().sort(function(a,b){ return a.gap - b.gap; }).slice(0, 3);
+    h += '<div class="curio-sec-title">La fe que no fue (sobrevalorados)</div>';
+    sobre.forEach(function(t){
+      h += '<div class="curio-row">' + t.flag + ' <b>' + t.code + '</b><span class="c-sub">El grupo lo dio ganador en ' + pct(t.conf) + ' de los palpites, pero gan\u00f3 solo el ' + pct(t.realWin) + ' de sus partidos</span></div>';
+    });
+    if(!sobre.length) h += '<div class="curio-empty">Faltan partidos para este an\u00e1lisis.</div>';
+    h += '<div class="curio-sec-title">Los que nadie respetaba (infravalorados)</div>';
+    infra.forEach(function(t){
+      h += '<div class="curio-row">' + t.flag + ' <b>' + t.code + '</b><span class="c-sub">Solo ' + pct(t.conf) + ' del grupo le daba la victoria y gan\u00f3 el ' + pct(t.realWin) + ' de sus partidos</span></div>';
+    });
+    if(!infra.length) h += '<div class="curio-empty">Faltan partidos para este an\u00e1lisis.</div>';
+    return h;
+  }
+
+  function tabGrupo(D){
+    var h = '';
+    var scores = Object.keys(D.globalScoreCount)
+      .sort(function(a,b){ return D.globalScoreCount[b] - D.globalScoreCount[a]; }).slice(0, 5);
+    var totalPicks = 0;
+    Object.keys(D.globalScoreCount).forEach(function(k){ totalPicks += D.globalScoreCount[k]; });
+    h += '<div class="curio-sec-title">Los marcadores favoritos del bol\u00e3o</div>';
+    scores.forEach(function(k, i){
+      h += '<div class="curio-row">' + (i+1) + '\u00ba \u00b7 <b>' + k + '</b><span class="c-sub">' + D.globalScoreCount[k] + ' palpites (' + pct(D.globalScoreCount[k]/totalPicks) + ' del total)</span></div>';
+    });
+    if(!scores.length) h += '<div class="curio-empty">Sin palpites cerrados a\u00fan.</div>';
+    var gl = Object.keys(D.userGoals).map(function(n){
+      var u = D.userGoals[n];
+      if(u.picks < 5) return null;
+      return { n:n, avg:u.goals/u.picks };
+    }).filter(Boolean).sort(function(a,b){ return b.avg - a.avg; });
+    if(gl.length >= 2){
+      h += '<div class="curio-sec-title">Optimista y pesimista</div>';
+      h += '<div class="curio-row">El optimista: <b>' + gl[0].n + '</b><span class="c-sub">' + gl[0].avg.toFixed(1) + ' goles por palpite en promedio: para \u00e9l todo partido es una fiesta</span></div>';
+      var p = gl[gl.length-1];
+      h += '<div class="curio-row">El pesimista: <b>' + p.n + '</b><span class="c-sub">' + p.avg.toFixed(1) + ' goles por palpite en promedio: cerrojo puro</span></div>';
+    }
+    h += '<div class="curio-sec-title">Fecha m\u00e1s generosa y m\u00e1s cruel</div>';
+    var rounds = Object.keys(D.roundPts).map(function(round){
+      var users = D.roundPts[round].__users;
+      var tot = 0, cnt = 0;
+      Object.keys(users).forEach(function(n){ tot += users[n]; cnt++; });
+      if(!cnt) return null;
+      return { round:round, avg:tot/cnt };
+    }).filter(Boolean).sort(function(a,b){ return b.avg - a.avg; });
+    if(rounds.length >= 2){
+      h += '<div class="curio-row">La generosa: <b>' + rounds[0].round + '</b><span class="c-sub c-good">' + Math.round(rounds[0].avg) + ' puntos promedio por participante</span></div>';
+      var c = rounds[rounds.length-1];
+      h += '<div class="curio-row">La cruel: <b>' + c.round + '</b><span class="c-sub c-pct">' + Math.round(c.avg) + ' puntos promedio por participante</span></div>';
+    } else {
+      h += '<div class="curio-empty">Hacen falta al menos dos fechas con resultados.</div>';
+    }
+    return h;
+  }
+
+  /* ─── modal ─── */
+  var curioD = null;
+  var TABS = [
+    { id:'fallos',  label:'Fallos',   fn:tabFallos },
+    { id:'hazanas', label:'Haza\u00f1as',  fn:tabHazanas },
+    { id:'zebras',  label:'Zebras',   fn:tabZebras },
+    { id:'grupo',   label:'El grupo', fn:tabGrupo }
+  ];
+  function ensureCurioModal(){
+    if(document.getElementById('curio-modal')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'curio-modal';
+    wrap.innerHTML =
+      '<div class="sim-box">' +
+        '<div class="sim-head"><span class="sim-title">Curiosidades del bol\u00e3o</span><button class="sim-close" onclick="closeCurioModal()">\u2715</button></div>' +
+        '<div class="curio-tabs" id="curio-tabs"></div>' +
+        '<div class="sim-body" id="curio-body"></div>' +
+      '</div>';
+    wrap.addEventListener('click', function(e){ if(e.target === wrap) closeCurioModal(); });
+    document.body.appendChild(wrap);
+    var tabsEl = wrap.querySelector('#curio-tabs');
+    tabsEl.innerHTML = TABS.map(function(t){
+      return '<button class="curio-tab" type="button" data-ct="' + t.id + '" onclick="curioTab(\'' + t.id + '\')">' + t.label + '</button>';
+    }).join('');
+  }
+  window.curioTab = function(id){
+    var t = TABS.find(function(x){ return x.id === id; }) || TABS[0];
+    document.querySelectorAll('.curio-tab').forEach(function(b){
+      b.classList.toggle('on', b.getAttribute('data-ct') === t.id);
+    });
+    var body = document.getElementById('curio-body');
+    body.innerHTML = t.fn(curioD);
+    body.scrollTop = 0;
+  };
+  window.openCurioModal = function(){
+    ensureCurioModal();
+    curioD = curioData();
+    if(!curioD.finished.length){
+      document.getElementById('curio-body').innerHTML = '<div class="curio-empty">Las curiosidades se activan cuando haya partidos con resultado.</div>';
+    }
+    window.curioTab('fallos');
+    document.getElementById('curio-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeCurioModal = function(){
+    var el = document.getElementById('curio-modal');
+    if(el) el.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  /* ─── botón debajo del hero ─── */
+  function injectCurioBtn(){
+    var panel = document.getElementById('panel-matches');
+    if(!panel || document.getElementById('curio-btn-wrap')) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'curio-wrap';
+    wrap.id = 'curio-btn-wrap';
+    wrap.innerHTML =
+      '<button class="curio-btn" type="button" onclick="openCurioModal()">' +
+        '<span>Curiosidades<span class="curio-sub">Fallos, haza\u00f1as, zebras y n\u00fameros del grupo</span></span>' +
+        '<span class="curio-chev">\u203a</span>' +
+      '</button>';
+    var hero = document.getElementById('nx-hero');
+    var anchor = panel.querySelector('.filter-row');
+    if(hero && hero.nextSibling) panel.insertBefore(wrap, hero.nextSibling);
+    else if(anchor) panel.insertBefore(wrap, anchor);
+    else panel.insertBefore(wrap, panel.firstChild);
+  }
+  function init(){ injectCurioBtn(); setTimeout(injectCurioBtn, 500); }
+  if(document.readyState !== 'loading') init();
+  else document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
