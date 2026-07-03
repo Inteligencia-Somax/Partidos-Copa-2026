@@ -2166,7 +2166,7 @@ body.somax-modal-locked{
 <script id="edson-matches-side-jump-20260703">
 (function(){
   function getTodayGroupEl(){ return document.getElementById('today-group'); }
-  function isMatchesActive(){ return !!document.getElementById('panel-matches')?.classList.contains('active'); }
+  function isMatchesActive(){ var p = document.getElementById('panel-matches'); return !!(p && p.classList.contains('active')); }
   function isTodayGroupInView(){
     var el = getTodayGroupEl();
     if(!el) return true;
@@ -2176,15 +2176,13 @@ body.somax-modal-locked{
   }
   window.quickMatchesScrollTop = function(){
     window.scrollTo({top:0, behavior:'smooth'});
-    setTimeout(function(){ if(window.updateQuickFloatButtons) window.updateQuickFloatButtons(); }, 320);
+    setTimeout(updateMatchesFab, 320);
   };
   window.quickMatchesScrollToday = function(){
     if(typeof edsonScrollToTodayNow === 'function') edsonScrollToTodayNow();
-    setTimeout(function(){ if(window.updateQuickFloatButtons) window.updateQuickFloatButtons(); }, 420);
+    setTimeout(updateMatchesFab, 420);
   };
-  var oldUpdate = window.updateQuickFloatButtons;
-  window.updateQuickFloatButtons = function(){
-    if(typeof oldUpdate === 'function') oldUpdate();
+  function updateMatchesFab(){
     var topBtn = document.getElementById('quick-matches-top-btn');
     var todayBtn = document.getElementById('quick-matches-today-btn');
     if(!topBtn || !todayBtn) return;
@@ -2196,22 +2194,22 @@ body.somax-modal-locked{
     topBtn.classList.toggle('show', window.scrollY > 140);
     var hasToday = !!getTodayGroupEl();
     todayBtn.classList.toggle('show', hasToday && !isTodayGroupInView());
-  };
-  function scheduleUpdate(){ requestAnimationFrame(function(){ if(window.updateQuickFloatButtons) window.updateQuickFloatButtons(); }); }
+  }
+  function scheduleUpdate(){ requestAnimationFrame(updateMatchesFab); }
   window.addEventListener('scroll', scheduleUpdate, {passive:true});
   window.addEventListener('resize', scheduleUpdate);
-  var oldSwitchTab = window.switchTab;
-  if(typeof oldSwitchTab === 'function' && !oldSwitchTab.__matchesFabWrapped){
-    window.switchTab = function(){
-      var r = oldSwitchTab.apply(this, arguments);
-      setTimeout(scheduleUpdate, 80);
-      return r;
-    };
-    window.switchTab.__matchesFabWrapped = true;
-    try{ switchTab = window.switchTab; }catch(e){}
+  ['click','touchend'].forEach(function(evt){ document.addEventListener(evt, function(){ setTimeout(scheduleUpdate, 90); }, true); });
+  function initObserver(){
+    var panel = document.getElementById('panel-matches');
+    if(panel && window.MutationObserver){
+      new MutationObserver(scheduleUpdate).observe(panel, {attributes:true, attributeFilter:['class']});
+    }
+    scheduleUpdate();
   }
-  document.addEventListener('DOMContentLoaded', function(){ setTimeout(scheduleUpdate, 300); });
-  setTimeout(scheduleUpdate, 700);
+  if(document.readyState !== 'loading') initObserver();
+  else document.addEventListener('DOMContentLoaded', initObserver);
+  setInterval(scheduleUpdate, 700);
+  setTimeout(scheduleUpdate, 1200);
 })();
 </script>
 
@@ -5370,19 +5368,17 @@ html, body{scroll-behavior:auto!important;}
     <div id="admin-area" style="display: none;">
       <div class="rules-section">
         <h3>✅ Cargar resultado real</h3>
-        <p>Después de finalizar cada partido, cargá el marcador real y guardá. El ranking se recalcula automáticamente cruzando resultado real vs. palpite de cada jugador.</p>
         <div class="admin-export-box">
           <button class="admin-download-btn" onclick="downloadUpdatedHTML()">⬇ HTML</button>
           <button class="admin-copy-btn" onclick="copyUpdatedHTML()">📋 Copiar</button>
           <button class="admin-report-btn" onclick="openAdminMatchExportSelector()">📊 Exportar</button>
         </div>
-        <p class="admin-export-note">Usá estos botones después de cargar o corregir resultados. El HTML guarda una copia actualizada del bolão y el reporte exporta los pronósticos con resultado, puntos, tipo de puntuación, horario de inicio, horario del pronóstico y diferencia hasta el partido.</p>
       </div>
 
 
       <div class="filter-row">
-        <button class="filter-chip active" onclick="filterAdminResults('all',this)">Todos</button>
-        <button class="filter-chip" onclick="filterAdminResults('pending',this)">Sin resultado</button>
+        <button class="filter-chip" onclick="filterAdminResults('all',this)">Todos</button>
+        <button class="filter-chip active" onclick="filterAdminResults('pending',this)">Sin resultado</button>
         <button class="filter-chip" onclick="filterAdminResults('done',this)">Con resultado</button>
       </div>
       <div class="admin-jump-row">
@@ -7258,7 +7254,7 @@ let allPicks = {}; // { usuario: { matchId: {home:N, away:N} } }
 let activeMatchId = null;
 let activeTeam = 'home'; // which score we're editing
 let adminUnlocked = localStorage.getItem('somax_admin_unlocked') === '1';
-let currentAdminFilter = 'all';
+let currentAdminFilter = 'pending';
 
 
 // ══ MERGE DE USUARIOS DUPLICADOS ══
@@ -25109,9 +25105,9 @@ body.somax-modal-locked #sim-open-btn.sim-fab{display:none!important;}
         campo — escribís el local y el cursor ya está en el visitante.
      ══════════════════════════════════════════════════════════════════════ -->
 <style id="edson-upgrade-pack-v4-20260702-style">
-/* a) sin etiqueta y apilado arriba del "Yo" (Yo: bottom 92 + 42px alto) */
+/* a) sin etiqueta y apilado arriba de ↑ + Yo cuando ambos aparecen (92 + 42 + 8 + 42 = 184, + margen) */
 #sim-open-btn.sim-fab .sim-fab-lbl{display:none!important;}
-#sim-open-btn.sim-fab{bottom:150px;}
+#sim-open-btn.sim-fab{bottom:200px;}
 </style>
 
 <script id="edson-upgrade-pack-v4-20260702-script">
@@ -25174,7 +25170,7 @@ body.somax-modal-locked #sim-open-btn.sim-fab{display:none!important;}
 /* a) tamaño compacto para ambos FABs */
 #sim-open-btn.sim-fab,
 #fail-open-btn.fail-fab{
-  position:fixed;right:14px;bottom:150px;z-index:250;
+  position:fixed;right:14px;bottom:200px;z-index:250;
   width:46px;height:46px;border-radius:50%;
   border:2px solid rgba(255,255,255,.85);
   display:none;align-items:center;justify-content:center;
