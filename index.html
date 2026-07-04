@@ -9078,7 +9078,7 @@ function renderUdStreakDetail(){
     const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
     const dm = m.date.replace(/^[^,]+,\s*/, '');
     return `
-      <div class="ud-day-row">
+      <div class="ud-day-row" onclick="closeUdExtraModal();openMatchBreakdown(${m.id})" role="button" tabindex="0" style="cursor:pointer">
         <div class="ud-day-match">${m.hf} ${m.home} × ${m.away} ${m.af} <span class="ud-day-date-inline">· ${dm}</span><div class="ud-day-sub">Resultado: ${r.home}:${r.away} · Palpite: ${pickStr}</div></div>
         <div class="ud-day-pts win">+${pts}</div>
       </div>`;
@@ -9101,7 +9101,7 @@ function renderUdDayDetail(date){
     const pickStr = pick ? `${pick.home}:${pick.away}` : 'Sin palpite';
     const cls = pts > 0 ? 'win' : 'zero';
     return `
-      <div class="ud-day-row">
+      <div class="ud-day-row" onclick="openMatchBreakdown(${m.id})" role="button" tabindex="0" style="cursor:pointer">
         <div class="ud-day-match">${m.hf} ${m.home} × ${m.away} ${m.af}</div>
         <div class="ud-day-sc">${r.home}:${r.away} <span>· ${pickStr}</span></div>
         <div class="ud-day-pts ${cls}">${pts > 0 ? '+' : ''}${pts}</div>
@@ -22337,7 +22337,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #panel-clasificacion .kd-round-single{display:flex;flex-direction:column;gap:10px;}
   #panel-clasificacion .kd-final-wrap{display:flex;flex-direction:column;gap:10px;}
   #panel-clasificacion .kd-final-label{font-size:13px;font-weight:900;color:var(--text);margin:6px 0 2px;}
-  #panel-clasificacion .kd-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);}
+  #panel-clasificacion .kd-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);transition:transform .1s ease;}
+  #panel-clasificacion .kd-card:active{transform:scale(.98);}
   #panel-clasificacion .kd-card-row{display:flex;align-items:center;padding:3px 0;}
   #panel-clasificacion .kd-team{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--text);min-width:0;}
   #panel-clasificacion .kd-team-tbd{color:var(--sub);font-weight:700;}
@@ -22633,7 +22634,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       if(hIsWin) hRowCls += ' kd-row-winner'; else if(h.showFlag) hRowCls += ' kd-row-loser';
       if(aIsWin) aRowCls += ' kd-row-winner'; else if(a.showFlag) aRowCls += ' kd-row-loser';
     }
-    return '<div class="kd-card">' +
+    return '<div class="kd-card" onclick="openMatchBreakdown(' + m.id + ')" role="button" tabindex="0" style="cursor:pointer">' +
       '<div class="' + hRowCls + '">' + h.html + '</div>' +
       '<div class="' + aRowCls + '">' + a.html + '</div>' +
       '<div class="kd-card-foot">' + scoreHtml + '</div>' +
@@ -26354,8 +26355,8 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
 .ud-hero-lbl .ud-exact-i{width:11px!important;height:11px!important;vertical-align:-1px!important;margin:0 0 0 2px!important;}
 #ud-extra-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:16px;}
 #ud-extra-modal.open{display:flex;}
-#ud-extra-modal .curio-tab.on{background:#F59E0B!important;border-color:#F59E0B!important;color:#fff!important;}
 #ud-extra-modal .curio-empty{text-align:center;color:var(--sub);font-size:13px;font-weight:600;padding:24px 10px;}
+#ud-extra-modal .sim-body{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
 </style>
 
 <script id="edson-upgrade-pack-v12-20260704-script">
@@ -26383,23 +26384,28 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
     try{
       var picks = udState.picks, real = udState.real;
       var chrono = udState.matches.slice().reverse();
-      var exactMatches = chrono.filter(function(m){
-        return real[m.id] && calculatePickPoints(picks[m.id], real[m.id], m).type === 'exact';
+      var entries = [];
+      chrono.forEach(function(m){
+        var r = real[m.id];
+        if(!r) return;
+        var calc = calculatePickPoints(picks[m.id], r, m);
+        if(calc.type === 'exact') entries.push({ m:m, r:r, pick:picks[m.id], pts:calc.pts });
       });
-      if(!exactMatches.length) return '<div class="curio-empty">Todavía no tiene marcadores exactos.</div>';
+      if(!entries.length) return '<div class="curio-empty">Todavía no tiene marcadores exactos.</div>';
       var tot = 0;
-      var rows = exactMatches.map(function(m){
-        var pick = picks[m.id], r = real[m.id];
-        var pts = calculatePickPoints(pick, r, m).pts;
-        tot += pts;
-        var pickStr = pick ? (pick.home + ':' + pick.away) : 'Sin palpite';
-        var dm = m.date.replace(/^[^,]+,\s*/, '');
-        return '<div class="ud-day-row">' +
-          '<div class="ud-day-match">' + m.hf + ' ' + m.home + ' × ' + m.away + ' ' + m.af + ' <span class="ud-day-date-inline">· ' + dm + '</span><div class="ud-day-sub">Resultado: ' + r.home + ':' + r.away + ' · Palpite: ' + pickStr + '</div></div>' +
-          '<div class="ud-day-pts win">+' + pts + '</div>' +
+      var rows = entries.map(function(e){
+        tot += e.pts;
+        var pickStr = e.pick ? (e.pick.home + ':' + e.pick.away) : 'Sin palpite';
+        var dm = e.m.date.replace(/^[^,]+,\s*/, '');
+        return '<div class="ud-day-row" onclick="closeUdExtraModal();openMatchBreakdown(' + e.m.id + ')" role="button" tabindex="0" style="cursor:pointer">' +
+          '<div class="ud-day-match">' + e.m.hf + ' ' + e.m.home + ' × ' + e.m.away + ' ' + e.m.af + ' <span class="ud-day-date-inline">· ' + dm + '</span><div class="ud-day-sub">Resultado: ' + e.r.home + ':' + e.r.away + ' · Palpite: ' + pickStr + '</div></div>' +
+          '<div class="ud-day-pts win">+' + e.pts + '</div>' +
         '</div>';
       }).join('');
-      return '<div class="ud-day-detail"><div class="ud-day-head">' + exactMatches.length + ' marcador(es) exacto(s) · ' + tot + ' pts</div>' + rows + '</div>';
+      return '<div class="ud-day-detail">' +
+        '<div class="ud-day-head">' + entries.length + ' marcador(es) exacto(s) · ' + tot + ' pts</div>' +
+        rows +
+      '</div>';
     }catch(e){ return '<div class="curio-empty">No se pudo cargar el detalle.</div>'; }
   }
 
