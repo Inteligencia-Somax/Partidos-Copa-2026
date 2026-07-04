@@ -6906,7 +6906,7 @@ html, body{scroll-behavior:auto!important;}
 .ud-mine-tag.me{background:var(--text);border-color:var(--text);color:#fff;}
 .ud-exact-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:rgba(0,155,84,.12);border:1px solid rgba(0,155,84,.35);color:var(--green);font-size:10px;font-weight:900;vertical-align:middle;letter-spacing:.2px;}
 .ud-most-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:rgba(107,114,128,.10);border:1px solid rgba(107,114,128,.22);color:var(--sub);font-size:10px;font-weight:900;vertical-align:middle;letter-spacing:.2px;}
-.ud-streak-tag{display:inline-block;margin-left:6px;color:var(--text);font-size:10px;font-weight:900;vertical-align:middle;background:none;border:none;padding:0;}
+.ud-title-streak{font-weight:900;font-size:15px;vertical-align:middle;color:#fff;}
 /* Tarjetas de estadística (Análisis: más palpitado / puntuó) */
 .mb-stat-cards{display:flex;gap:8px;margin:4px 0 12px;}
 .mb-stat-card{flex:1;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;box-shadow:var(--shadow);}
@@ -8884,6 +8884,12 @@ function openUserDetail(name){
     if(pts > 0){ curStreak.push(m); if(curStreak.length > bestStreak.length) bestStreak = curStreak.slice(); }
     else curStreak = [];
   });
+  // Racha actual 🔥: acertos seguidos hasta el último partido jugado (se corta si el último fue 0 pts).
+  let currentStreak = 0;
+  for(let i = chrono.length - 1; i >= 0; i--){
+    const pts = calculatePickPoints(picks[chrono[i].id], realResults[chrono[i].id], chrono[i]).pts;
+    if(pts > 0) currentStreak++; else break;
+  }
 
   const form = playedMatches.slice(0, 5).map(m => {
     const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
@@ -8913,11 +8919,12 @@ function openUserDetail(name){
       position: viewedIdx >= 0 ? viewedIdx + 1 : null,
       total, viewedScore, myScore, isMe: name === getCanonicalUserName(currentUser),
       aprov, exact: typeCounts.exact, media, typeCounts, played: playedMatches.length,
-      bestDay, suFuerte, bestStreak, form, bestPosition, posDelta, lastRound, lastDate, best
+      bestDay, suFuerte, bestStreak, currentStreak, form, bestPosition, posDelta, lastRound, lastDate, best
     }
   };
 
-  document.getElementById('ud-title').textContent = name;
+  const udTitleName = String(name).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]);
+  document.getElementById('ud-title').innerHTML = udTitleName + (currentStreak >= 2 ? ' <span class="ud-title-streak">🔥' + currentStreak + '</span>' : '');
   renderUd();
   document.getElementById('user-detail-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
@@ -9116,19 +9123,6 @@ function renderUdPartidos(){
   if(sortAsc) shown = shown.slice().reverse(); // matches viene "reciente primero"
 
   let shownTotal = 0, rows = '', renderedCount = 0;
-  // Racha 🔥: cuántos acertos seguidos lleva el participante hasta cada partido (orden cronológico).
-  const streakMap = {};
-  (function(){
-    const chronoAll = matches.slice().reverse(); // udState.matches viene "reciente primero"
-    let running = 0;
-    chronoAll.forEach(mm => {
-      const rr = real[mm.id];
-      if(!rr) return; // partido sin resultado aún: no afecta la racha
-      const cc = calculatePickPoints(picks[mm.id], rr, mm);
-      if(cc.pts > 0){ running++; streakMap[mm.id] = running; }
-      else running = 0;
-    });
-  })();
   shown.forEach(m => {
     const pick = picks[m.id], r = real[m.id];
     const pending = !r;
@@ -9166,10 +9160,6 @@ function renderUdPartidos(){
       hasExactTag = !!isExact;
       if(hasMostTag) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
       if(hasExactTag) pickTags.push('<span class="ud-exact-tag">Exacto</span>');
-      if(!pending && pts > 0){
-        const streak = streakMap[m.id] || 0;
-        if(streak >= 2) pickTags.push(`<span class="ud-meta-sep">•</span><span class="ud-streak-tag">🔥${streak}</span>`);
-      }
     }
 
     if(activeFilters.length){
