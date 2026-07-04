@@ -24777,13 +24777,16 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 .sim-result{margin-top:14px;}
 .sim-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;border:1px solid var(--border);margin-bottom:6px;background:var(--white);font-size:13px;font-weight:700;}
 .sim-row.sim-me{border:2px solid var(--gold);background:#FFFBEB;}
-.sim-pos{width:32px;font-weight:900;color:var(--sub);flex-shrink:0;}
+.sim-pos-wrap{display:flex;align-items:baseline;gap:4px;width:52px;flex-shrink:0;}
+.sim-pos{font-weight:900;color:var(--text);}
 .sim-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);}
 .sim-pts{font-weight:900;color:var(--text);flex-shrink:0;}
-.sim-d{font-size:11px;font-weight:900;flex-shrink:0;min-width:28px;text-align:right;}
+.sim-d{font-size:11px;font-weight:900;flex-shrink:0;}
 .sim-d.up{color:var(--green);}
 .sim-d.down{color:var(--red);}
 .sim-d.same{color:var(--sub);}
+.sim-gain{font-size:12px;font-weight:900;flex-shrink:0;min-width:34px;text-align:right;color:var(--sub);}
+.sim-gain.up{color:var(--green);}
 .sim-note{font-size:11px;color:var(--sub);font-weight:600;margin-top:8px;line-height:1.45;}
 /* ── 6) STEPPERS ── */
 .pk-step{display:flex;flex-direction:column;gap:6px;}
@@ -25022,11 +25025,13 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     document.getElementById('sim-a').value = '';
     document.getElementById('sim-modal').classList.add('open');
     document.body.style.overflow = 'hidden';
+    if(typeof syncMbSimBtn === 'function') syncMbSimBtn();
   };
   window.closeSimModal = function(){
     var el = document.getElementById('sim-modal');
     if(el) el.classList.remove('open');
     document.body.style.overflow = '';
+    if(typeof syncMbSimBtn === 'function') syncMbSimBtn();
   };
   window.simMatchChanged = function(){
     var sel = document.getElementById('sim-match-select');
@@ -25070,11 +25075,16 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var rows = '';
     var shown = sim;                       // ranking completo (edson-ajuste-20260702)
     var meIdx = sim.findIndex(function(u){ return u.name === me; });
+    var picksForMatch = {};
+    visiblePickEntries().forEach(function(ent){ picksForMatch[ent[0]] = ent[1][mid]; });
     shown.forEach(function(u){
       var pos = sim.indexOf(u) + 1;
       var dd = (curPos[u.name] || pos) - pos;
       var dHtml = dd > 0 ? '<span class="sim-d up">▲' + dd + '</span>' : dd < 0 ? '<span class="sim-d down">▼' + (-dd) + '</span>' : '<span class="sim-d same">=</span>';
-      rows += '<div class="sim-row' + (u.name === me ? ' sim-me' : '') + '"><span class="sim-pos">' + pos + 'º</span><span class="sim-nm">' + u.name + '</span><span class="sim-pts">' + u.score + ' pts</span>' + dHtml + '</div>';
+      var gainCalc = calculatePickPoints(picksForMatch[u.name], { home:h, away:a }, m);
+      var gainCls = gainCalc.pts > 0 ? 'up' : 'same';
+      var gainHtml = '<span class="sim-gain ' + gainCls + '">+' + gainCalc.pts + '</span>';
+      rows += '<div class="sim-row' + (u.name === me ? ' sim-me' : '') + '"><span class="sim-pos-wrap"><span class="sim-pos">' + pos + 'º</span>' + dHtml + '</span><span class="sim-nm">' + u.name + '</span><span class="sim-pts">' + u.score + ' pts</span>' + gainHtml + '</div>';
     });
     var disp = matchDisplay(m, real, computeStandings(real));
     out.innerHTML = '<div class="sim-lbl">Si ' + disp.home + ' ' + h + ':' + a + ' ' + disp.away + ' →</div>' + rows;
@@ -26583,7 +26593,8 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
     if(!btn) return;
     var pending = false;
     try{ pending = !!(typeof mbState !== 'undefined' && mbState && mbState.m && mbState.pending); }catch(e){}
-    btn.style.display = pending ? 'flex' : 'none';
+    var simOpen = !!document.getElementById('sim-modal')?.classList.contains('open');
+    btn.style.display = (pending && !simOpen) ? 'flex' : 'none';
   }
 
   window.openSimModalForMatch = function(matchId){
