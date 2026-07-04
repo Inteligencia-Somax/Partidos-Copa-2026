@@ -22325,6 +22325,10 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #panel-clasificacion .kd-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   #panel-clasificacion .kd-card-foot{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:11.5px;font-weight:800;color:var(--sub);text-align:center;}
   #panel-clasificacion .kd-score{color:var(--green);font-size:13px;font-weight:900;}
+  #panel-clasificacion .kd-team-winner{color:var(--green);font-weight:900;}
+  #panel-clasificacion .kd-team-winner .kd-flag{filter:drop-shadow(0 0 0 transparent);}
+  #panel-clasificacion .kd-team-loser{opacity:.5;}
+  #panel-clasificacion .kd-adv-tag{margin-left:6px;font-size:9.5px;font-weight:900;color:var(--green);background:rgba(0,155,84,.12);border-radius:6px;padding:1px 5px;white-space:nowrap;}
 </style>
 
 <script id="edson-admin-classification-clean-form-20260701-script">
@@ -22566,18 +22570,28 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     });
     return ids;
   }
-  function kdMiniTeam(m, side, disp){
+  function kdFeederIdOf(raw){
+    var mm = /P(\d+)/.exec(raw || '');
+    return mm ? parseInt(mm[1], 10) : null;
+  }
+  function kdMiniTeam(m, side, disp, winnerName){
+    var raw = side === 'h' ? m.home : m.away;
+    var isPlaceholder = /^(G\.|Perd\.)\s*P\d+/.test(raw || '');
     var flag = side === 'h' ? disp.hf : disp.af;
     var name = side === 'h' ? disp.home : disp.away;
     var resolved = side === 'h' ? disp.hResolved : disp.aResolved;
-    if(!resolved){
-      var raw = side === 'h' ? m.home : m.away;
+    var showFlag = !isPlaceholder || resolved;
+    if(!showFlag){
       var mm = /P(\d+)/.exec(raw || '');
       name = mm ? ('P' + mm[1]) : raw;
+      flag = '🔘';
     }
-    return '<span class="kd-team' + (resolved ? '' : ' kd-team-tbd') + '"><span class="kd-flag">' + (resolved ? flag : '🔘') + '</span><span class="kd-name">' + esc(name) + '</span></span>';
+    var isWinner = !!(showFlag && winnerName && name === winnerName);
+    var isLoser = !!(showFlag && winnerName && !isWinner);
+    var cls = 'kd-team' + (showFlag ? '' : ' kd-team-tbd') + (isWinner ? ' kd-team-winner' : '') + (isLoser ? ' kd-team-loser' : '');
+    return '<span class="' + cls + '"><span class="kd-flag">' + flag + '</span><span class="kd-name">' + esc(name) + (isWinner ? ' <span class="kd-adv-tag">✓ Avanzó</span>' : '') + '</span></span>';
   }
-  function kdMatchCard(m){
+  function kdMatchCard(m, hWinner, aWinner){
     var real = loadRealResults();
     var standings = computeStandings(real);
     var disp = matchDisplay(m, real, standings);
@@ -22586,8 +22600,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       ? '<span class="kd-score">' + res.home + ' : ' + res.away + '</span>'
       : '<span class="kd-when">' + esc(m.date) + ' · ' + esc(m.time) + '</span>';
     return '<div class="kd-card">' +
-      '<div class="kd-card-row">' + kdMiniTeam(m, 'h', disp) + '</div>' +
-      '<div class="kd-card-row">' + kdMiniTeam(m, 'a', disp) + '</div>' +
+      '<div class="kd-card-row">' + kdMiniTeam(m, 'h', disp, hWinner) + '</div>' +
+      '<div class="kd-card-row">' + kdMiniTeam(m, 'a', disp, aWinner) + '</div>' +
       '<div class="kd-card-foot">' + scoreHtml + '</div>' +
     '</div>';
   }
@@ -22609,22 +22623,30 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       var finals = kdPhaseMatches('⭐ FINAL');
       var thirds = kdPhaseMatches('3° Puesto');
       bodyHtml = '<div class="kd-final-wrap">' +
-        (finals.length ? '<div class="kd-final-label">🏆 Final</div>' + finals.map(kdMatchCard).join('') : '') +
-        (thirds.length ? '<div class="kd-final-label">🥉 Tercer puesto</div>' + thirds.map(kdMatchCard).join('') : '') +
+        (finals.length ? '<div class="kd-final-label">🏆 Final</div>' + finals.map(function(m){ return kdMatchCard(m); }).join('') : '') +
+        (thirds.length ? '<div class="kd-final-label">🥉 Tercer puesto</div>' + thirds.map(function(m){ return kdMatchCard(m); }).join('') : '') +
       '</div>';
     } else {
       var nextPhase = KD_PHASES[KD_PHASES.indexOf(phase) + 1];
       var current = kdPhaseMatches(phase);
       var next = nextPhase ? kdPhaseMatches(nextPhase) : [];
       if(!next.length){
-        bodyHtml = '<div class="kd-round-single">' + current.map(kdMatchCard).join('') + '</div>';
+        bodyHtml = '<div class="kd-round-single">' + current.map(function(m){ return kdMatchCard(m); }).join('') + '</div>';
       } else {
         var byId = {};
         current.forEach(function(m){ byId[m.id] = m; });
+        var realR = loadRealResults(), standR = computeStandings(realR);
         bodyHtml = '<div class="kd-tree">' + next.map(function(nm){
-          var feeders = kdFeederIds(nm).map(function(id){ return byId[id]; }).filter(Boolean);
+          var nmDisp = matchDisplay(nm, realR, standR);
+          var hFeeder = byId[kdFeederIdOf(nm.home)];
+          var aFeeder = byId[kdFeederIdOf(nm.away)];
+          var hWinner = nmDisp.hResolved ? nmDisp.home : null;
+          var aWinner = nmDisp.aResolved ? nmDisp.away : null;
+          var feedersHtml = '';
+          if(hFeeder) feedersHtml += kdMatchCard(hFeeder, hWinner, hWinner);
+          if(aFeeder) feedersHtml += kdMatchCard(aFeeder, aWinner, aWinner);
           return '<div class="kd-group">' +
-            '<div class="kd-col kd-col-current">' + feeders.map(kdMatchCard).join('') + '</div>' +
+            '<div class="kd-col kd-col-current">' + feedersHtml + '</div>' +
             '<div class="kd-connector" aria-hidden="true"></div>' +
             '<div class="kd-col kd-col-next">' + kdMatchCard(nm) + '</div>' +
           '</div>';
