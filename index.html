@@ -6759,6 +6759,7 @@ html, body{scroll-behavior:auto!important;}
   <div class="modal">
     <div class="modal-header">
       <span class="modal-match-label" id="mb-title">Puntos por participante</span>
+      <button class="mb-sim-btn" id="mb-sim-btn" type="button" style="display:none" aria-label="Simular ranking con este resultado" onclick="if(typeof openSimModalForMatch==='function'&&mbState.m) openSimModalForMatch(mbState.m.id)">🔮</button>
       <button class="modal-close" onclick="closeMatchBreakdown()">✕</button>
     </div>
     <div class="ud-summary" id="mb-summary"></div>
@@ -19504,25 +19505,17 @@ body.edson-matches-bg .bottom-nav{background:#fff!important;}
     padding:16px 24px;
     border-radius:999px;
     color:#fff;
-    background:rgba(255,255,255,.14);
-    border:1px solid rgba(255,255,255,.26);
-    box-shadow:
-      0 22px 58px rgba(0,0,0,.30),
-      inset 0 1px 0 rgba(255,255,255,.18);
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
+    background:transparent;
+    border:none;
+    box-shadow:none;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
     animation:somaxLoaderCardIn .46s cubic-bezier(.2,.8,.2,1) both;
     overflow:hidden;
   }
 
   .somax-loader-card::before{
-    content:'';
-    position:absolute;
-    inset:0;
-    background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.16) 46%, transparent 72%);
-    transform:translateX(-120%);
-    animation:somaxLoaderCardSweep 2.8s ease-in-out infinite;
-    pointer-events:none;
+    display:none;
   }
 
   .somax-loader-spinner{
@@ -26050,5 +26043,67 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
     if(el) el.classList.remove('open');
     document.body.style.overflow = '';
   };
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v9-20260703 — 🔮 no modal "Puntos por participante"
+     Cuando el partido todavía no tiene resultado (cerrado, palpites revelados,
+     pero sin marcador oficial), aparece la bola de cristal en el encabezado
+     del modal para saltar directo al simulador con ese partido preseleccionado.
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v9-20260703-style">
+#mb-sim-btn.mb-sim-btn{
+  display:none;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:50%;border:none;
+  background:linear-gradient(145deg,#0D3A8A,#0A2A6E);
+  color:#fff;font-size:16px;line-height:1;cursor:pointer;
+  margin-left:auto;margin-right:8px;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  transition:transform .12s ease;
+}
+#mb-sim-btn.mb-sim-btn:active{transform:scale(.9);}
+#match-breakdown-modal .modal-header{display:flex;align-items:center;}
+</style>
+
+<script id="edson-upgrade-pack-v9-20260703-script">
+(function(){
+  'use strict';
+
+  function syncMbSimBtn(){
+    var btn = document.getElementById('mb-sim-btn');
+    if(!btn) return;
+    var pending = !!(window.mbState && mbState.m && mbState.pending);
+    btn.style.display = pending ? 'flex' : 'none';
+  }
+
+  window.openSimModalForMatch = function(matchId){
+    if(typeof window.openSimModal !== 'function') return;
+    window.openSimModal();
+    var sel = document.getElementById('sim-match-select');
+    if(!sel) return;
+    var has = Array.prototype.some.call(sel.options, function(o){ return String(o.value) === String(matchId); });
+    if(has){
+      sel.value = String(matchId);
+      if(typeof window.simMatchChanged === 'function') window.simMatchChanged();
+    }
+  };
+
+  // Reaplica la visibilidad del botón cada vez que se (re)dibuja el modal
+  // (abrir, cambiar de pestaña, navegar entre partidas con las flechas, etc.)
+  var _rmb = window.renderMatchBreakdown;
+  if(typeof _rmb === 'function'){
+    window.renderMatchBreakdown = function(){
+      var r = _rmb.apply(this, arguments);
+      try{ syncMbSimBtn(); }catch(e){}
+      return r;
+    };
+  }
+
+  var host = document.getElementById('match-breakdown-modal');
+  if(host && window.MutationObserver){
+    new MutationObserver(function(){ try{ syncMbSimBtn(); }catch(e){} })
+      .observe(host, { attributes:true, attributeFilter:['style','class'] });
+  }
 })();
 </script>
