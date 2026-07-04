@@ -22687,6 +22687,34 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     renderClasifDecisiva();
   };
 
+  /* Deslizar (swipe) para navegar entre fases: 1/16 → Octavos → Cuartos → Semifinal → Final */
+  (function(){
+    var sx = 0, sy = 0, st = 0;
+    function host(){ return document.getElementById('clasif-panel-decisiva'); }
+    document.addEventListener('touchstart', function(e){
+      if(!e.touches || e.touches.length !== 1) return;
+      if(!e.target.closest('#clasif-panel-decisiva')) return;
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now();
+    }, {passive:true});
+    document.addEventListener('touchend', function(e){
+      if(!st) return;
+      if(!e.changedTouches || e.changedTouches.length !== 1) return;
+      var dx = e.changedTouches[0].clientX - sx;
+      var dy = e.changedTouches[0].clientY - sy;
+      var elapsed = Date.now() - st;
+      st = 0;
+      if(Math.abs(dx) < 50) return;
+      if(Math.abs(dy) > 70) return;
+      if(Math.abs(dx) < Math.abs(dy) * 1.25) return;
+      if(elapsed > 900) return;
+      var idx = KD_PHASES.indexOf(clasifActiveKdPhase());
+      if(idx < 0) return;
+      var nextIdx = idx + (dx < 0 ? 1 : -1);
+      if(nextIdx < 0 || nextIdx >= KD_PHASES.length) return;
+      window.setClasifKdPhase(KD_PHASES[nextIdx]);
+    }, {passive:true});
+  })();
+
   var oldSwitch = window.switchTab;
   if(typeof oldSwitch === 'function' && !oldSwitch.__edsonCleanClassificationWrapped){
     window.switchTab = function(tab, btn){
@@ -22787,16 +22815,23 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       var sorted = MATCHES.slice().sort(function(a,b){ return getMatchDateTime(a)-getMatchDateTime(b); });
       var match = sorted.find(function(m){ return sameDay(getMatchDateTime(m)); }) || sorted.find(function(m){ return getMatchDateTime(m) >= now; }) || sorted[0];
       if(!match) return;
-      if(typeof currentAdminFilter !== 'undefined' && currentAdminFilter !== 'all'){
-        currentAdminFilter = 'all';
-        document.querySelectorAll('#admin-area .filter-chip').forEach(function(c){ c.classList.remove('active'); });
-        var allBtn = document.querySelector('#admin-area .filter-chip[onclick*="all"]');
-        if(allBtn) allBtn.classList.add('active');
-        if(typeof renderAdminResults === 'function') renderAdminResults('all', false);
+      function jump(){
+        var card = document.getElementById('admin-card-' + match.id);
+        if(card){ card.scrollIntoView({block:'center', behavior:'smooth'}); return true; }
+        return false;
       }
       requestAnimationFrame(function(){
-        var card = document.getElementById('admin-card-' + match.id);
-        if(card) card.scrollIntoView({block:'center', behavior:'smooth'});
+        // Solo cambia a "Todos" si el partido de hoy no aparece con el filtro actual
+        // (por ejemplo, ya tiene resultado cargado y el filtro activo es "Sin resultado").
+        if(jump()) return;
+        if(typeof currentAdminFilter !== 'undefined' && currentAdminFilter !== 'all'){
+          currentAdminFilter = 'all';
+          document.querySelectorAll('#admin-area .filter-chip').forEach(function(c){ c.classList.remove('active'); });
+          var allBtn = document.querySelector('#admin-area .filter-chip[onclick*="all"]');
+          if(allBtn) allBtn.classList.add('active');
+          if(typeof renderAdminResults === 'function') renderAdminResults('all', false);
+          requestAnimationFrame(jump);
+        }
       });
     }catch(e){ console.warn('No fue posible ir al juego de hoy', e); }
   };
@@ -23968,6 +24003,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     if(target.closest('.modal-overlay,.ame-modal-overlay,.apq-overlay,.admin-player-query-overlay,#admin-player-query-modal,#clasif-format-modal')) return false;
     if(target.closest('input, textarea, select, button, a')) return false;
     if(target.closest('.numpad,.modal,.rank-filter-menu')) return false;
+    if(target.closest('#clasif-panel-decisiva')) return false;
     return true;
   }
   function tabVisible(tab){
