@@ -22324,11 +22324,15 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #panel-clasificacion .kd-flag{font-size:15px;flex-shrink:0;}
   #panel-clasificacion .kd-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   #panel-clasificacion .kd-card-foot{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:11.5px;font-weight:800;color:var(--sub);text-align:center;}
-  #panel-clasificacion .kd-score{color:var(--green);font-size:13px;font-weight:900;}
-  #panel-clasificacion .kd-team-winner{color:var(--green);font-weight:900;}
-  #panel-clasificacion .kd-team-winner .kd-flag{filter:drop-shadow(0 0 0 transparent);}
-  #panel-clasificacion .kd-team-loser{opacity:.5;}
-  #panel-clasificacion .kd-adv-tag{margin-left:6px;font-size:9.5px;font-weight:900;color:var(--green);background:rgba(0,155,84,.12);border-radius:6px;padding:1px 5px;white-space:nowrap;}
+  #panel-clasificacion .kd-score{color:#F59E0B;font-size:13px;font-weight:900;}
+  #panel-clasificacion .ud-tab.kd-subtab-orange.active{background:#F59E0B!important;border-color:#F59E0B!important;}
+  #panel-clasificacion .kd-phase-tabs .filter-chip.active{background:#F59E0B!important;border-color:#F59E0B!important;}
+  #panel-clasificacion .kd-connector{background:rgba(245,158,11,.35);}
+  #panel-clasificacion .kd-connector::before,
+  #panel-clasificacion .kd-connector::after{background:#F59E0B;}
+  #panel-clasificacion .kd-row-winner{background:rgba(245,158,11,.18);border-radius:8px;margin:0 -6px;padding:3px 6px;}
+  #panel-clasificacion .kd-row-winner .kd-name{font-weight:900;color:#92400E;}
+  #panel-clasificacion .kd-row-loser{opacity:.5;}
 </style>
 
 <script id="edson-admin-classification-clean-form-20260701-script">
@@ -22526,7 +22530,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       '<div class="grp-admin-head"><h3>Clasificación</h3></div>' +
       '<div class="ud-tabs clasif-subtabs" id="clasif-subtabs">' +
         '<button class="ud-tab' + (clasifActiveSubTab() === 'grupos' ? ' active' : '') + '" onclick="setClasifSubTab(\'grupos\')"><span>Grupos</span></button>' +
-        '<button class="ud-tab' + (clasifActiveSubTab() === 'decisiva' ? ' active' : '') + '" onclick="setClasifSubTab(\'decisiva\')"><span>Fase decisiva</span></button>' +
+        '<button class="ud-tab kd-subtab-orange' + (clasifActiveSubTab() === 'decisiva' ? ' active' : '') + '" onclick="setClasifSubTab(\'decisiva\')"><span>Fase decisiva</span></button>' +
       '</div>' +
       '<div id="clasif-panel-grupos" style="display:' + (clasifActiveSubTab() === 'grupos' ? '' : 'none') + '">' +
         timelineHtml() +
@@ -22574,7 +22578,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var mm = /P(\d+)/.exec(raw || '');
     return mm ? parseInt(mm[1], 10) : null;
   }
-  function kdMiniTeam(m, side, disp, winnerName){
+  function kdMiniTeamContent(m, side, disp){
     var raw = side === 'h' ? m.home : m.away;
     var isPlaceholder = /^(G\.|Perd\.)\s*P\d+/.test(raw || '');
     var flag = side === 'h' ? disp.hf : disp.af;
@@ -22586,12 +22590,10 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       name = mm ? ('P' + mm[1]) : raw;
       flag = '🔘';
     }
-    var isWinner = !!(showFlag && winnerName && name === winnerName);
-    var isLoser = !!(showFlag && winnerName && !isWinner);
-    var cls = 'kd-team' + (showFlag ? '' : ' kd-team-tbd') + (isWinner ? ' kd-team-winner' : '') + (isLoser ? ' kd-team-loser' : '');
-    return '<span class="' + cls + '"><span class="kd-flag">' + flag + '</span><span class="kd-name">' + esc(name) + (isWinner ? ' <span class="kd-adv-tag">✓ Avanzó</span>' : '') + '</span></span>';
+    var html = '<span class="kd-team' + (showFlag ? '' : ' kd-team-tbd') + '"><span class="kd-flag">' + flag + '</span><span class="kd-name">' + esc(name) + '</span></span>';
+    return { html: html, name: name, showFlag: showFlag };
   }
-  function kdMatchCard(m, hWinner, aWinner){
+  function kdMatchCard(m, winnerName){
     var real = loadRealResults();
     var standings = computeStandings(real);
     var disp = matchDisplay(m, real, standings);
@@ -22599,9 +22601,19 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var scoreHtml = res
       ? '<span class="kd-score">' + res.home + ' : ' + res.away + '</span>'
       : '<span class="kd-when">' + esc(m.date) + ' · ' + esc(m.time) + '</span>';
+    var h = kdMiniTeamContent(m, 'h', disp);
+    var a = kdMiniTeamContent(m, 'a', disp);
+    var hRowCls = 'kd-card-row';
+    var aRowCls = 'kd-card-row';
+    if(winnerName){
+      var hIsWin = h.showFlag && h.name === winnerName;
+      var aIsWin = a.showFlag && a.name === winnerName;
+      if(hIsWin) hRowCls += ' kd-row-winner'; else if(h.showFlag) hRowCls += ' kd-row-loser';
+      if(aIsWin) aRowCls += ' kd-row-winner'; else if(a.showFlag) aRowCls += ' kd-row-loser';
+    }
     return '<div class="kd-card">' +
-      '<div class="kd-card-row">' + kdMiniTeam(m, 'h', disp, hWinner) + '</div>' +
-      '<div class="kd-card-row">' + kdMiniTeam(m, 'a', disp, aWinner) + '</div>' +
+      '<div class="' + hRowCls + '">' + h.html + '</div>' +
+      '<div class="' + aRowCls + '">' + a.html + '</div>' +
       '<div class="kd-card-foot">' + scoreHtml + '</div>' +
     '</div>';
   }
@@ -22643,8 +22655,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
           var hWinner = nmDisp.hResolved ? nmDisp.home : null;
           var aWinner = nmDisp.aResolved ? nmDisp.away : null;
           var feedersHtml = '';
-          if(hFeeder) feedersHtml += kdMatchCard(hFeeder, hWinner, hWinner);
-          if(aFeeder) feedersHtml += kdMatchCard(aFeeder, aWinner, aWinner);
+          if(hFeeder) feedersHtml += kdMatchCard(hFeeder, hWinner);
+          if(aFeeder) feedersHtml += kdMatchCard(aFeeder, aWinner);
           return '<div class="kd-group">' +
             '<div class="kd-col kd-col-current">' + feedersHtml + '</div>' +
             '<div class="kd-connector" aria-hidden="true"></div>' +
