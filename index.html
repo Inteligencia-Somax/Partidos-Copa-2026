@@ -8985,7 +8985,7 @@ function renderUd(){
     <div class="ud-hero-sep"></div>
     <div class="ud-hero-stat"><span class="ud-hero-num">${s.position ? s.position + 'º' : '–'} ${delta}</span><span class="ud-hero-lbl">posición</span></div>
     <div class="ud-hero-sep"></div>
-    <div class="ud-hero-stat"><span class="ud-hero-num">${s.exact}</span><span class="ud-hero-lbl">exactos <svg class="detail-i ud-exact-i" viewBox="0 0 24 24" onclick="event.stopPropagation();openUdExtraModal()"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></span></div>`;
+    <div class="ud-hero-stat ud-hero-stat-clickable" onclick="openUdExtraModal()" role="button" tabindex="0"><span class="ud-hero-num">${s.exact}</span><span class="ud-hero-lbl">exactos <svg class="detail-i ud-exact-i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></span></div>`;
 
   // ── tabs (íconos monocromáticos + texto, en el cuerpo) ──
   const UD_ICONS = {
@@ -26353,10 +26353,15 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
 .ud-exact-i{cursor:pointer;color:var(--sub);opacity:.9;}
 .ud-exact-i:active{opacity:1;}
 .ud-hero-lbl .ud-exact-i{width:11px!important;height:11px!important;vertical-align:-1px!important;margin:0 0 0 2px!important;}
+.ud-hero-stat-clickable{cursor:pointer;}
+.ud-hero-stat-clickable:active{opacity:.75;}
 #ud-extra-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:16px;}
 #ud-extra-modal.open{display:flex;}
 #ud-extra-modal .curio-empty{text-align:center;color:var(--sub);font-size:13px;font-weight:600;padding:24px 10px;}
-#ud-extra-modal .sim-body{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+#ud-extra-modal .sim-box{max-height:80vh;}
+#ud-extra-modal .sim-head,
+#ud-extra-modal .curio-tabs{flex-shrink:0;}
+#ud-extra-modal .sim-body{flex:1;min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
 </style>
 
 <script id="edson-upgrade-pack-v12-20260704-script">
@@ -26377,6 +26382,9 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
         '<div class="sim-body" id="ud-extra-body"><div class="curio-empty">Tocá una opción para ver el detalle.</div></div>' +
       '</div>';
     wrap.addEventListener('click', function(e){ if(e.target === wrap) closeUdExtraModal(); });
+    wrap.addEventListener('touchmove', function(e){
+      if(!e.target.closest('#ud-extra-body')) e.preventDefault();
+    }, {passive:false});
     document.body.appendChild(wrap);
   }
 
@@ -26431,10 +26439,9 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
     ensureUdExtraModal();
     var title = (typeof udState !== 'undefined' && udState && udState.name) ? udState.name : 'Detalle';
     document.getElementById('ud-extra-title').textContent = title;
-    document.getElementById('ud-extra-body').innerHTML = '<div class="curio-empty">Tocá una opción para ver el detalle.</div>';
-    document.getElementById('ud-extra-modal').querySelectorAll('.curio-tab').forEach(function(b){ b.classList.remove('on'); });
     document.getElementById('ud-extra-modal').classList.add('open');
     document.body.style.overflow = 'hidden';
+    window.setUdExtraTab('exactos');
   };
   window.closeUdExtraModal = function(){
     var el = document.getElementById('ud-extra-modal');
