@@ -22303,9 +22303,9 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     #clasif-format-modal .cfm-item{grid-template-columns:1fr!important;gap:2px!important;}
   }
   #panel-clasificacion .clasif-subtabs{margin-bottom:14px;}
-  #panel-clasificacion .kd-phase-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;margin-bottom:16px;}
+  #panel-clasificacion .kd-phase-tabs{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;margin-bottom:16px;}
   #panel-clasificacion .kd-phase-tabs::-webkit-scrollbar{display:none;}
-  #panel-clasificacion .kd-phase-tabs .ud-tab{flex:0 0 auto;padding:8px 16px;}
+  #panel-clasificacion .kd-phase-tabs .filter-chip{flex:0 0 auto;font-size:13px;font-weight:700;padding:9px 16px;box-shadow:var(--shadow);}
   #panel-clasificacion .kd-tree{display:flex;flex-direction:column;gap:16px;}
   #panel-clasificacion .kd-group{display:flex;align-items:center;gap:8px;}
   #panel-clasificacion .kd-col{display:flex;flex-direction:column;gap:8px;min-width:0;}
@@ -22598,9 +22598,9 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var host = document.getElementById('clasif-panel-decisiva');
     if(!host) return;
     var phase = clasifActiveKdPhase();
-    var tabsHtml = '<div class="ud-tabs kd-phase-tabs" id="kd-phase-tabs">' +
+    var tabsHtml = '<div class="kd-phase-tabs" id="kd-phase-tabs">' +
       KD_PHASES.map(function(p){
-        return '<button class="ud-tab' + (p === phase ? ' active' : '') + '" onclick="setClasifKdPhase(\'' + p + '\')"><span>' + KD_PHASE_LABELS[p] + '</span></button>';
+        return '<button class="filter-chip' + (p === phase ? ' active' : '') + '" onclick="setClasifKdPhase(\'' + p + '\')">' + KD_PHASE_LABELS[p] + '</button>';
       }).join('') +
     '</div>';
 
