@@ -22302,6 +22302,29 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     #panel-clasificacion .grp-form-cell{min-width:52px!important;}
     #clasif-format-modal .cfm-item{grid-template-columns:1fr!important;gap:2px!important;}
   }
+  #panel-clasificacion .clasif-subtabs{margin-bottom:14px;}
+  #panel-clasificacion .kd-phase-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;margin-bottom:16px;}
+  #panel-clasificacion .kd-phase-tabs::-webkit-scrollbar{display:none;}
+  #panel-clasificacion .kd-phase-tabs .ud-tab{flex:0 0 auto;padding:8px 16px;}
+  #panel-clasificacion .kd-tree{display:flex;flex-direction:column;gap:16px;}
+  #panel-clasificacion .kd-group{display:flex;align-items:center;gap:8px;}
+  #panel-clasificacion .kd-col{display:flex;flex-direction:column;gap:8px;min-width:0;}
+  #panel-clasificacion .kd-col-current{flex:1;}
+  #panel-clasificacion .kd-col-next{flex:1;justify-content:center;}
+  #panel-clasificacion .kd-connector{flex:0 0 20px;height:2px;background:rgba(0,155,84,.35);position:relative;}
+  #panel-clasificacion .kd-connector::before,
+  #panel-clasificacion .kd-connector::after{content:'';position:absolute;right:0;width:6px;height:6px;border-radius:50%;background:var(--green);top:50%;transform:translateY(-50%);}
+  #panel-clasificacion .kd-round-single{display:flex;flex-direction:column;gap:10px;}
+  #panel-clasificacion .kd-final-wrap{display:flex;flex-direction:column;gap:10px;}
+  #panel-clasificacion .kd-final-label{font-size:13px;font-weight:900;color:var(--text);margin:6px 0 2px;}
+  #panel-clasificacion .kd-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);}
+  #panel-clasificacion .kd-card-row{display:flex;align-items:center;padding:3px 0;}
+  #panel-clasificacion .kd-team{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--text);min-width:0;}
+  #panel-clasificacion .kd-team-tbd{color:var(--sub);font-weight:700;}
+  #panel-clasificacion .kd-flag{font-size:15px;flex-shrink:0;}
+  #panel-clasificacion .kd-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #panel-clasificacion .kd-card-foot{margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:11.5px;font-weight:800;color:var(--sub);text-align:center;}
+  #panel-clasificacion .kd-score{color:var(--green);font-size:13px;font-weight:900;}
 </style>
 
 <script id="edson-admin-classification-clean-form-20260701-script">
@@ -22497,13 +22520,122 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 
     body.innerHTML =
       '<div class="grp-admin-head"><h3>Clasificación</h3></div>' +
-      timelineHtml() +
-      '<div class="grp-grid">' + cards + '</div>' +
-      legendHtml() +
-      '<div class="grp-section-title"><h3>Mejores terceros</h3></div>' +
-      '<div class="grp-card grp-best-third-card">' +
-        tableHtml(thirdRows, 'Selección') +
+      '<div class="ud-tabs clasif-subtabs" id="clasif-subtabs">' +
+        '<button class="ud-tab' + (clasifActiveSubTab() === 'grupos' ? ' active' : '') + '" onclick="setClasifSubTab(\'grupos\')"><span>Grupos</span></button>' +
+        '<button class="ud-tab' + (clasifActiveSubTab() === 'decisiva' ? ' active' : '') + '" onclick="setClasifSubTab(\'decisiva\')"><span>Fase decisiva</span></button>' +
+      '</div>' +
+      '<div id="clasif-panel-grupos" style="display:' + (clasifActiveSubTab() === 'grupos' ? '' : 'none') + '">' +
+        timelineHtml() +
+        '<div class="grp-grid">' + cards + '</div>' +
+        legendHtml() +
+        '<div class="grp-section-title"><h3>Mejores terceros</h3></div>' +
+        '<div class="grp-card grp-best-third-card">' +
+          tableHtml(thirdRows, 'Selección') +
+        '</div>' +
+      '</div>' +
+      '<div id="clasif-panel-decisiva" style="display:' + (clasifActiveSubTab() === 'decisiva' ? '' : 'none') + '"></div>';
+
+    if(clasifActiveSubTab() === 'decisiva') renderClasifDecisiva();
+  };
+
+  /* ── Sub-abas Grupos / Fase decisiva ── */
+  function clasifActiveSubTab(){ return window.__clasifSubTab || 'grupos'; }
+  window.setClasifSubTab = function(tab){
+    window.__clasifSubTab = tab;
+    var subtabs = document.getElementById('clasif-subtabs');
+    if(subtabs){
+      Array.prototype.forEach.call(subtabs.querySelectorAll('.ud-tab'), function(b, i){
+        b.classList.toggle('active', (i === 0 ? 'grupos' : 'decisiva') === tab);
+      });
+    }
+    var pg = document.getElementById('clasif-panel-grupos');
+    var pd = document.getElementById('clasif-panel-decisiva');
+    if(pg) pg.style.display = tab === 'grupos' ? '' : 'none';
+    if(pd) pd.style.display = tab === 'decisiva' ? '' : 'none';
+    if(tab === 'decisiva') renderClasifDecisiva();
+  };
+
+  var KD_PHASES = ['1/16', 'Octavos', 'Cuartos', 'Semifinal', '⭐ FINAL'];
+  var KD_PHASE_LABELS = {'1/16':'1/16', 'Octavos':'Octavos', 'Cuartos':'Cuartos', 'Semifinal':'Semifinal', '⭐ FINAL':'Final'};
+  function clasifActiveKdPhase(){ return window.__clasifKdPhase || '1/16'; }
+  function kdFeederIds(m){
+    var ids = [];
+    [m.home, m.away].forEach(function(v){
+      var mm = /P(\d+)/.exec(v || '');
+      if(mm) ids.push(parseInt(mm[1], 10));
+    });
+    return ids;
+  }
+  function kdMiniTeam(m, side, disp){
+    var flag = side === 'h' ? disp.hf : disp.af;
+    var name = side === 'h' ? disp.home : disp.away;
+    var resolved = side === 'h' ? disp.hResolved : disp.aResolved;
+    if(!resolved){
+      var raw = side === 'h' ? m.home : m.away;
+      var mm = /P(\d+)/.exec(raw || '');
+      name = mm ? ('P' + mm[1]) : raw;
+    }
+    return '<span class="kd-team' + (resolved ? '' : ' kd-team-tbd') + '"><span class="kd-flag">' + (resolved ? flag : '🔘') + '</span><span class="kd-name">' + esc(name) + '</span></span>';
+  }
+  function kdMatchCard(m){
+    var real = loadRealResults();
+    var standings = computeStandings(real);
+    var disp = matchDisplay(m, real, standings);
+    var res = real[m.id];
+    var scoreHtml = res
+      ? '<span class="kd-score">' + res.home + ' : ' + res.away + '</span>'
+      : '<span class="kd-when">' + esc(m.date) + ' · ' + esc(m.time) + '</span>';
+    return '<div class="kd-card">' +
+      '<div class="kd-card-row">' + kdMiniTeam(m, 'h', disp) + '</div>' +
+      '<div class="kd-card-row">' + kdMiniTeam(m, 'a', disp) + '</div>' +
+      '<div class="kd-card-foot">' + scoreHtml + '</div>' +
+    '</div>';
+  }
+  function kdPhaseMatches(phase){
+    return MATCHES.filter(function(m){ return m.phase === phase; }).sort(function(a, b){ return a.id - b.id; });
+  }
+  window.renderClasifDecisiva = function(){
+    var host = document.getElementById('clasif-panel-decisiva');
+    if(!host) return;
+    var phase = clasifActiveKdPhase();
+    var tabsHtml = '<div class="ud-tabs kd-phase-tabs" id="kd-phase-tabs">' +
+      KD_PHASES.map(function(p){
+        return '<button class="ud-tab' + (p === phase ? ' active' : '') + '" onclick="setClasifKdPhase(\'' + p + '\')"><span>' + KD_PHASE_LABELS[p] + '</span></button>';
+      }).join('') +
+    '</div>';
+
+    var bodyHtml;
+    if(phase === '⭐ FINAL'){
+      var finals = kdPhaseMatches('⭐ FINAL');
+      var thirds = kdPhaseMatches('3° Puesto');
+      bodyHtml = '<div class="kd-final-wrap">' +
+        (finals.length ? '<div class="kd-final-label">🏆 Final</div>' + finals.map(kdMatchCard).join('') : '') +
+        (thirds.length ? '<div class="kd-final-label">🥉 Tercer puesto</div>' + thirds.map(kdMatchCard).join('') : '') +
       '</div>';
+    } else {
+      var nextPhase = KD_PHASES[KD_PHASES.indexOf(phase) + 1];
+      var current = kdPhaseMatches(phase);
+      var next = nextPhase ? kdPhaseMatches(nextPhase) : [];
+      if(!next.length){
+        bodyHtml = '<div class="kd-round-single">' + current.map(kdMatchCard).join('') + '</div>';
+      } else {
+        var byId = {};
+        current.forEach(function(m){ byId[m.id] = m; });
+        bodyHtml = '<div class="kd-tree">' + next.map(function(nm){
+          var feeders = kdFeederIds(nm).map(function(id){ return byId[id]; }).filter(Boolean);
+          return '<div class="kd-group">' +
+            '<div class="kd-col kd-col-current">' + feeders.map(kdMatchCard).join('') + '</div>' +
+            '<div class="kd-connector" aria-hidden="true"></div>' +
+            '<div class="kd-col kd-col-next">' + kdMatchCard(nm) + '</div>' +
+          '</div>';
+        }).join('') + '</div>';
+      }
+    }
+    host.innerHTML = tabsHtml + '<div id="kd-phase-body">' + bodyHtml + '</div>';
+  };
+  window.setClasifKdPhase = function(phase){
+    window.__clasifKdPhase = phase;
+    renderClasifDecisiva();
   };
 
   var oldSwitch = window.switchTab;
