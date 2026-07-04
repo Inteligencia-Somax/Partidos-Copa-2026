@@ -22192,6 +22192,19 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #panel-clasificacion .grp-format-dot{position:absolute!important;top:50%!important;transform:translate(-50%,-50%)!important;width:12px!important;height:12px!important;border-radius:50%!important;background:#0D3040!important;box-shadow:0 0 0 3px #fff!important;}
   #panel-clasificacion .grp-format-dot.start{left:0!important;transform:translate(0,-50%)!important;}
   #panel-clasificacion .grp-format-dot.mid{left:var(--grp-progress,53%)!important;}
+  #panel-clasificacion .grp-format-today{
+    position:absolute!important;left:var(--grp-progress,53%)!important;top:-24px!important;
+    transform:translateX(-50%)!important;white-space:nowrap!important;
+    font-size:9.5px!important;font-weight:900!important;color:#0D3040!important;
+    background:#fff!important;border:1px solid var(--border)!important;border-radius:8px!important;
+    padding:2px 7px!important;box-shadow:var(--shadow)!important;
+  }
+  #panel-clasificacion .grp-format-today::after{
+    content:''!important;position:absolute!important;left:50%!important;bottom:-4px!important;
+    width:6px!important;height:6px!important;
+    background:#fff!important;border-right:1px solid var(--border)!important;border-bottom:1px solid var(--border)!important;
+    transform:translateX(-50%) rotate(45deg)!important;
+  }
   #panel-clasificacion .grp-format-icons{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;margin-top:5px!important;color:var(--sub)!important;font-size:13px!important;}
 
   #panel-clasificacion .grp-grid{gap:13px!important;}
@@ -22302,7 +22315,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     #panel-clasificacion .grp-form-cell{min-width:52px!important;}
     #clasif-format-modal .cfm-item{grid-template-columns:1fr!important;gap:2px!important;}
   }
-  #panel-clasificacion .clasif-subtabs{margin-bottom:14px;}
+  #panel-clasificacion .clasif-subtabs{margin-bottom:14px;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:6px;}
   #panel-clasificacion .kd-phase-tabs{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;margin-bottom:16px;}
   #panel-clasificacion .kd-phase-tabs::-webkit-scrollbar{display:none;}
   #panel-clasificacion .kd-phase-tabs .filter-chip{flex:0 0 auto;font-size:13px;font-weight:700;padding:9px 16px;box-shadow:var(--shadow);}
@@ -22443,10 +22456,12 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
   function timelineHtml(){
     var pct = tournamentProgressPct().toFixed(1) + '%';
+    var now = new Date();
+    var todayLabel = 'Hoy · ' + String(now.getDate()).padStart(2, '0') + '.' + String(now.getMonth() + 1).padStart(2, '0') + '.';
     return '<button type="button" class="grp-format-card" onclick="openClasifFormatModal()" aria-label="Ver formato de competición">' +
       '<div class="grp-format-track" style="--grp-progress:' + pct + '">' +
         '<span class="grp-format-date">11.06.</span>' +
-        '<span class="grp-format-bar"><span class="grp-format-bar-fill"></span><span class="grp-format-dot start"></span><span class="grp-format-dot mid"></span></span>' +
+        '<span class="grp-format-bar"><span class="grp-format-bar-fill"></span><span class="grp-format-dot start"></span><span class="grp-format-dot mid"></span><span class="grp-format-today">' + todayLabel + '</span></span>' +
         '<span class="grp-format-date">19.07.</span>' +
         '<span class="grp-format-act" aria-hidden="true">ⓘ</span>' +
       '</div>' +
@@ -23437,6 +23452,12 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   .apl-table td.score{
     vertical-align:middle!important;
   }
+  .apl-table th.apl-sortable{
+    cursor:pointer!important;
+    user-select:none!important;
+    white-space:nowrap!important;
+  }
+  .apl-table th.apl-sortable:active{opacity:.7!important;}
 </style>
 <script id="edson-admin-player-search-score-empty-center-20260702-script">
 (function(){
@@ -23470,19 +23491,56 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     if(calc.type==='exact') cls=isGroup?'group-exact':'decisive-exact';
     return '<span class="apl-score-pill '+cls+'">+'+pts+'</span>';
   }
+  function aplParseFechaHora(fecha, hora){
+    if(!fecha) return null;
+    var p = String(fecha).split('/');
+    if(p.length !== 3) return null;
+    var hm = String(hora || '00:00').split(':');
+    var t = new Date(parseInt(p[2],10), parseInt(p[1],10)-1, parseInt(p[0],10), parseInt(hm[0]||0,10), parseInt(hm[1]||0,10)).getTime();
+    return isNaN(t) ? null : t;
+  }
+  window.__aplFechaSortDir = window.__aplFechaSortDir || 0; // 0=sin ordenar, 1=asc, -1=desc
+  function aplSortByFecha(items){
+    var dir = window.__aplFechaSortDir;
+    if(!dir) return items;
+    return items.slice().sort(function(a, b){
+      var ta = aplParseFechaHora(a.fecha, a.hora), tb = aplParseFechaHora(b.fecha, b.hora);
+      if(ta === null && tb === null) return 0;
+      if(ta === null) return 1;   // "Sin pronóstico" siempre al final
+      if(tb === null) return -1;
+      return dir * (ta - tb);
+    });
+  }
+  function aplFechaThLabel(){
+    var dir = window.__aplFechaSortDir;
+    return 'Fecha' + (dir === 1 ? ' ▲' : dir === -1 ? ' ▼' : ' ⇅');
+  }
+  window.aplToggleFechaSort = function(){
+    var dir = window.__aplFechaSortDir;
+    window.__aplFechaSortDir = dir === 0 ? -1 : (dir === -1 ? 1 : 0);
+    if(window.__aplLastMatchId){ window.renderAdminMatchLookupTable(window.__aplLastMatchId); }
+    else if(window.__aplLastPlayerName){ window.renderAdminPlayerLookupTable(window.__aplLastPlayerName); }
+  };
   function rowClass(pick){return pick?'':' class="apl-row-nopick"';}
 
   window.renderAdminPlayerLookupTable=function(playerName){
     var area=document.getElementById('apl-table-area');
     if(!area) return;
     if(!playerName){area.innerHTML='<div class="apl-empty-msg">Seleccioná un participante o un partido para consultar.</div>';area.className='';return;}
+    window.__aplLastPlayerName = playerName;
+    window.__aplLastMatchId = null;
     var all=(typeof loadAllPicks==='function'?loadAllPicks():{});
     var results=(typeof loadRealResults==='function'?loadRealResults():{});
     var standings=(typeof computeStandings==='function'?computeStandings(results):{});
     var picks=all[playerName]||{};
     var user=participants().find(function(u){return String(u.name)===String(playerName);})||{name:playerName,pos:'',score:0};
-    var rows=matches().map(function(m){
+    var items=matches().map(function(m){
       var d=display(m,results,standings),real=results[m.id]||results[String(m.id)]||null,pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
+      return { m:m, d:d, real:real, pick:pick, fecha:dt.fecha, hora:dt.hora };
+    });
+    items = aplSortByFecha(items);
+    var rows=items.map(function(it){
+      var m=it.m, d=it.d, real=it.real, pick=it.pick;
       return '<tr'+rowClass(pick)+'>'+ 
         '<td class="apl-muted">'+esc(m.date||'')+' · '+esc(m.time||'')+' · '+esc(m.phase||'')+'</td>'+ 
         '<td><span>'+esc(d.hf||'')+' '+esc(d.home||m.home||'')+' × '+esc(d.away||m.away||'')+' '+esc(d.af||'')+'</span></td>'+ 
@@ -23490,19 +23548,21 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
         '<td class="score">'+scoreHtml(pick,real,m)+'</td>'+ 
         '<td class="score apl-total-pts">'+esc(user.score)+'</td>'+ 
-        '<td class="apl-muted">'+esc(dt.fecha)+'</td>'+ 
-        '<td class="apl-muted">'+esc(dt.hora)+'</td>'+ 
+        '<td class="apl-muted">'+esc(it.fecha)+'</td>'+ 
+        '<td class="apl-muted">'+esc(it.hora)+'</td>'+ 
       '</tr>';
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-person-summary"><div class="apl-person-summary-title">'+esc(user.pos?user.pos+' · '+user.name:user.name)+'</div><div class="apl-person-summary-meta">Consulta por participante · Todos los partidos · Puntos totales: <strong>'+esc(user.score)+'</strong></div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table apl-table-wide"><thead><tr><th>Partidas</th><th>Selecciones</th><th>Resultado</th><th>Palpite</th><th class="score">Puntuación</th><th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table apl-table-wide"><thead><tr><th>Partidas</th><th>Selecciones</th><th>Resultado</th><th>Palpite</th><th class="score">Puntuación</th><th class="score">Puntos</th><th class="apl-sortable" onclick="aplToggleFechaSort()">'+aplFechaThLabel()+'</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 
   window.renderAdminMatchLookupTable=function(matchId){
     var area=document.getElementById('apl-table-area');
     if(!area) return;
     if(!matchId){area.innerHTML='<div class="apl-empty-msg">Seleccioná un participante o un partido para consultar.</div>';area.className='';return;}
+    window.__aplLastMatchId = matchId;
+    window.__aplLastPlayerName = null;
     var all=(typeof loadAllPicks==='function'?loadAllPicks():{}),results=(typeof loadRealResults==='function'?loadRealResults():{}),standings=(typeof computeStandings==='function'?computeStandings(results):{});
     var m=matches().find(function(x){return String(x.id)===String(matchId);});
     if(!m){area.innerHTML='<div class="apl-empty-msg">Partido no encontrado.</div>';area.className='';return;}
@@ -23510,21 +23570,26 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     var matchTitle=(d.hf||'')+' '+(d.home||m.home||'')+' × '+(d.away||m.away||'')+' '+(d.af||'');
     var matchMeta=(m.date||'')+' · '+(m.time||'')+' · '+(m.phase||'')+' · Resultado: '+resultado;
     var hasResult=!!real;
-    var rows=participants().map(function(u){
+    var items=participants().map(function(u){
       var picks=all[u.name]||{},pick=picks[m.id]||picks[String(m.id)]||null,dt=splitDateTime(pick?(pick.savedAt||pick.fechaPalpite||''):'');
+      return { u:u, pick:pick, fecha:dt.fecha, hora:dt.hora };
+    });
+    items = aplSortByFecha(items);
+    var rows=items.map(function(it){
+      var u=it.u, pick=it.pick;
       return '<tr'+rowClass(pick)+'>'+ 
         '<td class="apl-name-cell"><strong>'+esc(u.pos)+'</strong> · '+esc(u.name)+'</td>'+ 
         (hasResult?('<td class="apl-result">'+esc(resultado)+'</td>'):'')+ 
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
         (hasResult?('<td class="score">'+scoreHtml(pick,real,m)+'</td>'):'')+ 
         '<td class="score apl-total-pts-plain">'+esc(u.score)+'</td>'+ 
-        '<td class="apl-muted">'+esc(dt.fecha)+'</td>'+ 
-        '<td class="apl-muted">'+esc(dt.hora)+'</td>'+ 
+        '<td class="apl-muted">'+esc(it.fecha)+'</td>'+ 
+        '<td class="apl-muted">'+esc(it.hora)+'</td>'+ 
       '</tr>';
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th>'+(hasResult?'<th>Resultado</th>':'')+'<th>Palpite</th>'+(hasResult?'<th class="score">Puntuación</th>':'')+'<th class="score">Puntos</th><th>Fecha</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th>'+(hasResult?'<th>Resultado</th>':'')+'<th>Palpite</th>'+(hasResult?'<th class="score">Puntuación</th>':'')+'<th class="score">Puntos</th><th class="apl-sortable" onclick="aplToggleFechaSort()">'+aplFechaThLabel()+'</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 })();
 </script>
