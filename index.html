@@ -9195,6 +9195,7 @@ function renderUdDayDetail(date){
 function renderUdPartidos(){
   const { matches, rounds, idx, picks, real, sortAsc, viewerPicks } = udState;
   const allPicks = loadAllPicks();
+  const standings = computeStandings(real);
   const activeFilters = Array.isArray(udState.tagFilters) ? udState.tagFilters : [];
   // idx 0..rounds.length-1 = fecha (0 = última jugada). idx === rounds.length = Todas (al final).
   const selected = idx < rounds.length ? rounds[idx] : null;
@@ -9209,6 +9210,11 @@ function renderUdPartidos(){
     const pts = calc.pts;
     const isExact = !pending && calc.type === 'exact';
     if(!pending) shownTotal += pts;
+    const d = matchDisplay(m, real, standings);
+    const isPlaceholderLabel = raw => /^(G\.|Perd\.)\s*P\d+$/.test(raw || '') || /^[123]º Gr\./.test(raw || '');
+    const placeholderLabel = raw => { const mm = /P(\d+)/.exec(raw || ''); return mm ? `🔘 P${mm[1]}` : `🔘 ${raw || ''}`; };
+    const homeDisplay = (!isPlaceholderLabel(m.home) || d.hResolved) ? `${d.hf} ${d.home}` : placeholderLabel(m.home);
+    const awayDisplay = (!isPlaceholderLabel(m.away) || d.aResolved) ? `${d.away} ${d.af}` : placeholderLabel(m.away);
     const pickLabel = pick ? `Palpite: ${pick.home}:${pick.away}` : 'Sin palpite';
     const pickSavedAt = pick ? (pick.savedAt || pick.fechaPalpite || '') : '';
     const pickInfoClass = pickSavedAt ? ' pick-info-enabled' : '';
@@ -9259,7 +9265,7 @@ function renderUdPartidos(){
       <div class="ud-row ${m.x2 ? 'x2-game' : ''} ${isExact ? 'exact' : ''}" onclick="openMatchInfoFromUserDetail(${m.id})" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMatchInfoFromUserDetail(${m.id})}">
         <div class="ud-match">
           <div class="ud-line-main">
-            <span class="ud-teams"><span class="ud-team-name home">${m.hf || ''} ${m.home}</span> ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} <span class="ud-team-name away">${m.away} ${m.af || ''}</span></span>
+            <span class="ud-teams"><span class="ud-team-name home">${homeDisplay}</span> ${r ? `<span class="ud-sc-in">${r.home}</span> × <span class="ud-sc-in">${r.away}</span>` : '×'} <span class="ud-team-name away">${awayDisplay}</span></span>
           </div>
           <div class="ud-pick-line"><span class="ud-pick${pickInfoClass}" ${pickInfoAttr}>${pickLabel}</span>${pendingRegisteredHtml}${pickTagsHtml}${historicalPositionSepHtml}</div>
         </div>
@@ -24786,7 +24792,9 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 .sim-d.down{color:var(--red);}
 .sim-d.same{color:var(--sub);}
 .sim-gain{font-size:12px;font-weight:900;flex-shrink:0;min-width:34px;text-align:right;color:var(--sub);}
-.sim-gain.up{color:var(--green);}
+.sim-gain.hit{color:#F59E0B;}
+.sim-gain.zero{color:var(--red);}
+.sim-gain.exact{color:#F59E0B;background:rgba(245,158,11,.15);border-radius:8px;padding:2px 7px;text-align:center;}
 .sim-note{font-size:11px;color:var(--sub);font-weight:600;margin-top:8px;line-height:1.45;}
 /* ── 6) STEPPERS ── */
 .pk-step{display:flex;flex-direction:column;gap:6px;}
@@ -25082,7 +25090,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       var dd = (curPos[u.name] || pos) - pos;
       var dHtml = dd > 0 ? '<span class="sim-d up">▲' + dd + '</span>' : dd < 0 ? '<span class="sim-d down">▼' + (-dd) + '</span>' : '<span class="sim-d same">=</span>';
       var gainCalc = calculatePickPoints(picksForMatch[u.name], { home:h, away:a }, m);
-      var gainCls = gainCalc.pts > 0 ? 'up' : 'same';
+      var gainCls = gainCalc.pts === 0 ? 'zero' : (gainCalc.type === 'exact' ? 'exact' : 'hit');
       var gainHtml = '<span class="sim-gain ' + gainCls + '">+' + gainCalc.pts + '</span>';
       rows += '<div class="sim-row' + (u.name === me ? ' sim-me' : '') + '"><span class="sim-pos-wrap"><span class="sim-pos">' + pos + 'º</span>' + dHtml + '</span><span class="sim-nm">' + u.name + '</span><span class="sim-pts">' + u.score + ' pts</span>' + gainHtml + '</div>';
     });
