@@ -8985,7 +8985,7 @@ function renderUd(){
     <div class="ud-hero-sep"></div>
     <div class="ud-hero-stat"><span class="ud-hero-num">${s.position ? s.position + 'º' : '–'} ${delta}</span><span class="ud-hero-lbl">posición</span></div>
     <div class="ud-hero-sep"></div>
-    <div class="ud-hero-stat"><span class="ud-hero-num">${s.exact}</span><span class="ud-hero-lbl">exactos</span></div>`;
+    <div class="ud-hero-stat"><span class="ud-hero-num">${s.exact}</span><span class="ud-hero-lbl">exactos <svg class="detail-i ud-exact-i" viewBox="0 0 24 24" onclick="event.stopPropagation();openUdExtraModal()"><circle cx="12" cy="12" r="10.5" fill="#fff" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><rect x="10.6" y="10.8" width="2.8" height="7" rx="1.4" fill="currentColor"/></svg></span></div>`;
 
   // ── tabs (íconos monocromáticos + texto, en el cuerpo) ──
   const UD_ICONS = {
@@ -26336,6 +26336,102 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
   };
   window.closeCurioModal = function(){
     var el = document.getElementById('curio-modal');
+    if(el) el.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v12-20260704
+     Ícono ⓘ junto a "EXACTOS" en el detalle de participante → abre una
+     ventanita con dos botones (Exactos / Racha) que muestran el listado
+     correspondiente, en el mismo modelo visual que "Mejor racha" de hoy.
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v12-20260704-style">
+.ud-exact-i{cursor:pointer;color:var(--sub);opacity:.9;}
+.ud-exact-i:active{opacity:1;}
+.ud-hero-lbl .ud-exact-i{width:11px!important;height:11px!important;vertical-align:-1px!important;margin:0 0 0 2px!important;}
+#ud-extra-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:16px;}
+#ud-extra-modal.open{display:flex;}
+#ud-extra-modal .curio-tab.on{background:#F59E0B!important;border-color:#F59E0B!important;color:#fff!important;}
+#ud-extra-modal .curio-empty{text-align:center;color:var(--sub);font-size:13px;font-weight:600;padding:24px 10px;}
+</style>
+
+<script id="edson-upgrade-pack-v12-20260704-script">
+(function(){
+  'use strict';
+
+  function ensureUdExtraModal(){
+    if(document.getElementById('ud-extra-modal')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'ud-extra-modal';
+    wrap.innerHTML =
+      '<div class="sim-box">' +
+        '<div class="sim-head"><span class="sim-title" id="ud-extra-title">Detalle</span><button class="sim-close" onclick="closeUdExtraModal()">✕</button></div>' +
+        '<div class="curio-tabs" id="ud-extra-tabs">' +
+          '<button class="curio-tab" type="button" data-uet="exactos" onclick="setUdExtraTab(\'exactos\')">Exactos</button>' +
+          '<button class="curio-tab" type="button" data-uet="racha" onclick="setUdExtraTab(\'racha\')">Racha</button>' +
+        '</div>' +
+        '<div class="sim-body" id="ud-extra-body"><div class="curio-empty">Tocá una opción para ver el detalle.</div></div>' +
+      '</div>';
+    wrap.addEventListener('click', function(e){ if(e.target === wrap) closeUdExtraModal(); });
+    document.body.appendChild(wrap);
+  }
+
+  function udExactosList(){
+    try{
+      var picks = udState.picks, real = udState.real;
+      var chrono = udState.matches.slice().reverse();
+      var exactMatches = chrono.filter(function(m){
+        return real[m.id] && calculatePickPoints(picks[m.id], real[m.id], m).type === 'exact';
+      });
+      if(!exactMatches.length) return '<div class="curio-empty">Todavía no tiene marcadores exactos.</div>';
+      var tot = 0;
+      var rows = exactMatches.map(function(m){
+        var pick = picks[m.id], r = real[m.id];
+        var pts = calculatePickPoints(pick, r, m).pts;
+        tot += pts;
+        var pickStr = pick ? (pick.home + ':' + pick.away) : 'Sin palpite';
+        var dm = m.date.replace(/^[^,]+,\s*/, '');
+        return '<div class="ud-day-row">' +
+          '<div class="ud-day-match">' + m.hf + ' ' + m.home + ' × ' + m.away + ' ' + m.af + ' <span class="ud-day-date-inline">· ' + dm + '</span><div class="ud-day-sub">Resultado: ' + r.home + ':' + r.away + ' · Palpite: ' + pickStr + '</div></div>' +
+          '<div class="ud-day-pts win">+' + pts + '</div>' +
+        '</div>';
+      }).join('');
+      return '<div class="ud-day-detail"><div class="ud-day-head">' + exactMatches.length + ' marcador(es) exacto(s) · ' + tot + ' pts</div>' + rows + '</div>';
+    }catch(e){ return '<div class="curio-empty">No se pudo cargar el detalle.</div>'; }
+  }
+
+  function udRachaList(){
+    try{
+      var html = (typeof renderUdStreakDetail === 'function') ? renderUdStreakDetail() : '';
+      return html || '<div class="curio-empty">Todavía no tiene una racha de aciertos.</div>';
+    }catch(e){ return '<div class="curio-empty">No se pudo cargar el detalle.</div>'; }
+  }
+
+  window.setUdExtraTab = function(which){
+    var wrap = document.getElementById('ud-extra-modal');
+    if(!wrap) return;
+    wrap.querySelectorAll('.curio-tab').forEach(function(b){
+      b.classList.toggle('on', b.getAttribute('data-uet') === which);
+    });
+    var body = document.getElementById('ud-extra-body');
+    body.innerHTML = which === 'racha' ? udRachaList() : udExactosList();
+    body.scrollTop = 0;
+  };
+
+  window.openUdExtraModal = function(){
+    ensureUdExtraModal();
+    var title = (typeof udState !== 'undefined' && udState && udState.name) ? udState.name : 'Detalle';
+    document.getElementById('ud-extra-title').textContent = title;
+    document.getElementById('ud-extra-body').innerHTML = '<div class="curio-empty">Tocá una opción para ver el detalle.</div>';
+    document.getElementById('ud-extra-modal').querySelectorAll('.curio-tab').forEach(function(b){ b.classList.remove('on'); });
+    document.getElementById('ud-extra-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeUdExtraModal = function(){
+    var el = document.getElementById('ud-extra-modal');
     if(el) el.classList.remove('open');
     document.body.style.overflow = '';
   };
