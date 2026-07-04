@@ -24776,7 +24776,19 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     ensureSimModal();
     var sel = document.getElementById('sim-match-select');
     var cands = simCandidates();
-    if(!cands.length){ showSaveBanner('El simulador se habilita 30 min antes de cada partido (cuando los palpites ya están cerrados)'); return; }
+    if(!cands.length){
+      var lt = document.getElementById('locked-toast');
+      if(lt){
+        var ltIcon = lt.querySelector('.locked-toast-icon');
+        if(ltIcon) ltIcon.textContent = '🔮';
+        showLockedToast('El simulador se habilita 30 min antes de cada partido,<br>cuando los palpites ya están cerrados.');
+        clearTimeout(lt.__kdIconTimer);
+        lt.__kdIconTimer = setTimeout(function(){ if(ltIcon) ltIcon.textContent = '🔒'; }, 2300);
+      } else {
+        showSaveBanner('El simulador se habilita 30 min antes de cada partido (cuando los palpites ya están cerrados)');
+      }
+      return;
+    }
     var results = loadRealResults(), standings = computeStandings(results);
     sel.innerHTML = cands.map(function(m){
       var d = matchDisplay(m, results, standings);
@@ -26203,9 +26215,33 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
   color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:0;
   box-shadow:0 4px 14px rgba(0,0,0,.30);
   transition:transform .12s ease;
+  animation:mbSimFloat 3s ease-in-out infinite, mbSimGlow 3s ease-in-out infinite;
+  will-change:transform;
 }
-#mb-sim-btn.mb-sim-btn:active{transform:scale(.9);}
+#mb-sim-btn.mb-sim-btn:active{transform:scale(.9);animation:none;}
+@keyframes mbSimFloat{
+  0%,100%{transform:translateY(0) rotate(0deg);}
+  50%{transform:translateY(-7px) rotate(-4deg);}
+}
+@keyframes mbSimGlow{
+  0%,100%{box-shadow:0 4px 14px rgba(0,0,0,.30), 0 0 0 0 rgba(167,139,250,0);}
+  50%{box-shadow:0 10px 22px rgba(0,0,0,.30), 0 0 16px 4px rgba(167,139,250,.55);}
+}
+@media (prefers-reduced-motion: reduce){
+  #mb-sim-btn.mb-sim-btn{animation:none;}
+}
 #match-breakdown-modal .modal-header{display:flex;align-items:center;}
+</style>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v10-20260704
+     Reordena la pila de botones flotantes del Ranking: la bola de cristal 🔮
+     pasa a ser la última (más abajo, pegada al fondo) y la flechita ↑ + "Yo"
+     quedan arriba de ella.
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v10-20260704-style">
+#sim-open-btn.sim-fab{bottom:92px!important;}
+.quick-float-nav{bottom:150px!important;}
 </style>
 
 <script id="edson-upgrade-pack-v9-20260703-script">
