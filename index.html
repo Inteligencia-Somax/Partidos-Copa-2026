@@ -5367,11 +5367,10 @@ html, body{scroll-behavior:auto!important;}
     </div>
     <div id="admin-area" style="display: none;">
       <div class="rules-section">
-        <h3>✅ Cargar resultado real</h3>
         <div class="admin-export-box">
-          <button class="admin-download-btn" onclick="downloadUpdatedHTML()">⬇ HTML</button>
-          <button class="admin-copy-btn" onclick="copyUpdatedHTML()">📋 Copiar</button>
-          <button class="admin-report-btn" onclick="openAdminMatchExportSelector()">📊 Exportar</button>
+          <button class="admin-download-btn" onclick="downloadUpdatedHTML()">HTML</button>
+          <button class="admin-copy-btn" onclick="copyUpdatedHTML()">Copiar</button>
+          <button class="admin-report-btn" onclick="openAdminMatchExportSelector()">Exportar</button>
         </div>
       </div>
 
@@ -6907,6 +6906,7 @@ html, body{scroll-behavior:auto!important;}
 .ud-mine-tag.me{background:var(--text);border-color:var(--text);color:#fff;}
 .ud-exact-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:rgba(0,155,84,.12);border:1px solid rgba(0,155,84,.35);color:var(--green);font-size:10px;font-weight:900;vertical-align:middle;letter-spacing:.2px;}
 .ud-most-tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:50px;background:rgba(107,114,128,.10);border:1px solid rgba(107,114,128,.22);color:var(--sub);font-size:10px;font-weight:900;vertical-align:middle;letter-spacing:.2px;}
+.ud-streak-tag{display:inline-block;margin-left:6px;color:var(--text);font-size:10px;font-weight:900;vertical-align:middle;background:none;border:none;padding:0;}
 /* Tarjetas de estadística (Análisis: más palpitado / puntuó) */
 .mb-stat-cards{display:flex;gap:8px;margin:4px 0 12px;}
 .mb-stat-card{flex:1;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;box-shadow:var(--shadow);}
@@ -8978,7 +8978,7 @@ function renderUd(){
     <div class="ud-hero-sep"></div>
     <div class="ud-hero-stat"><span class="ud-hero-num">${s.position ? s.position + 'º' : '–'} ${delta}</span><span class="ud-hero-lbl">posición</span></div>
     <div class="ud-hero-sep"></div>
-    <div class="ud-hero-stat"><span class="ud-hero-num">${s.aprov}%</span><span class="ud-hero-lbl">aprovecham.</span></div>`;
+    <div class="ud-hero-stat"><span class="ud-hero-num">${s.exact}</span><span class="ud-hero-lbl">exactos</span></div>`;
 
   // ── tabs (íconos monocromáticos + texto, en el cuerpo) ──
   const UD_ICONS = {
@@ -9116,6 +9116,19 @@ function renderUdPartidos(){
   if(sortAsc) shown = shown.slice().reverse(); // matches viene "reciente primero"
 
   let shownTotal = 0, rows = '', renderedCount = 0;
+  // Racha 🔥: cuántos acertos seguidos lleva el participante hasta cada partido (orden cronológico).
+  const streakMap = {};
+  (function(){
+    const chronoAll = matches.slice().reverse(); // udState.matches viene "reciente primero"
+    let running = 0;
+    chronoAll.forEach(mm => {
+      const rr = real[mm.id];
+      if(!rr) return; // partido sin resultado aún: no afecta la racha
+      const cc = calculatePickPoints(picks[mm.id], rr, mm);
+      if(cc.pts > 0){ running++; streakMap[mm.id] = running; }
+      else running = 0;
+    });
+  })();
   shown.forEach(m => {
     const pick = picks[m.id], r = real[m.id];
     const pending = !r;
@@ -9153,6 +9166,10 @@ function renderUdPartidos(){
       hasExactTag = !!isExact;
       if(hasMostTag) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
       if(hasExactTag) pickTags.push('<span class="ud-exact-tag">Exacto</span>');
+      if(!pending && pts > 0){
+        const streak = streakMap[m.id] || 0;
+        if(streak >= 2) pickTags.push(`<span class="ud-meta-sep">•</span><span class="ud-streak-tag">🔥${streak}</span>`);
+      }
     }
 
     if(activeFilters.length){
@@ -23006,7 +23023,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     btn.className='admin-player-search-btn';
     btn.setAttribute('aria-label','Consultar pronósticos');
     btn.title='Consultar pronósticos';
-    btn.textContent='🔎';
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
     btn.onclick=function(){ openAdminPlayerLookupModal(); };
     box.appendChild(btn);
   }
