@@ -7423,9 +7423,16 @@ function getMatchDateTime(match){
   // Esto mantiene el bloqueo de palpites 30 min antes del partido correcto aunque el usuario esté en Paraguay u otro país.
   return new Date(Date.UTC(2026, months[monTxt], day, hh + 3, mm || 0, 0));
 }
+// Hora "corregida": usa el desfasaje respecto al servidor cuando ya lo tenemos
+// (ver syncServerTimeOffset más abajo), para que ni un error chico de reloj
+// del dispositivo alcance a ganar margen extra sobre el cierre de 30 minutos.
+function correctedNow(){
+  const offset = (typeof window !== 'undefined' && typeof window.__serverTimeOffsetMs === 'number') ? window.__serverTimeOffsetMs : 0;
+  return new Date(Date.now() + offset);
+}
 function canEditPick(match){
   const limit = new Date(getMatchDateTime(match).getTime() - 30*60*1000);
-  return new Date() < limit;
+  return correctedNow() < limit;
 }
 // Verifica si el palpite fue hecho dentro del plazo (más de 30 min antes del inicio).
 // Usa exactamente la misma ventana que canEditPick para que la regla de puntuación
@@ -7658,6 +7665,17 @@ async function loadFirebaseState(){
 async function savePickToFirebase(match, pick){
   if(!currentUserId) return;
 
+  // ── Verificación del reloj del dispositivo ────────────────────────────────
+  // Compara la hora del celular contra la hora real del servidor (Firestore).
+  // Si alguien atrasó/adelantó el reloj para intentar burlar el cierre de
+  // palpites, la diferencia aparece acá y bloqueamos el guardado antes de
+  // que el documento llegue a Firestore.
+  try{ await ensureFreshServerTimeOffset(); }catch(e){ /* sin conexión: seguimos con la validación normal */ }
+  if(deviceClockIsUnreliable()){
+    console.warn('[Bolão] Escritura bloqueada: el reloj del dispositivo no coincide con la hora real del servidor.');
+    throw new Error('RELOJ_INVALIDO');
+  }
+
   // ── Validación de horario antes de escribir en Firestore ─────────────────────
   // Segunda línea de defensa: aunque el usuario burle la comprobación de la UI,
   // esta verificación impide que el documento llegue a Firestore.
@@ -7681,6 +7699,54 @@ async function savePickToFirebase(match, pick){
     kickoffUTC: getMatchDateTime(match).toISOString(),
     userAgent: navigator.userAgent
   }, {merge:true});
+}
+
+// ── Sincronización de hora real (servidor) para detectar relojes adulterados ──
+// No existe forma de leer la configuración "Hora automática" del celular desde
+// el navegador (ninguna web tiene acceso a eso), pero sí podemos comparar el
+// reloj del dispositivo contra la hora real del servidor de Firestore. Si la
+// diferencia es grande, es señal de que alguien tocó el reloj a propósito.
+window.__serverTimeOffsetMs = null;
+window.__serverTimeOffsetAt = 0;
+const DEVICE_CLOCK_TOLERANCE_MS = 3 * 60 * 1000; // margen de 3 minutos (deriva normal de reloj)
+async function syncServerTimeOffset(){
+  try{
+    const ref = fbDb.collection('_meta').doc('timeSync');
+    const beforeLocal = Date.now();
+    await ref.set({ ts: firebase.firestore.FieldValue.serverTimestamp() }, { merge:true });
+    const snap = await ref.get({ source:'server' });
+    const afterLocal = Date.now();
+    const data = snap.data();
+    if(data && data.ts && typeof data.ts.toMillis === 'function'){
+      const serverMs = data.ts.toMillis();
+      const roundTrip = afterLocal - beforeLocal;
+      const estimatedLocalAtServerMoment = beforeLocal + roundTrip / 2;
+      window.__serverTimeOffsetMs = serverMs - estimatedLocalAtServerMoment;
+      window.__serverTimeOffsetAt = Date.now();
+    }
+  }catch(e){
+    console.warn('[Bolão] No fue posible sincronizar la hora del servidor:', e);
+  }
+}
+function withTimeoutFallback(promise, ms){
+  return Promise.race([
+    promise,
+    new Promise(resolve => setTimeout(resolve, ms))
+  ]);
+}
+async function ensureFreshServerTimeOffset(){
+  // Si sincronizamos hace menos de 60s, no repetimos (evita latencia en cada guardado).
+  if(window.__serverTimeOffsetMs !== null && (Date.now() - window.__serverTimeOffsetAt) < 60000) return;
+  await withTimeoutFallback(syncServerTimeOffset(), 2500);
+}
+function deviceClockIsUnreliable(){
+  if(window.__serverTimeOffsetMs === null) return false; // sin datos de referencia: no bloqueamos por las dudas
+  return Math.abs(window.__serverTimeOffsetMs) > DEVICE_CLOCK_TOLERANCE_MS;
+}
+// Primer intento de sincronización apenas carga la app (no bloqueante).
+if(typeof document !== 'undefined'){
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(function(){ syncServerTimeOffset(); }, 1500); });
+  setInterval(syncServerTimeOffset, 3 * 60 * 1000); // refresco cada 3 minutos mientras la app está abierta
 }
 
 async function saveResultToFirebase(matchId, h, a, adv){
@@ -8389,7 +8455,20 @@ async function commitPick(){
     await savePickToFirebase(match, savedPick);
   }catch(err){
     console.error(err);
-    showSaveBanner('⚠ No se pudo guardar en Firebase. Revisá conexión/reglas.');
+    if(err && err.message === 'RELOJ_INVALIDO'){
+      var lt = document.getElementById('locked-toast');
+      if(lt){
+        var ltIcon = lt.querySelector('.locked-toast-icon');
+        if(ltIcon) ltIcon.textContent = '🕒';
+        showLockedToast('El reloj de tu celular no coincide con la hora real.<br>Verificalo antes de palpitar.');
+        clearTimeout(lt.__clockIconTimer);
+        lt.__clockIconTimer = setTimeout(function(){ if(ltIcon) ltIcon.textContent = '🔒'; }, 2300);
+      } else {
+        showSaveBanner('⚠ Verificá la hora de tu celular antes de palpitar');
+      }
+    } else {
+      showSaveBanner('⚠ No se pudo guardar en Firebase. Revisá conexión/reglas.');
+    }
     return;
   }
   sendPickToGoogleSheets(match, savedPick);
