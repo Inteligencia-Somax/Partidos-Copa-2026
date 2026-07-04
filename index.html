@@ -7626,6 +7626,13 @@ fbAuth.onAuthStateChanged(async user=>{
       const profile = (await fbDb.collection('usuarios').doc(user.uid).get()).data() || {};
       currentUser = profile.nombre || currentUser;
       currentUserRole = (currentUserEmail === adminEmail || profile.rol === 'admin') ? 'admin' : 'usuario';
+
+      // Marca "última conexión" (para la regla de inactividad del ranking).
+      // No bloquea el login: si falla, seguimos igual.
+      fbDb.collection('usuarios').doc(user.uid).set({
+        nombre: getCanonicalUserName(currentUser),
+        ultimaConexion: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true}).catch(function(e){ console.warn('No fue posible registrar última conexión:', e); });
     }catch(err){
       console.warn('No fue posible cargar perfil Firebase:', err);
       currentUserRole = currentUserEmail === 'angelica.davalos@somaxagro.com' ? 'admin' : 'usuario';
@@ -7689,6 +7696,19 @@ async function loadFirebaseState(){
       const cfg = await fbDb.collection('config').doc('terceros').get();
       if(cfg.exists && cfg.data().asignacion) saveThirdAssign(cfg.data().asignacion);
     }catch(e){ /* sin asignación aún */ }
+
+    // ── Última conexión de cada usuario (para la regla de inactividad) ─────────
+    try{
+      const usersSnap = await fbDb.collection('usuarios').get();
+      const lastSeen = {};
+      usersSnap.forEach(doc=>{
+        const d = doc.data();
+        if(d.nombre && d.ultimaConexion && typeof d.ultimaConexion.toDate === 'function'){
+          lastSeen[d.nombre] = d.ultimaConexion.toDate().toISOString();
+        }
+      });
+      localStorage.setItem('somax_last_seen', JSON.stringify(lastSeen));
+    }catch(e){ console.warn('No fue posible sincronizar última conexión:', e); }
   }catch(err){
     console.warn('No fue posible sincronizar Firebase:', err);
     showSaveBanner('⚠ Revisá las reglas de Firebase');
@@ -8580,6 +8600,45 @@ function canCurrentUserSeeExcludedParticipant(name){
 function isVisibleParticipantName(name){
   return !isExcludedFromRanking(name) || canCurrentUserSeeExcludedParticipant(name);
 }
+
+// ── Regla de inactividad ─────────────────────────────────────────────────────
+// Si alguien no palpitó en los últimos 3 partidos ya cerrados, o no entró al
+// sistema en los últimos 7 días, se lo saca del ranking por completo (posición,
+// puntos, todo) — como si hubiera salido del juego. En cuanto vuelve a palpitar
+// (lo que implica que entró de nuevo), reaparece automáticamente.
+const INACTIVITY_DAYS = 7;
+const INACTIVITY_MATCH_COUNT = 3;
+function lastClosedMatches(n){
+  return MATCHES
+    .filter(m => !canEditPick(m))
+    .sort((a, b) => getMatchDateTime(b) - getMatchDateTime(a))
+    .slice(0, n);
+}
+function missedLastMatches(picks, n){
+  const closed = lastClosedMatches(n);
+  if(closed.length < n) return false; // todavía no hay suficientes partidos cerrados para aplicar la regla
+  return closed.every(m => !picks[m.id]);
+}
+function loadLastSeenMap(){
+  try{ return JSON.parse(localStorage.getItem('somax_last_seen') || '{}'); }catch(e){ return {}; }
+}
+function isInactiveParticipant(name, picks){
+  try{
+    if(missedLastMatches(picks || {}, INACTIVITY_MATCH_COUNT)) return true;
+    const lastSeenMap = loadLastSeenMap();
+    const norm = normalizeRankingName(name);
+    let lastSeenIso = null;
+    Object.keys(lastSeenMap).forEach(k => { if(normalizeRankingName(k) === norm) lastSeenIso = lastSeenMap[k]; });
+    if(lastSeenIso){
+      const days = (Date.now() - new Date(lastSeenIso).getTime()) / (1000 * 60 * 60 * 24);
+      if(days > INACTIVITY_DAYS) return true;
+    }
+    // Si todavía no tenemos ningún dato de última conexión para esa persona,
+    // no la penalizamos por esa parte (evita eliminar a todos de golpe el día
+    // que se activa esta regla, antes de que se registren conexiones nuevas).
+    return false;
+  }catch(e){ return false; }
+}
 function sortRankStats(a,b){
   return b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount;
 }
@@ -8588,7 +8647,11 @@ function buildRankedUsers(options = {}){
   const all = loadAllPicks();
   const realResults = loadRealResults();
   return Object.entries(all)
-    .filter(([name]) => includeExcluded ? isVisibleParticipantName(name) : !isExcludedFromRanking(name))
+    .filter(([name, picks]) => {
+      const baseVisible = includeExcluded ? isVisibleParticipantName(name) : !isExcludedFromRanking(name);
+      if(!baseVisible) return false;
+      return !isInactiveParticipant(name, picks);
+    })
     .map(([name, picks])=>{
       const stats = {name, pickCount:0, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
       MATCHES.forEach(m=>{
@@ -8689,38 +8752,12 @@ function getRankFilterOptions(){
 
 // Mismo ranking pero excluyendo una fecha/ronda (para saber la posición anterior).
 function getRankedUsersExcludingRound(excludeRound){
-  const all = loadAllPicks();
-  const realResults = loadRealResults();
-  return Object.entries(all).filter(([name]) => !isExcludedFromRanking(name)).map(([name, picks])=>{
-    const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
-    MATCHES.forEach(m=>{
-      if(getRoundLabel(m)===excludeRound) return;
-      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
-      stats.score += calc.pts;
-      if(stats[calc.type]!==undefined) stats[calc.type]++;
-    });
-    return stats;
-  }).sort((a,b)=>
-    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
-  );
+  return buildRankedUsers({ excludeRound });
 }
 
 // Mismo ranking pero excluyendo un día (fecha del calendario) — para el "subió/bajó" del último día.
 function getRankedUsersExcludingDate(excludeDate){
-  const all = loadAllPicks();
-  const realResults = loadRealResults();
-  return Object.entries(all).filter(([name]) => !isExcludedFromRanking(name)).map(([name, picks])=>{
-    const stats = {name, pickCount:Object.keys(picks).length, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0};
-    MATCHES.forEach(m=>{
-      if(m.date===excludeDate) return;
-      const calc = calculatePickPoints(picks[m.id], realResults[m.id], m);
-      stats.score += calc.pts;
-      if(stats[calc.type]!==undefined) stats[calc.type]++;
-    });
-    return stats;
-  }).sort((a,b)=>
-    b.score-a.score || b.exact-a.exact || b.winnerGoals-a.winnerGoals || b.diff-a.diff || b.loserGoals-a.loserGoals || b.winner-a.winner || b.pickCount-a.pickCount
-  );
+  return buildRankedUsers({ excludeDate });
 }
 
 function updateTopbarPoints(){
