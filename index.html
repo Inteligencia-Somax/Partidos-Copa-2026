@@ -8292,7 +8292,7 @@ function renderMatches(filter){
     const group = document.createElement('div');
     group.className = 'date-group';
     if(isMatchToday(matches[0])) group.id = 'today-group';
-    const groupX2 = matches[0].x2 ? '<div style="flex:1"></div><span class="date-x2">×2 PUNTOS</span>' : '';
+    const groupX2 = '';
     group.innerHTML = `<div class="date-row"><div class="date-label">${date.toUpperCase()}</div><span class="date-sep">·</span><div class="round-badge">${getRoundLabel(matches[0])}</div>${groupX2}</div>`;
     matches.forEach(m => {
       const pick = userPicks[m.id];
