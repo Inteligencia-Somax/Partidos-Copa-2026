@@ -8266,7 +8266,7 @@ function renderMatches(filter){
   // animados pegada abajo, para transmitir la ansiedad de la previa. 🙂
   const __now = new Date();
   const __nextMatch = MATCHES
-    .filter(m => !realResults[m.id] && getMatchDateTime(m) > __now)
+    .filter(m => !realResults[m.id] && getMatchDateTime(m) <= __now)
     .sort((a, b) => getMatchDateTime(a) - getMatchDateTime(b))[0] || null;
 
   // Group by date
