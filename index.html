@@ -23886,7 +23886,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       '</tr>';
     }).join('');
     area.className='';
-    area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div><button class="apl-analysis-btn" type="button" onclick="toggleAplMatchAnalysis()">📊 Análisis</button></div>'+
+    area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div><div class="apl-match-summary-actions"><button class="apl-icon-btn" type="button" onclick="aplRefreshCurrentView()" title="Actualizar" aria-label="Actualizar"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button><button class="apl-icon-btn" type="button" onclick="toggleAplMatchAnalysis()" title="Análisis" aria-label="Análisis"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"></line><line x1="12" y1="20" x2="12" y2="9"></line><line x1="18" y1="20" x2="18" y2="4"></line></svg></button></div></div>'+
       '<div id="apl-analysis-box" style="display:none"></div>'+
       '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th>'+(hasResult?'<th>Resultado</th>':'')+'<th>Palpite</th>'+(hasResult?'<th class="score">Puntuación</th>':'')+'<th class="score">Puntos</th><th class="apl-sortable" onclick="aplToggleFechaSort()">'+aplFechaThLabel()+'</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
     window.__aplAnalysisCtx = { m:m, d:d, real:real, all:all };
@@ -24034,14 +24034,17 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 })();
 </script>
 <style id="edson-apl-partidas-selecciones-puntos-20260703">
-  .apl-match-summary{position:relative;}
-  .apl-analysis-btn{
-    position:absolute;top:12px;right:12px;
-    background:#fff;border:1px solid var(--border);border-radius:50px;
-    padding:6px 13px;font-size:12px;font-weight:800;color:var(--text);
-    cursor:pointer;box-shadow:var(--shadow);
+  .apl-match-summary{position:relative;padding-right:76px;}
+  .apl-match-summary-actions{position:absolute;top:12px;right:12px;display:flex;gap:8px;}
+  .apl-icon-btn{
+    width:32px;height:32px;flex-shrink:0;
+    background:#fff;border:1px solid var(--border);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--text);cursor:pointer;box-shadow:var(--shadow);
   }
-  .apl-analysis-btn:active{opacity:.7;}
+  .apl-icon-btn:active{opacity:.7;transform:scale(.94);}
+  .apl-icon-btn.is-spinning svg{animation:aplRefreshSpin .7s linear infinite;}
+  @keyframes aplRefreshSpin{to{transform:rotate(360deg);}}
   #apl-analysis-box{margin:0 0 14px;}
   .apl-analysis{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:12px 14px;}
   .aa-section-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);margin:14px 0 8px;}
@@ -27206,6 +27209,25 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
       });
     }
   }
+
+  window.aplRefreshCurrentView = async function(){
+    var btn = document.querySelector('#admin-player-lookup-modal .apl-match-summary-actions .apl-icon-btn:first-child');
+    if(btn) btn.classList.add('is-spinning');
+    try{
+      if(typeof loadFirebaseState === 'function') await loadFirebaseState();
+      if(window.__aplLastMatchId && typeof window.renderAdminMatchLookupTable === 'function'){
+        window.renderAdminMatchLookupTable(window.__aplLastMatchId);
+      } else if(window.__aplLastPlayerName && typeof window.renderAdminPlayerLookupTable === 'function'){
+        window.renderAdminPlayerLookupTable(window.__aplLastPlayerName);
+      }
+      if(typeof showSaveBanner === 'function') showSaveBanner('✓ Datos actualizados');
+    }catch(e){
+      console.error(e);
+      if(typeof showSaveBanner === 'function') showSaveBanner('⚠ No se pudo actualizar. Probá de nuevo.');
+    }finally{
+      if(btn) btn.classList.remove('is-spinning');
+    }
+  };
 
   window.openAdminManualPickModal = function(){
     populateSelectors();
