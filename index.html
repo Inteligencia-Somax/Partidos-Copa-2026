@@ -9647,15 +9647,25 @@ function openMatchBreakdown(matchId){
   const parts = [];
   ranked.forEach((u) => {
     const pick = (allPicks[u.name] || {})[matchId];
-    if(pick === undefined) return; // solo quienes palpitaron este partido
+    if(pick === undefined) return; // solo quienes palpitaron este partido (para stats/filtros)
     const calc = calculatePickPoints(pick, real, m);
     const excluded = isExcludedFromRanking(u.name);
     parts.push({ name:u.name, pos: excluded ? null : publicPosMap[u.name], excludedFromRanking: excluded, pick, pts:calc.pts, type:calc.type, totalScore:u.score, savedAt:pick.savedAt || pick.fechaPalpite || '' });
   });
+  // Además de quienes palpitaron, guardamos quiénes NO lo hicieron (solo para
+  // mostrarlos en la lista con "Sin palpite" — no afecta stats/filtros/Análisis).
+  const noPickParts = [];
+  ranked.forEach((u) => {
+    const pick = (allPicks[u.name] || {})[matchId];
+    if(pick !== undefined) return;
+    const excluded = isExcludedFromRanking(u.name);
+    noPickParts.push({ name:u.name, pos: excluded ? null : publicPosMap[u.name], excludedFromRanking: excluded, pick:null, pts:0, type:'pending', totalScore:u.score, savedAt:'' });
+  });
 
   const visibleParts = parts.filter(p => !p.excludedFromRanking || canCurrentUserSeeExcludedParticipant(p.name));
+  const visibleNoPickParts = noPickParts.filter(p => !p.excludedFromRanking || canCurrentUserSeeExcludedParticipant(p.name));
   const myPick = (allPicks[getCanonicalUserName(currentUser)] || {})[matchId] || null;
-  mbState = { m, real, pending, parts: visibleParts, view:'list', expanded:null, filterScore:null, searchActive:false, searchTerm:'', myPick, myName:getCanonicalUserName(currentUser) };
+  mbState = { m, real, pending, parts: visibleParts, noPickParts: visibleNoPickParts, view:'list', expanded:null, filterScore:null, searchActive:false, searchTerm:'', myPick, myName:getCanonicalUserName(currentUser) };
   const mbModal = document.getElementById('match-breakdown-modal');
   mbModal.classList.toggle('x2-mode', (typeof edsonIsFaseDecisivaVisual === 'function' ? edsonIsFaseDecisivaVisual(m) : !!m.x2));
   mbModal.classList.remove('admin-pick-info-enabled');
@@ -9904,7 +9914,7 @@ function buildMbScoreChips(){
 }
 
 function renderMatchBreakdown(){
-  const { m, real, pending, parts, expanded } = mbState;
+  const { m, real, pending, parts, noPickParts, expanded } = mbState;
   let { view } = mbState;
   if(pending) view = 'list'; // sin resultado no hay análisis de puntos
   const total = parts.length;
@@ -10011,10 +10021,11 @@ function renderMatchBreakdown(){
   }
 
   if(view === 'list'){
-    let rows = parts;
+    let rows = parts.concat(noPickParts || []);
 
     const scoreCounts = {};
     parts.forEach(pp => {
+      if(!pp.pick) return;
       const sc = `${pp.pick.home}:${pp.pick.away}`;
       scoreCounts[sc] = (scoreCounts[sc] || 0) + 1;
     });
@@ -10035,12 +10046,12 @@ function renderMatchBreakdown(){
         const nq = normalizeMbScoreSearch(q);
         rows = rows.filter(p => normalizeMbScoreSearch([
           p.name,
-          `${p.pick.home}:${p.pick.away}`,
-          `${p.pick.home}x${p.pick.away}`,
+          p.pick ? `${p.pick.home}:${p.pick.away}` : 'Sin palpite',
+          p.pick ? `${p.pick.home}x${p.pick.away}` : '',
           `${p.totalScore || 0} pts`,
           p.pos ? `${p.pos}º` : '',
-          !pending && p.type === 'exact' ? 'Exacto' : '',
-          maxScoreCount > 1 && scoreCounts[`${p.pick.home}:${p.pick.away}`] === maxScoreCount ? 'Más palpitado' : ''
+          !pending && p.pick && p.type === 'exact' ? 'Exacto' : '',
+          (p.pick && maxScoreCount > 1 && scoreCounts[`${p.pick.home}:${p.pick.away}`] === maxScoreCount) ? 'Más palpitado' : ''
         ].join(' ')).includes(nq));
       }
     }
@@ -10052,20 +10063,20 @@ function renderMatchBreakdown(){
       ? rows.map(p => {
           const mp = mbState.myPick;
           const isMe = p.name === mbState.myName;
-          const sameAsMine = !!mp && p.pick.home === mp.home && p.pick.away === mp.away;
+          const sameAsMine = !!mp && !!p.pick && p.pick.home === mp.home && p.pick.away === mp.away;
           const nameTag = '';
           const pickTags = [];
-          const scoreKey = `${p.pick.home}:${p.pick.away}`;
-          const isMostPicked = maxScoreCount > 1 && scoreCounts[scoreKey] === maxScoreCount;
+          const scoreKey = p.pick ? `${p.pick.home}:${p.pick.away}` : null;
+          const isMostPicked = !!scoreKey && maxScoreCount > 1 && scoreCounts[scoreKey] === maxScoreCount;
           
           // En el modal Puntos por participante, mostramos "= Vos" cuando
           // el palpite del participante é igual ao palpite do usuário logado.
           // Na própria linha do usuário não repetimos o badge, pois ela já fica destacada.
           if(sameAsMine && !isMe) pickTags.push('<span class="ud-mine-tag">= Vos</span>');
           if(isMostPicked) pickTags.push('<span class="ud-most-tag">Más palpitado</span>');
-          if(!pending && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
-          const rowCls = ['ud-row', pending ? 'pending-row' : '', isMe ? 'mine my-green-card' : '', (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
-          const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
+          if(!pending && p.pick && p.type === 'exact') pickTags.push('<span class="ud-exact-tag">Exacto</span>');
+          const rowCls = ['ud-row', pending ? 'pending-row' : '', isMe ? 'mine my-green-card' : '', (!pending && p.pick && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
+          const ptsCls = ['ud-pts', pending ? 'zero' : (p.pts > 0 ? 'win' : 'zero'), (!pending && p.pick && p.type === 'exact') ? 'exact' : ''].filter(Boolean).join(' ');
           const registeredHtml = pending ? formatMbRegisteredAt(p.savedAt) : '';
           const pendingTotalHtml = pending ? `<span class="ud-name-sep">•</span><span class="ud-pending-score ud-pending-score-name">${p.totalScore || 0} pts</span>` : '';
           const pointsInlineHtml = (!pending)
@@ -10074,13 +10085,14 @@ function renderMatchBreakdown(){
           const pickInfoClass = p.savedAt ? ' pick-info-enabled' : '';
           const pickInfoAttr = p.savedAt ? pickInfoAttrs(p.savedAt) : '';
           const rowPickInfoAttr = (!pending && p.savedAt) ? pickInfoHoldAttrs(p.savedAt) : `data-pick-saved="${decEsc(p.savedAt || '')}"`;
+          const pickTextHtml = p.pick ? `Palpite: ${p.pick.home}:${p.pick.away}` : '<span class="ud-no-pick">Sin palpite</span>';
           return `
         <div class="${rowCls}" ${rowPickInfoAttr} onclick="handleMbParticipantClick(event,'${decSafeName(p.name)}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openUserDetailFromMb('${decSafeName(p.name)}')}">
           <span class="mb-pos">${p.pos ? `${p.pos}º${mbPosDeltaHtml(p.name, p.pos)}` : ''}</span>
           <div class="ud-match">
             <div class="ud-teams${pending ? ' ud-teams-pending' : ''}"><span class="ud-participant-name">${p.name}${nameTag}</span>${pendingTotalHtml}</div>
             <div class="ud-meta mb-pick-meta">
-              <span class="ud-pick-text${pickInfoClass}" ${pickInfoAttr}>Palpite: ${p.pick.home}:${p.pick.away}</span>${registeredHtml ? '<span class="ud-meta-sep">•</span><span class="ud-pick-registered">' + registeredHtml + '</span>' : ''}${pointsInlineHtml}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}
+              <span class="ud-pick-text${pickInfoClass}" ${pickInfoAttr}>${pickTextHtml}</span>${registeredHtml ? '<span class="ud-meta-sep">•</span><span class="ud-pick-registered">' + registeredHtml + '</span>' : ''}${pointsInlineHtml}${pickTags.length ? '<span class="ud-meta-sep">•</span>' + pickTags.join('') : ''}
             </div>
           </div>
           <div class="${ptsCls}">${pending ? '' : (p.pts > 0 ? '+' : '') + p.pts}</div>
@@ -23245,6 +23257,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   .apl-muted{color:var(--sub)!important;font-weight:700!important;}
   .apl-pick{font-weight:950!important;color:var(--green2)!important;}
   .apl-no-pick{font-weight:850!important;color:var(--sub)!important;}
+  .ud-no-pick{color:var(--sub)!important;font-weight:700!important;}
   .apl-result{font-weight:950!important;}
   .apl-empty{display:none!important;}
   .apl-empty-msg{
@@ -23667,7 +23680,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
   window.aplSplitDateTime = splitDateTime;
   function resultText(real){return real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';}
-  function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';}
+  function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'-';}
   function scoreHtml(pick,real,m){
     if(!pick) return '<span class="apl-score-pill zero">0</span>';
     // Si todavía no hay resultado, pero el participante sí cargó pronóstico,
@@ -23773,7 +23786,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   }
   window.aplSplitDateTime = splitDateTime;
   function resultText(real){return real?((real.home ?? '')+' x '+(real.away ?? '')):'Sin resultado';}
-  function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'Sin pronóstico';}
+  function pickText(pick){return pick?((pick.home ?? '')+' x '+(pick.away ?? '')):'-';}
   function scoreHtml(pick,real,m){
     // Sin resultado: no se calcula puntuación todavía.
     // Si además no hay pronóstico, también queda sin puntuación.
@@ -24102,7 +24115,9 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #admin-player-lookup-modal .apl-name-cell{max-width:220px!important;vertical-align:top!important;}
   #admin-player-lookup-modal .apl-name-clamp{white-space:normal!important;line-height:1.3!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important;text-overflow:ellipsis!important;}
   #admin-player-lookup-modal .apl-table th:last-child,
-  #admin-player-lookup-modal .apl-table td:last-child{max-width:56px!important;white-space:nowrap!important;font-size:11px!important;padding-left:6px!important;padding-right:6px!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  #admin-player-lookup-modal .apl-table td:last-child{white-space:nowrap!important;font-size:11.5px!important;}
+  #admin-player-lookup-modal .apl-table td.apl-pick,
+  #admin-player-lookup-modal .apl-table td.apl-no-pick{max-width:52px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;padding-left:6px!important;padding-right:6px!important;}
 </style>
 
 <!-- AJUSTE EDSON 20260702: filtros da consulta em coluna e sem texto auxiliar -->
