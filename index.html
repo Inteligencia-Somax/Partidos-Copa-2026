@@ -27187,8 +27187,14 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
     var pSel = document.getElementById('amp-participant');
     var mSel = document.getElementById('amp-match');
     if(pSel && pSel.options.length <= 1){
-      participants().slice().sort(function(a,b){ return a.name.localeCompare(b.name); }).forEach(function(u){
-        var o = document.createElement('option'); o.value = u.name; o.textContent = u.name; pSel.appendChild(o);
+      var names = [];
+      try{
+        names = (typeof getRankedUsers === 'function' ? getRankedUsers() : [])
+          .filter(function(u){ return u && u.name; })
+          .map(function(u){ return u.name; });
+      }catch(e){ console.warn('No se pudo cargar la lista de participantes:', e); }
+      names.slice().sort(function(a,b){ return a.localeCompare(b); }).forEach(function(nm){
+        var o = document.createElement('option'); o.value = nm; o.textContent = nm; pSel.appendChild(o);
       });
     }
     if(mSel && mSel.options.length <= 1){
