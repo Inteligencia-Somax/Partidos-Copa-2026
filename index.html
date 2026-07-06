@@ -23823,11 +23823,11 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
 
   // Diferencia entre el cierre del partido y el momento en que se guardó el palpite.
   function aplAnticipacionLabel(pick, m){
-    if(!pick || !m) return '—';
+    if(!pick || !m) return '-';
     var raw = pick.savedAt || pick.fechaPalpite;
-    if(!raw) return '—';
+    if(!raw) return '-';
     var t = (raw && typeof raw.toDate === 'function') ? raw.toDate().getTime() : Date.parse(raw);
-    if(isNaN(t)) return '—';
+    if(isNaN(t)) return '-';
     var kickoff = getMatchDateTime(m).getTime();
     var diffMs = kickoff - t;
     var late = diffMs < 0;
@@ -23841,7 +23841,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
     if(hours) parts.push(hours + 'h');
     if(!days && remMins) parts.push(remMins + 'm');
     if(!parts.length) parts.push('0m');
-    return parts.join(' ') + (late ? ' tarde' : ' antes');
+    return parts.join(' ') + (late ? '⚠' : '');
   }
 
   window.renderAdminPlayerLookupTable=function(playerName){
@@ -24101,6 +24101,8 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   #admin-player-lookup-modal .apl-table-wide{min-width:980px!important;}
   #admin-player-lookup-modal .apl-name-cell{max-width:220px!important;vertical-align:top!important;}
   #admin-player-lookup-modal .apl-name-clamp{white-space:normal!important;line-height:1.3!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  #admin-player-lookup-modal .apl-table th:last-child,
+  #admin-player-lookup-modal .apl-table td:last-child{max-width:56px!important;white-space:nowrap!important;font-size:11px!important;padding-left:6px!important;padding-right:6px!important;overflow:hidden!important;text-overflow:ellipsis!important;}
 </style>
 
 <!-- AJUSTE EDSON 20260702: filtros da consulta em coluna e sem texto auxiliar -->
