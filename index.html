@@ -5402,6 +5402,7 @@ html, body{scroll-behavior:auto!important;}
           <button class="admin-copy-btn" onclick="copyUpdatedHTML()">Copiar</button>
           <button class="admin-report-btn" onclick="openAdminMatchExportSelector()">Exportar</button>
         </div>
+        <button class="admin-manual-pick-btn" type="button" onclick="openAdminManualPickModal()">🛠️ Palpite manual</button>
       </div>
 
 
@@ -6814,6 +6815,29 @@ html, body{scroll-behavior:auto!important;}
 <div class="locked-toast" id="locked-toast">
   <div class="locked-toast-icon">🔒</div>
   <div class="locked-toast-msg">Ya palpitaste este partido,<br>no se puede cambiar.</div>
+</div>
+
+<div id="admin-manual-pick-modal" onclick="if(event.target===this) closeAdminManualPickModal()">
+  <div class="sim-box">
+    <div class="sim-head"><span class="sim-title">🛠️ Palpite manual</span><button class="sim-close" onclick="closeAdminManualPickModal()">✕</button></div>
+    <div class="sim-body">
+      <div class="amp-hint">Usá esto solo cuando alguien te pasó el palpite fuera del sistema (por ejemplo, por la falla técnica del guardado). Va a quedar marcado como "cargado por el admin" en la Consulta de pronósticos, con la fecha y hora que indiques acá — para que quede transparente y sin lugar a desconfianza. Cuenta en el ranking con normalidad.</div>
+      <label class="amp-label">Participante</label>
+      <select id="amp-participant" class="amp-select"><option value="">Seleccioná...</option></select>
+      <label class="amp-label">Partido</label>
+      <select id="amp-match" class="amp-select"><option value="">Seleccioná...</option></select>
+      <label class="amp-label">Resultado palpitado</label>
+      <div class="amp-score-row">
+        <input type="number" id="amp-home" class="amp-score-input" min="0" max="20" placeholder="0">
+        <span>:</span>
+        <input type="number" id="amp-away" class="amp-score-input" min="0" max="20" placeholder="0">
+      </div>
+      <label class="amp-label">Fecha y hora en que la persona dice que palpitó</label>
+      <input type="datetime-local" id="amp-when" class="amp-datetime">
+      <div id="amp-error" class="amp-error" style="display:none"></div>
+      <button class="amp-submit" type="button" onclick="adminSubmitManualPick()">Guardar palpite manual</button>
+    </div>
+  </div>
 </div>
 
 <!-- BOTTOM NAV -->
@@ -27159,49 +27183,6 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
 (function(){
   'use strict';
 
-  function ensureManualPickButton(){
-    var box = document.querySelector('#admin-area .admin-export-box') || document.querySelector('.admin-export-box');
-    if(!box || document.getElementById('admin-manual-pick-btn')) return;
-    var btn = document.createElement('button');
-    btn.id = 'admin-manual-pick-btn';
-    btn.type = 'button';
-    btn.className = 'admin-manual-pick-btn';
-    btn.textContent = '🛠️ Palpite manual';
-    btn.onclick = function(){ window.openAdminManualPickModal(); };
-    // Se coloca como fila propia después de la caja de exportación (no adentro),
-    // para no quedar atrapado en el grid de 4 columnas que esa caja usa en mobile.
-    if(box.parentNode){
-      box.parentNode.insertBefore(btn, box.nextSibling);
-    } else {
-      box.appendChild(btn);
-    }
-  }
-
-  function ensureModal(){
-    if(document.getElementById('admin-manual-pick-modal')) return;
-    var wrap = document.createElement('div');
-    wrap.id = 'admin-manual-pick-modal';
-    wrap.innerHTML =
-      '<div class="sim-box">' +
-        '<div class="sim-head"><span class="sim-title">🛠️ Palpite manual</span><button class="sim-close" onclick="closeAdminManualPickModal()">✕</button></div>' +
-        '<div class="sim-body">' +
-          '<div class="amp-hint">Usá esto solo cuando alguien te pasó el palpite fuera del sistema (por ejemplo, por la falla técnica del guardado). Va a quedar marcado como "cargado por el admin" en la Consulta de pronósticos, con la fecha y hora que indiques acá — para que quede transparente y sin lugar a desconfianza. Cuenta en el ranking con normalidad.</div>' +
-          '<label class="amp-label">Participante</label>' +
-          '<select id="amp-participant" class="amp-select"><option value="">Seleccioná...</option></select>' +
-          '<label class="amp-label">Partido</label>' +
-          '<select id="amp-match" class="amp-select"><option value="">Seleccioná...</option></select>' +
-          '<label class="amp-label">Resultado palpitado</label>' +
-          '<div class="amp-score-row"><input type="number" id="amp-home" class="amp-score-input" min="0" max="20" placeholder="0"><span>:</span><input type="number" id="amp-away" class="amp-score-input" min="0" max="20" placeholder="0"></div>' +
-          '<label class="amp-label">Fecha y hora en que la persona dice que palpitó</label>' +
-          '<input type="datetime-local" id="amp-when" class="amp-datetime">' +
-          '<div id="amp-error" class="amp-error" style="display:none"></div>' +
-          '<button class="amp-submit" type="button" onclick="adminSubmitManualPick()">Guardar palpite manual</button>' +
-        '</div>' +
-      '</div>';
-    wrap.addEventListener('click', function(e){ if(e.target === wrap) window.closeAdminManualPickModal(); });
-    document.body.appendChild(wrap);
-  }
-
   function populateSelectors(){
     var pSel = document.getElementById('amp-participant');
     var mSel = document.getElementById('amp-match');
@@ -27221,10 +27202,10 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
   }
 
   window.openAdminManualPickModal = function(){
-    ensureModal();
     populateSelectors();
     var err = document.getElementById('amp-error'); if(err) err.style.display = 'none';
-    document.getElementById('admin-manual-pick-modal').classList.add('open');
+    var modal = document.getElementById('admin-manual-pick-modal');
+    if(modal) modal.classList.add('open');
     document.body.style.overflow = 'hidden';
   };
   window.closeAdminManualPickModal = function(){
@@ -27278,10 +27259,5 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
       errEl.style.display = '';
     }
   };
-
-  var tryInject = setInterval(function(){
-    var box = document.querySelector('#admin-area .admin-export-box') || document.querySelector('.admin-export-box');
-    if(box){ ensureManualPickButton(); clearInterval(tryInject); }
-  }, 400);
 })();
 </script>
