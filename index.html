@@ -8554,6 +8554,7 @@ async function commitPick(){
   if(hVal==='–'||aVal==='–') return;
 
   const userPicks = loadUserPicks();
+  const previousPick = userPicks[activeMatchId]; // undefined si es un palpite nuevo
   const savedPick = { home: parseInt(hVal), away: parseInt(aVal), savedAt: new Date().toISOString() };
   userPicks[activeMatchId] = savedPick;
   saveUserPicks(userPicks);
@@ -8561,6 +8562,14 @@ async function commitPick(){
     await savePickToFirebase(match, savedPick);
   }catch(err){
     console.error(err);
+    // Si Firestore no recibió el palpite, no puede quedar "guardado" en este
+    // dispositivo — eso generaba palpites fantasma que la persona veía en su
+    // celular pero que nunca llegaban al ranking ni a la consulta del admin.
+    const rollback = loadUserPicks();
+    if(previousPick === undefined) delete rollback[activeMatchId];
+    else rollback[activeMatchId] = previousPick;
+    saveUserPicks(rollback);
+    cancelConfirmPick();
     if(err && err.message === 'RELOJ_INVALIDO'){
       var lt = document.getElementById('locked-toast');
       if(lt){
@@ -8573,7 +8582,7 @@ async function commitPick(){
         showSaveBanner('⚠ Verificá la hora de tu celular antes de palpitar');
       }
     } else {
-      showSaveBanner('⚠ No se pudo guardar en Firebase. Revisá conexión/reglas.');
+      showSaveBanner('⚠ No se pudo guardar. Probá de nuevo en unos segundos.');
     }
     return;
   }
