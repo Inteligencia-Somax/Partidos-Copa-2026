@@ -7401,6 +7401,45 @@ function outcome(s){ return s.home===s.away ? 'D' : (s.home>s.away ? 'H' : 'A');
 function winnerGoals(s){ if(s.home===s.away) return null; return s.home>s.away ? s.home : s.away; }
 function loserGoals(s){ if(s.home===s.away) return null; return s.home>s.away ? s.away : s.home; }
 function goalDiff(s){ return Math.abs(s.home-s.away); }
+// Detecta placeholders de cruces de eliminación como "G. P91" / "Perd. P91" / "1º Gr. A".
+function isPlaceholderTeamLabel(raw){
+  return /^(G\.|Perd\.)\s*P\d+$/.test(raw || '') || /^[123]º Gr\./.test(raw || '');
+}
+// Momento aproximado en que se conocen los dos equipos de un cruce de eliminación
+// (cuando arrancan los partidos que definen quién llega ahí). Si algún lado del
+// partido todavía depende de un cruce sin jugar, devuelve ese horario; si ambos
+// equipos ya son conocidos desde el inicio del torneo, devuelve null (no aplica).
+function matchupDecidedTime(match){
+  let latest = null;
+  [match.home, match.away].forEach(raw => {
+    if(!isPlaceholderTeamLabel(raw)) return;
+    const mm = /P(\d+)/.exec(raw || '');
+    const feeder = mm ? MATCHES.find(x => x.id === parseInt(mm[1], 10)) : null;
+    const t = feeder ? getMatchDateTime(feeder).getTime() : Date.now(); // sin datos → tratar como "todavía no decidido"
+    if(latest === null || t > latest) latest = t;
+  });
+  return latest;
+}
+function pickTimestamp(pick){
+  const raw = pick && (pick.savedAt || pick.fechaPalpite);
+  if(!raw) return null;
+  const t = (raw && typeof raw.toDate === 'function') ? raw.toDate().getTime() : Date.parse(raw);
+  return isNaN(t) ? null : t;
+}
+// Palpite hecho antes de que se supiera quién jugaba el cruce (p. ej. adivinar una
+// semifinal cuando los cuartos ni terminaron). No cuenta: ni puntúa ni suma como
+// participación en Decepción.
+function isPickTooEarly(pick, match){
+  const decidedAt = matchupDecidedTime(match);
+  if(decidedAt === null) return false; // no depende de ningún cruce pendiente
+  const t = pickTimestamp(pick);
+  if(t === null) return false; // sin fecha confiable → no penaliza
+  return t < decidedAt;
+}
+function isPickCountable(pick, match){
+  if(!pick || !match) return false;
+  return isPickOnTime(pick, match) && !isPickTooEarly(pick, match);
+}
 function calculatePickPoints(pick, real, match){
   if(!pick || !real) return {pts:0, type:'pending'};
   let base=0, type='wrong';
@@ -10238,7 +10277,12 @@ function getDecepcionQualified(){
   const ranked = getRankedUsers();
   const qualified = ranked.filter(u=>{
     const picks = allPicksData[u.name] || {};
-    return playedIds.length && playedIds.every(id => picks[id] !== undefined && picks[id] !== null);
+    return playedIds.length && playedIds.every(id => {
+      const pick = picks[id];
+      if(pick === undefined || pick === null) return false;
+      const m = MATCHES.find(x => String(x.id) === String(id));
+      return m ? isPickCountable(pick, m) : true;
+    });
   });
   return { qualified, playedIds, playedCount: playedIds.length, allPicksData, realResults };
 }
