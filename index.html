@@ -7713,7 +7713,9 @@ async function loadFirebaseState(){
       all[name][d.partidoId] = {
         home:Number(d.golesLocal),
         away:Number(d.golesVisitante),
-        savedAt: d.fechaPalpite && typeof d.fechaPalpite.toDate === 'function' ? d.fechaPalpite.toDate().toISOString() : (d.savedAt || '')
+        savedAt: d.fechaPalpite && typeof d.fechaPalpite.toDate === 'function' ? d.fechaPalpite.toDate().toISOString() : (d.savedAt || ''),
+        insertadoPorAdmin: !!d.insertadoPorAdmin,
+        adminResponsable: d.adminResponsable || null
       };
     });
     participantVisibilityMeta = meta;
@@ -8686,7 +8688,6 @@ function loadLastSeenMap(){
 }
 function isInactiveParticipant(name, picks){
   try{
-    if(missedLastMatches(picks || {}, INACTIVITY_MATCH_COUNT)) return true;
     const lastSeenMap = loadLastSeenMap();
     const norm = normalizeRankingName(name);
     let lastSeenIso = null;
@@ -23821,7 +23822,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
         '<td class="score">'+scoreHtml(pick,real,m)+'</td>'+ 
         '<td class="score apl-total-pts">'+esc(user.score)+'</td>'+ 
-        '<td class="apl-muted">'+esc(it.fecha)+'</td>'+ 
+        '<td class="apl-muted">'+esc(it.fecha)+(pick&&pick.insertadoPorAdmin?' <span class="apl-admin-badge" title="Cargado manualmente por el admin">⚙️ Admin</span>':'')+'</td>'+ 
         '<td class="apl-muted">'+esc(it.hora)+'</td>'+ 
       '</tr>';
     }).join('');
@@ -23856,7 +23857,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
         (hasResult?('<td class="score">'+scoreHtml(pick,real,m)+'</td>'):'')+ 
         '<td class="score apl-total-pts-plain">'+esc(u.score)+'</td>'+ 
-        '<td class="apl-muted">'+esc(it.fecha)+'</td>'+ 
+        '<td class="apl-muted">'+esc(it.fecha)+(pick&&pick.insertadoPorAdmin?' <span class="apl-admin-badge" title="Cargado manualmente por el admin">⚙️ Admin</span>':'')+'</td>'+ 
         '<td class="apl-muted">'+esc(it.hora)+'</td>'+ 
       '</tr>';
     }).join('');
@@ -27109,5 +27110,170 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
   } else {
     start();
   }
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v15-20260705
+     Admin: insertar manualmente el palpite de alguien que lo pasó por fuera
+     (por ejemplo, por la falla técnica del guardado). Queda marcado como
+     "cargado por el admin", con fecha/hora que el admin indica a mano, para
+     que quede transparente en la Consulta de pronósticos y cuente en el
+     ranking con normalidad.
+     ══════════════════════════════════════════════════════════════════════ -->
+<style id="edson-upgrade-pack-v15-20260705-style">
+.admin-manual-pick-btn{
+  border:none;border-radius:10px;padding:11px 14px;font-family:'Inter',sans-serif;
+  font-size:13px;font-weight:800;cursor:pointer;background:#0D3A8A;color:#fff;
+}
+.admin-manual-pick-btn:active{opacity:.8;}
+#admin-manual-pick-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:960;display:none;align-items:center;justify-content:center;padding:16px;}
+#admin-manual-pick-modal.open{display:flex;}
+#admin-manual-pick-modal .sim-body{display:flex;flex-direction:column;gap:10px;}
+.amp-hint{font-size:12.5px;color:var(--sub);font-weight:600;line-height:1.5;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.amp-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:var(--sub);margin-top:4px;}
+.amp-select,.amp-datetime{
+  width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:600;background:var(--bg);color:var(--text);
+}
+.amp-score-row{display:flex;align-items:center;gap:10px;}
+.amp-score-input{
+  width:70px;text-align:center;border:1.5px solid var(--border);border-radius:10px;
+  padding:10px 6px;font-family:'Inter',sans-serif;font-size:16px;font-weight:800;background:var(--bg);color:var(--text);
+}
+.amp-error{font-size:12.5px;font-weight:800;color:var(--red);background:rgba(206,17,38,.08);border:1px solid rgba(206,17,38,.25);border-radius:10px;padding:8px 10px;}
+.amp-submit{
+  margin-top:6px;background:var(--green);color:#fff;border:none;border-radius:10px;
+  padding:12px 16px;font-family:'Inter',sans-serif;font-size:14px;font-weight:800;cursor:pointer;
+}
+.amp-submit:active{opacity:.85;}
+.apl-admin-badge{
+  display:inline-block;font-size:9.5px;font-weight:900;color:#0D3A8A;
+  background:rgba(13,58,138,.10);border:1px solid rgba(13,58,138,.25);
+  border-radius:6px;padding:1px 5px;white-space:nowrap;vertical-align:middle;
+}
+</style>
+<script id="edson-upgrade-pack-v15-20260705-script">
+(function(){
+  'use strict';
+
+  function ensureManualPickButton(){
+    var box = document.querySelector('#admin-area .admin-export-box') || document.querySelector('.admin-export-box');
+    if(!box || document.getElementById('admin-manual-pick-btn')) return;
+    var btn = document.createElement('button');
+    btn.id = 'admin-manual-pick-btn';
+    btn.type = 'button';
+    btn.className = 'admin-manual-pick-btn';
+    btn.textContent = '🛠️ Palpite manual';
+    btn.onclick = function(){ window.openAdminManualPickModal(); };
+    box.appendChild(btn);
+  }
+
+  function ensureModal(){
+    if(document.getElementById('admin-manual-pick-modal')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'admin-manual-pick-modal';
+    wrap.innerHTML =
+      '<div class="sim-box">' +
+        '<div class="sim-head"><span class="sim-title">🛠️ Palpite manual</span><button class="sim-close" onclick="closeAdminManualPickModal()">✕</button></div>' +
+        '<div class="sim-body">' +
+          '<div class="amp-hint">Usá esto solo cuando alguien te pasó el palpite fuera del sistema (por ejemplo, por la falla técnica del guardado). Va a quedar marcado como "cargado por el admin" en la Consulta de pronósticos, con la fecha y hora que indiques acá — para que quede transparente y sin lugar a desconfianza. Cuenta en el ranking con normalidad.</div>' +
+          '<label class="amp-label">Participante</label>' +
+          '<select id="amp-participant" class="amp-select"><option value="">Seleccioná...</option></select>' +
+          '<label class="amp-label">Partido</label>' +
+          '<select id="amp-match" class="amp-select"><option value="">Seleccioná...</option></select>' +
+          '<label class="amp-label">Resultado palpitado</label>' +
+          '<div class="amp-score-row"><input type="number" id="amp-home" class="amp-score-input" min="0" max="20" placeholder="0"><span>:</span><input type="number" id="amp-away" class="amp-score-input" min="0" max="20" placeholder="0"></div>' +
+          '<label class="amp-label">Fecha y hora en que la persona dice que palpitó</label>' +
+          '<input type="datetime-local" id="amp-when" class="amp-datetime">' +
+          '<div id="amp-error" class="amp-error" style="display:none"></div>' +
+          '<button class="amp-submit" type="button" onclick="adminSubmitManualPick()">Guardar palpite manual</button>' +
+        '</div>' +
+      '</div>';
+    wrap.addEventListener('click', function(e){ if(e.target === wrap) window.closeAdminManualPickModal(); });
+    document.body.appendChild(wrap);
+  }
+
+  function populateSelectors(){
+    var pSel = document.getElementById('amp-participant');
+    var mSel = document.getElementById('amp-match');
+    if(pSel && pSel.options.length <= 1){
+      participants().slice().sort(function(a,b){ return a.name.localeCompare(b.name); }).forEach(function(u){
+        var o = document.createElement('option'); o.value = u.name; o.textContent = u.name; pSel.appendChild(o);
+      });
+    }
+    if(mSel && mSel.options.length <= 1){
+      MATCHES.slice().sort(function(a,b){ return getMatchDateTime(a) - getMatchDateTime(b); }).forEach(function(m){
+        var o = document.createElement('option');
+        o.value = m.id;
+        o.textContent = m.date + ' · ' + m.time + ' · ' + m.home + ' vs ' + m.away;
+        mSel.appendChild(o);
+      });
+    }
+  }
+
+  window.openAdminManualPickModal = function(){
+    ensureModal();
+    populateSelectors();
+    var err = document.getElementById('amp-error'); if(err) err.style.display = 'none';
+    document.getElementById('admin-manual-pick-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeAdminManualPickModal = function(){
+    var el = document.getElementById('admin-manual-pick-modal');
+    if(el) el.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  window.adminSubmitManualPick = async function(){
+    var errEl = document.getElementById('amp-error');
+    errEl.style.display = 'none';
+    var name = document.getElementById('amp-participant').value;
+    var matchId = parseInt(document.getElementById('amp-match').value, 10);
+    var h = document.getElementById('amp-home').value;
+    var a = document.getElementById('amp-away').value;
+    var whenStr = document.getElementById('amp-when').value;
+    if(!name || !matchId || h === '' || a === '' || !whenStr){
+      errEl.textContent = 'Completá todos los campos antes de guardar.';
+      errEl.style.display = '';
+      return;
+    }
+    var match = MATCHES.find(function(x){ return x.id === matchId; });
+    if(!match){ errEl.textContent = 'Partido no encontrado.'; errEl.style.display = ''; return; }
+    var whenDate = new Date(whenStr);
+    if(isNaN(whenDate.getTime())){ errEl.textContent = 'Fecha/hora inválida.'; errEl.style.display = ''; return; }
+
+    var docId = 'admin_' + matchId + '_' + name.replace(/[^a-zA-Z0-9]+/g, '').toLowerCase();
+    try{
+      await fbDb.collection('palpites').doc(docId).set({
+        nombre: name,
+        partidoId: String(matchId),
+        partido: match.home + ' vs ' + match.away,
+        local: match.home,
+        visitante: match.away,
+        golesLocal: Number(h),
+        golesVisitante: Number(a),
+        fechaPalpite: firebase.firestore.Timestamp.fromDate(whenDate),
+        insertadoPorAdmin: true,
+        adminResponsable: getCanonicalUserName(currentUser),
+        adminFechaInsercion: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      if(typeof loadFirebaseState === 'function') await loadFirebaseState();
+      if(typeof renderRanking === 'function') renderRanking();
+      if(typeof renderAdminResults === 'function' && typeof currentAdminFilter !== 'undefined') renderAdminResults(currentAdminFilter, false);
+      if(typeof showSaveBanner === 'function') showSaveBanner('✓ Palpite manual guardado y contando en el ranking');
+      window.closeAdminManualPickModal();
+    }catch(e){
+      console.error(e);
+      errEl.textContent = 'No se pudo guardar: ' + (e && e.message ? e.message : e);
+      errEl.style.display = '';
+    }
+  };
+
+  var tryInject = setInterval(function(){
+    var box = document.querySelector('#admin-area .admin-export-box') || document.querySelector('.admin-export-box');
+    if(box){ ensureManualPickButton(); clearInterval(tryInject); }
+  }, 400);
 })();
 </script>
