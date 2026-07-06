@@ -27053,3 +27053,52 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
   });
 })();
 </script>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     edson-upgrade-pack-v14-20260705
+     "Coordinador (Robison Iturbe)" se muestra en toda la app solo como
+     "Coordinador" (nombre visual únicamente; no toca los datos guardados).
+     ══════════════════════════════════════════════════════════════════════ -->
+<script id="edson-upgrade-pack-v14-20260705-script">
+(function(){
+  'use strict';
+  var FROM = 'Coordinador (Robison Iturbe)';
+  var TO = 'Robison Iturbe';
+
+  function fixNode(node){
+    if(!node) return;
+    if(node.nodeType === 3){
+      if(node.nodeValue && node.nodeValue.indexOf(FROM) !== -1){
+        node.nodeValue = node.nodeValue.split(FROM).join(TO);
+      }
+      return;
+    }
+    if(node.nodeType === 1){
+      var tag = node.tagName;
+      if(tag === 'SCRIPT' || tag === 'STYLE') return;
+      var child = node.firstChild;
+      while(child){ fixNode(child); child = child.nextSibling; }
+    }
+  }
+
+  function fixAll(){ fixNode(document.body); }
+
+  function start(){
+    fixAll();
+    if(!window.MutationObserver || !document.body) return;
+    var mo = new MutationObserver(function(mutations){
+      mutations.forEach(function(m){
+        m.addedNodes && m.addedNodes.forEach(function(n){ fixNode(n); });
+        if(m.type === 'characterData') fixNode(m.target);
+      });
+    });
+    mo.observe(document.body, { childList:true, subtree:true, characterData:true });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
+  }
+})();
+</script>
