@@ -23821,6 +23821,29 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
   };
   function rowClass(pick){return pick?'':' class="apl-row-nopick"';}
 
+  // Diferencia entre el cierre del partido y el momento en que se guardó el palpite.
+  function aplAnticipacionLabel(pick, m){
+    if(!pick || !m) return '—';
+    var raw = pick.savedAt || pick.fechaPalpite;
+    if(!raw) return '—';
+    var t = (raw && typeof raw.toDate === 'function') ? raw.toDate().getTime() : Date.parse(raw);
+    if(isNaN(t)) return '—';
+    var kickoff = getMatchDateTime(m).getTime();
+    var diffMs = kickoff - t;
+    var late = diffMs < 0;
+    var abs = Math.abs(diffMs);
+    var mins = Math.floor(abs / 60000);
+    var days = Math.floor(mins / 1440);
+    var hours = Math.floor((mins % 1440) / 60);
+    var remMins = mins % 60;
+    var parts = [];
+    if(days) parts.push(days + 'd');
+    if(hours) parts.push(hours + 'h');
+    if(!days && remMins) parts.push(remMins + 'm');
+    if(!parts.length) parts.push('0m');
+    return parts.join(' ') + (late ? ' tarde' : ' antes');
+  }
+
   window.renderAdminPlayerLookupTable=function(playerName){
     var area=document.getElementById('apl-table-area');
     if(!area) return;
@@ -23848,11 +23871,12 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
         '<td class="score apl-total-pts">'+esc(user.score)+'</td>'+ 
         '<td class="apl-muted">'+esc(it.fecha)+(pick&&pick.insertadoPorAdmin?' <span class="apl-admin-badge" title="Cargado manualmente por el admin">⚙️ Admin</span>':'')+'</td>'+ 
         '<td class="apl-muted">'+esc(it.hora)+'</td>'+ 
+        '<td class="apl-muted">'+esc(aplAnticipacionLabel(pick, m))+'</td>'+ 
       '</tr>';
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-person-summary"><div class="apl-person-summary-title">'+esc(user.pos?user.pos+' · '+user.name:user.name)+'</div><div class="apl-person-summary-meta">Consulta por participante · Todos los partidos · Puntos totales: <strong>'+esc(user.score)+'</strong></div></div>'+ 
-      '<div class="apl-table-wrap"><table class="apl-table apl-table-wide"><thead><tr><th>Partidas</th><th>Selecciones</th><th>Resultado</th><th>Palpite</th><th class="score">Puntuación</th><th class="score">Puntos</th><th class="apl-sortable" onclick="aplToggleFechaSort()">'+aplFechaThLabel()+'</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table apl-table-wide"><thead><tr><th>Partidas</th><th>Selecciones</th><th>Resultado</th><th>Palpite</th><th class="score">Puntuación</th><th class="score">Puntos</th><th class="apl-sortable" onclick="aplToggleFechaSort()">'+aplFechaThLabel()+'</th><th>Hora</th><th>Antelación</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   };
 
   window.renderAdminMatchLookupTable=function(matchId){
@@ -23883,12 +23907,13 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
         '<td class="score apl-total-pts-plain">'+esc(u.score)+'</td>'+ 
         '<td class="apl-muted">'+esc(it.fecha)+(pick&&pick.insertadoPorAdmin?' <span class="apl-admin-badge" title="Cargado manualmente por el admin">⚙️ Admin</span>':'')+'</td>'+ 
         '<td class="apl-muted">'+esc(it.hora)+'</td>'+ 
+        '<td class="apl-muted">'+esc(aplAnticipacionLabel(pick, m))+'</td>'+ 
       '</tr>';
     }).join('');
     area.className='';
     area.innerHTML='<div class="apl-match-summary"><div class="apl-match-summary-title">'+esc(matchTitle)+'</div><div class="apl-match-summary-meta">'+esc(matchMeta)+'</div><div class="apl-match-summary-actions"><button class="apl-icon-btn" type="button" onclick="aplRefreshCurrentView()" title="Actualizar" aria-label="Actualizar"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button><button class="apl-icon-btn" type="button" onclick="toggleAplMatchAnalysis()" title="Análisis" aria-label="Análisis"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"></line><line x1="12" y1="20" x2="12" y2="9"></line><line x1="18" y1="20" x2="18" y2="4"></line></svg></button></div></div>'+
       '<div id="apl-analysis-box" style="display:none"></div>'+
-      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th>'+(hasResult?'<th>Resultado</th>':'')+'<th>Palpite</th>'+(hasResult?'<th class="score">Puntuación</th>':'')+'<th class="score">Puntos</th><th class="apl-sortable" onclick="aplToggleFechaSort()">'+aplFechaThLabel()+'</th><th>Hora</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+      '<div class="apl-table-wrap"><table class="apl-table"><thead><tr><th>Participante</th>'+(hasResult?'<th>Resultado</th>':'')+'<th>Palpite</th>'+(hasResult?'<th class="score">Puntuación</th>':'')+'<th class="score">Puntos</th><th class="apl-sortable" onclick="aplToggleFechaSort()">'+aplFechaThLabel()+'</th><th>Hora</th><th>Antelación</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
     window.__aplAnalysisCtx = { m:m, d:d, real:real, all:all };
     var abox = document.getElementById('apl-analysis-box');
     if(abox) abox.innerHTML = '';
