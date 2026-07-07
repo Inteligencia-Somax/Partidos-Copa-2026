@@ -10021,7 +10021,11 @@ function renderMatchBreakdown(){
   }
 
   if(view === 'list'){
-    let rows = parts.concat(noPickParts || []);
+    let rows = parts.concat(noPickParts || []).sort(function(a, b){
+      const pa = a.pos ? parseInt(a.pos, 10) : Infinity;
+      const pb = b.pos ? parseInt(b.pos, 10) : Infinity;
+      return pa - pb;
+    });
 
     const scoreCounts = {};
     parts.forEach(pp => {
@@ -23878,7 +23882,7 @@ document.addEventListener('DOMContentLoaded', hideInitialAnnouncementAndRecentSu
       return '<tr'+rowClass(pick)+'>'+ 
         '<td class="apl-muted">'+esc(m.date||'')+' · '+esc(m.time||'')+' · '+esc(m.phase||'')+'</td>'+ 
         '<td><span>'+esc(d.hf||'')+' '+esc(d.home||m.home||'')+' × '+esc(d.away||m.away||'')+' '+esc(d.af||'')+'</span></td>'+ 
-        '<td class="apl-result">'+esc(resultText(real))+'</td>'+ 
+        '<td class="apl-result">'+esc(real?resultText(real):'-')+'</td>'+ 
         '<td class="'+(pick?'apl-pick':'apl-no-pick')+'">'+esc(pickText(pick))+'</td>'+ 
         '<td class="score">'+scoreHtml(pick,real,m)+'</td>'+ 
         '<td class="score apl-total-pts">'+esc(user.score)+'</td>'+ 
