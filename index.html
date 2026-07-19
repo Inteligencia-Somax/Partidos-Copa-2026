@@ -26581,7 +26581,9 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
         var currPos = {};
         ranked.forEach(function(u, i){ currPos[u.name] = i + 1; });
 
-        if(prevPos){
+        /* Solo registrar movimientos provocados por partidos de la fase decisiva (1/16 en adelante). */
+        var isDecisiveMatch = m.id > 72;
+        if(prevPos && isDecisiveMatch){
           names.forEach(function(n){
             var from = prevPos[n], to = currPos[n];
             if(!from || !to || from === to) return;
@@ -26774,9 +26776,9 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
   }
 
   function tabMovimientos(D){
-    var h = sec('Top 5: mayores subidas entre una partida y la siguiente');
+    var h = sec('Fase decisiva · Top 5 mayores subidas entre una partida y la siguiente');
     var up = (D.rankMoves && D.rankMoves.up) || [];
-    if(!up.length) h += empty('Hacen falta al menos dos partidos con resultado para comparar posiciones.');
+    if(!up.length) h += empty('Todavía no hay movimientos de posición provocados por partidos de la fase decisiva.');
     up.forEach(function(mv, i){
       var pick = mv.pick ? (mv.pick.home + ':' + mv.pick.away) : 'Sin palpite';
       var prevLabel = mv.prevMatch && D.perMatch[mv.prevMatch.id] ? title(D.perMatch[mv.prevMatch.id]) : 'el partido anterior';
@@ -26788,9 +26790,9 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
         '<span class="c-good">▲' + mv.delta + ' posiciones</span> · ' + mv.from + 'º → ' + mv.to + 'º · ' + title(mv.pm), det);
     });
 
-    h += sec('Top 5: mayores caídas entre una partida y la siguiente');
+    h += sec('Fase decisiva · Top 5 mayores caídas entre una partida y la siguiente');
     var down = (D.rankMoves && D.rankMoves.down) || [];
-    if(!down.length) h += empty('Todavía no hubo caídas de posición entre partidos.');
+    if(!down.length) h += empty('Todavía no hubo caídas de posición durante la fase decisiva.');
     down.forEach(function(mv, i){
       var pick = mv.pick ? (mv.pick.home + ':' + mv.pick.away) : 'Sin palpite';
       var prevLabel = mv.prevMatch && D.perMatch[mv.prevMatch.id] ? title(D.perMatch[mv.prevMatch.id]) : 'el partido anterior';
