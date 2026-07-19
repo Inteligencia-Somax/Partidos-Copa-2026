@@ -26440,7 +26440,7 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
     wrap.id = 'curio-btn-wrap';
     wrap.innerHTML =
       '<button class="curio-btn" type="button" onclick="openCurioModal()">' +
-        '<span>Curiosidades<span class="curio-sub">Fallos, haza\u00f1as, zebras y n\u00fameros del grupo</span></span>' +
+        '<span>Curiosidades<span class="curio-sub">Fallos, haza\u00f1as, zebras, posiciones y n\u00fameros del grupo</span></span>' +
         '<span class="curio-chev">\u203a</span>' +
       '</button>';
     var hero = document.getElementById('nx-hero');
@@ -26553,6 +26553,64 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
       perMatch[m.id] = pm;
     });
 
+    /* ═══ mayores movimientos de posición entre una partida y la siguiente ═══ */
+    var rankMoves = { up:[], down:[] };
+    if(finished.length >= 2 && names.length){
+      var cumulative = {};
+      names.forEach(function(n, idx){
+        cumulative[n] = { name:n, pickCount:0, score:0, exact:0, winnerGoals:0, diff:0, loserGoals:0, winner:0, _order:idx };
+      });
+      var prevPos = null;
+      var prevMatch = null;
+      var bestUp = {}, bestDown = {};
+
+      finished.forEach(function(m){
+        var r = real[m.id];
+        names.forEach(function(n){
+          var p = (all[n] || {})[m.id];
+          var s = cumulative[n];
+          if(p && p.home !== undefined) s.pickCount++;
+          var calc = calculatePickPoints(p, r, m);
+          s.score += calc.pts;
+          if(s[calc.type] !== undefined) s[calc.type]++;
+        });
+
+        var ranked = names.map(function(n){ return cumulative[n]; }).slice().sort(function(a,b){
+          return sortRankStats(a,b) || a._order - b._order;
+        });
+        var currPos = {};
+        ranked.forEach(function(u, i){ currPos[u.name] = i + 1; });
+
+        if(prevPos){
+          names.forEach(function(n){
+            var from = prevPos[n], to = currPos[n];
+            if(!from || !to || from === to) return;
+            var p = (all[n] || {})[m.id];
+            var calc = calculatePickPoints(p, r, m);
+            var rec = {
+              name:n, from:from, to:to, delta:from-to, m:m, prevMatch:prevMatch,
+              pm:perMatch[m.id], pts:calc.pts || 0, type:calc.type,
+              pick:(p && p.home !== undefined) ? p : null
+            };
+            if(rec.delta > 0){
+              var oldUp = bestUp[n];
+              if(!oldUp || rec.delta > oldUp.delta || (rec.delta === oldUp.delta && rec.pts > oldUp.pts)) bestUp[n] = rec;
+            } else {
+              var oldDown = bestDown[n];
+              if(!oldDown || rec.delta < oldDown.delta || (rec.delta === oldDown.delta && rec.pts < oldDown.pts)) bestDown[n] = rec;
+            }
+          });
+        }
+        prevPos = currPos;
+        prevMatch = m;
+      });
+
+      rankMoves.up = Object.keys(bestUp).map(function(n){ return bestUp[n]; })
+        .sort(function(a,b){ return b.delta-a.delta || b.pts-a.pts || a.to-b.to; }).slice(0,5);
+      rankMoves.down = Object.keys(bestDown).map(function(n){ return bestDown[n]; })
+        .sort(function(a,b){ return a.delta-b.delta || a.pts-b.pts || b.to-a.to; }).slice(0,5);
+    }
+
     locked.forEach(function(m){
       names.forEach(function(n){
         var p = (all[n] || {})[m.id];
@@ -26569,7 +26627,7 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
     });
 
     return { finished:finished, perMatch:perMatch, roundPts:roundPts, teamStats:teamStats,
-             teamGames:teamGames, userGoals:userGoals, gScore:gScore };
+             teamGames:teamGames, userGoals:userGoals, gScore:gScore, rankMoves:rankMoves };
   }
 
   /* ═══ helpers de render ═══ */
@@ -26715,6 +26773,37 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
     return h;
   }
 
+  function tabMovimientos(D){
+    var h = sec('Top 5: mayores subidas entre una partida y la siguiente');
+    var up = (D.rankMoves && D.rankMoves.up) || [];
+    if(!up.length) h += empty('Hacen falta al menos dos partidos con resultado para comparar posiciones.');
+    up.forEach(function(mv, i){
+      var pick = mv.pick ? (mv.pick.home + ':' + mv.pick.away) : 'Sin palpite';
+      var prevLabel = mv.prevMatch && D.perMatch[mv.prevMatch.id] ? title(D.perMatch[mv.prevMatch.id]) : 'el partido anterior';
+      var det = '<div class="c-det-title">Partido que produjo el salto</div>' +
+        '<div class="c-det-line"><span style="flex:1;font-weight:800;">' + title(mv.pm) + '</span></div>' +
+        '<div class="c-det-line"><span style="flex:1;">Palpite y puntos del participante</span><span class="cl-n">' + pick + ' · +' + mv.pts + ' pts</span></div>' +
+        '<div class="c-det-note">Comparación: ranking después de <b>' + prevLabel + '</b> → ranking después de este partido.</div>';
+      h += row((i+1) + 'º · <b>' + mv.name + '</b>',
+        '<span class="c-good">▲' + mv.delta + ' posiciones</span> · ' + mv.from + 'º → ' + mv.to + 'º · ' + title(mv.pm), det);
+    });
+
+    h += sec('Top 5: mayores caídas entre una partida y la siguiente');
+    var down = (D.rankMoves && D.rankMoves.down) || [];
+    if(!down.length) h += empty('Todavía no hubo caídas de posición entre partidos.');
+    down.forEach(function(mv, i){
+      var pick = mv.pick ? (mv.pick.home + ':' + mv.pick.away) : 'Sin palpite';
+      var prevLabel = mv.prevMatch && D.perMatch[mv.prevMatch.id] ? title(D.perMatch[mv.prevMatch.id]) : 'el partido anterior';
+      var det = '<div class="c-det-title">Partido que produjo la caída</div>' +
+        '<div class="c-det-line"><span style="flex:1;font-weight:800;">' + title(mv.pm) + '</span></div>' +
+        '<div class="c-det-line"><span style="flex:1;">Palpite y puntos del participante</span><span class="cl-n">' + pick + ' · +' + mv.pts + ' pts</span></div>' +
+        '<div class="c-det-note">Comparación: ranking después de <b>' + prevLabel + '</b> → ranking después de este partido. La caída también puede ocurrir porque otros participantes sumaron más puntos.</div>';
+      h += row((i+1) + 'º · <b>' + mv.name + '</b>',
+        '<span class="c-pct">▼' + Math.abs(mv.delta) + ' posiciones</span> · ' + mv.from + 'º → ' + mv.to + 'º · ' + title(mv.pm), det);
+    });
+    return h;
+  }
+
   function tabGrupo(D){
     var h = sec('Los marcadores favoritos del bol\u00e3o');
     var keys = Object.keys(D.gScore).sort(function(a,b){ return D.gScore[b].n - D.gScore[a].n; }).slice(0, 5);
@@ -26775,6 +26864,7 @@ body.somax-modal-locked #fail-open-btn.fail-fab{display:none!important;}
     { id:'fallos',  label:'Fallos',   fn:tabFallos },
     { id:'hazanas', label:'Haza\u00f1as',  fn:tabHazanas },
     { id:'zebras',  label:'Zebras',   fn:tabZebras },
+    { id:'movimientos', label:'Posiciones', fn:tabMovimientos },
     { id:'grupo',   label:'El grupo', fn:tabGrupo }
   ];
   function ensureModal(){
