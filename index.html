@@ -2587,10 +2587,10 @@ html, body{scroll-behavior:auto!important;}
 
   <!-- TABS -->
   <div class="tabs-row">
-    <button class="tab active" id="tab-matches" onclick="switchTab('matches',this)">
+    <button class="tab" id="tab-matches" onclick="switchTab('matches',this)">
       Partidas <span class="tab-count" id="cnt-pending">103</span>
     </button>
-    <button class="tab" id="tab-ranking" onclick="switchTab('ranking',this)">
+    <button class="tab active" id="tab-ranking" onclick="switchTab('ranking',this)">
       Ranking <span class="tab-count" id="cnt-rank">1</span>
     </button>
     <button class="tab" id="tab-rules" onclick="switchTab('rules',this)">Reglas</button>
@@ -2598,7 +2598,7 @@ html, body{scroll-behavior:auto!important;}
   </div>
 
   <!-- MATCHES PANEL -->
-  <div class="panel active" id="panel-matches">
+  <div class="panel" id="panel-matches">
     <div id="recent-summary-wrap"></div>
     <!-- Filter row -->
     <div class="filter-row">
@@ -5315,7 +5315,7 @@ html, body{scroll-behavior:auto!important;}
   </div>
 
   <!-- RANKING PANEL -->
-  <div class="panel" id="panel-ranking">
+  <div class="panel active" id="panel-ranking">
     <div class="rank-search-wrap">
       <div class="rank-tools">
         <div class="rank-search-box">
@@ -6948,10 +6948,10 @@ html, body{scroll-behavior:auto!important;}
 </div>
 
 <div class="bottom-nav">
-  <button class="nav-btn active" id="nav-matches" onclick="switchTab('matches',document.getElementById('tab-matches'))">
+  <button class="nav-btn" id="nav-matches" onclick="switchTab('matches',document.getElementById('tab-matches'))">
     <span class="nav-icon">⚽</span>Partidas
   </button>
-  <button class="nav-btn" id="nav-ranking" onclick="switchTab('ranking',document.getElementById('tab-ranking'))">
+  <button class="nav-btn active" id="nav-ranking" onclick="switchTab('ranking',document.getElementById('tab-ranking'))">
     <span class="nav-icon">📊</span>Ranking
   </button>
   <button class="nav-btn" id="nav-rules" onclick="switchTab('rules',document.getElementById('tab-rules'))">
@@ -7981,9 +7981,8 @@ function showApp(){
   document.getElementById('topbar-user').style.display='flex';
   document.getElementById('topbar-right').style.display='flex';
   document.getElementById('user-name-display').textContent = currentUser;
-  switchTab('matches', document.getElementById('tab-matches'));
+  switchTab('ranking', document.getElementById('tab-ranking'));
   filterMatches('all');
-  requestAnimationFrame(()=>{ document.getElementById('today-group')?.scrollIntoView({block:'start'}); });
   requestAnimationFrame(syncFilterStickyBg);
   renderRanking();
   updateCounts();
@@ -11096,7 +11095,7 @@ function switchTab(tab, btn){
   if(scoringWrap) scoringWrap.style.display = (tab === 'rules') ? '' : 'none';
   if(tab==='ranking'){
     renderRanking();
-    requestAnimationFrame(()=>{ const me=document.getElementById('my-rank-card'); edsonInstantScrollIntoView(me,'center'); updateQuickFloatButtons(); setTimeout(spotlightMyRankCard, 120); });
+    requestAnimationFrame(()=>{ edsonInstantScrollToY(0); updateQuickFloatButtons(); });
   } else {
     updateQuickFloatButtons();
   }
